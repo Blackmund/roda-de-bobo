@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Roda de Bobo - Party Games Retro OS</title>
+    <meta name="description" content="Sistema completo de Party Games multiplayer (TV Host + Controles Mobile) com IA Generativa, Retro OS Neon Studio e 5 jogos de auditório." />
+    <meta name="theme-color" content="#07080d" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" href="/favicon.svg" />
+    <meta property="og:title" content="Roda de Bobo - Party Games Retro OS" />
+    <meta property="og:description" content="Sistema completo de Party Games multiplayer (TV Host + Controles Mobile) com IA Generativa, Retro OS Neon Studio e 5 jogos de auditório." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+    <script>
+      (function () {
+        var NativeWS = window.WebSocket;
+        if (!NativeWS) return;
+        function PatchedWebSocket(url, protocols) {
+          var urlStr = String(url || '');
+          if (protocols === 'vite-hmr' || urlStr.indexOf(':24678') !== -1 || urlStr.indexOf('token=') !== -1) {
+            var target = new EventTarget();
+            target.readyState = 1;
+            target.CONNECTING = 0;
+            target.OPEN = 1;
+            target.CLOSING = 2;
+            target.CLOSED = 3;
+            target.url = urlStr;
+            target.protocol = 'vite-hmr';
+            target.send = function () {};
+            target.close = function () { target.readyState = 3; };
+            return target;
+          }
+          return protocols !== undefined ? new NativeWS(url, protocols) : new NativeWS(url);
+        }
+        PatchedWebSocket.prototype = NativeWS.prototype;
+        PatchedWebSocket.CONNECTING = NativeWS.CONNECTING;
+        PatchedWebSocket.OPEN = NativeWS.OPEN;
+        PatchedWebSocket.CLOSING = NativeWS.CLOSING;
+        PatchedWebSocket.CLOSED = NativeWS.CLOSED;
+        window.WebSocket = PatchedWebSocket;
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

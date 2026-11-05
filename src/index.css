@@ -1,0 +1,473 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-dark: #07080d;
+    --neon-rose: #FF1E56;
+    --neon-rose-dim: #E6194B;
+    --neon-cyan: #17B8B8;
+    --neon-cyan-bright: #00E5FF;
+    --arcade-orange: #FF6B00;
+    --cream-white: #F5F2EB;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100dvh;
+    max-height: 100dvh;
+    width: 100vw;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background-color: #07080d;
+    color: #F5F2EB;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpolygon points='2,2 8,22 13,13 22,8' fill='%23FF1E56' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E"), auto;
+  }
+
+  button, a, input, [role="button"], .cursor-pointer {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpolygon points='2,2 8,22 13,13 22,8' fill='%2300E5FF' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E"), pointer !important;
+  }
+}
+
+.font-anton {
+  font-family: 'Anton', 'Impact', sans-serif;
+}
+
+.font-mono-code {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Retro Studio diagonal lines pattern */
+.bg-retro-grid {
+  background-color: #07080d;
+  background-image: 
+    linear-gradient(rgba(23, 184, 184, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23, 184, 184, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.retro-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 30, 86, 0.08),
+    rgba(255, 30, 86, 0.08) 12px,
+    transparent 12px,
+    transparent 24px
+  );
+}
+
+.arcade-screen-lines {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.35) 50%
+  ), 
+  linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.03),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.03)
+  );
+  background-size: 100% 3px, 4px 100%;
+}
+
+/* Neon Glows */
+.shadow-neon-rose {
+  box-shadow: 0 0 15px rgba(255, 30, 86, 0.4), inset 0 0 15px rgba(255, 30, 86, 0.2);
+}
+
+.shadow-neon-cyan {
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.4), inset 0 0 15px rgba(0, 229, 255, 0.2);
+}
+
+.shadow-arcade-orange {
+  box-shadow: 0 0 20px rgba(255, 107, 0, 0.45);
+}
+
+/* =========================================================================
+   1. VERSÃO NEON (RETRO OS / CYBERPUNK ARCADE)
+   ========================================================================= */
+.theme-neon .retro-window-container {
+  border: 2px solid #17B8B8 !important;
+  box-shadow: 0 0 28px rgba(23, 184, 184, 0.45), inset 0 0 20px rgba(23, 184, 184, 0.15) !important;
+}
+
+.theme-neon .retro-window-container::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.28) 50%
+  ), 
+  linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.03),
+    rgba(0, 255, 0, 0.015),
+    rgba(0, 0, 255, 0.03)
+  );
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+  z-index: 35;
+  opacity: 0.85;
+}
+
+.theme-neon .shadow-neon-cyan {
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.6), inset 0 0 14px rgba(0, 229, 255, 0.3) !important;
+}
+
+.theme-neon .shadow-neon-rose {
+  box-shadow: 0 0 20px rgba(255, 30, 86, 0.6), inset 0 0 14px rgba(255, 30, 86, 0.3) !important;
+}
+
+.theme-neon .shadow-arcade-orange {
+  box-shadow: 0 0 24px rgba(255, 107, 0, 0.6), inset 0 0 12px rgba(255, 107, 0, 0.3) !important;
+}
+
+.theme-neon .neon-text-cyan {
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.8), 0 0 18px rgba(0, 229, 255, 0.4);
+}
+
+.theme-neon .neon-text-rose {
+  text-shadow: 0 0 8px rgba(255, 30, 86, 0.8), 0 0 18px rgba(255, 30, 86, 0.4);
+}
+
+.theme-neon .neon-text-amber {
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.8), 0 0 18px rgba(251, 191, 36, 0.4);
+}
+
+.theme-neon .neon-card-glow {
+  box-shadow: 0 0 16px rgba(23, 184, 184, 0.35);
+  border-color: rgba(23, 184, 184, 0.6) !important;
+}
+
+/* =========================================================================
+   2. VERSÃO CLEAN (MINIMALISTA / FOCO EM LEITURA PURA / SEM NEON GLOW)
+   ========================================================================= */
+.theme-clean {
+  background-color: #090b14 !important;
+}
+
+.theme-clean .retro-window-container {
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+}
+
+.theme-clean .shadow-neon-cyan,
+.theme-clean .shadow-neon-rose,
+.theme-clean .shadow-arcade-orange,
+.theme-clean .neon-card-glow {
+  box-shadow: none !important;
+}
+
+.theme-clean .neon-text-cyan,
+.theme-clean .neon-text-rose,
+.theme-clean .neon-text-amber {
+  text-shadow: none !important;
+}
+
+/* =========================================================================
+   3. VERSÃO CAZÉTV OFICIAL (BROADCAST DE AUDITÓRIO / RODA DE BOBO TV STYLE)
+   ========================================================================= */
+.theme-cazetv {
+  background-color: #0c1020 !important;
+  color: #F5F2EB !important;
+}
+
+.theme-cazetv .bg-retro-grid {
+  background-color: #0c1020 !important;
+  background-image: 
+    repeating-linear-gradient(
+      -45deg,
+      rgba(230, 25, 75, 0.04) 0px,
+      rgba(230, 25, 75, 0.04) 10px,
+      transparent 10px,
+      transparent 20px
+    ),
+    radial-gradient(circle at 50% 15%, rgba(23, 184, 184, 0.08) 0%, transparent 65%) !important;
+}
+
+.theme-cazetv .retro-window-container {
+  border: 2px solid #E6194B !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(230, 25, 75, 0.35) !important;
+  background-color: #0c1020 !important;
+  border-radius: 2px;
+}
+
+/* Telão e Cards de Transmissão CazéTV */
+.theme-cazetv .cazetv-broadcast-card {
+  border: 2px solid #17B8B8 !important;
+  background-color: #080b16 !important;
+  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.8) !important;
+}
+
+.theme-cazetv .cazetv-badge-red {
+  background-color: #E6194B !important;
+  color: #FFFFFF !important;
+  font-weight: 900;
+  box-shadow: 2px 2px 0px #000;
+}
+
+.theme-cazetv .cazetv-badge-cyan {
+  background-color: #17B8B8 !important;
+  color: #000000 !important;
+  font-weight: 900;
+  box-shadow: 2px 2px 0px #000;
+}
+
+/* Ticket/Notched edges for Proibido */
+.cazetv-ticket-header {
+  position: relative;
+  background-color: #E6194B;
+  color: #F5F2EB;
+}
+.cazetv-ticket-header::before,
+.cazetv-ticket-header::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  background-size: 8px 8px;
+  background-repeat: repeat-y;
+}
+.cazetv-ticket-header::before {
+  left: 0;
+  background-image: radial-gradient(circle at 0 4px, transparent 4px, #E6194B 4px);
+}
+.cazetv-ticket-header::after {
+  right: 0;
+  background-image: radial-gradient(circle at 8px 4px, transparent 4px, #E6194B 4px);
+}
+
+/* Custom 3D Card Flip */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #090a10;
+}
+::-webkit-scrollbar-thumb {
+  background: #E6194B;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FF1E56;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+
+
+/* =========================================================================
+   4. MODO 3 — RODA DE BOBO ORIGINAL (réplica do programa da CazéTV)
+   Herda a base .theme-cazetv (a classe é aplicada em conjunto) e refina:
+   janela retrô de linhas finas crimson, logo com anel "DE", cursor pixel
+   crimson, listras diagonais de cenário, cartelas planas sem sombra/radius.
+   ========================================================================= */
+.theme-original {
+  background-color: #0a0b1e !important;
+  --rdb-navy: #0a0b1e;
+  --rdb-crimson: #E6194B;
+  --rdb-teal: #17B8B8;
+  --rdb-cream: #F5F2EB;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 32 32'%3E%3Cpolygon points='4,4 12,28 17,17 28,12' fill='%23E6194B' stroke='%23F5F2EB' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") 4 4, auto;
+}
+
+.theme-original button,
+.theme-original a,
+.theme-original .cursor-pointer,
+.theme-original [role="button"] {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 32 32'%3E%3Cpolygon points='4,4 12,28 17,17 28,12' fill='%23E6194B' stroke='%23F5F2EB' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") 4 4, pointer !important;
+}
+
+/* Fundo: navy chapado + listras diagonais finas no canto superior esquerdo */
+.theme-original .bg-retro-grid {
+  position: relative;
+  background-color: #0a0b1e !important;
+  background-image: none !important;
+}
+.theme-original .bg-retro-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: repeating-linear-gradient(
+    115deg,
+    rgba(23, 184, 184, 0.28) 0px,
+    rgba(23, 184, 184, 0.28) 1px,
+    transparent 1px,
+    transparent 13px
+  );
+  -webkit-mask-image: linear-gradient(135deg, #000 0%, transparent 26%);
+  mask-image: linear-gradient(135deg, #000 0%, transparent 26%);
+}
+
+/* Janela retrô: contorno fino crimson, sem sombra, sem brilho, sem scanline */
+.theme-original .retro-window-container {
+  border: 2px solid var(--rdb-crimson) !important;
+  box-shadow: none !important;
+  background-color: var(--rdb-navy) !important;
+  border-radius: 0 !important;
+}
+.theme-original .retro-window-container::after {
+  display: none !important;
+}
+
+/* Tudo reto e chapado como no programa (exceto círculos) */
+.theme-original [class*="rounded"]:not(.rounded-full):not(.rdb-de) {
+  border-radius: 0 !important;
+}
+.theme-original .shadow-neon-cyan,
+.theme-original .shadow-neon-rose,
+.theme-original .shadow-neon-amber,
+.theme-original .shadow-arcade-orange,
+.theme-original .neon-card-glow {
+  box-shadow: none !important;
+}
+.theme-original .neon-text-cyan,
+.theme-original .neon-text-rose,
+.theme-original .neon-text-amber {
+  text-shadow: none !important;
+}
+
+/* Tipografia de cartela: espaçamento broadcast característico */
+.theme-original .font-anton {
+  letter-spacing: 0.02em;
+}
+
+/* Garantia de contraste absoluto para botões de ação com fundo claro */
+.theme-original button.bg-white,
+.theme-cazetv button.bg-white,
+.theme-original button.bg-\[\#17B8B8\],
+.theme-cazetv button.bg-\[\#17B8B8\] {
+  color: #000000 !important;
+}
+
+/* Botões primários vermelhos de Iniciar Jogo (vermelho vibrante #E6194B de alto impacto com texto branco) */
+button[data-testid*="start-game"],
+button[data-testid*="start-direct"],
+.theme-original [data-testid*="start-game"],
+.theme-original [data-testid*="start-direct"],
+.theme-cazetv [data-testid*="start-game"],
+.theme-cazetv [data-testid*="start-direct"] {
+  background-color: #E6194B !important;
+  color: #FFFFFF !important;
+  border-color: rgba(244, 63, 94, 0.8) !important;
+}
+
+button[data-testid*="start-game"] span,
+button[data-testid*="start-direct"] span,
+button[data-testid*="start-game"] svg,
+button[data-testid*="start-direct"] svg,
+.theme-original [data-testid*="start-game"] span,
+.theme-original [data-testid*="start-direct"] span,
+.theme-original [data-testid*="start-game"] svg,
+.theme-original [data-testid*="start-direct"] svg,
+.theme-cazetv [data-testid*="start-game"] span,
+.theme-cazetv [data-testid*="start-direct"] span,
+.theme-cazetv [data-testid*="start-game"] svg,
+.theme-cazetv [data-testid*="start-direct"] svg {
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+}
+
+button[data-testid*="start-game"]:hover,
+button[data-testid*="start-direct"]:hover,
+.theme-original [data-testid*="start-game"]:hover,
+.theme-original [data-testid*="start-direct"]:hover,
+.theme-cazetv [data-testid*="start-game"]:hover,
+.theme-cazetv [data-testid*="start-direct"]:hover {
+  background-color: #f43f5e !important;
+  color: #FFFFFF !important;
+}
+
+/* Logo oficial: "RODA (DE) BOBO" com anel crimson */
+.theme-original .rdb-logo {
+  gap: 0.35rem;
+}
+.theme-original .rdb-de {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7em;
+  height: 1.7em;
+  padding: 0 !important;
+  border-radius: 9999px !important;
+  background: var(--rdb-navy) !important;
+  color: var(--rdb-crimson) !important;
+  border: 2px solid var(--rdb-crimson);
+  box-shadow: inset 0 0 0 2px var(--rdb-navy), inset 0 0 0 3px rgba(245, 242, 235, 0.75) !important;
+  font-size: 0.55em !important;
+  line-height: 1 !important;
+}
+
+/* Cronômetro do Proibido: cartela com faixa superior crimson "CRONÔMETRO" */
+.theme-original .rdb-timer {
+  border: 2px solid var(--rdb-crimson) !important;
+  background: var(--rdb-navy) !important;
+  padding: 0 !important;
+  flex-direction: column;
+  align-items: stretch !important;
+  gap: 0 !important;
+  min-width: 130px;
+}
+.theme-original .rdb-timer > div:first-child > div:first-child {
+  background: var(--rdb-crimson);
+  color: var(--rdb-cream) !important;
+  text-align: center;
+  padding: 2px 8px;
+  font-size: 10px;
+}
+.theme-original .rdb-timer > div:first-child > div:last-child {
+  justify-content: center;
+  padding: 2px 8px 4px;
+  font-size: 1.6rem;
+  color: var(--rdb-cream);
+}
+.theme-original .rdb-timer > svg {
+  display: none;
+}
+
+/* Barra de rolagem: trilho crimson fino + polegar teal (como na janela do programa) */
+.theme-original ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.theme-original ::-webkit-scrollbar-track {
+  background: var(--rdb-navy);
+  border-left: 1px solid var(--rdb-crimson);
+}
+.theme-original ::-webkit-scrollbar-thumb {
+  background: var(--rdb-teal);
+}

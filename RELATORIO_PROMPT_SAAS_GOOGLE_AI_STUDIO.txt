@@ -1,0 +1,471 @@
+# ==============================================================================
+# PROMPT SAAS PARA GOOGLE AI STUDIO / AGENTE DE DESENVOLVIMENTO
+# PROJETO: RODA DE BOBO - PARTY GAMES RETRO OS
+# OBJETIVO: REPLICAR TODAS AS MELHORIAS, ARQUITETURA E CORREÇÕES NO PROJETO BASE
+# ==============================================================================
+
+Você é um Arquiteto de Software Fullstack Sênior e Especialista em Jogos Multiplayer Web, UI/UX Retrô Futurista e Integração com IA Generativa (Google Gemini API).
+
+Sua missão é atuar na base de código do "Roda de Bobo - Party Games Retro OS" (desenvolvido em React, Vite, TypeScript, Tailwind CSS, Lucide Icons, Motion/Framer e Node.js/WebSockets) e implementar integralmente o pacote de melhorias de arquitetura, conectividade, jogabilidade e experiência de usuário (UI/UX) descritas nesta especificação técnica.
+
+Execute as tarefas divididas nos 7 Módulos de Execução a seguir, mantendo integridade de tipagem estrita no TypeScript (`tsc --noEmit`), preservando comentários existentes e garantindo que todos os testes passem com 100% de sucesso.
+
+---
+
+## MÓDULO 1: FLUXO GLOBAL E PERSISTÊNCIA (SELEÇÃO DE MODO COMO PRIMEIRA TELA)
+
+### Contexto & Problema:
+Anteriormente, o modo de jogo (Mesa Local, Host TV, Controle Celular) era configurado dentro de cada jogo individualmente, obrigando o grupo a refazer escolhas e reinserir jogadores a cada nova partida.
+
+### Diretrizes de Implementação:
+1. **Primeira Tela do Sistema (`ScreenModeSelect.tsx`)**:
+   - Defina a tela inicial da aplicação como `mode-select` em `createDefaultRoom` (`src/utils/roomManager.ts`) e `src/App.tsx`.
+   - Crie o componente `src/components/host/ScreenModeSelect.tsx` com visual arcade retro-futurista, apresentando as opções:
+     - 🖥️ **Modo Mesa (Tela Única)**: Jogo local com todos ao redor do mesmo computador/tablet.
+     - 📺 **Modo TV Host + Celulares**: Tela principal para a TV da sala e geração de QR Code/Link para controles individuais.
+     - 📱 **Entrar como Controle**: Acesso direto para jogadores que escanearam ou entraram via link.
+2. **Persistência Global de Jogadores e Configurações**:
+   - Quando o grupo escolher os jogadores, avatares, times e modo no Lobby, esses dados devem ser gravados no `localStorage` e mantidos em `room.players`, `room.connectionMode` e `room.teams`.
+   - Ao trocar de jogo ou finalizar uma partida, a aplicação NÃO deve resetar a lista de jogadores nem o modo de conexão; os jogadores cadastrados permanecem para os próximos jogos sem necessidade de novo pareamento.
+
+---
+
+## MÓDULO 2: SISTEMA MULTI-EQUIPES E DESTAQUE DO JOGADOR DA VEZ (TURN SPOTLIGHT)
+
+### Contexto & Problema:
+O jogo suportava apenas 2 equipes e a identificação visual do jogador da vez era confusa e pouco destacada, faltando inclusive no Jogo do Limite.
+
+### Diretrizes de Implementação:
+1. **Suporte a 2, 3 ou 4 Equipes (`teamCount: 2 | 3 | 4`)**:
+   - Em `src/types/game.ts`, adicione `teamCount?: 2 | 3 | 4;` em `GameCustomConfig`.
+   - Suporte 4 equipes com paletas neon distintas:
+     - Equipe A: Vermelho Neon / Alfa (`#EF4444` / `border-rose-500`)
+     - Equipe B: Ciano Neon / Beta (`#06B6D4` / `border-cyan-500`)
+     - Equipe C: Âmbar Neon / Gama (`#F59E0B` / `border-amber-500`)
+     - Equipe D: Esmeralda Neon / Delta (`#10B981` / `border-emerald-500`)
+   - Em `src/components/setup/Step4PlayerLobby.tsx` e `src/components/host/ScreenGameSetup.tsx`, inclua seletor de quantidade de equipes (2, 3 ou 4) com auto-balanceamento cíclico dos jogadores nas equipes.
+2. **Destaque Visual Acentuado do "Jogador da Vez"**:
+   - Em todos os jogos, crie um indicador luminoso de alta prioridade para o jogador da vez (borda neon pulsante, badge `🎯 DA VEZ`, avatar com moldura iluminada e banner superior).
+   - **Correção específica para o Jogo do Limite (`ScreenLimite.tsx`)**:
+     - Implemente a rotação de ordem de palpite (`turnIndex`) com destaque vibrante do jogador ativo que deve palpitar naquele momento, garantindo que todos na sala e no celular saibam de quem é o turno.
+
+---
+
+## MÓDULO 3: INFRAESTRUTURA DE REDE LOCAL (LAN WI-FI), QR CODE E EXPORTAÇÃO WEB
+
+### Contexto & Problema:
+Ao abrir o projeto pela rede local, o QR Code apontava para `localhost`, impedindo que os celulares conectados ao mesmo Wi-Fi conseguissem entrar na sala. Além disso, URLs de ambientes proxy/cloud podiam bloquear requisições.
+
+### Diretrizes de Implementação:
+1. **Detecção e Resolução Automática de IP Local (`server.ts` & `src/utils/multiplayerRoomEngine.ts`)**:
+   - Em `server.ts`, utilize `os.networkInterfaces()` para detectar o IP IPv4 da máquina na rede local (ex: `192.168.1.X` ou `10.0.0.X`) e faça o bind do servidor Node/Vite em `0.0.0.0:3000`.
+   - Exiba no terminal e na tela do Host a URL de rede local para os celulares.
+2. **Resolução de Origem Inteligente (`resolvePublicShareOrigin`)**:
+   - Em `src/utils/multiplayerRoomEngine.ts`, implemente `resolvePublicShareOrigin`:
+     - Se estiver em ambiente local (`localhost` / `127.0.0.1`), use o IP da LAN do Host com a porta correspondente.
+     - Converta domínios protegidos por autenticação Google Workspace (ex: `ais-pre-`) para a variante pública (`ais-dev-`), garantindo que o celular não caia em barreiras de login.
+     - Permita configuração manual de origin via `setCustomShareOrigin`.
+3. **Exportação Web e Deploy (`vercel.json` e `public/_redirects`)**:
+   - Configure redirecionamento SPA em `vercel.json` e `public/_redirects` (`/* /index.html 200`) para que rotas como `/?join=ROOM12&player=p1` carreguem sem erro 404 em qualquer host estático.
+
+---
+
+## MÓDULO 4: JOGO DO LIMITE — OVERHAUL DE UX, PALPITES SECRETOS, CRONÔMETRO AUTOMÁTICO E CARTAS DE PODER
+
+### Contexto & Problema:
+No celular, a interface tinha contraste inadequado com caixa laranja chamativa demais. Os palpites apareciam antes da hora no telão. O cronômetro exigia clique manual de Play e a distribuição de poderes não seguia a regra de sorteio único.
+
+### Diretrizes de Implementação:
+1. **Palpites 100% Secretos até a Fase de Revelação**:
+   - No celular (`ControllerView.tsx`) e na TV (`ScreenLimite.tsx`), quando um jogador enviar um palpite, o valor deve ficar mascarado (`🔒 PALPITE ENVIADO`) em ambas as telas.
+   - O número palpado só é revelado simultaneamente no telão durante a fase de pontuação (`SCORING` / Revelação).
+2. **Redesign do Header e Caixa de Pergunta no Celular**:
+   - Header superior atualizado para o padrão arcade neutro: `🕹️ FLIPERAMA: JOGO DO LIMITE`.
+   - A caixa da pergunta deve usar tons escuros neutros com borda sutil (substituindo o laranja berrante), dando destaque legível ao texto sem poluir visualmente.
+3. **Cronômetro Sincronizado com Auto-Start**:
+   - Remova a necessidade de clicar em "Play" para o tempo correr.
+   - Ao iniciar a rodada de palpites, o timer deve disparar automaticamente (`timerActive: true`) tanto na tela do Host quanto na tela dos controles mobile, rodando de forma sincronizada.
+4. **Sistema de Cartas de Poder (`Cartas de Poder`)**:
+   - Implemente o algoritmo `drawLimitePowerCardsForPlayers`:
+     - Se houver 4 jogadores: sorteie exatamente 4 cartas de poder distintas (`Ligação`, `Troca`, `x2`, `-1`), entregando 1 poder único para cada jogador.
+     - Se houver mais de 4 jogadores: sorteie 1 poder aleatório adicional por jogador extra.
+     - Cada poder só pode ser utilizado 1 única vez durante a partida. Após o uso, ele é consumido e desativado.
+
+---
+
+## MÓDULO 5: PONTUAÇÃO COLETIVA EM JOGOS DE EQUIPE E SELETOR DE TEMAS UNITÁRIOS
+
+### Contexto & Problema:
+Jogos cooperativos em dupla (como "Tem ou Não Tem", "Jogo do Proibido" e "Jogo do Duvido") estavam elegendo MVP individual com critérios de desempate injustos entre parceiros que pontuaram juntos. Além disso, temas estavam agrupados (ex: "Ciência, Espaço, Corpo Humano" juntos em um só tema).
+
+### Diretrizes de Implementação:
+1. **Pontuação Coletiva e MVP de Dupla (`isTeamCollectiveGame`)**:
+   - Em `src/utils/sessionPersistence.ts`, defina a função `isTeamCollectiveGame(gameId)` retornando `true` para `'tem-ou-nao-tem'`, `'proibido'` e `'duvido'`.
+   - Nesses jogos, `accumulateRoundPlayerScores` deve atribuir a pontuação idêntica para todos os integrantes da equipe vencedora, sem viés de pontuação individual.
+   - O snapshot de MVP (`buildTeamCollectiveMVPSnapshot`) deve eleger a **Dupla/Equipe**, exibindo o nome de ambos os jogadores (ex: `👑 Dupla Alfa: Marcos & Gisele`).
+2. **Temas Unitários com "Geral" em Primeiro Lugar**:
+   - Em `src/utils/aiGameGenerator.ts`, refatore `PRESET_THEMES` para que temas compostos sejam desmembrados em temas unitários e focados:
+     - Primeiro tema: `'Geral'` (assuntos diversos de conhecimentos gerais, cultura pop e cotidiano).
+     - Seguintes: `'Ciência'`, `'Espaço'`, `'Corpo Humano'`, `'História'`, `'Cinema'`, `'Música'`, `'Geografia'`, etc.
+3. **UI do Dropdown de Temas**:
+   - Em `ScreenGameSetup.tsx` e `Step2ConfigureGame.tsx`, implemente a barra de temas em linha única com menu dropdown expansível em grade de 3 a 4 colunas preenchendo até próximo do limite inferior da tela, facilitando a navegação rápida por toque ou mouse.
+
+---
+
+## MÓDULO 6: PERGUNTAS E VERDADES ("O JOGO DO DIABO") — MODO DE REVELAÇÃO REVOLUCIONADO
+
+### Contexto & Problema:
+Na tela de revelação e palpite da verdade, a interface anterior possuía dropdowns numéricos e virava diretamente as cartas reais do oponente ao clicar, estragando a dedução. O jogador precisa conseguir montar as cartas livremente sem o jogo dar spoilers, e o sistema só deve validar ao clicar em "Palpitar", sem dizer onde está o erro.
+
+### Diretrizes de Implementação:
+1. **Tabuleiro Interativo de 8 Posições (`1ª POS` a `8ª POS`) + Baralho de 52 Cartas**:
+   - Em `src/components/host/ScreenPerguntasEVerdades.tsx` (`actionMode === 'TRUTH'`), substitua os selects numéricos por um tabuleiro com os 8 slots do alvo selecionado (`pv-card-slot-${targetOpponent.id}-${slotIdx + 1}`).
+   - Abaixo do tabuleiro, exiba o baralho de 52 cartas organizado pelos 4 naipes (`♠ Espadas`, `♥ Copas`, `♣ Paus`, `♦ Ouros`).
+   - O jogador pode clicar em um slot para selecioná-lo e clicar na carta desejada do baralho, ou arrastar a carta diretamente para o slot.
+   - Permita arrastar uma carta de um slot para outro para trocar posições (swap) e inclua botão `×` para limpar uma posição individual, além do botão `Limpar Posições`.
+2. **Persistência Automática das Posições (Sem Validação Antecipada / Sem Spoilers)**:
+   - Salve o estado do tabuleiro de dedução em `pv.savedTruthSlotsByTarget[targetOpponent.id]` e sincronize com `pv.truthGuessValues`.
+   - Ao trocar de aba para `❓ 11 Perguntas Oficiais` ou mudar de turno, as cartas montadas pelo jogador permanecem salvas exatamente nas posições escolhidas.
+   - **REGRA DE OURO**: Durante a montagem das cartas na revelação, **NÃO VALIDE REGRA DE ORDEM CRESCENTE E NÃO DIGA SE A CARTA ESTÁ CERTA OU ERRADA**. O jogador tem liberdade total para deixar qualquer carta onde quiser para formular suas deduções.
+3. **Verificação Apenas no Clique do Botão "Palpitar" (Sem Entregar a Posição do Erro)**:
+   - Ao clicar em `🎯 PALPITAR`:
+     - Se menos de 8 cartas estiverem posicionadas: emita aviso solicitando preenchimento das 8 posições.
+     - Se as 8 cartas estiverem corretas: conceda vitória da rodada (`handleAwardRoundWinToPlayer`) e revele as cartas oficiais.
+     - Se houver qualquer erro na sequência:
+       - Toque o som de erro (`sounds.playBuzzer()`).
+       - Exiba **apenas** a mensagem: `❌ PALPITE INCORRETO DE [NOME]! A sequência não está correta — o jogo continua!`.
+       - **PROIBIDO**: Não diga quantas posições acertou (nunca mostre `X/8 acertos`), não destaque qual slot está errado e não revele nenhuma carta do adversário.
+       - As cartas montadas devem permanecer intocadas no tabuleiro para que o jogador continue deduzindo nas próximas rodadas.
+
+---
+
+## MÓDULO 7: JOGO DO PROIBIDO — MODO 2 JOGADORES, FIM DE TEMPO, ROLES DEMONSTRATIVOS, MODO SEM VENDA NA TV E PROTEÇÃO BLIND NO CELULAR
+
+### Contexto & Problema:
+Quando o cronômetro esgotava, o jogo não avançava nem permitia prosseguir para a próxima pessoa. Não havia modo cooperativo para 2 jogadores (um perguntando para o outro e ambos pontuando juntos). No Host TV faltava um botão para ocultar palavras caso o adivinhador não tivesse venda, a interface não deixava claro quem estava falando e quem estava vendado/de olho fechado, e no celular do jogador que estava respondendo apareciam as palavras proibidas, estragando a partida.
+
+### Diretrizes de Implementação:
+1. **Conclusão de Rodada ao Esgotar o Cronômetro (`timerSeconds === 0`) e Botão de Próximo Jogador**:
+   - Em `ScreenProibido.tsx`, quando o tempo esgota, a rodada transiciona para `phase: 'SUMMARY'`, toca a sirene de encerramento (`sounds.playBuzzer()`), desativa o timer e exibe a pontuação obtida (`PONTUAÇÃO DA RODADA: +X PONTOS`).
+   - Tanto no Host TV quanto no Celular (`ControllerView.tsx`), a tela de resumo apresenta o botão explícito: `AVANÇAR PARA [NOME DO PRÓXIMO] (VEZ DE FALAR) ➔` (ou `🏆 VER PLACAR FINAL ➔`), invocando `onNextRound()`.
+   - Adicione guarda em `applyProibidoCardOutcome` para que toques atrasados em cartas não ressuscitem a fase para `'PLAYING'` quando a rodada estiver em `'SUMMARY'`.
+2. **Modo 2 Jogadores Cooperativo (Alternância de Papéis & Pontuação Compartilhada)**:
+   - Em `src/App.tsx`, ao detectar `room.players.length === 2`, ative `is2PlayerMode: true`:
+     - Rodada 1: Jogador 1 é o Orador (fala) e Jogador 2 é o Adivinhador (responde / de olho fechado).
+     - Rodada 2: Jogador 2 é o Orador (fala) e Jogador 1 é o Adivinhador (responde / de olho fechado).
+   - Em `accumulateRoundPlayerScores` (`src/utils/sessionPersistence.ts`) e `src/App.tsx`, ambos os jogadores recebem a pontuação em conjunto, sem necessidade de arbitrar duas duplas rivais.
+3. **Botão no Host TV de Mostrar/Ocultar Palavras (Anti-Spoiler / Modo Sem Venda)**:
+   - Em `ScreenProibido.tsx`, adicione o botão destacado `proibido-toggle-tv-words-btn` alternando `tvWordsHidden`:
+     - Se `tvWordsHidden === true`: A TV cobre o cartão com uma cortina arcade: `🙈 PALAVRAS OCULTAS NA TV (MODO SEM VENDA) — O Adivinhador pode olhar para a TV! As palavras aparecem apenas no celular do Orador.`
+     - Se `tvWordsHidden === false`: Exibe as palavras normalmente para quando o adivinhador estiver vendado ou de costas para a tela.
+4. **Faixa Demonstrativa Cristalina de Papéis na Interface**:
+   - Tanto no Telão (`proibido-role-demonstration-strip`) quanto no Celular (`controller-proibido-role-badge`), identifique visualmente e de forma inequívoca:
+     - 🗣️ **QUEM FALA (ORADOR)**: [Avatar] [Nome] (com moldura ciano: "Vê as palavras e dá as pistas")
+     - 🙈 **QUEM ADIVINHA (DE OLHO FECHADO)**: [Avatar] [Nome] (com moldura âmbar: "Responde vendado / não pode ver a tela")
+     - 🚨 **FISCAL (ÁRBITRO)**: [Avatar] [Nome] (com moldura vermelha: "Apita falta se falar proibida" — apenas quando houver 3+ jogadores).
+5. **Proteção Blindfold 100% no Celular do Adivinhador (Palavras Jamais Exibidas)**:
+   - Em `ControllerView.tsx`, use `getProibidoPlayerRole` para verificar se `player.id === guesserPlayerId`.
+   - Se for o **Adivinhador**: **NUNCA RENDERIZE A PALAVRA-ALVO NEM AS PALAVRAS PROIBIDAS**.
+   - Em vez disso, renderize o layout blindfold:
+     - Ícone `🙈`, título `VOCÊ ESTÁ ADIVINHANDO! (DE OLHO FECHADO)`, aviso `FECHE OS OLHOS OU FIQUE DE COSTAS PARA A TELA` e texto instrutivo: `Ouça atentamente as pistas de [Nome do Orador] e tente adivinhar a palavra-alvo!`.
+
+---
+
+## MÓDULO 8: JOGO DO LIMITE — BLOQUEIO POR TEMPO ESGOTADO, CONTAGEM REGRESSIVA DE 5S COM BIPS E PALCO ESPECIAL DE REVELAÇÃO (PERGUNTA COMPACTA, RESPOSTA GIGANTE E PALPITES ABAIXO)
+
+### Contexto & Problema:
+Quando o tempo da rodada acabava no Jogo do Limite, o jogador ainda conseguia alterar o palpite. Além disso, ao zerar o cronômetro, a revelação não começava automaticamente de forma dramática com contagem de 5 segundos e bips sonoros até o clímax ("pá!"). No momento da revelação, o texto da pergunta continuava enorme e o valor da resposta real era tímido, sem o impacto visual merecido, e faltava uma tela especial só de revelação destacando a resposta oficial gigante e os palpites de cada jogador organizados embaixo com suas diferenças calculadas.
+
+### Diretrizes de Implementação:
+1. **Bloqueio Irreversível de Palpites ao Esgotar o Tempo (`timerSeconds === 0`)**:
+   - Em `ScreenLimite.tsx` e `ControllerView.tsx`, calcule `isTimeExpired = (room.timerConfig > 0 && limite.timerSeconds <= 0) || Boolean(limite.revealCountdown)`.
+   - No celular (`ControllerView.tsx`):
+     - Se o jogador já enviou um palpite: desative/remova o botão `✏️ ALTERAR MEU PALPITE SECRETO` e exiba o aviso bloqueado: `🔒 TEMPO ESGOTADO — PALPITE BLOQUEADO!`.
+     - Se o jogador não enviou a tempo: bloqueie o input e o botão de envio, exibindo `⏰ TEMPO ESGOTADO! O prazo para enviar palpites encerrou.`.
+   - Na TV (`ScreenLimite.tsx`):
+     - No modo Mesa/Voz, bloqueie a digitação e a edição de palpites (`🔒 Bloqueado`), impedindo qualquer alteração tardia.
+2. **Contagem Regressiva de 5 Segundos Automática com Bips Sonoros (5, 4, 3, 2, 1 -> PÁ!)**:
+   - Em `src/types/game.ts`, inclua `revealCountdown?: number | null;` em `LimiteGameState`.
+   - Quando o cronômetro da rodada zerar (`nextSec <= 0`), toque a buzina (`sounds.playBuzzer()`), encerre o timer e inicie a contagem regressiva: `timerSeconds: 0, timerActive: false, revealCountdown: 5`.
+   - Crie um `useEffect` para `limite.revealCountdown`:
+     - A cada segundo (5, 4, 3, 2, 1), emita o bip sonoro digital característico: `sounds.playTick(limite.revealCountdown)`.
+     - Tanto na TV quanto no celular, exiba o banner animado de suspense com a contagem saltando: `⏳ PREPAREM OS CORAÇÕES! REVELANDO EM... [5, 4, 3, 2, 1]`.
+     - Ao atingir 0: **PÁ!** Toque a fanfarra de sucesso (`sounds.playSuccess()`), dispare a chuva de confetes (`confetti({ particleCount: 90, spread: 80 })`), transicione para `phase: 'SCORING'` e limpe `revealCountdown: null`.
+     - Forneça o botão `⚡ Revelar Agora (Pular)` para que o Host possa pular a contagem a qualquer momento se desejar.
+3. **Palco Especial de Revelação (Redesign Visual Temático de Grande Impacto)**:
+   - Em `ScreenLimite.tsx`, quando `limite.phase === 'SCORING'`, a tela muda totalmente de figura, adotando um visual arcade dourado de celebração (`border-2 border-amber-400/80 bg-gradient-to-b from-[#181105] via-[#090b14] to-[#040508] shadow-[0_0_40px_rgba(251,191,36,0.3)]`).
+   - O cabeçalho se transforma em `🌟 PALCO DE REVELAÇÃO: JOGO DO LIMITE`.
+4. **Pergunta Compacta e Resposta Oficial GIGANTE**:
+   - **Texto da Pergunta Reduzido**: Reduza o tamanho da fonte da pergunta oficial na fase de revelação (`text-xs sm:text-sm md:text-base font-bold text-slate-300 max-w-2xl mx-auto line-clamp-2`), dando espaço e foco total para a resposta.
+   - **Valor Oficial GIGANTESCO**: Renderize o número exato com escala monumental para impacto visual máximo: `font-anton text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-amber-300 leading-none drop-shadow-[0_0_40px_rgba(251,191,36,0.7)] tracking-wider`, acompanhado do badge dourado da unidade e do card da curiosidade oficial (`💡 CURIOSIDADE OFICIAL // FATOR UAU`).
+5. **Palpites dos Jogadores Abaixo com Diferenças e Badges de Resultado**:
+   - Logo abaixo da resposta gigante, apresente a `🏆 BANCADA DE PALPITES REVELADOS` com os cards de todos os jogadores:
+     - Avatar, Nome e Pontuação atual (+pontos ganhos na rodada em destaque).
+     - Valor do palpite enviado em fonte destacada.
+     - Diferença matemática para o valor oficial:
+       - Se acertou exato: `🎯 EXATO (DIF: 0)` em ouro neon.
+       - Se menor que o valor: `Faltou: -X` em ciano neon.
+       - Se maior que o valor: `Passou: +X` em rosa neon.
+     - Badges de classificação:
+       - `🎯 CRAVOU EXATO! (+2 PTS)` (dourado com brilho).
+       - `🏆 VENCEU (+1 PT)` (verde esmeralda).
+       - `💥 PASSOU DO LIMITE (ESTOUROU)` (vermelho).
+     - Controles interativos para o Host confirmar ou alternar pontos rapidamente.
+
+---
+
+## MÓDULO 10: REMOÇÃO COMPLETA DO BOPSTER, REGRAS RÁPIDAS E ELEVAÇÃO DOS TUTORIAIS DE JOGO
+
+### Contexto & Problema:
+O projeto continha artefatos de referência legados de um projeto de música/auditório ("Bopster / Bopstarr Live"), com modais de onboarding de cartas com QR code, playlists musicais e DJ mascote, além de um botão de "Regras Rápidas" no cabeçalho superior que duplicava e conflitava com os tutoriais dedicados dos jogos.
+
+### Diretrizes de Implementação:
+1. **Exclusão Completa dos Arquivos e Estados Bopster/Bopstarr**:
+   - Remova os arquivos obsoletos `src/components/OnboardingWizard.modal.tsx` e `src/components/BopstarrOnboardingWizard.tsx`.
+   - Em `src/App.tsx`, elimine todas as menções, imports e estados do Bopstarr (`bopstarrConfig`, `isOnboardingOpen`, `onboardingInitialStep`, `isSpotlightTourOpen`, `handleOpenOnboardingWizard`, `handleUpdateBopstarrConfig`, etc.), substituindo `renderBopstarrOverlays` por `renderJoinRoomModal`.
+   - Limpe referências ao Bopster nos textos e comentários de `ScreenJoinRoom.tsx`, `Step3SelectMode.tsx`, `Step4PlayerLobby.tsx` e `Step5GameTutorial.tsx`.
+2. **Remoção de "Regras Rápidas" e Botão "Tour" do Dock (`WindowWrapper.tsx`)**:
+   - Remova o botão `dock-rules-btn` (ícone `BookOpen`) e `dock-onboarding-tour-btn` (ícone `Sparkles` com contorno rosa) do cabeçalho da janela retrô OS.
+   - Remova o estado `activeDockModal === 'rules'` e os sumários `QUICK_RULES_SUMMARY`, mantendo o dock limpo com apenas QR Code, Histórico de Partidas e Configurações de Tema/Áudio.
+3. **Aprimoramento e Elevação dos Tutoriais Arcade (`Step5GameTutorial.tsx`)**:
+   - Mantenha e aprimore o visual arcade retrô futurista com 3 cards visuais explicativos de alta fidelidade para todos os 6 jogos:
+     - **Jogo do Limite**: Cronômetro automático, palpites secretos com bloqueio ao zerar o tempo, distribuição de 4 cartas de poder e super bônus de 2 pontos ao cravar o valor exato.
+     - **Jogo do Duvido**: Lista de temas unitários em colunas (Geral, Ciência, Cinema...), leilão de apostas (+1, +2, custom), botão vermelho DUVIDO! e gabarito de apoio.
+     - **Jogo do Proibido**: Adivinhador de olhos fechados/vendado, palavras ocultas no celular do adivinhador, botão de alternar visibilidade no telão e encerramento com placar no fim do tempo.
+     - **Jogo da Nota**: Sorteio secreto na roleta (1 a 10), 2 pistas calibradas (pergunta IA + pergunta da roda) e pontuação dupla narrador + acertadores.
+     - **Tem ou Não Tem**: Painel de pesquisa com 100 pessoas, pontuação coletiva em duplas e domínio livre ao acumular 2 strikes (X).
+     - **Perguntas e Verdades**: 8 cartas ordenadas por naipe com posições salvas livremente no modo revelação, leilão de tokens (+2 por rodada) e Declaração da Verdade (+100 PTS).
+   - Inclua painel comutável com diretrizes detalhadas de "✕ PROIBIDO" e "✓ PERMITIDO" e resumo de regras de pontuação oficial.
+
+---
+
+## MÓDULO 11: REFORMULAÇÃO DOS MODOS DE JOGO E DEFINIÇÃO DE EQUIPES PÓS-CONFIGURAÇÃO DO JOGO
+
+### Contexto & Problema:
+O número de equipes estava sendo solicitado na primeira tela de modo/jogadores antes mesmo de se escolher o jogo da noite, gerando confusão. Além disso, os 3 cards de seleção de modo perderam suas ilustrações visuais retrô detalhadas e o nome "TV + CELULARES" era pouco atrativo.
+
+### Diretrizes de Implementação:
+1. **Restauração das Ilustrações Visuais Retrô dos Cards de Modo (`ScreenModeSelect.tsx`)**:
+   - Recupere as caixas de ilustração visual detalhada em cada card:
+     - **Card 1 (MODO LOCAL)**: Monitor outline ciano `[ 🖥️ ]` + `+` + box ciano `[ 👥 SOFÁ ]`.
+     - **Card 2 (MODO HOST)**: TV retrô rosa `[ 📺 ]` com antenas + QR Code ciano pulsante `[ :: QR ]` + 2 celulares `[ 📱 📱 ]`.
+     - **Card 3 (MODO MULTI)**: Fila de 4 smartphones com o primeiro maior, dourado e coroado `[ 📱👑 ] [ 📱 ] [ 📱 ] [ 📱 ]`.
+2. **Nomenclatura e Hierarquia Tipográfica dos Modos**:
+   - **Modo 1**: `🖥️ MODO LOCAL`
+     - Subtítulo: `MESMA TELA / SEM CELULARES EXTRAS`
+     - Frase em destaque: `“A TV/PC é a tela principal e única.”`
+     - Botão CTA: `ESCOLHER MODO LOCAL ➔`
+   - **Modo 2**: `📺 MODO HOST` (removido o termo genérico "TV + CELULARES")
+     - Subtítulo: `TV COMO PALCO + CELULARES COMO CONTROLE`
+     - Frase em destaque: `“A TV é o Host visual e os celulares são os controles.”`
+     - Botão CTA: `GERAR SALA TV • CELULARES ➔`
+   - **Modo 3**: `📱 MODO MULTI`
+     - Subtítulo: `CADA JOGADOR 100% NO SEU CELULAR`
+     - Frase em destaque: `“Sem tela de TV. Cada jogador joga unicamente pelo próprio celular.”`
+     - Botão CTA: `CRIAR SALA 100% MOBILE ➔`
+3. **Remoção de Equipes da Tela de Entrada e Lobby**:
+   - Em `ScreenModeSelect.tsx`, remova o seletor de equipes e o botão de sortear. A tela inicial foca 100% na escolha da arquitetura e na conexão dos jogadores.
+   - Passe `hideTeamControls={true}` para `PlayerRosterSelector`, exibindo a lista de jogadores sem divisões de times prévias.
+   - Em `ScreenLobby.tsx`, remova o seletor de equipes do cabeçalho da vitrine de jogos.
+4. **Etapa Dedicada de Definição de Equipes Logo Após a Configuração do Jogo (`ScreenGameSetup.tsx`)**:
+   - Estruture `ScreenGameSetup` em duas sub-etapas sequenciais:
+     - **Sub-etapa 1 (`setupStage === 'config'`)**: Configuração do Jogo (Tema, Tempo, Rodadas, Dificuldade) com botão `[ 👥 DEFINIR EQUIPES ➔ ]`.
+     - **Sub-etapa 2 (`setupStage === 'teams'`)**: Definição de Equipes que antecede o início da partida:
+       - Seletor de scanlines estilo arcade retrô: `EQUIPES: | 2 EQUIPES | 3 EQUIPES | 4 EQUIPES |` (com preenchimento ciano neon na opção ativa).
+       - Botões rápidos: `[ 🎲 Sortear Equipes ]` e `[ 🪙 Quem Começa ]`.
+       - Painel de 2, 3 ou 4 colunas para cada equipe ativa (Equipe A Vermelha, Equipe B Ciano, Equipe C Âmbar, Equipe D Esmeralda), listando os jogadores escalados e botão `Mover ➔` para alternar times ciclicamente.
+       - Barra de ações inferior: `[ ⬅ Voltar às Configurações ]`, `[ 📖 REGRAS & TUTORIAL ➔ ]` e `[ ▶ INICIAR JOGO AGORA! ]`.
+
+---
+
+## MÓDULO 12: SISTEMA DE DRAG & DROP PARA ESCALAÇÃO DE EQUIPES COM PREVENÇÃO ESTRITA DE DUPLICIDADE
+
+### Contexto e Requisitos:
+1. **Drag & Drop Completo no Gerenciamento de Equipes**:
+   - Na etapa de equipes (`setupStage === 'teams'` em `ScreenGameSetup.tsx`), o host deve poder:
+     - Arrasar e soltar jogadores de uma equipe diretamente para outra equipe (`Equipe A` ➔ `Equipe B`, etc.).
+     - Arrasar jogadores fixos da estante superior (`setup-draggable-players-shelf`) diretamente para o card da equipe desejada.
+     - Digitar um nome personalizado em um input e arrastá-lo diretamente para qualquer equipe (ou clicar em `+ Adicionar`).
+   - Cada card de equipe atua como zona de drop com feedback visual em tempo real (`border-cyan-400`, `ring-2`, banner pulsante `⬇ SOLTE AQUI PARA ENTRAR NA {EQUIPE}!`).
+   - Cards de jogadores em cada equipe possuem alça de drag (`GripVertical`), cursor interativo `cursor-grab` / `cursor-grabbing` e botão `Mover ➔` como alternativa por clique/toque.
+2. **Prevenção Estrita de Duplicação de Jogadores (Bug de Player Repetido)**:
+   - Se um jogador (ex: "Marcos André") já estiver escalado na sala em uma equipe (ex: `Equipe A`), e o usuário pegar o chip de "Marcos André" lá de cima da estante de jogadores fixos e soltar na `Equipe C`:
+     - O jogador **NÃO** pode ser duplicado.
+     - O sistema localiza o registro existente por `fixedPlayerId`, prefixo `fix-{id}` ou pelo nome normalizado (`p.name.trim().toLowerCase() === cleanName.toLowerCase()`).
+     - O jogador é imediatamente movido da equipe de origem para a equipe de destino (`onSwitchPlayerTeam(existingMatch.id, targetTeam)`).
+     - O total de jogadores na sala permanece inalterado, garantindo consistência total do roster.
+
+---
+
+## MÓDULO 13: ARENA "TEM OU NÃO TEM" — EXPANSÃO DO PAINEL DE POSIÇÕES E TURNO COLETIVO DA DUPLA
+
+### Contexto e Problema:
+No "Tem ou Não Tem", o banner superior de "JOGADOR DA VEZ" ocupava espaço vertical desnecessário e atribuía o turno a um integrante individualmente, passando a falsa impressão de que os jogadores se revezavam dentro da mesma dupla. Na dinâmica real do jogo, a dupla responde em conjunto (como uma unidade só). Além disso, as colunas laterais da esquerda (Dupla A) e da direita (Dupla B) são o local ideal para indicar claramente qual dupla está com a vez.
+
+### Diretrizes de Implementação (`ScreenTemOuNaoTem.tsx`):
+1. **Remoção do Banner Superior Individual (`ActiveTurnBanner`)**:
+   - Elimine o componente `<ActiveTurnBanner />` do topo da coluna central.
+   - O cabeçalho com o tema da pesquisa e a pergunta central fica mais limpo e posicionado no topo.
+   - O grid do painel de posições (`tem-board-panel`) expande verticalmente (`flex-1 min-h-0 content-stretch`), ganhando espaço generoso para os cards de respostas, pontuações de votos e tipografia estilo Family Feud / TV.
+2. **Turno Coletivo nas Colunas Laterais (Totens Esquerdo e Direito)**:
+   - **Coluna Esquerda (Dupla A)** e **Coluna Direita (Dupla B)** tornam-se os indicadores centrais e oficiais do turno da rodada:
+     - Quando a dupla estiver na vez (`tem.activeTeam === 'A' | 'B' && tem.phase === 'GUESSING'`):
+       - Borda com glow pulsante vibrante e ring ativo.
+       - Banner de turno chamativo no topo do totem: `🎯 VEZ DA DUPLA A!` / `🎯 VEZ DA DUPLA B!`.
+     - Quando inativa: exibe `⏳ AGUARDANDO TURNO` clicável para permitir alternância manual direta de turno pelo host.
+3. **Membros da Equipe Respondem em Conjunto**:
+   - Na lista `INTEGRANTES: RESPONDEM EM CONJUNTO`, liste todos os integrantes da equipe com seu avatar e nome de forma homogênea.
+   - Remova completamente badges individuais como `[VEZ]` ou `🎤 VEZ` atribuídos a apenas um jogador, reforçando que a equipe inteira joga junta.
+4. **Remoção de Pontos da Rodada Duplicados Acima do Título**:
+   - O badge central `PONTOS NA RODADA: [ X ]` posicionado acima da pergunta foi removido, eliminando a redundância com o placar oficial persistente já visível no canto superior direito do cabeçalho.
+5. **Barra Inferior de Ação Sincronizada**:
+   - Os botões da base explicitam a equipe ativa: `VALIDAR PALPITE (DUPLA {activeTeam})` e `❌ MARCAR ERRO (DUPLA {activeTeam})`.
+
+---
+
+## MÓDULO 14: TESTES AUTOMATIZADOS, TIPAGEM E CHECKLIST DE VERIFICAÇÃO
+
+### Arquivos e Tipos Chave:
+- `src/types/game.ts`:
+  - `LimiteGameState.revealCountdown`
+  - `ProibidoGameState.guesserPlayerId`, `ProibidoGameState.refereePlayerId`, `ProibidoGameState.tvWordsHidden`, `ProibidoGameState.is2PlayerMode`
+- `src/components/host/ScreenLimite.tsx`:
+  - `evaluateLimiteRoundReveal(prev)`
+  - `isTimeExpired` (bloqueio de palpites ao zerar o tempo)
+  - Efeito de 5s de contagem regressiva com `sounds.playTick` e revelação automática no zero
+  - Palco Especial de Revelação com pergunta reduzida, resposta gigante (6xl-9xl) e bancada de palpites abaixo
+- `src/components/controller/ControllerView.tsx`:
+  - Bloqueio de palpite secreto por tempo esgotado e banner de suspense regressivo sincronizado
+- `src/components/host/ScreenProibido.tsx`:
+  - `getProibidoPlayerRole(proibido, player, allPlayers)`
+  - `getNextProibidoTurnInfo(room)`
+  - `applyProibidoCardOutcome(prev, outcome)`
+- `src/components/host/ScreenGameSetup.tsx`:
+  - Drag & drop de jogadores entre equipes e estante superior com deduplicação por ID e nome
+- `src/components/host/ScreenTemOuNaoTem.tsx`:
+  - Expansão do painel de 10 posições, remoção de turno individual, totens com banner de turno `VEZ DA DUPLA!`
+- `src/tests/modeSelectAndGameFlow.test.ts` e `src/tests/multiTeamAndTurnSpotlight.test.ts`:
+  - Suíte completa verificando fluxo inicial, conectividade LAN, cartas do Limite, bloqueio por tempo esgotado e contagem regressiva de 5s no Limite, pontuação coletiva em duplas, modo revelação blind de Perguntas e Verdades, modo 2 jogadores / tela cega do Proibido, Drag & Drop com prevenção de duplicação e turno coletivo do Tem ou Não Tem.
+
+### Comandos de Validação:
+Execute e garanta saída limpa (código de retorno 0):
+```bash
+npm run lint
+npx tsx --test src/tests/*.test.ts src/utils/__tests__/*.test.ts
+```
+
+---
+
+## MÓDULO 15: PERGUNTAS E VERDADES — SÉRIE DE RODADAS ÍMPARES (1 A 9), REGRA DA MAIORIA / IMPOSSIBILIDADE DE VIRAR E SUPRESSÃO DO NÍVEL DE DIFICULDADE
+
+### Contexto e Regras Oficiais do Jogo:
+No jogo "Perguntas e Verdades", uma "rodada" corresponde a um jogo completo inteiro até um jogador descobrir as 8 cartas secretas do adversário (declarar a Verdade). 
+1. **Série de Rodadas Ímpares (1 a 9)**:
+   - As opções de quantidade de rodadas devem ser exclusivamente números ímpares: [1, 3, 5, 7, 9].
+   - 1R: 1 jogo completo único.
+   - 3R (Melhor de 3 / MD3): primeiro a 2 vitórias ganha.
+   - 5R (Melhor de 5 / MD5): primeiro a 3 vitórias ganha.
+   - 7R (Melhor de 7 / MD7): primeiro a 4 vitórias ganha.
+   - 9R (Melhor de 9 / MD9): primeiro a 5 vitórias ganha.
+2. **Encerramento Imediato da Série (Regra da Maioria e Impossibilidade de Virar)**:
+   - Quando um jogador atinge a maioria das vitórias possíveis (	opWins >= Math.floor(safeTotal / 2) + 1), a série encerra imediatamente sem jogar partidas extras.
+   - **Regra de Impossibilidade Matemática ("quando não der mais para virar o jogo")**:
+     - Se o líder tiver mais vitórias do que o segundo colocado poderia alcançar mesmo vencendo todas as rodadas restantes (	opWins > runnerUpWins + remainingRounds), a vitória da série é decretada na hora!
+     - Exemplo em MD9: após 7 rodadas, se P1 tem 4 vitórias e P2 tem 1 vitória, restam apenas 2 rodadas. O máximo de P2 seria 1 + 2 = 3 < 4. P1 já é campeão da série matematicamente e a partida se encerra imediatamente.
+3. **Supressão do Nível de Dificuldade**:
+   - "Perguntas e Verdades" não possui nível de dificuldade (não faz sentido existir fácil, médio, difícil ou impossível na mecânica de dedução lógica e leilão de fichas).
+   - Na tela de configuração (Step2ConfigureGame.tsx), a seção "NÍVEL DE DIFICULDADE" é totalmente omitida quando ctiveGame === 'perguntas-e-verdades'.
+   - O espaço é redistribuído harmonicamente: "TEMPO POR RODADA" e "RODADAS" ocupam lg:col-span-6 cada.
+4. **Indicadores Visuais de Série**:
+   - Cada totem/card de jogador na arena exibe o placar de vitórias na série: 🏆 X/Y (onde Y = Math.floor(total/2) + 1).
+   - O cabeçalho e o badge da série exibem R#{matchRoundNumber}/{totalMatchRounds} (MD{totalMatchRounds}).
+
+---
+
+## MÓDULO 16: MOTOR DE CALIBRAÇÃO ESTRITA DE NÍVEIS DE DIFICULDADE (FÁCIL, MÉDIO, DIFÍCIL E IMPOSSÍVEL)
+
+### Contexto e Requisitos de Calibração:
+Para garantir que as opções de dificuldade ("Fácil", "Médio", "Difícil" e "Impossível") ofereçam experiências de gameplay autênticas e calibradas para o público-alvo em todos os 5 jogos suportados (`limite`, `proibido`, `duvido`, `tem-ou-nao-tem`, `nota`), o sistema implementa calibração semântica e numérica estrita:
+
+1. **Níveis de Dificuldade Calibrados**:
+   - **FÁCIL (`facil`) — Leve, Cotidiano e Infantil/Familiar (8 a 10 anos)**:
+     - Perguntas e termos leves, sem jargões ou números astronômicos.
+     - *Jogo do Limite*: Medidas e números intuitivos do dia a dia (ex: 32 dentes no adulto, 45 min no tempo de futebol, 26 estados no Brasil, 28 peças no dominó, 22 jogadores em campo, 12 ovos na dúzia, 7 cores no arco-íris).
+     - *Proibido*: Palavras infantis e familiares (ex: CACHORRO, PIZZA, BICICLETA, HOMEM-ARANHA, PRAIA, BOLA DE FUTEBOL).
+     - *Duvido*: Categorias amplas com dezenas de itens conhecidos (ex: Sabores de sorvete, Personagens da Disney/Pixar, Animais que voam).
+     - *Tem ou Não Tem*: Itens de senso comum (ex: O que levar para a praia, Desenhos clássicos).
+     - *Nota*: Avaliações de situações óbvias e leves do dia a dia.
+   - **MÉDIO (`medio`) — Cultura Geral Acessível a Jovens e Adultos**:
+     - Perguntas dedutíveis com bom senso e cultura geral acessível (ex: idade de Ayrton Senna ao falecer = 34 anos, andares do Empire State Building = 102, altura da Torre Eiffel = 330m, assentos em um Boeing 737 = 189).
+   - **DIFÍCIL (`dificil`) — Padrão TV / Gameshow / CazéTV**:
+     - Perguntas complexas com recordes mundiais, bilheterias de cinema, estatísticas aprofundadas e curiosidades técnicas (ex: bilheteria de Avatar = 2923 milhões de dólares, altura do Monte Everest = 8848m, episódios de One Piece = 1120+).
+   - **IMPOSSÍVEL (`impossivel`) — Escala Extraordinária e Fatos Extremos Verificados**:
+     - Curiosidades com números e conceitos extraordinários que mesmo uma pessoa muito inteligente não saberia deduzir de cabeça, mas com fontes oficiais e respostas válidas comprovadas.
+     - *Jogo do Limite*: Fatos microscópicos, astronômicos ou de biologia extrema (ex: 20 quatrilhões de formigas na Terra [20.000.000.000.000.000], 2,3 milhões de blocos de pedra na Pirâmide de Gizé, 1.260 bpm no coração do beija-flor, 37 metros no 1º voo dos irmãos Wright, 3,04 trilhões de árvores na Terra, 8 bilhões de grãos de areia em 1 metro cúbico de praia, 5.000 espinhos no dorso de um ouriço, 160 km/h no espirro humano, 100.000 fios de cabelo no couro cabeludo).
+     - *Proibido*: Conceitos enciclopédicos raros (ex: ORNITORRINCO, PROTOCOLO DE KYOTO, CONSTELAÇÃO DE ÓRION, EXPEDIÇÃO DE MAGALHÃES).
+     - *Duvido*: Categorias enciclopédicas ultra-restritas (ex: Países soberanos com apenas uma única vogal, Capitais do mundo a mais de 2.000m de altitude).
+
+2. **Isolamento de Cache Particionado por Dificuldade**:
+   - O particionamento em `getCacheKey(gameId, userTheme, config, difficulty)` anexa a dificuldade na chave (`${gameId}::${theme}::${difficulty}` para `facil`, `medio`, `impossivel`).
+   - Garante que rounds gerados em nível difícil jamais sejam entregues a uma partida configurada como fácil.
+
+3. **In-Context Few-Shot Learning Dinâmico**:
+   - Seletores de exemplos (`selectFewShotLimiteExamples`, `selectFewShotProibidoExamples`, `selectFewShotDuvidoExamples`, etc.) filtram o banco golden pela dificuldade solicitada.
+   - O modelo Gemini recebe exemplos de referência com a mesma escala e tom do nível escolhido, eliminando a imitação de valores ou conceitos fora da régua.
+
+4. **Fallback Offline Estrito no Banco Dourado**:
+   - Em caso de indisponibilidade de rede ou rate limit, o gerador seleciona perguntas do banco golden curado que correspondam exatamente ao nível de dificuldade solicitado.
+
+---
+
+## MÓDULO 17: EXPERIÊNCIA DE ENTRADA HÍBRIDA (LOCAL + QR CODE MOBILE), REMOÇÃO DO BOTÃO "MOVER" E SEPARAÇÃO DE ABAS NO HEADER
+
+### 1. Remoção do Botão "Mover" nas Equipes (Drag & Drop Puro):
+- O botão textual "Mover" foi completamente removido dos cards de jogadores dentro das equipes em `ScreenGameSetup.tsx`.
+- O fluxo de escalação e remanejamento agora é 100% via arrastar e soltar (drag & drop), com ícone de pega (`GripVertical`), feedback visual ao arrastar (borda tracejada ciano) e prevenção estrita de duplicações.
+- Cada card de jogador agora possui um botão discreto `X` para excluir/remover o jogador da partida caso necessário, além do badge de status (`📱 Celular` vs `🪙 Começa` / `Escalado`).
+
+### 2. Adição de Jogadores via Celular (QR Code) na Tela de Equipes:
+- Para o modo TV Host e partidas mistas, foi introduzida uma experiência de entrada dual na tela de escalação de equipes:
+  - **Acesso Local**: Prateleira superior com chips dos jogadores fixos (Marcos André, Débora, Gisele, etc.) e input para cadastrar nomes personalizados locais.
+  - **Acesso Mobile via QR Code**: Botão de destaque no topo `CONECTAR CELULAR (QR CODE)` e chip rápido na prateleira `📱 + Celular (QR)`. Ao clicar, abre um modal dedicado no telão com o QR Code dinâmico ampliado, código da sala (`#RODA`), link compartilhável com cópia em 1 clique e instrução passo a passo para que os jogadores apontem a câmera do smartphone, insiram seus nomes e caiam instantaneamente nas equipes da partida.
+
+### 3. Separação de Destinos no Header Global (WindowWrapper):
+- Anteriormente, os botões `🔴 LIVE / CONECTAR CELULARES` e `👥 Jogadores: X` abriam o mesmo destino (QR Code).
+- Agora possuem objetivos e abas distintas e complementares:
+  - `🔴 LIVE / CONECTAR CELULARES`: Abre diretamente a aba `📱 QR Code (Celular)` com foco total no escaneamento e conexão de novos aparelhos.
+  - `👥 Jogadores: X`: Abre a aba dedicada `👥 Jogadores`, que lista todos os jogadores da partida com suas respectivas equipes e origem (`📱 No Celular` ou `🖥️ Local`), permite adicionar novos jogadores locais (chips fixos ou input) e oferece um botão de atalho direto para alternar para o QR Code em 1 clique.
+
+---
+
+## MÓDULO 18: MOTOR TRI-TEMA (NEON, CLEAN E CAZÉTV OFICIAL) & AUDITORIA PROFUNDA DE UX/USABILIDADE
+
+### 1. Arquitetura do Motor Tri-Tema (`visualTheme`: `'neon' | 'clean' | 'cazetv'`):
+- **Tipagem e Sincronização em Tempo Real**:
+  - `VisualTheme = 'neon' | 'clean' | 'cazetv'` implementado em `src/types/game.ts` e refletido em `room.visualTheme`.
+  - Provedor reativo `ThemeContext` (`src/context/ThemeContext.tsx`) com persistência em `localStorage` (`roda-de-bobo-visual-theme`), injeção dinâmica de atributos `data-theme` e classes `.theme-neon`, `.theme-clean`, `.theme-cazetv` na raiz do documento HTML.
+- **Seletor de Temas na Interface**:
+  - **Dock / Top Bar**: Botão de alternância rápida ciclando entre `⚡ NEON`, `✨ CLEAN` e `📺 CAZÉTV`.
+  - **Modal de Configurações (`WindowWrapper.tsx`)**: Seção visual `🎨 APARÊNCIA DO APLICATIVO (MODO VISUAL)` com 3 cards selecionáveis em grid responsivo:
+    - `⚡ MODO NEON`: Fliperama anos 80/90, CRT scanlines, brilho neon pulsante nas bordas e textos.
+    - `✨ MODO CLEAN`: Visual moderno, alta legibilidade sem efeitos de cintilação ou distorção.
+    - `📺 MODO CAZÉTV`: Transmissão broadcast oficial da CazéTV com fundo Navy escuro (`#0c1020`), bordas Crimson (`#E6194B`), detalhes em Ciano/Teal (`#17B8B8`), tipografia Anton nítida e cartelas de auditório.
+
+### 2. Identidade Visual CazéTV Oficial nos Quadros (Conforme Imagens Oficiais):
+- **Lobby de Jogos (`ScreenLobby.tsx`)**: Moldura broadcast navy/crimson, cards de jogos com borda sólida ciano 2px, rodapé escuro `#0c1020` e badges crimson `#E6194B`.
+- **Jogo do Proibido (`ScreenProibido.tsx`)**: Banner do alvo estilo ticket com extremidades picotadas/entalhes quadriculados característicos da TV, cartela central com borda crimson abrigando as 5 palavras proibidas em creme/marfim (`#F5F2EB`) e faixas laterais verticais com a inscrição `PROIBIDAS` rotacionada a 90 graus.
+- **Tem ou Não Tem (`ScreenTemOuNaoTem.tsx`)**: Mantém estritamente o layout com largura total esticada na tela (respeitando a regra do jogo), apresentando o Top 1 com tarja de cabeçalho em Ciano (`#17B8B8`) e os Tops 2 a 10 com tarjas em Crimson (`#E6194B`), com caixas de votos destacadas e totens laterais de dupla com iluminação direcional.
+- **Jogo do Limite, Nota e Duvido**: Cartelas com cantos lapidados, sombras broadcast nítidas e ausência de brilho scanline difuso no modo CazéTV.
+
+### 3. Usabilidade e Clareza de Estado em Todos os 6 Jogos:
+- **Banner Dinâmico de Instrução de 1 Linha ("O que eu faço agora?")**:
+  - Presente em todos os 6 jogos (*Limite, Duvido, Proibido, Nota, Tem ou Não Tem, Perguntas e Verdades*), indicando exatamente a fase atual, quem deve agir e qual o próximo passo de forma direta e sem poluição cognitiva.
+- **Prevenção de Cliques Acidentais e Botões Destrutivos**:
+  - Botões destrutivos (`🚨 FALTA (ANULAR CARTA)` e `❌ MARCAR ERRO (STRIKE)`) foram fisicamente e visualmente isolados dos botões de acerto e avanço por divisores e margens, evitando toques errôneos em telas touch ou no mouse.
+- **Padronização do Botão de Confirmação de Pontuação**:
+  - Todos os fluxos de encerramento de rodada utilizam seleção reversível (toggle) e o botão explícito `"Confirmar Pontos e Avançar ➔"` (ou `"Confirmar e Avançar na Série ➔"` no Perguntas e Verdades), eliminando dúvidas sobre se os pontos foram gravados.
+- **Zero Scroll Vertical (`100dvh`)**:
+  - Todas as telas de jogo utilizam containers elásticos (`flex-1 min-h-0 overflow-hidden`) com tipografia proporcional para visualização perfeita a 3 metros de distância na TV sem barras de rolagem.
+
+---
+FIM DO PROMPT SAAS — Pronto para execução no Google AI Studio.
