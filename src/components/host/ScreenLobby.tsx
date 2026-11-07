@@ -507,12 +507,12 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                 <div className="flex flex-col justify-between w-full h-full min-h-0 [@media(max-height:700px)]:hidden">
                   {/* Priority #2: Illustration / Icon Area */}
                   {isCazeFamily(visualTheme) ? (
-                    /* Modo CazéTV / Original: Sangrando na borda inferior do card */
-                    <div className="flex-1 min-h-0 flex flex-col items-center justify-end relative overflow-hidden pt-3">
+                    /* Modo CazéTV / Original: Preenche o espaço responsivamente e sangra na borda inferior do card */
+                    <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-end relative overflow-hidden pt-2 px-2">
                       <div className="flex-1 w-full min-h-0 flex items-end justify-center overflow-hidden">
                         <CazeArt
                           gameId={game.id}
-                          className="w-auto h-auto max-h-[145px] md:max-h-[165px] lg:max-h-[185px] max-w-full object-contain object-bottom transition-transform duration-300 group-hover:scale-105 select-none pointer-events-none"
+                          className="w-full h-full max-h-full max-w-full object-contain object-bottom transition-transform duration-300 group-hover:scale-105 select-none pointer-events-none"
                           fallback={game.renderArt('w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain')}
                         />
                       </div>
