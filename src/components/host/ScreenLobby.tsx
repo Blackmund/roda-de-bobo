@@ -505,19 +505,26 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
 
                 {/* Vertical Layout (Default when viewport height > 700px) */}
                 <div className="flex flex-col justify-between w-full h-full min-h-0 [@media(max-height:700px)]:hidden">
-                  {/* Priority #2: Illustration / Icon Area (flex-1 min-h-0, never clips title) */}
-                  <div className="flex-1 min-h-0 flex flex-col items-center justify-center p-2 pt-6 relative overflow-hidden">
-                    <div className="flex-1 min-h-0 flex items-center justify-center max-h-full max-w-full overflow-hidden">
-                      {visualTheme === 'original' ? (<CazeArt gameId={game.id} className="h-full max-h-full w-auto max-w-full object-contain transition-transform duration-200 group-hover:scale-105" fallback={game.renderArt('w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 object-contain')} />) : game.renderArt('w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow')}
+                  {/* Priority #2: Illustration / Icon Area - preenche o espaço e sangra para baixo */}
+                  <div className="flex-1 min-h-0 flex flex-col items-center justify-end relative overflow-hidden pt-4">
+                    <div className="flex-1 w-full min-h-0 flex items-end justify-center overflow-hidden">
+                      {visualTheme === 'original' ? (
+                        <CazeArt
+                          gameId={game.id}
+                          className="w-full h-full max-h-[170px] md:max-h-[190px] object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                          fallback={game.renderArt('w-16 h-16 md:w-20 md:h-20 lg:w-28 lg:h-28 object-contain')}
+                        />
+                      ) : (
+                        game.renderArt(
+                          'w-16 h-16 md:w-20 md:h-20 lg:w-28 lg:h-28 max-h-full max-w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105 filter drop-shadow'
+                        )
+                      )}
                     </div>
-                    <p className="hidden md:block text-[10px] font-mono-code text-slate-400 uppercase text-center truncate max-w-full mt-1 px-2 shrink-0">
-                      {game.tagline}
-                    </p>
                   </div>
 
-                  {/* Priority #1 (Inviolable): Bottom Title Bar (Botão do Card - hover vermelho #E6194B combinando com o outline da ID) */}
+                  {/* Priority #1: Bottom Title Bar com animação de troca no Hover pelo Subtítulo/Legenda */}
                   <div
-                    className={`shrink-0 w-full py-2.5 px-3 border-t-2 transition-colors z-10 flex items-center justify-between gap-2 ${
+                    className={`shrink-0 w-full py-2.5 px-3 border-t-2 transition-colors duration-200 z-10 flex items-center justify-between gap-2 overflow-hidden ${
                       visualTheme === 'original'
                       ? 'bg-[#0a0b1e] border-[#17B8B8] group-hover:bg-[#E6194B] group-hover:border-[#E6194B]'
                       : visualTheme === 'cazetv'
@@ -525,13 +532,23 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                         : 'bg-slate-950/95 border-cyan-400 group-hover:bg-[#E6194B] group-hover:border-[#E6194B]'
                     }`}
                   >
-                    <span
-                      className={`font-anton font-black uppercase tracking-wider text-sm md:text-base lg:text-lg ${
-                        visualTheme === 'original' ? 'text-[#17B8B8]' : 'text-[#F5F2EB]'
-                      } group-hover:text-white text-center flex-1 truncate transition-colors`}
-                    >
-                      {game.name}
-                    </span>
+                    <div className="relative flex-1 h-7 overflow-hidden flex items-center justify-center">
+                      {/* Nome do Jogo (sobe e sai no hover) */}
+                      <span
+                        className={`absolute inset-0 flex items-center justify-center font-anton font-black uppercase tracking-wider text-sm md:text-base lg:text-lg text-center truncate transition-all duration-300 transform group-hover:-translate-y-full group-hover:opacity-0 ${
+                          visualTheme === 'original' ? 'text-[#17B8B8]' : 'text-[#F5F2EB]'
+                        }`}
+                      >
+                        {game.name}
+                      </span>
+                      {/* Legenda do Jogo (sobe e entra no hover substituindo o nome) */}
+                      <span
+                        className="absolute inset-0 flex items-center justify-center font-anton font-bold uppercase tracking-wide text-xs md:text-sm text-white text-center px-1 line-clamp-1 transition-all duration-300 transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
+                        title={game.tagline}
+                      >
+                        {game.tagline}
+                      </span>
+                    </div>
                     <Play
                       size={14}
                       className="text-cyan-300 fill-cyan-300 group-hover:text-white group-hover:fill-white shrink-0 transition-colors"
@@ -546,11 +563,13 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                       'w-12 h-12 max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
                     )}
                   </div>
-                  <div className="text-left flex-1 min-w-0 ml-2 pr-2 pt-2">
-                    <div className="font-anton font-black uppercase tracking-wider text-sm md:text-base lg:text-lg text-cyan-300 group-hover:text-white truncate">
+                  <div className="relative text-left flex-1 min-w-0 ml-2 pr-2 h-10 overflow-hidden flex flex-col justify-center">
+                    {/* Nome (sobe no hover) */}
+                    <div className="font-anton font-black uppercase tracking-wider text-sm md:text-base text-cyan-300 group-hover:text-white truncate transition-all duration-300 group-hover:-translate-y-6 group-hover:opacity-0">
                       {game.name}
                     </div>
-                    <div className="text-[10px] font-mono-code text-slate-300 uppercase truncate">
+                    {/* Legenda (sobe para o lugar do nome no hover) */}
+                    <div className="absolute inset-0 flex items-center font-anton font-bold text-xs uppercase text-white truncate transition-all duration-300 translate-y-6 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
                       {game.tagline}
                     </div>
                   </div>
