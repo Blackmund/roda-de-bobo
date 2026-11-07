@@ -505,22 +505,28 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
 
                 {/* Vertical Layout (Default when viewport height > 700px) */}
                 <div className="flex flex-col justify-between w-full h-full min-h-0 [@media(max-height:700px)]:hidden">
-                  {/* Priority #2: Illustration / Icon Area - preenche o espaço e sangra para baixo */}
-                  <div className="flex-1 min-h-0 flex flex-col items-center justify-end relative overflow-hidden pt-4">
-                    <div className="flex-1 w-full min-h-0 flex items-end justify-center overflow-hidden">
-                      {visualTheme === 'original' ? (
+                  {/* Priority #2: Illustration / Icon Area */}
+                  {isCazeFamily(visualTheme) ? (
+                    /* Modo CazéTV / Original: Sangrando na borda inferior do card */
+                    <div className="flex-1 min-h-0 flex flex-col items-center justify-end relative overflow-hidden pt-3">
+                      <div className="flex-1 w-full min-h-0 flex items-end justify-center overflow-hidden">
                         <CazeArt
                           gameId={game.id}
-                          className="w-full h-full max-h-[170px] md:max-h-[190px] object-cover object-top transition-transform duration-300 group-hover:scale-105"
-                          fallback={game.renderArt('w-16 h-16 md:w-20 md:h-20 lg:w-28 lg:h-28 object-contain')}
+                          className="w-auto h-auto max-h-[145px] md:max-h-[165px] lg:max-h-[185px] max-w-full object-contain object-bottom transition-transform duration-300 group-hover:scale-105 select-none pointer-events-none"
+                          fallback={game.renderArt('w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain')}
                         />
-                      ) : (
-                        game.renderArt(
-                          'w-16 h-16 md:w-20 md:h-20 lg:w-28 lg:h-28 max-h-full max-w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105 filter drop-shadow'
-                        )
-                      )}
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    /* Outros Modos (Neon, Clean, etc.): Ícone centralizado na área disponível */
+                    <div className="flex-1 min-h-0 flex flex-col items-center justify-center p-3 relative overflow-hidden">
+                      <div className="flex-1 min-h-0 flex items-center justify-center max-h-full max-w-full overflow-hidden">
+                        {game.renderArt(
+                          'w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 max-h-full max-w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105 filter drop-shadow'
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Priority #1: Bottom Title Bar com animação de troca no Hover pelo Subtítulo/Legenda */}
                   <div
