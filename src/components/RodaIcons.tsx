@@ -1,5 +1,5 @@
 import React from 'react';
-import { CazeAnimatedSvg } from './CazeAnimatedSvgs';
+import { CazeScene, CAZE_SCENE_IDS } from './caze/CazeScenes';
 
 /**
  * Custom High-Fidelity SVG Artworks matching CazéTV "Roda de Bobo" Reference Cards
@@ -416,24 +416,26 @@ export const PerguntasEVerdadesArt: React.FC<{ className?: string }> = ({ classN
 
 
 // 14. Ilustração oficial vetorial animada no estilo CazéTV (Modo 2 / Modo 3).
-// Renderiza SVG multi-camadas fiel ao estilo cartoon anos 90 com animação no hover (.group:hover).
+// Renderiza duas composições responsivas (compact e wide via container query .rdb-art-box)
+// com escala padronizada de personagem e animações criativas no hover (.group:hover).
 export const CazeArt: React.FC<{
   gameId: string;
   className?: string;
+  mode?: 'card' | 'icon';
   fallback: React.ReactNode;
-}> = ({ gameId, className = '', fallback }) => {
-  const validIds = [
-    'limite',
-    'duvido',
-    'proibido',
-    'nota',
-    'tem-ou-nao-tem',
-    'perguntas-e-verdades'
-  ];
-  if (!validIds.includes(gameId)) {
+}> = ({ gameId, className = '', mode = 'card', fallback }) => {
+  if (!CAZE_SCENE_IDS.includes(gameId)) {
     return <>{fallback}</>;
   }
-  return <CazeAnimatedSvg gameId={gameId} className={className} />;
+  if (mode === 'icon') {
+    return <CazeScene gameId={gameId} layout="icon" className={className} />;
+  }
+  return (
+    <div className={`rdb-art-box ${className}`}>
+      <CazeScene gameId={gameId} layout="compact" className="rdb-art-compact" />
+      <CazeScene gameId={gameId} layout="wide" className="rdb-art-wide" />
+    </div>
+  );
 };
 
 // 15. Logo oficial "RODA DE BOBO" do programa (anel crimson com "DE") para o Modo 3.

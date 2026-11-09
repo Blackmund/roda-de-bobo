@@ -476,9 +476,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
 
           {/* 6 Games Adaptive Grid: Protected Height (flex-1 min-h-0) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-rows-3 lg:grid-cols-3 lg:grid-rows-2 gap-3 md:gap-4 flex-1 min-h-0">
-            {GAMES.map((game) => {
-              const isCenteredArt = game.id === 'tem-ou-nao-tem';
-              return (
+            {GAMES.map((game) => (
               <div
                 key={game.id}
                 data-testid={`lobby-game-card-${game.id}`}
@@ -509,26 +507,13 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                 <div className="flex flex-col justify-between w-full h-full min-h-0 [@media(max-height:700px)]:hidden">
                   {/* Priority #2: Illustration / Icon Area */}
                   {isCazeFamily(visualTheme) ? (
-                    /* Modo CazéTV / Original: Ilustração em SVG vetorial animado */
-                    <div
-                      className={`flex-1 min-h-0 w-full flex flex-col items-center relative overflow-hidden ${
-                        isCenteredArt
-                          ? 'justify-center p-2.5 md:p-3'
-                          : 'justify-end pt-1.5 px-2 pb-0'
-                      }`}
-                    >
-                      <div
-                        className={`flex-1 w-full min-h-0 flex justify-center overflow-hidden ${
-                          isCenteredArt ? 'items-center' : 'items-end'
-                        }`}
-                      >
+                    /* Modo CazéTV / Original: Ilustração em SVG vetorial animado com 2 layouts responsivos (compact / wide) */
+                    <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-end relative overflow-hidden pt-1 px-1 pb-0">
+                      <div className="flex-1 w-full min-h-0 flex items-end justify-center overflow-hidden">
                         <CazeArt
                           gameId={game.id}
-                          className={`w-full h-full max-h-full max-w-full block transition-transform duration-300 select-none pointer-events-none ${
-                            isCenteredArt
-                              ? 'object-contain object-center group-hover:scale-[1.04]'
-                              : 'object-contain object-bottom origin-bottom group-hover:scale-[1.04]'
-                          }`}
+                          mode="card"
+                          className="w-full h-full max-h-full max-w-full select-none pointer-events-none"
                           fallback={game.renderArt('w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain')}
                         />
                       </div>
@@ -584,6 +569,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                     {isCazeFamily(visualTheme) ? (
                       <CazeArt
                         gameId={game.id}
+                        mode="icon"
                         className="w-14 h-14 max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-105"
                         fallback={game.renderArt('w-12 h-12 object-contain')}
                       />
@@ -609,8 +595,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                   />
                 </div>
               </div>
-              );
-            })}
+            ))}
           </div>
         </div>
 
