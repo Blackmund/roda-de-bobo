@@ -4,14 +4,12 @@ import rawPieces from './cazePieces.json';
 /**
  * Cenas animadas do lobby no estilo cartoon CazéTV (Roda de Bobo).
  *
- * Regras do padrão:
- * - Todo boneco é desenhado de corpo inteiro (cabeça + camiseta traçada + pernas/tênis vetoriais) e tem a
- *   MESMA altura (a camiseta sempre termina em HEM_Y e os pés sempre pisam em GROUND).
- * - Os bonecos nunca desmontam: no hover o corpo anima como um bloco só (pulo, tremor, balanço) e a "graça"
- *   fica nos objetos e efeitos (ponteiro, sirene, moeda, cartas, estrelas, confete...).
- * - Duas composições por jogo: 'compact' (cards quase quadrados, viewBox 1100x1000) e 'wide' (cards
- *   horizontais, viewBox 2000x1000). A troca é feita por container query em index.css (.rdb-art-box).
- * - Objetos podem flutuar em idle (.fl); o hover (.group:hover) liga as animações fortes.
+ * - Personagens e objetos são peças vetoriais independentes (cazePieces.json, carregado sob demanda).
+ * - Todos os bonecos são normalizados pelo tamanho do rosto, então aparecem com a mesma escala em todos os cards.
+ * - Cada personagem anima como um bloco único (nada de braço/dedo se soltando); a "graça" fica nos objetos
+ *   e nos efeitos (suor, faíscas, guizos, barras virando...), que aparecem no hover do card (.group:hover).
+ * - Duas composições: 'compact' (cards mais quadrados) e 'wide' (cards horizontais). A troca é feita por
+ *   container query em index.css (.rdb-art-box).
  */
 
 type Paths = { cream?: string; teal?: string; crimson?: string };
@@ -22,39 +20,20 @@ type PieceMap = Record<string, Piece>;
 export type SceneLayout = 'compact' | 'wide' | 'icon';
 
 const NAVY = '#0c1020';
-const PANTS = '#1c2350';
 const CREAM = '#F5F2EB';
 const CRIMSON = '#E6194B';
 const TEAL = '#17B8B8';
 const ANTON = "Anton, Impact, 'Arial Narrow', sans-serif";
 
 const H = 1000; // altura comum de todas as cenas
-const HEM_Y = 725; // onde termina a camiseta de todo boneco
-const GROUND = 930; // onde os pés pisam
-const SCENE_W: Record<'compact' | 'wide', number> = { compact: 1100, wide: 2000 };
+const FACE_W = 330; // largura padrão do rosto (unidades do viewBox)
+const FACE_H = 285; // altura padrão do rosto
+const FACE_TOP = 455; // linha do topo do rosto (alinha todos os bonecos)
+const BLEED = 16; // corpo "sangra" na borda inferior
+
+const SCENE_W: Record<'compact' | 'wide', number> = { compact: 1700, wide: 2600 };
 
 const PIECES: PieceMap = rawPieces as unknown as PieceMap;
-
-/** Escala de cada boneco (a arte original tem proporções diferentes; aqui eles são equalizados). */
-const CHAR_SCALE: Record<string, number> = {
-  limite_char: 0.81,
-  blefe_char: 0.81,
-  cetico_char: 0.83,
-  proibido_char: 1.0,
-  nota_char: 0.9,
-  pv_char: 0.94,
-  tem_char: 0.81
-};
-/** Centro e largura da barra da camiseta (em coordenadas da peça) para encaixar as pernas. */
-const HEM: Record<string, { cx: number; w: number }> = {
-  limite_char: { cx: 208, w: 262 },
-  blefe_char: { cx: 232, w: 225 },
-  cetico_char: { cx: 194, w: 262 },
-  proibido_char: { cx: 331, w: 262 },
-  nota_char: { cx: 338, w: 235 },
-  pv_char: { cx: 346, w: 245 },
-  tem_char: { cx: 360, w: 252 }
-};
 
 // ---------------------------------------------------------------------------
 // Primitivas
@@ -67,52 +46,32 @@ const Shape: React.FC<{ p: Piece }> = ({ p }) => (
   </>
 );
 
-/** Posiciona (translate/rotate/scale) num <g> externo e anima num <g> interno (a animação CSS não sobrescreve o posicionamento). */
+/** Posiciona (translate/scale) e anima num <g> interno, para a animação CSS não sobrescrever o posicionamento. */
 const At: React.FC<{
-  x?: number;
-  y?: number;
-  s?: number;
-  r?: number;
-  className?: string;
-  delay?: number;
-  dur?: number;
-  children: React.ReactNode;
-}> = ({ x = 0, y = 0, s = 1, r = 0, className, delay, dur, children }) => {
-  const style: React.CSSProperties = {};
-  if (delay !== undefined) style.animationDelay = `${delay}s`;
-  if (dur !== undefined) style.animationDuration = `${dur}s`;
-  return (
-    <g transform={`translate(${x.toFixed(1)} ${y.toFixed(1)})${r ? ` rotate(${r})` : ''}${s !== 1 ? ` scale(${s.toFixed(4)})` : ''}`}>
-      <g className={className} style={style}>
-        {children}
-      </g>
-    </g>
-  );
-};
-
-/** Flutuação leve em idle (sempre ligada) + camada interna para as animações de hover. */
-const Float: React.FC<{
   x: number;
   y: number;
   s?: number;
   r?: number;
+  className?: string;
+  delay?: number;
+  /** Vida em idle: camada interna que flutua de leve o tempo todo (o hover anima a camada externa). */
   idle?: number;
-  hover?: string;
-  hdelay?: number;
-  fx?: boolean;
   children: React.ReactNode;
-}> = ({ x, y, s = 1, r = 0, idle = 0, hover = '', hdelay, fx = false, children }) => (
-  <At x={x} y={y} s={s} r={r}>
-    <g className={`ax fl fl${idle % 4}`} style={{ animationDelay: `${-(idle * 0.9)}s` }}>
-      <g className={`ax ${fx ? 'fx' : ''} ${hover}`} style={hdelay !== undefined ? { animationDelay: `${hdelay}s` } : undefined}>
-        {children}
-      </g>
+}> = ({ x, y, s = 1, r = 0, className, delay, idle, children }) => (
+  <g transform={`translate(${x.toFixed(1)} ${y.toFixed(1)})${r ? ` rotate(${r})` : ''}${s !== 1 ? ` scale(${s.toFixed(4)})` : ''}`}>
+    <g className={className} style={delay !== undefined ? { animationDelay: `${delay}s` } : undefined}>
+      {idle !== undefined ? (
+        <g className={`ax idle idle${idle % 3}`} style={{ animationDelay: `${-(idle * 1.7)}s` }}>
+          {children}
+        </g>
+      ) : (
+        children
+      )}
     </g>
-  </At>
+  </g>
 );
 
 interface CharPos {
-  key: string;
   p: Piece;
   s: number;
   tx: number;
@@ -121,22 +80,19 @@ interface CharPos {
   faceTop: number;
   faceCy: number;
   faceW: number;
-  hemX: number;
-  hemW: number;
   left: number;
   right: number;
 }
 
-/** Posiciona o boneco: cabeça centrada em faceCx, camiseta terminando em HEM_Y. */
-function placeChar(key: string, faceCx: number): CharPos {
-  const p = PIECES[key];
-  const f = p.face!;
-  const s = CHAR_SCALE[key];
-  const ty = HEM_Y - p.h * s;
+/** Normaliza o boneco pelo rosto e alinha o topo do rosto em FACE_TOP, garantindo que o corpo chegue à borda. */
+function placeChar(p: Piece, faceCx: number): CharPos {
+  const f = p.face ?? { w: p.w * 0.6, h: p.h * 0.4, cx: p.w / 2, cy: p.h * 0.4, top: p.h * 0.2 };
+  const s = 0.5 * (FACE_W / f.w + FACE_H / f.h);
+  let ty = FACE_TOP - f.top * s;
+  const bottom = ty + p.h * s;
+  if (bottom < H + BLEED) ty += H + BLEED - bottom;
   const tx = faceCx - f.cx * s;
-  const h = HEM[key];
   return {
-    key,
     p,
     s,
     tx,
@@ -145,8 +101,6 @@ function placeChar(key: string, faceCx: number): CharPos {
     faceTop: ty + f.top * s,
     faceCy: ty + f.cy * s,
     faceW: f.w * s,
-    hemX: tx + h.cx * s,
-    hemW: h.w * s,
     left: tx,
     right: tx + p.w * s
   };
@@ -157,200 +111,28 @@ function relTo(c: CharPos, q: Piece, dx = 0, dy = 0) {
   return { x: c.tx + (q.ox - c.p.ox) * c.s + dx, y: c.ty + (q.oy - c.p.oy) * c.s + dy, s: c.s };
 }
 
-// ---------------------------------------------------------------------------
-// Olhos / sobrancelhas cartunescos (padrão do jogo do Proibido) para Limite e Duvido
-// ---------------------------------------------------------------------------
-const Patch: React.FC<{ cx: number; cy: number; rx: number; ry: number }> = ({ cx, cy, rx, ry }) => (
-  <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill={CREAM} stroke={CREAM} strokeWidth={2} />
-);
-const Eye: React.FC<{ x: number; y: number; rx?: number; ry?: number; lx?: number; ly?: number }> = ({
-  x,
-  y,
-  rx = 21,
-  ry = 40,
-  lx = 0,
-  ly = 0
-}) => (
-  <g transform={`translate(${x + lx} ${y + ly})`}>
-    <ellipse rx={rx} ry={ry} fill={NAVY} />
-    <path d={`M${rx * 0.15} ${-ry * 0.55} l${rx * 0.55} ${-ry * 0.12} l${-rx * 0.1} ${ry * 0.3}Z`} fill={CREAM} />
-  </g>
-);
-const Brow: React.FC<{ d: string; w?: number }> = ({ d, w = 17 }) => (
-  <path d={d} fill="none" stroke={NAVY} strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" />
-);
-const Nose: React.FC<{ x: number; y: number }> = ({ x, y }) => (
-  <path d={`M${x} ${y - 22} C${x - 4} ${y + 6} ${x - 24} ${y + 8} ${x - 14} ${y + 24} C${x - 8} ${y + 32} ${x + 8} ${y + 30} ${x + 14} ${y + 22}`} fill="none" stroke={NAVY} strokeWidth={9} strokeLinecap="round" />
-);
-
-/** Retoca o rosto traçado (olhos/sobrancelhas/nariz) para o olho cartunesco padrão. Coordenadas da peça. */
-const FaceFix: React.FC<{ k: string }> = ({ k }) => {
-  if (k === 'limite_char') {
-    return (
-      <>
-        <Patch cx={236} cy={322} rx={42} ry={62} />
-        <Patch cx={366} cy={312} rx={44} ry={62} />
-        <Patch cx={238} cy={238} rx={64} ry={26} />
-        <Patch cx={152} cy={282} rx={30} ry={42} />
-        <Patch cx={312} cy={342} rx={30} ry={34} />
-        {/* nervoso: olhos grandes olhando pro medidor, sobrancelhas de preocupação */}
-        <Eye x={236} y={322} lx={10} ly={-2} />
-        <Eye x={366} y={312} lx={10} ly={-2} />
-        <Brow d="M186 272 Q226 252 268 232" />
-        <Brow d="M330 232 Q372 250 408 272" />
-        <Nose x={314} y={345} />
-      </>
-    );
-  }
-  if (k === 'blefe_char') {
-    return (
-      <>
-        <Patch cx={216} cy={314} rx={56} ry={46} />
-        <Patch cx={360} cy={314} rx={56} ry={46} />
-        <Patch cx={214} cy={256} rx={66} ry={26} />
-        <Patch cx={362} cy={234} rx={58} ry={30} />
-        <Patch cx={314} cy={348} rx={26} ry={30} />
-        {/* esperto: olhos meio fechados, uma sobrancelha arqueada */}
-        <g>
-          <Eye x={216} y={316} rx={21} ry={34} lx={-8} />
-          <Eye x={360} y={316} rx={21} ry={34} lx={-8} />
-          <path d="M184 276 H252 V303 H184Z" fill={CREAM} />
-          <path d="M330 276 H398 V303 H330Z" fill={CREAM} />
-          <path d="M188 303 H248" stroke={NAVY} strokeWidth={11} strokeLinecap="round" />
-          <path d="M332 303 H392" stroke={NAVY} strokeWidth={11} strokeLinecap="round" />
-        </g>
-        <Brow d="M168 262 Q214 252 262 266" />
-        <Brow d="M322 226 Q366 190 410 220" />
-        <Nose x={316} y={350} />
-      </>
-    );
-  }
-  if (k === 'cetico_char') {
-    return (
-      <>
-        <Patch cx={178} cy={292} rx={66} ry={52} />
-        <Patch cx={338} cy={288} rx={66} ry={52} />
-        <Patch cx={208} cy={226} rx={72} ry={28} />
-        <Patch cx={356} cy={208} rx={58} ry={28} />
-        <Patch cx={278} cy={236} rx={22} ry={28} />
-        <Patch cx={300} cy={338} rx={28} ry={30} />
-        {/* desconfiado: óculos redondos, olhar de lado e sobrancelha levantada */}
-        <circle cx={178} cy={292} r={56} fill="#fff" stroke={NAVY} strokeWidth={11} />
-        <circle cx={338} cy={288} r={56} fill="#fff" stroke={NAVY} strokeWidth={11} />
-        <path d="M234 288 Q258 270 282 286" fill="none" stroke={NAVY} strokeWidth={10} strokeLinecap="round" />
-        <path d="M122 280 L96 268" stroke={NAVY} strokeWidth={10} strokeLinecap="round" />
-        <Eye x={178} y={296} rx={15} ry={27} lx={14} ly={-4} />
-        <Eye x={338} y={292} rx={15} ry={27} lx={14} ly={-4} />
-        <path d="M130 262 Q178 238 226 262" fill={CREAM} stroke={NAVY} strokeWidth={0} />
-        <path d="M136 262 H222" stroke={NAVY} strokeWidth={10} strokeLinecap="round" />
-        <path d="M296 258 H382" stroke={NAVY} strokeWidth={10} strokeLinecap="round" />
-        <Brow d="M138 220 Q180 204 226 226" />
-        <Brow d="M312 186 Q356 156 402 182" />
-        <Nose x={300} y={340} />
-      </>
-    );
-  }
-  if (k === 'nota_char') {
-    // tapa o buraco em forma de estrela que sobrou no feixe de luz (a estrela original foi recortada dali)
-    return <polygon points="528,458 567,458 598,554 528,554" fill={CREAM} stroke={CREAM} strokeWidth={2} />;
-  }
-  return null;
-};
-
-// ---------------------------------------------------------------------------
-// Boneco de corpo inteiro
-// ---------------------------------------------------------------------------
-const Leg: React.FC<{ x: number; top: number; w: number; dir: 1 | -1 }> = ({ x, top, w, dir }) => {
-  const ankle = GROUND - 66;
-  const wb = w * 0.9;
-  const shoe = `M${dir * -w * 0.42} 0 H${dir * w * 0.42} V${14} C${dir * w * 0.85} 22 ${dir * w * 1.35} 34 ${dir * w * 1.38} 66 H${dir * -w * 0.5}Z`;
-  return (
-    <g>
-      <path d={`M${x - w / 2} ${top} H${x + w / 2} L${x + wb / 2} ${ankle + 6} H${x - wb / 2}Z`} fill={PANTS} />
-      <path
-        d={`M${x - w / 2} ${top} L${x - wb / 2} ${ankle + 6} H${x + wb / 2} L${x + w / 2} ${top}`}
-        fill="none"
-        stroke={CREAM}
-        strokeWidth={8}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-      <g transform={`translate(${x} ${ankle})`}>
-        <path d={shoe} fill={CREAM} stroke={NAVY} strokeWidth={7} strokeLinejoin="round" />
-        <path d={`M${dir * -w * 0.5} 52 H${dir * w * 1.36}`} stroke={TEAL} strokeWidth={12} strokeLinecap="round" />
-        <path d={`M${dir * w * 0.2} 24 L${dir * w * 0.45} 38`} stroke={NAVY} strokeWidth={6} strokeLinecap="round" />
-      </g>
+const CharG: React.FC<{ c: CharPos; className: string; children?: React.ReactNode }> = ({ c, className, children }) => (
+  <At x={c.tx} y={c.ty} s={c.s} className={`ax ob ${className}`}>
+    {/* respiração em idle: o boneco infla de leve com o pé/base fixos */}
+    <g className="ax ob breath" style={{ animationDelay: `${-((Math.abs(c.tx) % 7) * 0.7)}s` }}>
+      <Shape p={c.p} />
+      {children}
     </g>
-  );
-};
-
-const Legs: React.FC<{ c: CharPos }> = ({ c }) => {
-  const lw = c.hemW * 0.4;
-  const gap = c.hemW * 0.05;
-  const off = (lw + gap) / 2;
-  return (
-    <>
-      <Leg x={c.hemX - off} top={HEM_Y - 8} w={lw} dir={-1} />
-      <Leg x={c.hemX + off} top={HEM_Y - 8} w={lw} dir={1} />
-    </>
-  );
-};
-
-/** Sombra no chão (anima separada do boneco para acompanhar pulos). */
-const Shadow: React.FC<{ c: CharPos; className?: string }> = ({ c, className = '' }) => (
-  <At x={c.hemX} y={GROUND + 6} className={`ax ${className}`}>
-    <ellipse rx={c.hemW * 0.95} ry={20} fill="#000" opacity={0.38} />
   </At>
 );
 
-/** Boneco inteiro como um bloco único (pernas + camiseta/cabeça). */
-/** Áreas (coordenadas da peça) a ocultar: sobras do recorte original que viram "retângulos" soltos. */
-const CHAR_CUT: Record<string, { x: number; y: number; w: number; h: number }[]> = {
-  proibido_char: [{ x: 436, y: -4, w: 44, h: 116 }]
-};
-
-const Figure: React.FC<{ c: CharPos; className: string; shadowClass?: string; children?: React.ReactNode }> = ({
-  c,
-  className,
-  shadowClass,
-  children
-}) => {
-  const uid = React.useId().replace(/:/g, '');
-  const cuts = CHAR_CUT[c.key];
-  return (
-    <>
-      <Shadow c={c} className={shadowClass ?? `${className}-sh`} />
-      <At x={c.hemX} y={GROUND} className={`ax ob fig ${className}`}>
-        <g className="ax ob breath" style={{ animationDelay: `${-(Math.abs(c.tx) % 5) * 0.6}s` }}>
-        <g transform={`translate(${-c.hemX} ${-GROUND})`}>
-          <Legs c={c} />
-          <At x={c.tx} y={c.ty} s={c.s}>
-            {cuts && (
-              <clipPath id={`cut${uid}`} clipPathUnits="userSpaceOnUse">
-                <path
-                  clipRule="evenodd"
-                  d={`M-2000 -2000 H4000 V4000 H-2000Z ${cuts.map((r) => `M${r.x} ${r.y} h${r.w} v${r.h} h${-r.w}Z`).join(' ')}`}
-                />
-              </clipPath>
-            )}
-            <g clipPath={cuts ? `url(#cut${uid})` : undefined}>
-              <Shape p={c.p} />
-            </g>
-            <FaceFix k={c.key} />
-            {children}
-          </At>
-        </g>
-        </g>
-      </At>
-    </>
-  );
-};
-
-const Floor: React.FC = () => (
-  <g>
-    <rect x={-3000} y={GROUND + 28} width={8000} height={1200} fill="#ffffff" opacity={0.045} />
-    <rect x={-3000} y={GROUND + 26} width={8000} height={5} fill={CREAM} opacity={0.14} />
-  </g>
+const PieceG: React.FC<{ p: Piece; x: number; y: number; s: number; className?: string; delay?: number; idle?: number }> = ({
+  p,
+  x,
+  y,
+  s,
+  className = '',
+  delay,
+  idle
+}) => (
+  <At x={x} y={y} s={s} className={`ax ${className}`} delay={delay} idle={idle}>
+    <Shape p={p} />
+  </At>
 );
 
 // --- efeitos desenhados (mesma paleta / traço navy) ---
@@ -410,50 +192,21 @@ const XMark: React.FC<{ size?: number }> = ({ size = 70 }) => (
     <rect x={-size} y={-size * 0.22} width={size * 2} height={size * 0.44} rx={size * 0.14} transform="rotate(-45)" />
   </g>
 );
-const Check: React.FC<{ size?: number }> = ({ size = 60 }) => (
-  <path d={`M${-size} 0 L${-size * 0.3} ${size * 0.7} L${size} ${-size * 0.8}`} fill="none" stroke={CREAM} strokeWidth={size * 0.34} strokeLinecap="round" strokeLinejoin="round" />
-);
-const Card: React.FC<{ q: string; ch?: string; back?: boolean }> = ({ q, ch = '?', back = false }) => (
+const Card: React.FC<{ q: string }> = ({ q }) => (
   <g>
-    <rect x={-80} y={-115} width={160} height={230} rx={18} fill={back ? TEAL : CREAM} stroke={NAVY} strokeWidth={10} />
-    <rect x={-62} y={-97} width={124} height={194} rx={10} fill="none" stroke={back ? CREAM : TEAL} strokeWidth={6} />
-    <Glyph ch={ch} color={q} size={130} />
+    <rect x={-80} y={-115} width={160} height={230} rx={18} fill={CREAM} stroke={NAVY} strokeWidth={10} />
+    <rect x={-62} y={-97} width={124} height={194} rx={10} fill="none" stroke={TEAL} strokeWidth={6} />
+    <Glyph ch="?" color={q} size={130} />
   </g>
 );
-const Confetti: React.FC<{ color: string; kind: number }> = ({ color, kind }) =>
-  kind % 3 === 0 ? (
-    <rect x={-12} y={-6} width={24} height={12} rx={3} fill={color} stroke={NAVY} strokeWidth={4} />
-  ) : kind % 3 === 1 ? (
-    <circle r={10} fill={color} stroke={NAVY} strokeWidth={4} />
-  ) : (
-    <polygon points="0,-13 12,9 -12,9" fill={color} stroke={NAVY} strokeWidth={4} />
-  );
-
-/** Confete discreto de fundo (idle) para preencher o espaço sem competir com o boneco. */
-const Deco: React.FC<{ pts: [number, number, number][] }> = ({ pts }) => (
-  <>
-    {pts.map(([x, y, k], i) => (
-      <Float key={i} x={x} y={y} r={k * 17} idle={i + k}>
-        {k % 3 === 0 ? (
-          <path d="M-14 0 H14 M0 -14 V14" stroke={i % 2 ? TEAL : CRIMSON} strokeWidth={8} strokeLinecap="round" />
-        ) : k % 3 === 1 ? (
-          <circle r={11} fill="none" stroke={i % 2 ? CREAM : TEAL} strokeWidth={6} opacity={0.7} />
-        ) : (
-          <path d="M-14 8 L0 -10 L14 8" fill="none" stroke={i % 2 ? CRIMSON : CREAM} strokeWidth={6} strokeLinecap="round" strokeLinejoin="round" opacity={0.7} />
-        )}
-      </Float>
-    ))}
-  </>
-);
-
-const polar = (deg: number, r: number) => {
-  const a = (deg * Math.PI) / 180;
-  return [Math.sin(a) * r, -Math.cos(a) * r] as const;
-};
 
 // ---------------------------------------------------------------------------
 // Objetos de cena
 // ---------------------------------------------------------------------------
+const polar = (deg: number, r: number) => {
+  const a = (deg * Math.PI) / 180;
+  return [Math.sin(a) * r, -Math.cos(a) * r] as const;
+};
 
 /** Medidor / manômetro do Jogo do Limite (centro em 0,0, raio 300). */
 const Gauge: React.FC = () => {
@@ -472,10 +225,9 @@ const Gauge: React.FC = () => {
   });
   return (
     <g>
-      <g className="ax lim-cap">
-        <rect x={-48} y={-R - 64} width={96} height={80} rx={16} fill={CREAM} stroke={NAVY} strokeWidth={10} />
-        <rect x={-76} y={-R - 100} width={152} height={50} rx={18} fill={TEAL} stroke={NAVY} strokeWidth={10} />
-      </g>
+      {/* coroa / botões de cronômetro */}
+      <rect x={-48} y={-R - 64} width={96} height={80} rx={16} fill={CREAM} stroke={NAVY} strokeWidth={10} />
+      <rect x={-76} y={-R - 100} width={152} height={50} rx={18} fill={TEAL} stroke={NAVY} strokeWidth={10} />
       <g transform="rotate(42)">
         <rect x={-30} y={-R - 52} width={60} height={60} rx={12} fill={CRIMSON} stroke={NAVY} strokeWidth={10} />
       </g>
@@ -498,15 +250,6 @@ const Gauge: React.FC = () => {
   );
 };
 
-/** Placa de alerta triangular. */
-const WarnSign: React.FC = () => (
-  <g>
-    <path d="M0 -118 L112 70 H-112Z" fill={CRIMSON} stroke={NAVY} strokeWidth={12} strokeLinejoin="round" />
-    <path d="M0 -92 L88 52 H-88Z" fill="none" stroke={CREAM} strokeWidth={9} strokeLinejoin="round" />
-    <Glyph ch="!" color={CREAM} size={110} />
-  </g>
-);
-
 /** Balão "?!" do Jogo do Duvido (centro em 0,0). Rabicho para baixo-direita. */
 const DoubtBubble: React.FC = () => (
   <g>
@@ -523,60 +266,12 @@ const DoubtBubble: React.FC = () => (
   </g>
 );
 
-/** Moeda "cara ou coroa" do blefe. */
-const Coin: React.FC = () => (
-  <g>
-    <circle r={62} fill={CREAM} stroke={NAVY} strokeWidth={10} />
-    <circle r={44} fill="none" stroke={TEAL} strokeWidth={7} />
-    <text y={4} textAnchor="middle" dominantBaseline="central" fontFamily={ANTON} fontSize={74} fill={CRIMSON}>
-      ?
-    </text>
-  </g>
-);
-
-/** Balão de fala censurado do Proibido. */
-const BleepBubble: React.FC = () => (
-  <g>
-    <path
-      d="M-110 -70 H110 Q150 -70 150 -30 V30 Q150 70 110 70 H70 L96 130 L10 70 H-110 Q-150 70 -150 30 V-30 Q-150 -70 -110 -70Z"
-      fill={CREAM}
-      stroke={NAVY}
-      strokeWidth={9}
-      strokeLinejoin="round"
-    />
-    <text y={6} textAnchor="middle" dominantBaseline="central" fontFamily={ANTON} fontSize={92} letterSpacing={4} fill={CRIMSON}>
-      #@!%
-    </text>
-  </g>
-);
-
-/** Placa de "proibido" (círculo cortado). */
-const NoSign: React.FC = () => (
-  <g>
-    <circle r={104} fill={CREAM} stroke={NAVY} strokeWidth={10} />
-    <circle r={84} fill="none" stroke={CRIMSON} strokeWidth={26} />
-    <path d="M-60 -60 L60 60" stroke={CRIMSON} strokeWidth={26} strokeLinecap="round" />
-    <path d="M-34 -8 L-34 28 M0 -8 L0 28 M34 -8 L34 28" stroke={NAVY} strokeWidth={14} strokeLinecap="round" opacity={0.0} />
-  </g>
-);
-
-/** Plaquinha de nota (círculo com cabo). */
-const Paddle: React.FC<{ n: string; color: string }> = ({ n, color }) => (
-  <g>
-    <rect x={-9} y={50} width={18} height={110} rx={8} fill={CREAM} stroke={NAVY} strokeWidth={8} />
-    <circle r={78} fill={color} stroke={CREAM} strokeWidth={10} />
-    <circle r={60} fill="none" stroke={NAVY} strokeWidth={5} opacity={0.5} />
-    <Glyph ch={n} color={CREAM} size={n.length > 1 ? 78 : 98} />
-  </g>
-);
-
-/** Painel de pesquisa do Tem ou Não Tem em cavalete (origem no canto superior esquerdo). */
+/** Painel de pesquisa do Tem ou Não Tem (origem no canto superior esquerdo). Sangra para baixo. */
 const SurveyBoard: React.FC<{ rows: number; width: number }> = ({ rows, width }) => {
-  const pad = 32;
-  const bh = 74;
-  const gap = 18;
+  const pad = 34;
+  const bh = 72;
+  const gap = 20;
   const points = [38, 24, 17, 11, 7, 3, 2, 1];
-  const total = pad * 2 + rows * (bh + gap) - gap;
   const bars = Array.from({ length: rows }, (_, i) => {
     const y = pad + i * (bh + gap);
     const bw = width - pad * 2;
@@ -584,7 +279,7 @@ const SurveyBoard: React.FC<{ rows: number; width: number }> = ({ rows, width })
     const answer = (
       <>
         <rect x={pad} y={y} width={bw} height={bh} rx={12} fill={TEAL} stroke={CREAM} strokeWidth={7} />
-        <rect x={pad + 24} y={y + bh / 2 - 9} width={bw * (0.6 - i * 0.05)} height={18} rx={9} fill={NAVY} />
+        <rect x={pad + 26} y={y + bh / 2 - 9} width={bw * (0.62 - i * 0.05)} height={18} rx={9} fill={NAVY} />
         <rect x={pad + bw - 104} y={y + 11} width={84} height={bh - 22} rx={8} fill={NAVY} />
         <text x={pad + bw - 62} y={y + bh / 2 + 2} textAnchor="middle" dominantBaseline="central" fontFamily={ANTON} fontSize={40} fill={CREAM}>
           {points[i]}
@@ -592,12 +287,12 @@ const SurveyBoard: React.FC<{ rows: number; width: number }> = ({ rows, width })
       </>
     );
     if (i === 0) return <g key={i}>{answer}</g>;
-    const delay = 0.3 + (i - 1) * 0.5;
+    const delay = 0.25 + (i - 1) * 0.3;
     return (
       <g key={i}>
         <g className="ax tem-flip" style={{ animationDelay: `${last ? 99 : delay}s` }}>
           <rect x={pad} y={y} width={bw} height={bh} rx={12} fill={CRIMSON} stroke={CREAM} strokeWidth={7} />
-          <text x={pad + bw / 2} y={y + bh / 2 + 2} textAnchor="middle" dominantBaseline="central" fontFamily={ANTON} fontSize={40} fill={CREAM} opacity={0.85}>
+          <text x={pad + bw / 2} y={y + bh / 2 + 2} textAnchor="middle" dominantBaseline="central" fontFamily={ANTON} fontSize={38} fill={CREAM} opacity={0.85}>
             {i + 1}
           </text>
           {!last && (
@@ -607,7 +302,7 @@ const SurveyBoard: React.FC<{ rows: number; width: number }> = ({ rows, width })
           )}
         </g>
         {last && (
-          <At x={pad + bw / 2} y={y + bh / 2} className="ax fx tem-strike" delay={0.3 + (rows - 2) * 0.5 + 0.5}>
+          <At x={pad + bw / 2} y={y + bh / 2} className="ax fx tem-strike" delay={0.25 + (rows - 2) * 0.3 + 0.45}>
             <XMark size={62} />
           </At>
         )}
@@ -616,196 +311,234 @@ const SurveyBoard: React.FC<{ rows: number; width: number }> = ({ rows, width })
   });
   return (
     <g>
-      <rect x={0} y={0} width={width} height={total} rx={26} fill={NAVY} stroke={CREAM} strokeWidth={16} />
+      <rect x={0} y={0} width={width} height={1200} rx={30} fill={NAVY} stroke={CREAM} strokeWidth={18} />
       {bars}
     </g>
   );
 };
-const boardHeight = (rows: number) => 32 * 2 + rows * (74 + 18) - 18;
-
-const EaselLegs: React.FC<{ x: number; top: number; w: number }> = ({ x, top, w }) => (
-  <g stroke={CREAM} strokeWidth={14} strokeLinecap="round">
-    <path d={`M${x + w * 0.2} ${top} L${x + w * 0.1} ${GROUND + 2}`} />
-    <path d={`M${x + w * 0.8} ${top} L${x + w * 0.9} ${GROUND + 2}`} />
-  </g>
-);
 
 // ---------------------------------------------------------------------------
 // Cenas
 // ---------------------------------------------------------------------------
 type SceneProps = { P: PieceMap; wide: boolean; W: number };
 
-/* Poucos elementos por cena: boneco + 1 objeto principal + 1~2 de apoio. Nada de confete, raios ou X piscando. */
-const SceneLimite: React.FC<SceneProps> = ({ wide }) => {
-  const c = placeChar('limite_char', wide ? 760 : 330);
-  const g = { x: wide ? 1320 : 790, y: 470, s: wide ? 0.86 : 0.7 };
+const SceneLimite: React.FC<SceneProps> = ({ P, wide }) => {
+  const c = placeChar(P.limite_char, wide ? 1010 : 620);
+  const g = { x: wide ? 1700 : 1190, y: 560, s: wide ? 1.02 : 0.94 };
   const fx = c.faceCx;
   const ft = c.faceTop;
   return (
     <>
-      <Floor />
-      {/* vapor subindo devagar do medidor */}
-      {[0, 1].map((i) => (
-        <At key={`p${i}`} x={g.x + (i ? 50 : -50) * g.s} y={g.y - 330 * g.s} s={0.9} className="ax fx lim-puff" delay={i * 1.7}>
+      {/* fumaça saindo do medidor */}
+      {[0, 1, 2].map((i) => (
+        <At key={`p${i}`} x={g.x + (i - 1) * 60} y={g.y - 400 * g.s} s={0.9} className="ax fx lim-puff" delay={i * 0.7}>
           <Puff />
         </At>
       ))}
-      <Float x={g.x} y={g.y} s={g.s} idle={0} hover="lim-gauge">
+      <At x={g.x} y={g.y} s={g.s} className="ax lim-gauge" idle={0}>
         <Gauge />
-      </Float>
-      <Figure c={c} className="lim-char" />
-      {/* uma gota de suor, caindo devagar */}
-      <At x={fx - c.faceW * 0.62} y={ft + 20} s={0.78} className="ax fx lim-drop" delay={0.2}>
-        <Drop />
       </At>
+      {/* faíscas de "vai estourar" */}
+      {[
+        [g.x + 300 * g.s, g.y - 250 * g.s, 20],
+        [g.x + 360 * g.s, g.y - 40 * g.s, -15],
+        [g.x + 150 * g.s, g.y - 370 * g.s, 35],
+        ...(wide ? [[g.x + 330 * g.s, g.y + 170 * g.s, -30]] : [])
+      ].map(([x, y, r], i) => (
+        <At key={`b${i}`} x={x} y={y} r={r} s={0.8} className="ax fx lim-bolt" delay={1.1 + i * 0.35}>
+          <Bolt />
+        </At>
+      ))}
+      <CharG c={c} className="lim-char" />
+      {/* suor espirrando */}
+      {[
+        [fx - c.faceW * 0.62, ft + 40, 'l', 0.5],
+        [fx - c.faceW * 0.45, ft - 60, 'l', 1.1],
+        [fx + c.faceW * 0.55, ft - 30, 'r', 0.8]
+      ].map(([x, y, d, delay], i) => (
+        <At key={`d${i}`} x={x as number} y={y as number} s={0.75} className={`ax fx lim-drop-${d}`} delay={delay as number}>
+          <Drop />
+        </At>
+      ))}
     </>
   );
 };
 
-const SceneDuvido: React.FC<SceneProps> = ({ wide }) => {
-  const b = placeChar('blefe_char', wide ? 640 : 290);
-  const k = placeChar('cetico_char', wide ? 1380 : 800);
+const SceneDuvido: React.FC<SceneProps> = ({ P, wide }) => {
+  const b = placeChar(P.blefe_char, wide ? 960 : 590);
+  const k = placeChar(P.cetico_char, wide ? 1660 : 1130);
   const mid = (b.faceCx + k.faceCx) / 2;
   return (
     <>
-      <Floor />
-      <Figure c={b} className="duv-blefe" />
-      <Figure c={k} className="duv-cetico" />
-      {/* moeda no ar entre os dois */}
-      <Float x={mid} y={wide ? 640 : 640} idle={1} hover="duv-coin">
-        <Coin />
-      </Float>
-      <Float x={mid - 10} y={wide ? 230 : 130} s={wide ? 0.95 : 0.66} idle={2} hover="duv-bubble">
+      <CharG c={b} className="duv-blefe" />
+      <CharG c={k} className="duv-cetico" />
+      {/* tensão entre os dois */}
+      {[
+        [mid - 10, b.faceCy - 40, 10],
+        [mid + 30, b.faceCy + 90, -20]
+      ].map(([x, y, r], i) => (
+        <At key={`t${i}`} x={x} y={y} r={r} s={0.62} className="ax fx duv-bolt" delay={0.9 + i * 0.4}>
+          <Bolt />
+        </At>
+      ))}
+      {/* suor do blefador */}
+      {[
+        [b.faceCx - b.faceW * 0.6, b.faceTop + 30, 0.4],
+        [b.faceCx - b.faceW * 0.42, b.faceTop - 70, 1.2]
+      ].map(([x, y, d], i) => (
+        <At key={`d${i}`} x={x} y={y} s={0.7} className="ax fx lim-drop-l" delay={d}>
+          <Drop />
+        </At>
+      ))}
+      {wide &&
+        [
+          [b.left - 170, 380, TEAL, 0],
+          [k.right + 170, 330, CRIMSON, 0.25]
+        ].map(([x, y, col, d], i) => (
+          <At key={`q${i}`} x={x as number} y={y as number} s={0.9} className="ax duv-float" delay={d as number} idle={i + 1}>
+            <Glyph ch="?" color={col as string} size={150} />
+          </At>
+        ))}
+      <At x={mid + 70} y={k.faceTop - 205} s={wide ? 0.95 : 0.88} className="ax duv-bubble" idle={2}>
         <DoubtBubble />
-      </Float>
+      </At>
     </>
   );
 };
 
 const SceneProibido: React.FC<SceneProps> = ({ P, wide }) => {
-  const c = placeChar('proibido_char', wide ? 1000 : 520);
-  const siren = { x: c.faceCx - (wide ? 640 : 400), y: wide ? 250 : 200, s: 0.85 };
-  const dome = { x: siren.x + 139 * siren.s, y: siren.y + 125 * siren.s };
+  const c = placeChar(P.proibido_char, wide ? 1180 : 760);
+  const siren = relTo(c, P.proibido_siren, wide ? -150 : -10, wide ? 40 : 10);
+  const sign = relTo(c, P.proibido_sign, wide ? 200 : 40, wide ? 30 : 30);
+  const dome = { x: siren.x + 145 * siren.s, y: siren.y + 125 * siren.s };
   return (
     <>
-      <Floor />
-      {/* luz suave girando atrás da sirene */}
+      {/* giroflex: raios girando atrás da sirene */}
       <At x={dome.x} y={dome.y} className="fx pro-rays-wrap">
         <g className="pro-rays">
-          {Array.from({ length: 6 }, (_, i) => {
-            const a = i * 60;
-            const [x1, y1] = polar(a - 11, 330);
-            const [x2, y2] = polar(a + 11, 330);
-            return <polygon key={i} points={`0,0 ${x1},${y1} ${x2},${y2}`} fill={CRIMSON} opacity={0.22} />;
+          {Array.from({ length: 8 }, (_, i) => {
+            const a = i * 45;
+            const [x1, y1] = polar(a - 9, 330);
+            const [x2, y2] = polar(a + 9, 330);
+            return <polygon key={i} points={`0,0 ${x1},${y1} ${x2},${y2}`} fill={CRIMSON} opacity={0.38} />;
           })}
         </g>
       </At>
-      <Figure c={c} className="pro-char" />
-      <At x={siren.x} y={siren.y} s={siren.s}>
-        <g className="ax ob pro-siren">
-          <Shape p={P.proibido_siren} />
-        </g>
-      </At>
-      <Float x={c.faceCx + (wide ? 460 : 400)} y={wide ? 250 : 190} s={wide ? 1 : 0.8} idle={1} hover="pro-bleep">
-        <BleepBubble />
-      </Float>
+      <CharG c={c} className="pro-char" />
+      <PieceG p={P.proibido_siren} {...siren} className="ob pro-siren" idle={1} />
+      <PieceG p={P.proibido_sign} {...sign} className="pro-sign" idle={2} />
+      {wide &&
+        [
+          [c.left - 120, 700, -12],
+          [sign.x + P.proibido_sign.w * sign.s + 120, 640, 14]
+        ].map(([x, y, r], i) => (
+          <At key={`b${i}`} x={x} y={y} r={r} s={0.8} className="ax fx lim-bolt" delay={0.2 + i * 0.2}>
+            <Bolt />
+          </At>
+        ))}
     </>
   );
 };
 
 const SceneNota: React.FC<SceneProps> = ({ P, wide }) => {
-  const c = placeChar('nota_char', wide ? 1000 : 500);
-  const spread = wide ? 1.9 : 1.2;
+  const c = placeChar(P.nota_char, wide ? 1300 : 850);
+  const spread = wide ? 1.55 : 1.08;
+  const paddle = { x: c.tx + (155 - c.p.ox) * c.s, y: c.ty + (290 - c.p.oy) * c.s };
   return (
     <>
-      <Floor />
-      <At x={c.tx} y={c.ty} s={c.s}>
-        <path d={`M2 ${c.p.h - 6} L${c.p.w - 2} ${c.p.h - 6} L${c.p.w + 110} ${(GROUND + 40 - c.ty) / c.s} L-110 ${(GROUND + 40 - c.ty) / c.s}Z`} fill={CREAM} />
-      </At>
-      <Figure c={c} className="nota-char" />
+      <CharG c={c} className="nota-char" />
       {[0, 1, 2, 3, 4].map((i) => {
         const st = P[`nota_star${i}`];
         const base = relTo(c, st);
         const cx = base.x + (st.w * c.s) / 2;
         const nx = c.faceCx + (cx - c.faceCx) * spread - (st.w * c.s) / 2;
-        const ny = base.y + (wide ? -10 : -20);
-        return (
-          <Float key={i} x={nx} y={ny} s={c.s * 1.15} idle={i} hover="nota-star" hdelay={i * 0.35}>
-            <Shape p={st} />
-          </Float>
-        );
+        return <PieceG key={i} p={st} x={nx} y={base.y + (wide ? 30 : 0)} s={c.s} className="nota-star" delay={i * 0.3} idle={i} />;
       })}
-      {(wide
-        ? [[c.faceCx - 640, 580, '9', TEAL, 0], [c.faceCx + 640, 540, '10', CRIMSON, 0.6]]
-        : [[110, 640, '9', TEAL, 0], [980, 640, '10', CRIMSON, 0.6]]
-      ).map(([x, y, n, col, d], i) => (
-        <Float key={`p${i}`} x={x as number} y={y as number} s={wide ? 0.85 : 0.72} idle={i + 1} hover="nota-paddle" hdelay={d as number}>
-          <Paddle n={n as string} color={col as string} />
-        </Float>
+      {wide &&
+        [
+          [c.faceCx - 900, 560, CRIMSON, 0.2],
+          [c.faceCx + 900, 420, TEAL, 0.5]
+        ].map(([x, y, col, d], i) => (
+          <At key={`xs${i}`} x={x as number} y={y as number} s={1.1} className="ax nota-star" delay={d as number} idle={i + 2}>
+            <Star color={col as string} />
+          </At>
+        ))}
+      {/* brilhos em volta da plaquinha da nota */}
+      {[
+        [paddle.x - 150, paddle.y - 120, 0],
+        [paddle.x + 150, paddle.y - 170, 0.25],
+        [paddle.x - 120, paddle.y + 130, 0.5]
+      ].map(([x, y, d], i) => (
+        <At key={`s${i}`} x={x} y={y} className="ax fx nota-spark" delay={d * 2.4}>
+          <Sparkle />
+        </At>
       ))}
     </>
   );
 };
 
-const SceneTem: React.FC<SceneProps> = ({ wide }) => {
+const SceneTem: React.FC<SceneProps> = ({ P, wide }) => {
   const rows = 7;
-  const bw = wide ? 540 : 400;
-  const bx = wide ? 330 : 60;
-  const by = 120;
-  const bh = boardHeight(rows);
-  const c = placeChar('tem_char', wide ? 1290 : 810);
+  const bw = wide ? 470 : 430;
+  const bx = wide ? 640 : 330;
+  const by = 200;
+  const c = placeChar(P.tem_char, bx + bw + (wide ? 420 : 360));
   return (
     <>
-      <Floor />
-      <EaselLegs x={bx} top={by + bh} w={bw} />
       <At x={bx} y={by}>
         <SurveyBoard rows={rows} width={bw} />
       </At>
-      <Figure c={c} className="tem-char" />
-      <Float x={wide ? c.faceCx + 420 : bx + bw / 2} y={wide ? 250 : 58} s={wide ? 1 : 0.62} idle={1} hover="tem-tag" hdelay={0.4}>
-        <g>
-          <rect x={-130} y={-56} width={260} height={112} rx={24} fill={TEAL} stroke={NAVY} strokeWidth={10} />
-          <text y={4} textAnchor="middle" dominantBaseline="central" fontFamily={ANTON} fontSize={74} fill={CREAM} stroke={NAVY} strokeWidth={5} paintOrder="stroke">
-            TEM!
-          </text>
-        </g>
-      </Float>
+      <CharG c={c} className="tem-char" />
+      {wide && (
+        <At x={c.right + 140} y={330}>
+          {[0, 1, 2].map((i) => (
+            <g key={i} transform={`translate(${i * 150} 0)`}>
+              <rect x={-62} y={-62} width={124} height={124} rx={16} fill={NAVY} stroke={CREAM} strokeWidth={10} />
+              <At x={0} y={0} className="ax fx tem-strike" delay={0.6 + i * 0.6}>
+                <XMark size={44} />
+              </At>
+            </g>
+          ))}
+        </At>
+      )}
     </>
   );
 };
 
 const ScenePerguntas: React.FC<SceneProps> = ({ P, wide }) => {
-  const c = placeChar('pv_char', wide ? 1000 : 540);
+  const c = placeChar(P.pv_char, wide ? 1300 : 850);
   const cards = { x: c.tx + (150 - c.p.ox) * c.s, y: c.ty + (430 - c.p.oy) * c.s };
   return (
     <>
-      <Floor />
-      {(wide
-        ? [[c.faceCx - 600, 560, -10, TEAL, 0], [c.faceCx + 620, 540, 8, CRIMSON, 1.6]]
-        : [[920, 560, 8, CRIMSON, 1.6], [120, 330, -8, TEAL, 0]]
-      ).map(([x, y, r, col, d], i) => (
-        <Float key={`c${i}`} x={x as number} y={y as number} r={r as number} s={wide ? 1 : 0.9} idle={i + 1}>
-          <g className="ax pv-a" style={{ animationDelay: `${d}s` }}>
+      {wide &&
+        [
+          [c.faceCx - 820, 600, -14, TEAL, 0],
+          [c.faceCx + 820, 560, 12, CRIMSON, 0.3]
+        ].map(([x, y, r, col, d], i) => (
+          <At key={`c${i}`} x={x as number} y={y as number} r={r as number} s={1.05} className="ax pv-card" delay={(d as number) * 2} idle={i}>
             <Card q={col as string} />
-          </g>
-          <g className="ax pv-b" style={{ animationDelay: `${d}s` }}>
-            <Card q={CREAM} ch="!" back />
-          </g>
-        </Float>
-      ))}
-      <Figure c={c} className="pv-char">
+          </At>
+        ))}
+      <CharG c={c} className="pv-char">
         {[0, 1, 2, 3].map((i) => {
           const bell = P[`pv_bell${i}`];
           return (
-            <At key={i} x={bell.ox - c.p.ox} y={bell.oy - c.p.oy} className="ax ot pv-bell" delay={i * 0.25}>
+            <At key={i} x={bell.ox - c.p.ox} y={bell.oy - c.p.oy} className="ax ot pv-bell" delay={i * 0.16}>
               <Shape p={bell} />
             </At>
           );
         })}
-      </Figure>
-      <At x={cards.x} y={cards.y - 70} className="ax fx pv-q">
-        <Glyph ch="?" color={TEAL} size={110} />
-      </At>
+      </CharG>
+      {/* interrogações subindo das cartas */}
+      {[
+        [cards.x - 40, cards.y - 60, TEAL, 0],
+        [cards.x + 70, cards.y - 120, CRIMSON, 0.9],
+        [cards.x - 110, cards.y - 160, CREAM, 1.8]
+      ].map(([x, y, col, d], i) => (
+        <At key={`q${i}`} x={x as number} y={y as number} className="ax fx pv-q" delay={d as number}>
+          <Glyph ch="?" color={col as string} size={110} />
+        </At>
+      ))}
     </>
   );
 };
@@ -819,65 +552,14 @@ const SCENES: Record<string, React.FC<SceneProps>> = {
   'perguntas-e-verdades': ScenePerguntas
 };
 
-/**
- * Ícones da família Kazé (CazéTV e Original): um único objeto por jogo, sem rosto, com a mesma paleta
- * (creme / teal / carmim), contorno navy e tipografia Anton das ilustrações.
- */
-const ICONS: Record<string, { box: string; el: React.ReactNode }> = {
-  limite: {
-    box: '-340 -410 680 720',
-    el: (
-      <g className="ax ic-pulse">
-        <Gauge />
-      </g>
-    )
-  },
-  duvido: {
-    box: '-175 -150 350 350',
-    el: (
-      <g className="ax ic-sway">
-        <DoubtBubble />
-      </g>
-    )
-  },
-  proibido: {
-    box: '-130 -130 260 260',
-    el: (
-      <g className="ax ic-pulse">
-        <NoSign />
-      </g>
-    )
-  },
-  nota: {
-    box: '-110 -125 240 300',
-    el: (
-      <>
-        <g className="ax ic-sway">
-          <Paddle n="10" color={TEAL} />
-        </g>
-        <At x={66} y={-72} className="ax ic-star">
-          <Star color={CRIMSON} r={54} />
-        </At>
-      </>
-    )
-  },
-  'tem-ou-nao-tem': {
-    box: '-12 -12 384 438',
-    el: <SurveyBoard rows={4} width={360} />
-  },
-  'perguntas-e-verdades': {
-    box: '-175 -145 350 290',
-    el: (
-      <>
-        <At x={55} y={12} r={12}>
-          <Card q={CREAM} ch="!" back />
-        </At>
-        <At x={-45} y={0} r={-10} className="ax ic-sway">
-          <Card q={CRIMSON} />
-        </At>
-      </>
-    )
-  }
+/** Recorte do ícone (layout compacto de telas baixas): rosto do personagem principal. */
+const ICON_FOCUS: Record<string, number> = {
+  limite: 620,
+  duvido: 860,
+  proibido: 760,
+  nota: 850,
+  'tem-ou-nao-tem': 1120,
+  'perguntas-e-verdades': 850
 };
 
 export const CAZE_SCENE_IDS = Object.keys(SCENES);
@@ -889,19 +571,18 @@ export const CazeScene: React.FC<{ gameId: string; layout: SceneLayout; classNam
 }) => {
   const Scene = SCENES[gameId];
   if (!Scene) return null;
-  if (layout === 'icon') {
-    const icon = ICONS[gameId];
-    return (
-      <svg viewBox={icon.box} preserveAspectRatio="xMidYMid meet" className={`rdb-caze-svg ${className}`} aria-hidden="true" focusable="false">
-        {icon.el}
-      </svg>
-    );
-  }
-  const W = SCENE_W[layout];
+  const isIcon = layout === 'icon';
+  const W = SCENE_W[isIcon ? 'compact' : layout];
+  const fx = ICON_FOCUS[gameId] ?? 850;
+  const viewBox = isIcon
+    ? gameId === 'duvido'
+      ? `${fx - 560} 230 1120 800`
+      : `${fx - 400} 230 800 800`
+    : `0 0 ${W} ${H}`;
   return (
     <svg
-      viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="xMidYMax meet"
+      viewBox={viewBox}
+      preserveAspectRatio={isIcon ? 'xMidYMid meet' : 'xMidYMax meet'}
       className={`rdb-caze-svg ${className}`}
       aria-hidden="true"
       focusable="false"
