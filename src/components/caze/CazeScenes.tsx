@@ -321,6 +321,7 @@ const Figure: React.FC<{ c: CharPos; className: string; shadowClass?: string; ch
     <>
       <Shadow c={c} className={shadowClass ?? `${className}-sh`} />
       <At x={c.hemX} y={GROUND} className={`ax ob fig ${className}`}>
+        <g className="ax ob breath" style={{ animationDelay: `${-(Math.abs(c.tx) % 5) * 0.6}s` }}>
         <g transform={`translate(${-c.hemX} ${-GROUND})`}>
           <Legs c={c} />
           <At x={c.tx} y={c.ty} s={c.s}>
@@ -338,6 +339,7 @@ const Figure: React.FC<{ c: CharPos; className: string; shadowClass?: string; ch
             <FaceFix k={c.key} />
             {children}
           </At>
+        </g>
         </g>
       </At>
     </>
@@ -590,7 +592,7 @@ const SurveyBoard: React.FC<{ rows: number; width: number }> = ({ rows, width })
       </>
     );
     if (i === 0) return <g key={i}>{answer}</g>;
-    const delay = 0.12 + (i - 1) * 0.17;
+    const delay = 0.3 + (i - 1) * 0.5;
     return (
       <g key={i}>
         <g className="ax tem-flip" style={{ animationDelay: `${last ? 99 : delay}s` }}>
@@ -605,7 +607,7 @@ const SurveyBoard: React.FC<{ rows: number; width: number }> = ({ rows, width })
           )}
         </g>
         {last && (
-          <At x={pad + bw / 2} y={y + bh / 2} className="ax fx tem-strike" delay={0.15 + (rows - 2) * 0.17 + 0.25}>
+          <At x={pad + bw / 2} y={y + bh / 2} className="ax fx tem-strike" delay={0.3 + (rows - 2) * 0.5 + 0.5}>
             <XMark size={62} />
           </At>
         )}
@@ -633,56 +635,29 @@ const EaselLegs: React.FC<{ x: number; top: number; w: number }> = ({ x, top, w 
 // ---------------------------------------------------------------------------
 type SceneProps = { P: PieceMap; wide: boolean; W: number };
 
+/* Poucos elementos por cena: boneco + 1 objeto principal + 1~2 de apoio. Nada de confete, raios ou X piscando. */
 const SceneLimite: React.FC<SceneProps> = ({ wide }) => {
   const c = placeChar('limite_char', wide ? 760 : 330);
-  const g = { x: wide ? 1320 : 790, y: wide ? 470 : 470, s: wide ? 0.86 : 0.7 };
+  const g = { x: wide ? 1320 : 790, y: 470, s: wide ? 0.86 : 0.7 };
   const fx = c.faceCx;
   const ft = c.faceTop;
   return (
     <>
       <Floor />
-      <Deco pts={wide ? [[130, 220, 0], [330, 120, 1], [1010, 160, 2], [1660, 190, 1], [1830, 520, 0], [1620, 800, 2], [140, 640, 1], [1010, 780, 0]] : [[90, 200, 0], [560, 130, 1], [1030, 150, 2], [570, 820, 1], [1040, 800, 0]]} />
-      {wide && (
-        <>
-          <Float x={300} y={610} s={0.95} idle={1} hover="lim-warn">
-            <WarnSign />
-          </Float>
-          <Float x={1740} y={640} s={0.8} idle={2} hover="lim-warn" hdelay={0.2}>
-            <WarnSign />
-          </Float>
-        </>
-      )}
-      {/* fumaça saindo do medidor */}
-      {[0, 1, 2].map((i) => (
-        <At key={`p${i}`} x={g.x + (i - 1) * 70 * g.s} y={g.y - 330 * g.s} s={0.95} className="ax fx lim-puff" delay={i * 0.32}>
+      {/* vapor subindo devagar do medidor */}
+      {[0, 1].map((i) => (
+        <At key={`p${i}`} x={g.x + (i ? 50 : -50) * g.s} y={g.y - 330 * g.s} s={0.9} className="ax fx lim-puff" delay={i * 1.7}>
           <Puff />
         </At>
       ))}
       <Float x={g.x} y={g.y} s={g.s} idle={0} hover="lim-gauge">
         <Gauge />
       </Float>
-      {/* faíscas de "vai estourar" */}
-      {[
-        [g.x + 330 * g.s, g.y - 220 * g.s, 20],
-        [g.x + 370 * g.s, g.y + 40 * g.s, -15],
-        [g.x - 120 * g.s, g.y - 380 * g.s, 35],
-        [g.x + 250 * g.s, g.y + 300 * g.s, -30]
-      ].map(([x, y, r], i) => (
-        <At key={`b${i}`} x={x} y={y} r={r} s={0.8} className="ax fx lim-bolt" delay={0.55 + i * 0.12}>
-          <Bolt />
-        </At>
-      ))}
       <Figure c={c} className="lim-char" />
-      {/* suor espirrando */}
-      {[
-        [fx - c.faceW * 0.7, ft + 50, 'l', 0],
-        [fx - c.faceW * 0.45, ft - 40, 'l', 0.3],
-        [fx + c.faceW * 0.6, ft - 10, 'r', 0.15]
-      ].map(([x, y, d, delay], i) => (
-        <At key={`d${i}`} x={x as number} y={y as number} s={0.78} className={`ax fx lim-drop-${d}`} delay={delay as number}>
-          <Drop />
-        </At>
-      ))}
+      {/* uma gota de suor, caindo devagar */}
+      <At x={fx - c.faceW * 0.62} y={ft + 20} s={0.78} className="ax fx lim-drop" delay={0.2}>
+        <Drop />
+      </At>
     </>
   );
 };
@@ -691,43 +666,16 @@ const SceneDuvido: React.FC<SceneProps> = ({ wide }) => {
   const b = placeChar('blefe_char', wide ? 640 : 290);
   const k = placeChar('cetico_char', wide ? 1380 : 800);
   const mid = (b.faceCx + k.faceCx) / 2;
-  const ey = (b.faceCy + k.faceCy) / 2 - 20;
   return (
     <>
       <Floor />
-      <Deco pts={wide ? [[110, 260, 0], [300, 120, 1], [1010, 120, 2], [1700, 160, 1], [1890, 480, 0], [1830, 820, 2], [110, 680, 1]] : [[70, 240, 0], [560, 90, 1], [1040, 200, 2], [560, 860, 0], [1030, 760, 1]]} />
       <Figure c={b} className="duv-blefe" />
       <Figure c={k} className="duv-cetico" />
-      {/* duelo de olhares: linhas tracejadas animadas entre os dois rostos */}
-      <g className="fx duv-lasers">
-        <path d={`M${b.faceCx + b.faceW * 0.5} ${b.faceCy - 20} Q${mid} ${ey - 50} ${k.faceCx - k.faceW * 0.5} ${k.faceCy - 24}`} fill="none" stroke={TEAL} strokeWidth={12} strokeLinecap="round" strokeDasharray="30 26" className="duv-dash" />
-        <path d={`M${k.faceCx - k.faceW * 0.5} ${k.faceCy + 6} Q${mid} ${ey + 60} ${b.faceCx + b.faceW * 0.5} ${b.faceCy}`} fill="none" stroke={CRIMSON} strokeWidth={12} strokeLinecap="round" strokeDasharray="30 26" className="duv-dash duv-dash2" />
-      </g>
-      {/* moeda no ar */}
-      <Float x={mid} y={wide ? 600 : 610} idle={1} hover="duv-coin">
+      {/* moeda no ar entre os dois */}
+      <Float x={mid} y={wide ? 640 : 640} idle={1} hover="duv-coin">
         <Coin />
       </Float>
-      {/* suor do blefador */}
-      {[
-        [b.faceCx - b.faceW * 0.62, b.faceTop + 40, 0],
-        [b.faceCx - b.faceW * 0.4, b.faceTop - 60, 0.35]
-      ].map(([x, y, d], i) => (
-        <At key={`d${i}`} x={x} y={y} s={0.7} className="ax fx lim-drop-l" delay={d}>
-          <Drop />
-        </At>
-      ))}
-      {wide &&
-        [
-          [b.left - 80, 330, TEAL, 0, '?'],
-          [k.right + 90, 300, CRIMSON, 0.25, '?'],
-          [mid - 120, 800, CREAM, 0.1, '!'],
-          [mid + 120, 770, TEAL, 0.4, '!']
-        ].map(([x, y, col, d, ch], i) => (
-          <Float key={`q${i}`} x={x as number} y={y as number} s={0.95} idle={i} hover="duv-float" hdelay={d as number}>
-            <Glyph ch={ch as string} color={col as string} size={150} />
-          </Float>
-        ))}
-      <Float x={mid - 10} y={wide ? 190 : 120} s={wide ? 0.95 : 0.66} idle={2} hover="duv-bubble">
+      <Float x={mid - 10} y={wide ? 230 : 130} s={wide ? 0.95 : 0.66} idle={2} hover="duv-bubble">
         <DoubtBubble />
       </Float>
     </>
@@ -741,15 +689,14 @@ const SceneProibido: React.FC<SceneProps> = ({ P, wide }) => {
   return (
     <>
       <Floor />
-      <Deco pts={wide ? [[120, 240, 0], [350, 130, 1], [1000, 70, 2], [1700, 150, 1], [1880, 450, 0], [150, 700, 2], [1850, 760, 1]] : [[70, 220, 0], [560, 90, 1], [1040, 120, 2], [60, 760, 1], [1040, 760, 0]]} />
-      {/* giroflex: raios girando atrás da sirene */}
+      {/* luz suave girando atrás da sirene */}
       <At x={dome.x} y={dome.y} className="fx pro-rays-wrap">
         <g className="pro-rays">
-          {Array.from({ length: 8 }, (_, i) => {
-            const a = i * 45;
-            const [x1, y1] = polar(a - 9, 360);
-            const [x2, y2] = polar(a + 9, 360);
-            return <polygon key={i} points={`0,0 ${x1},${y1} ${x2},${y2}`} fill={CRIMSON} opacity={0.38} />;
+          {Array.from({ length: 6 }, (_, i) => {
+            const a = i * 60;
+            const [x1, y1] = polar(a - 11, 330);
+            const [x2, y2] = polar(a + 11, 330);
+            return <polygon key={i} points={`0,0 ${x1},${y1} ${x2},${y2}`} fill={CRIMSON} opacity={0.22} />;
           })}
         </g>
       </At>
@@ -759,23 +706,9 @@ const SceneProibido: React.FC<SceneProps> = ({ P, wide }) => {
           <Shape p={P.proibido_siren} />
         </g>
       </At>
-      {/* placa de proibido */}
-      <Float x={c.faceCx + (wide ? 640 : 410)} y={wide ? 600 : 560} s={wide ? 1 : 0.85} idle={2} hover="pro-sign">
-        <NoSign />
-      </Float>
-      {/* palavrão censurado */}
-      <Float x={c.faceCx + (wide ? 440 : 400)} y={wide ? 230 : 190} s={wide ? 1 : 0.8} idle={1} hover="pro-bleep">
+      <Float x={c.faceCx + (wide ? 460 : 400)} y={wide ? 250 : 190} s={wide ? 1 : 0.8} idle={1} hover="pro-bleep">
         <BleepBubble />
       </Float>
-      {/* X vermelhos estourando em volta */}
-      {(wide
-        ? [[c.faceCx - 640, 420], [c.faceCx + 620, 600], [c.faceCx - 480, 760], [c.faceCx + 470, 800]]
-        : [[90, 500], [1010, 480], [120, 780]]
-      ).map(([x, y], i) => (
-        <At key={`x${i}`} x={x} y={y} className="ax fx pro-x" delay={0.1 + i * 0.18}>
-          <XMark size={50} />
-        </At>
-      ))}
     </>
   );
 };
@@ -783,18 +716,13 @@ const SceneProibido: React.FC<SceneProps> = ({ P, wide }) => {
 const SceneNota: React.FC<SceneProps> = ({ P, wide }) => {
   const c = placeChar('nota_char', wide ? 1000 : 500);
   const spread = wide ? 1.9 : 1.2;
-  const confetti = wide
-    ? [[300, 160], [520, 90], [740, 140], [1260, 100], [1500, 160], [1700, 120], [200, 420], [1820, 400], [380, 660], [1640, 700]]
-    : [[100, 160], [300, 80], [520, 90], [760, 120], [980, 180], [90, 520], [1020, 520], [150, 800]];
   return (
     <>
       <Floor />
-      {/* luz de spotlight prolongada até o chão */}
       <At x={c.tx} y={c.ty} s={c.s}>
         <path d={`M2 ${c.p.h - 6} L${c.p.w - 2} ${c.p.h - 6} L${c.p.w + 110} ${(GROUND + 40 - c.ty) / c.s} L-110 ${(GROUND + 40 - c.ty) / c.s}Z`} fill={CREAM} />
       </At>
       <Figure c={c} className="nota-char" />
-      {/* estrelas originais abertas em leque */}
       {[0, 1, 2, 3, 4].map((i) => {
         const st = P[`nota_star${i}`];
         const base = relTo(c, st);
@@ -802,25 +730,18 @@ const SceneNota: React.FC<SceneProps> = ({ P, wide }) => {
         const nx = c.faceCx + (cx - c.faceCx) * spread - (st.w * c.s) / 2;
         const ny = base.y + (wide ? -10 : -20);
         return (
-          <Float key={i} x={nx} y={ny} s={c.s * 1.15} idle={i} hover="nota-star" hdelay={i * 0.14}>
+          <Float key={i} x={nx} y={ny} s={c.s * 1.15} idle={i} hover="nota-star" hdelay={i * 0.35}>
             <Shape p={st} />
           </Float>
         );
       })}
-      {/* plaquinhas de nota subindo */}
       {(wide
-        ? [[c.faceCx - 640, 560, '9', TEAL, 0], [c.faceCx + 640, 520, '10', CRIMSON, 0.15], [c.faceCx - 920, 300, '7', CRIMSON, 0.3], [c.faceCx + 910, 340, '8', TEAL, 0.45]]
-        : [[110, 640, '9', TEAL, 0], [980, 640, '10', CRIMSON, 0.15]]
+        ? [[c.faceCx - 640, 580, '9', TEAL, 0], [c.faceCx + 640, 540, '10', CRIMSON, 0.6]]
+        : [[110, 640, '9', TEAL, 0], [980, 640, '10', CRIMSON, 0.6]]
       ).map(([x, y, n, col, d], i) => (
         <Float key={`p${i}`} x={x as number} y={y as number} s={wide ? 0.85 : 0.72} idle={i + 1} hover="nota-paddle" hdelay={d as number}>
           <Paddle n={n as string} color={col as string} />
         </Float>
-      ))}
-      {/* confete caindo */}
-      {confetti.map(([x, y], i) => (
-        <At key={`cf${i}`} x={x} y={y} r={i * 31} className="ax fx nota-conf" delay={i * 0.13}>
-          <Confetti color={[CRIMSON, TEAL, CREAM][i % 3]} kind={i} />
-        </At>
       ))}
     </>
   );
@@ -836,14 +757,12 @@ const SceneTem: React.FC<SceneProps> = ({ wide }) => {
   return (
     <>
       <Floor />
-      <Deco pts={wide ? [[110, 250, 0], [1000, 110, 1], [1000, 700, 2], [1880, 220, 1], [1900, 800, 0], [120, 760, 2]] : [[560, 90, 1], [560, 600, 2], [1040, 120, 0], [530, 860, 0]]} />
       <EaselLegs x={bx} top={by + bh} w={bw} />
       <At x={bx} y={by}>
         <SurveyBoard rows={rows} width={bw} />
       </At>
       <Figure c={c} className="tem-char" />
-      {/* resposta certa / errada pipocando */}
-      <Float x={wide ? c.faceCx + 420 : bx + bw / 2} y={wide ? 250 : 58} s={wide ? 1 : 0.62} idle={1} hover="tem-tag" hdelay={0.2}>
+      <Float x={wide ? c.faceCx + 420 : bx + bw / 2} y={wide ? 250 : 58} s={wide ? 1 : 0.62} idle={1} hover="tem-tag" hdelay={0.4}>
         <g>
           <rect x={-130} y={-56} width={260} height={112} rx={24} fill={TEAL} stroke={NAVY} strokeWidth={10} />
           <text y={4} textAnchor="middle" dominantBaseline="central" fontFamily={ANTON} fontSize={74} fill={CREAM} stroke={NAVY} strokeWidth={5} paintOrder="stroke">
@@ -851,26 +770,6 @@ const SceneTem: React.FC<SceneProps> = ({ wide }) => {
           </text>
         </g>
       </Float>
-      {wide && (
-        <>
-          <Float x={c.faceCx + 480} y={640} idle={2} hover="tem-tag" hdelay={0.6}>
-            <g>
-              <rect x={-170} y={-56} width={340} height={112} rx={24} fill={CRIMSON} stroke={NAVY} strokeWidth={10} />
-              <text y={4} textAnchor="middle" dominantBaseline="central" fontFamily={ANTON} fontSize={70} fill={CREAM} stroke={NAVY} strokeWidth={5} paintOrder="stroke">
-                NÃO TEM!
-              </text>
-            </g>
-          </Float>
-        </>
-      )}
-      {[
-        [c.faceCx - c.faceW * 0.95, c.faceTop - 20],
-        [c.faceCx + c.faceW * 0.95, c.faceTop + 30]
-      ].map(([x, y], i) => (
-        <At key={`s${i}`} x={x} y={y} className="ax fx nota-spark" delay={0.1 + i * 0.3}>
-          <Sparkle />
-        </At>
-      ))}
     </>
   );
 };
@@ -881,20 +780,16 @@ const ScenePerguntas: React.FC<SceneProps> = ({ P, wide }) => {
   return (
     <>
       <Floor />
-      <Deco pts={wide ? [[110, 220, 0], [330, 110, 1], [1000, 70, 2], [1720, 130, 1], [1890, 520, 0], [140, 780, 2], [1850, 800, 1]] : [[70, 200, 0], [520, 70, 1], [1030, 120, 2], [1040, 820, 1]]} />
-      {/* cartas gigantes que viram: ? vira ! */}
       {(wide
-        ? [[c.faceCx - 600, 560, -12, TEAL, 0], [c.faceCx + 620, 540, 10, CRIMSON, 0.25], [c.faceCx - 840, 300, 8, CRIMSON, 0.4], [c.faceCx + 850, 330, -9, TEAL, 0.15]]
-        : [[920, 560, 10, CRIMSON, 0.2], [120, 330, -10, TEAL, 0]]
+        ? [[c.faceCx - 600, 560, -10, TEAL, 0], [c.faceCx + 620, 540, 8, CRIMSON, 1.6]]
+        : [[920, 560, 8, CRIMSON, 1.6], [120, 330, -8, TEAL, 0]]
       ).map(([x, y, r, col, d], i) => (
-        <Float key={`c${i}`} x={x as number} y={y as number} r={r as number} s={wide ? 1 : 0.9} idle={i + 1} hover="" hdelay={d as number}>
-          <g className="ax pv-flipwrap" style={{ animationDelay: `${d}s` }}>
-            <g className="ax pv-a" style={{ animationDelay: `${d}s` }}>
-              <Card q={col as string} />
-            </g>
-            <g className="ax pv-b" style={{ animationDelay: `${d}s` }}>
-              <Card q={CREAM} ch="!" back />
-            </g>
+        <Float key={`c${i}`} x={x as number} y={y as number} r={r as number} s={wide ? 1 : 0.9} idle={i + 1}>
+          <g className="ax pv-a" style={{ animationDelay: `${d}s` }}>
+            <Card q={col as string} />
+          </g>
+          <g className="ax pv-b" style={{ animationDelay: `${d}s` }}>
+            <Card q={CREAM} ch="!" back />
           </g>
         </Float>
       ))}
@@ -902,22 +797,15 @@ const ScenePerguntas: React.FC<SceneProps> = ({ P, wide }) => {
         {[0, 1, 2, 3].map((i) => {
           const bell = P[`pv_bell${i}`];
           return (
-            <At key={i} x={bell.ox - c.p.ox} y={bell.oy - c.p.oy} className="ax ot pv-bell" delay={i * 0.09}>
+            <At key={i} x={bell.ox - c.p.ox} y={bell.oy - c.p.oy} className="ax ot pv-bell" delay={i * 0.25}>
               <Shape p={bell} />
             </At>
           );
         })}
       </Figure>
-      {/* interrogações subindo das cartas da mão */}
-      {[
-        [cards.x - 40, cards.y - 60, TEAL, 0],
-        [cards.x + 70, cards.y - 120, CRIMSON, 0.45],
-        [cards.x - 110, cards.y - 160, CREAM, 0.9]
-      ].map(([x, y, col, d], i) => (
-        <At key={`q${i}`} x={x as number} y={y as number} className="ax fx pv-q" delay={d as number}>
-          <Glyph ch="?" color={col as string} size={110} />
-        </At>
-      ))}
+      <At x={cards.x} y={cards.y - 70} className="ax fx pv-q">
+        <Glyph ch="?" color={TEAL} size={110} />
+      </At>
     </>
   );
 };
@@ -931,14 +819,65 @@ const SCENES: Record<string, React.FC<SceneProps>> = {
   'perguntas-e-verdades': ScenePerguntas
 };
 
-/** Recorte do ícone (layout compacto de telas baixas): cabeça e ombros do personagem principal. */
-const ICON_BOX: Record<string, string> = {
-  limite: '70 60 520 520',
-  duvido: '40 60 960 600',
-  proibido: '260 60 520 520',
-  nota: '240 50 520 520',
-  'tem-ou-nao-tem': '550 60 520 520',
-  'perguntas-e-verdades': '280 50 520 520'
+/**
+ * Ícones da família Kazé (CazéTV e Original): um único objeto por jogo, sem rosto, com a mesma paleta
+ * (creme / teal / carmim), contorno navy e tipografia Anton das ilustrações.
+ */
+const ICONS: Record<string, { box: string; el: React.ReactNode }> = {
+  limite: {
+    box: '-340 -410 680 720',
+    el: (
+      <g className="ax ic-pulse">
+        <Gauge />
+      </g>
+    )
+  },
+  duvido: {
+    box: '-175 -150 350 350',
+    el: (
+      <g className="ax ic-sway">
+        <DoubtBubble />
+      </g>
+    )
+  },
+  proibido: {
+    box: '-130 -130 260 260',
+    el: (
+      <g className="ax ic-pulse">
+        <NoSign />
+      </g>
+    )
+  },
+  nota: {
+    box: '-110 -125 240 300',
+    el: (
+      <>
+        <g className="ax ic-sway">
+          <Paddle n="10" color={TEAL} />
+        </g>
+        <At x={66} y={-72} className="ax ic-star">
+          <Star color={CRIMSON} r={54} />
+        </At>
+      </>
+    )
+  },
+  'tem-ou-nao-tem': {
+    box: '-12 -12 384 438',
+    el: <SurveyBoard rows={4} width={360} />
+  },
+  'perguntas-e-verdades': {
+    box: '-175 -145 350 290',
+    el: (
+      <>
+        <At x={55} y={12} r={12}>
+          <Card q={CREAM} ch="!" back />
+        </At>
+        <At x={-45} y={0} r={-10} className="ax ic-sway">
+          <Card q={CRIMSON} />
+        </At>
+      </>
+    )
+  }
 };
 
 export const CAZE_SCENE_IDS = Object.keys(SCENES);
@@ -950,13 +889,19 @@ export const CazeScene: React.FC<{ gameId: string; layout: SceneLayout; classNam
 }) => {
   const Scene = SCENES[gameId];
   if (!Scene) return null;
-  const isIcon = layout === 'icon';
-  const W = SCENE_W[isIcon ? 'compact' : layout];
-  const viewBox = isIcon ? ICON_BOX[gameId] ?? '0 0 1100 1000' : `0 0 ${W} ${H}`;
+  if (layout === 'icon') {
+    const icon = ICONS[gameId];
+    return (
+      <svg viewBox={icon.box} preserveAspectRatio="xMidYMid meet" className={`rdb-caze-svg ${className}`} aria-hidden="true" focusable="false">
+        {icon.el}
+      </svg>
+    );
+  }
+  const W = SCENE_W[layout];
   return (
     <svg
-      viewBox={viewBox}
-      preserveAspectRatio={isIcon ? 'xMidYMid meet' : 'xMidYMax meet'}
+      viewBox={`0 0 ${W} ${H}`}
+      preserveAspectRatio="xMidYMax meet"
       className={`rdb-caze-svg ${className}`}
       aria-hidden="true"
       focusable="false"
