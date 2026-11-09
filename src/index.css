@@ -471,3 +471,94 @@ button[data-testid*="start-direct"]:hover,
 .theme-original ::-webkit-scrollbar-thumb {
   background: var(--rdb-teal);
 }
+
+/* =========================================================================
+   CazéTV Card Micro-Animations on Hover (.group:hover)
+   ========================================================================= */
+@keyframes rdb-needle-wiggle {
+  0% { transform: rotate(0deg); }
+  20% { transform: rotate(18deg); }
+  40% { transform: rotate(4deg); }
+  60% { transform: rotate(22deg); }
+  80% { transform: rotate(10deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes rdb-siren-sweep {
+  0% { transform: rotate(0deg); opacity: 0.5; }
+  50% { transform: rotate(180deg); opacity: 1; }
+  100% { transform: rotate(360deg); opacity: 0.5; }
+}
+
+@keyframes rdb-duvido-shout {
+  0%, 100% { transform: scale(1) rotate(-4deg); }
+  50% { transform: scale(1.15) rotate(4deg); }
+}
+
+@keyframes rdb-jingle-bells {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-14deg); }
+  75% { transform: rotate(14deg); }
+}
+
+@keyframes rdb-score-pop {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(-3deg) scale(1.04); }
+}
+
+@keyframes rdb-star-spin {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.35); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes rdb-lightning-flicker {
+  0%, 100% { opacity: 0.2; transform: scaleY(0.9); }
+  50% { opacity: 1; transform: scaleY(1.15); }
+}
+
+@keyframes rdb-feud-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes rdb-card-fan-left {
+  0%, 100% { transform: rotate(-15deg); }
+  50% { transform: rotate(-24deg) translateX(-4px); }
+}
+
+@keyframes rdb-card-fan-right {
+  0%, 100% { transform: rotate(12deg); }
+  50% { transform: rotate(22deg) translateX(4px); }
+}
+
+.group:hover .animate-rdb-needle {
+  animation: rdb-needle-wiggle 0.4s ease-in-out infinite;
+}
+.group:hover .animate-rdb-siren {
+  animation: rdb-siren-sweep 1.2s linear infinite;
+}
+.group:hover .animate-rdb-duvido {
+  animation: rdb-duvido-shout 0.45s ease-in-out infinite;
+}
+.group:hover .animate-rdb-jingle {
+  animation: rdb-jingle-bells 0.35s ease-in-out infinite;
+}
+.group:hover .animate-rdb-score {
+  animation: rdb-score-pop 0.5s ease-in-out infinite;
+}
+.group:hover .animate-rdb-star {
+  animation: rdb-star-spin 0.8s ease-in-out infinite;
+}
+.group:hover .animate-rdb-lightning {
+  animation: rdb-lightning-flicker 0.2s steps(2, start) infinite;
+}
+.group:hover .animate-rdb-host {
+  animation: rdb-feud-bounce 0.5s ease-in-out infinite;
+}
+.group:hover .animate-rdb-card-left {
+  animation: rdb-card-fan-left 0.6s ease-in-out infinite;
+}
+.group:hover .animate-rdb-card-right {
+  animation: rdb-card-fan-right 0.6s ease-in-out infinite;
+}
