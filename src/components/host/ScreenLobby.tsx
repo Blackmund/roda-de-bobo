@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { GameRoom, GameId, VisualTheme, TeamId } from '../../types/game';
 import { isCazeFamily, themeBadge } from '../../utils/themeUtils';
+import { CazeArt } from '../RodaIcons';
 import {
   TEAM_META,
   getActiveTeamIds,
@@ -18,13 +19,7 @@ import {
   NotaCardArt,
   TemOuNaoTemBoardArt,
   PerguntasEVerdadesArt,
-  CazeAnimatedLimiteArt,
-  CazeAnimatedDuvidoArt,
-  CazeAnimatedProibidoArt,
-  CazeAnimatedNotaArt,
-  CazeAnimatedTemOuNaoTemArt,
-  CazeAnimatedPerguntasEVerdadesArt,
-  CazeArt,
+  GarticBicycleArt,
   RodaDeBoboOfficialBadge,
   RetroPointerCursor
 } from '../RodaIcons';
@@ -119,10 +114,10 @@ const GAMES: Array<{
     badge: 'INDIVIDUAL',
     color: '#FF6B00',
     renderArt: (cls) => (
-      <CazeAnimatedLimiteArt
+      <LimiteArcadeArt
         className={
           cls ||
-          'w-full h-full max-h-full max-w-full object-contain object-bottom'
+          'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
         }
       />
     )
@@ -134,10 +129,10 @@ const GAMES: Array<{
     badge: 'EM EQUIPE',
     color: '#FF1E56',
     renderArt: (cls) => (
-      <CazeAnimatedDuvidoArt
+      <TelefoneSemFioBoyArt
         className={
           cls ||
-          'w-full h-full max-h-full max-w-full object-contain object-bottom'
+          'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
         }
       />
     )
@@ -149,10 +144,10 @@ const GAMES: Array<{
     badge: 'EM EQUIPE',
     color: '#17B8B8',
     renderArt: (cls) => (
-      <CazeAnimatedProibidoArt
+      <ProibidoSirenArt
         className={
           cls ||
-          'w-full h-full max-h-full max-w-full object-contain object-bottom'
+          'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
         }
       />
     )
@@ -164,10 +159,10 @@ const GAMES: Array<{
     badge: 'INDIVIDUAL',
     color: '#9D00FF',
     renderArt: (cls) => (
-      <CazeAnimatedNotaArt
+      <NotaCardArt
         className={
           cls ||
-          'w-full h-full max-h-full max-w-full object-contain object-bottom'
+          'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
         }
       />
     )
@@ -179,10 +174,10 @@ const GAMES: Array<{
     badge: 'EM EQUIPE',
     color: '#00E5FF',
     renderArt: (cls) => (
-      <CazeAnimatedTemOuNaoTemArt
+      <TemOuNaoTemBoardArt
         className={
           cls ||
-          'w-full h-full max-h-full max-w-full object-contain object-bottom'
+          'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
         }
       />
     )
@@ -194,10 +189,10 @@ const GAMES: Array<{
     badge: '2 A 6 JOGADORES',
     color: '#FF1E56',
     renderArt: (cls) => (
-      <CazeAnimatedPerguntasEVerdadesArt
+      <PerguntasEVerdadesArt
         className={
           cls ||
-          'w-full h-full max-h-full max-w-full object-contain object-bottom'
+          'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
         }
       />
     )
@@ -480,8 +475,10 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
           </div>
 
           {/* 6 Games Adaptive Grid: Protected Height (flex-1 min-h-0) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 gap-3 md:gap-4 flex-1 min-h-0">
-            {GAMES.map((game) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-rows-3 lg:grid-cols-3 lg:grid-rows-2 gap-3 md:gap-4 flex-1 min-h-0">
+            {GAMES.map((game) => {
+              const isCenteredArt = game.id === 'tem-ou-nao-tem';
+              return (
               <div
                 key={game.id}
                 data-testid={`lobby-game-card-${game.id}`}
@@ -510,15 +507,42 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
 
                 {/* Vertical Layout (Default when viewport height > 700px) */}
                 <div className="flex flex-col justify-between w-full h-full min-h-0 [@media(max-height:700px)]:hidden">
-                  {/* Priority #2: Illustration / Icon Area - Preenche o espaço responsivamente e sangra na borda inferior do card */}
-                  <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-end relative overflow-hidden pt-2 px-2">
-                    <div className="flex-1 w-full min-h-0 flex items-end justify-center overflow-hidden">
-                      <CazeArt
-                        gameId={game.id}
-                        className="w-full h-full max-h-full max-w-full object-contain object-bottom select-none pointer-events-none"
-                      />
+                  {/* Priority #2: Illustration / Icon Area */}
+                  {isCazeFamily(visualTheme) ? (
+                    /* Modo CazéTV / Original: Ilustração em SVG vetorial animado */
+                    <div
+                      className={`flex-1 min-h-0 w-full flex flex-col items-center relative overflow-hidden ${
+                        isCenteredArt
+                          ? 'justify-center p-2.5 md:p-3'
+                          : 'justify-end pt-1.5 px-2 pb-0'
+                      }`}
+                    >
+                      <div
+                        className={`flex-1 w-full min-h-0 flex justify-center overflow-hidden ${
+                          isCenteredArt ? 'items-center' : 'items-end'
+                        }`}
+                      >
+                        <CazeArt
+                          gameId={game.id}
+                          className={`w-full h-full max-h-full max-w-full block transition-transform duration-300 select-none pointer-events-none ${
+                            isCenteredArt
+                              ? 'object-contain object-center group-hover:scale-[1.04]'
+                              : 'object-contain object-bottom origin-bottom group-hover:scale-[1.04]'
+                          }`}
+                          fallback={game.renderArt('w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain')}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    /* Outros Modos (Neon, Clean, etc.): Ícone centralizado na área disponível */
+                    <div className="flex-1 min-h-0 flex flex-col items-center justify-center p-3 relative overflow-hidden">
+                      <div className="flex-1 min-h-0 flex items-center justify-center max-h-full max-w-full overflow-hidden">
+                        {game.renderArt(
+                          'w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 max-h-full max-w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105 filter drop-shadow'
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Priority #1: Bottom Title Bar com animação de troca no Hover pelo Subtítulo/Legenda */}
                   <div
@@ -557,10 +581,17 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                 {/* Automatic Horizontal Compact Layout for Short Screens (@media (max-height: 700px)) */}
                 <div className="hidden [@media(max-height:700px)]:flex flex-row items-center justify-between w-full h-full py-2 gap-3 min-h-0">
                   <div className="w-14 h-14 shrink-0 flex items-center justify-center overflow-hidden">
-                    <CazeArt
-                      gameId={game.id}
-                      className="w-full h-full object-contain select-none pointer-events-none"
-                    />
+                    {isCazeFamily(visualTheme) ? (
+                      <CazeArt
+                        gameId={game.id}
+                        className="w-14 h-14 max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-105"
+                        fallback={game.renderArt('w-12 h-12 object-contain')}
+                      />
+                    ) : (
+                      game.renderArt(
+                        'w-12 h-12 max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
+                      )
+                    )}
                   </div>
                   <div className="relative text-left flex-1 min-w-0 ml-2 pr-2 h-10 overflow-hidden flex flex-col justify-center">
                     {/* Nome (sobe no hover) */}
@@ -578,7 +609,8 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                   />
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

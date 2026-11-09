@@ -562,3 +562,121 @@ button[data-testid*="start-direct"]:hover,
 .group:hover .animate-rdb-card-right {
   animation: rdb-card-fan-right 0.6s ease-in-out infinite;
 }
+
+/* =========================================================================
+   Vectorized CazéTV Cartoon SVG Layer Hover Animations (.group:hover)
+   ========================================================================= */
+@keyframes rdb-svg-sweat-bounce {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-4px, -7px) scale(1.12); }
+}
+
+@keyframes rdb-svg-hands-tremble {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(-3px, -2px) rotate(-2deg); }
+  75% { transform: translate(3px, -2px) rotate(2deg); }
+}
+
+@keyframes rdb-svg-gauge-critical {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+  25% { transform: scale(1.04) rotate(2.5deg); filter: brightness(1.2) drop-shadow(0 0 8px rgba(230, 25, 75, 0.75)); }
+  50% { transform: scale(1.02) rotate(-1.5deg); filter: brightness(1.1); }
+  75% { transform: scale(1.05) rotate(3deg); filter: brightness(1.25) drop-shadow(0 0 10px rgba(230, 25, 75, 0.85)); }
+}
+
+@keyframes rdb-svg-bubble-shout {
+  0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+  30% { transform: translateY(-10px) scale(1.12) rotate(-6deg); }
+  65% { transform: translateY(-6px) scale(1.09) rotate(5deg); }
+}
+
+@keyframes rdb-svg-duel-gesture {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(0, -6px) rotate(-3deg) scale(1.04); }
+}
+
+@keyframes rdb-svg-siren-flash {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+  25% { transform: scale(1.1) rotate(-5deg); filter: brightness(1.25) drop-shadow(0 0 10px rgba(230, 25, 75, 0.85)); }
+  75% { transform: scale(1.1) rotate(5deg); filter: brightness(1.25) drop-shadow(0 0 10px rgba(230, 25, 75, 0.85)); }
+}
+
+@keyframes rdb-svg-panic-wave {
+  0%, 100% { transform: translateY(0) scaleX(1); }
+  50% { transform: translateY(-8px) scaleX(1.03); }
+}
+
+@keyframes rdb-svg-stars-twinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+  50% { transform: scale(1.07) rotate(3deg); filter: brightness(1.25) drop-shadow(0 0 6px rgba(23, 184, 184, 0.6)); }
+}
+
+@keyframes rdb-svg-nota-bounce {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.14) rotate(-6deg); }
+}
+
+@keyframes rdb-svg-topbar-glow {
+  0%, 100% { transform: scaleX(1); filter: brightness(1); }
+  50% { transform: scaleX(1.02); filter: brightness(1.25) drop-shadow(0 0 8px rgba(23, 184, 184, 0.7)); }
+}
+
+@keyframes rdb-svg-bars-shimmer {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+
+@keyframes rdb-svg-bells-jingle {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  25% { transform: rotate(-6deg) translateY(-4px); }
+  75% { transform: rotate(6deg) translateY(-4px); }
+}
+
+@keyframes rdb-svg-cards-fan {
+  0%, 100% { transform: rotate(0deg) translate(0, 0); }
+  50% { transform: rotate(-6deg) translate(-5px, -4px) scale(1.05); }
+}
+
+.rdb-caze-svg g {
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.group:hover .rdb-svg-sweat {
+  animation: rdb-svg-sweat-bounce 0.55s ease-in-out infinite;
+}
+.group:hover .rdb-svg-hands {
+  animation: rdb-svg-hands-tremble 0.35s ease-in-out infinite;
+}
+.group:hover .rdb-svg-gauge-red {
+  animation: rdb-svg-gauge-critical 0.45s ease-in-out infinite;
+}
+.group:hover .rdb-svg-bubble {
+  animation: rdb-svg-bubble-shout 0.55s ease-in-out infinite;
+}
+.group:hover .rdb-svg-duel-hands {
+  animation: rdb-svg-duel-gesture 0.5s ease-in-out infinite;
+}
+.group:hover .rdb-svg-siren {
+  animation: rdb-svg-siren-flash 0.45s ease-in-out infinite;
+}
+.group:hover .rdb-svg-panic-hands {
+  animation: rdb-svg-panic-wave 0.45s ease-in-out infinite;
+}
+.group:hover .rdb-svg-stars {
+  animation: rdb-svg-stars-twinkle 0.65s ease-in-out infinite;
+}
+.group:hover .rdb-svg-nota-accent {
+  animation: rdb-svg-nota-bounce 0.5s ease-in-out infinite;
+}
+.group:hover .rdb-svg-top-bar {
+  animation: rdb-svg-topbar-glow 0.6s ease-in-out infinite;
+}
+.group:hover .rdb-svg-survey-bars {
+  animation: rdb-svg-bars-shimmer 0.55s ease-in-out infinite;
+}
+.group:hover .rdb-svg-bells {
+  animation: rdb-svg-bells-jingle 0.45s ease-in-out infinite;
+}
+.group:hover .rdb-svg-cards {
+  animation: rdb-svg-cards-fan 0.55s ease-in-out infinite;
+}
