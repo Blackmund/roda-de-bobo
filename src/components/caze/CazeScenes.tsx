@@ -489,18 +489,6 @@ const SceneTem: React.FC<SceneProps> = ({ P, wide }) => {
         <SurveyBoard rows={rows} width={bw} />
       </At>
       <CharG c={c} className="tem-char" />
-      {wide && (
-        <At x={c.right + 140} y={330}>
-          {[0, 1, 2].map((i) => (
-            <g key={i} transform={`translate(${i * 150} 0)`}>
-              <rect x={-62} y={-62} width={124} height={124} rx={16} fill={NAVY} stroke={CREAM} strokeWidth={10} />
-              <At x={0} y={0} className="ax fx tem-strike" delay={0.6 + i * 0.6}>
-                <XMark size={44} />
-              </At>
-            </g>
-          ))}
-        </At>
-      )}
     </>
   );
 };

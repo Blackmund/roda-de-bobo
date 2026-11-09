@@ -486,7 +486,9 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                   sounds.playTick();
                 }}
                 onMouseLeave={() => setHoveredGame(null)}
-                className={`group relative cursor-pointer transition-all duration-200 overflow-hidden flex flex-col justify-between [@media(max-height:700px)]:flex-row [@media(max-height:700px)]:items-center [@media(max-height:700px)]:justify-between [@media(max-height:700px)]:px-4 min-h-0 ${
+                className={`group relative cursor-pointer transition-all duration-200 overflow-hidden flex flex-col justify-between ${
+                  isCazeFamily(visualTheme) ? '' : '[@media(max-height:700px)]:flex-row [@media(max-height:700px)]:items-center [@media(max-height:700px)]:justify-between [@media(max-height:700px)]:px-4'
+                } min-h-0 ${
                   visualTheme === 'original'
                   ? 'bg-[#0a0b1e] border-2 border-[#17B8B8] hover:border-[#E6194B] shadow-none rounded-none'
                   : visualTheme === 'cazetv'
@@ -504,7 +506,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                 </div>
 
                 {/* Vertical Layout (Default when viewport height > 700px) */}
-                <div className="flex flex-col justify-between w-full h-full min-h-0 [@media(max-height:700px)]:hidden">
+                <div className={`flex flex-col justify-between w-full h-full min-h-0 ${isCazeFamily(visualTheme) ? '' : '[@media(max-height:700px)]:hidden'}`}>
                   {/* Priority #2: Illustration / Icon Area */}
                   {isCazeFamily(visualTheme) ? (
                     /* Modo CazéTV / Original: Ilustração em SVG vetorial animado com 2 layouts responsivos (compact / wide) */
@@ -531,7 +533,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
 
                   {/* Priority #1: Bottom Title Bar com animação de troca no Hover pelo Subtítulo/Legenda */}
                   <div
-                    className={`shrink-0 w-full py-2.5 px-3 border-t-2 transition-colors duration-200 z-10 flex items-center justify-between gap-2 overflow-hidden ${
+                    className={`shrink-0 w-full py-2.5 [@media(max-height:700px)]:py-1.5 px-3 border-t-2 transition-colors duration-200 z-10 flex items-center justify-between gap-2 overflow-hidden ${
                       visualTheme === 'original'
                       ? 'bg-[#0a0b1e] border-[#17B8B8] group-hover:bg-[#E6194B] group-hover:border-[#E6194B]'
                       : visualTheme === 'cazetv'
@@ -564,7 +566,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                 </div>
 
                 {/* Automatic Horizontal Compact Layout for Short Screens (@media (max-height: 700px)) */}
-                <div className="hidden [@media(max-height:700px)]:flex flex-row items-center justify-between w-full h-full py-2 gap-3 min-h-0">
+                <div className={`hidden ${isCazeFamily(visualTheme) ? '' : '[@media(max-height:700px)]:flex'} flex-row items-center justify-between w-full h-full py-2 gap-3 min-h-0`}>
                   <div className="w-14 h-14 shrink-0 flex items-center justify-center overflow-hidden">
                     {isCazeFamily(visualTheme) ? (
                       <CazeArt
