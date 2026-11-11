@@ -173,12 +173,34 @@ export function applyProibidoCardOutcome(
     nextState: {
       ...prev,
       roundScore: outcome === 'correct' ? prev.roundScore + 1 : prev.roundScore,
+      lastFoulIndex: outcome === 'foul' ? currentIdx : prev.lastFoulIndex,
       currentCardIndex: isFinished ? currentIdx : nextQueue[0],
       pendingQueue: nextQueue,
       cardOutcomes: updatedOutcomes,
       phase: isFinished ? 'SUMMARY' : 'PLAYING',
       timerActive: isFinished ? false : prev.timerActive
     }
+  };
+}
+
+/**
+ * REG-06 / UX-10: contestar falta. No programa o diretor arbitra polemicas (ex.: 'encobrir' x 'cobertura'
+ * nao e o mesmo radical). Se o juiz aceita a contestacao, a ultima falta e desfeita: a carta volta a ser a atual.
+ */
+export function contestProibidoFoul(prev: ProibidoGameState): ProibidoGameState {
+  const idx = prev.lastFoulIndex;
+  if (idx === undefined || prev.cardOutcomes[idx] !== 'foul') return prev;
+  const outcomes = [...prev.cardOutcomes];
+  outcomes[idx] = 'pending';
+  const queue = [idx, ...(prev.pendingQueue ?? []).filter((i) => i !== idx)];
+  return {
+    ...prev,
+    cardOutcomes: outcomes,
+    pendingQueue: queue,
+    currentCardIndex: idx,
+    lastFoulIndex: undefined,
+    phase: 'PLAYING',
+    timerActive: prev.phase === 'SUMMARY' ? prev.timerSeconds > 0 : prev.timerActive
   };
 }
 
@@ -304,6 +326,13 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
       const { nextState } = applyProibidoCardOutcome(prev, 'foul');
       return nextState;
     });
+  };
+
+  const handleContestFoul = () => {
+    sounds.playFlip();
+    setSkipFeedbackMsg('⚖️ Falta contestada: o juiz devolveu a carta!');
+    setTimeout(() => setSkipFeedbackMsg(null), 1800);
+    onUpdateProibidoState((prev) => contestProibidoFoul(prev));
   };
 
   const toggleTvWordsVisibility = () => {
@@ -876,7 +905,17 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
             </div>
 
             {/* Destructive Control: Visually isolated on the right with crimson theme */}
-            <div className="pl-3 border-l border-white/15">
+            <div className="pl-3 border-l border-white/15 flex items-center gap-2">
+              {proibido.lastFoulIndex !== undefined && proibido.cardOutcomes[proibido.lastFoulIndex] === 'foul' && (
+                <button
+                  type="button"
+                  data-testid="proibido-contest-foul-btn"
+                  onClick={handleContestFoul}
+                  className="px-3 py-2 border border-sky-400/60 bg-sky-950/60 hover:bg-sky-400 hover:text-black text-sky-200 font-anton text-xs md:text-sm uppercase tracking-wider cursor-pointer transition-colors"
+                >
+                  ⚖️ CONTESTAR FALTA
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleFoul}

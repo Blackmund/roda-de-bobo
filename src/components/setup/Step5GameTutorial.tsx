@@ -141,7 +141,7 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
         icon: '🙊',
         headline: 'Dicas Ágeis sem Palavras Proibidas',
         description:
-          'Descreva a palavra-chave com analogias e sinônimos. É proibido pronunciar qualquer uma das 5 palavras proibidas ou radicais!',
+          'Descreva a palavra-chave com analogias e sinônimos. É proibido pronunciar as 5 proibidas, a própria palavra, palavras do mesmo radical e traduções em inglês. Sinônimos, frases completas e dicas seguidas valem. Em caso de polêmica, o juiz pode contestar a falta e devolver a carta.',
         accentTag: 'Zero Proibidas'
       },
       {
