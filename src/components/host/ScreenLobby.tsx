@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { GameRoom, GameId, VisualTheme, TeamId } from '../../types/game';
 import { isCazeFamily, themeBadge } from '../../utils/themeUtils';
+import { isApiAvailable } from '../../utils/apiAvailability';
 import { CazeArt } from '../RodaIcons';
 import { GAME_LIMITS } from '../../config/gameLimits';
 import {
@@ -245,16 +246,28 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
   const editingPlayer = room.players.find((p) => p.id === editingAvatarPlayerId) || null;
 
   useEffect(() => {
-    fetch('/api/ai-status')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((json) => {
-        if (json?.statusLabel) {
-          setAiStatusLabel(json.statusLabel);
-        }
-      })
-      .catch(() => {
-        // Keep default connected status badge
-      });
+    let cancelled = false;
+    void isApiAvailable().then((available) => {
+      if (cancelled) return;
+      if (!available) {
+        // Sem servidor proprio neste site: nao existe IA, so os bancos prontos (nada de "Gemini conectada").
+        setAiStatusLabel('🟡 Sem servidor de IA neste site: usando os bancos prontos');
+        return;
+      }
+      fetch('/api/ai-status')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((json) => {
+          if (!cancelled && json?.statusLabel) {
+            setAiStatusLabel(json.statusLabel);
+          }
+        })
+        .catch(() => {
+          // Keep default connected status badge
+        });
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
