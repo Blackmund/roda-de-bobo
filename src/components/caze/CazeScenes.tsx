@@ -54,11 +54,19 @@ const At: React.FC<{
   r?: number;
   className?: string;
   delay?: number;
+  /** Vida em idle: camada interna que flutua de leve o tempo todo (o hover anima a camada externa). */
+  idle?: number;
   children: React.ReactNode;
-}> = ({ x, y, s = 1, r = 0, className, delay, children }) => (
+}> = ({ x, y, s = 1, r = 0, className, delay, idle, children }) => (
   <g transform={`translate(${x.toFixed(1)} ${y.toFixed(1)})${r ? ` rotate(${r})` : ''}${s !== 1 ? ` scale(${s.toFixed(4)})` : ''}`}>
     <g className={className} style={delay !== undefined ? { animationDelay: `${delay}s` } : undefined}>
-      {children}
+      {idle !== undefined ? (
+        <g className={`ax idle idle${idle % 3}`} style={{ animationDelay: `${-(idle * 1.7)}s` }}>
+          {children}
+        </g>
+      ) : (
+        children
+      )}
     </g>
   </g>
 );
@@ -105,20 +113,24 @@ function relTo(c: CharPos, q: Piece, dx = 0, dy = 0) {
 
 const CharG: React.FC<{ c: CharPos; className: string; children?: React.ReactNode }> = ({ c, className, children }) => (
   <At x={c.tx} y={c.ty} s={c.s} className={`ax ob ${className}`}>
-    <Shape p={c.p} />
-    {children}
+    {/* respiração em idle: o boneco infla de leve com o pé/base fixos */}
+    <g className="ax ob breath" style={{ animationDelay: `${-((Math.abs(c.tx) % 7) * 0.7)}s` }}>
+      <Shape p={c.p} />
+      {children}
+    </g>
   </At>
 );
 
-const PieceG: React.FC<{ p: Piece; x: number; y: number; s: number; className?: string; delay?: number }> = ({
+const PieceG: React.FC<{ p: Piece; x: number; y: number; s: number; className?: string; delay?: number; idle?: number }> = ({
   p,
   x,
   y,
   s,
   className = '',
-  delay
+  delay,
+  idle
 }) => (
-  <At x={x} y={y} s={s} className={`ax ${className}`} delay={delay}>
+  <At x={x} y={y} s={s} className={`ax ${className}`} delay={delay} idle={idle}>
     <Shape p={p} />
   </At>
 );
@@ -275,7 +287,7 @@ const SurveyBoard: React.FC<{ rows: number; width: number }> = ({ rows, width })
       </>
     );
     if (i === 0) return <g key={i}>{answer}</g>;
-    const delay = 0.12 + (i - 1) * 0.17;
+    const delay = 0.25 + (i - 1) * 0.3;
     return (
       <g key={i}>
         <g className="ax tem-flip" style={{ animationDelay: `${last ? 99 : delay}s` }}>
@@ -290,7 +302,7 @@ const SurveyBoard: React.FC<{ rows: number; width: number }> = ({ rows, width })
           )}
         </g>
         {last && (
-          <At x={pad + bw / 2} y={y + bh / 2} className="ax fx tem-strike" delay={0.15 + (rows - 2) * 0.17 + 0.25}>
+          <At x={pad + bw / 2} y={y + bh / 2} className="ax fx tem-strike" delay={0.25 + (rows - 2) * 0.3 + 0.45}>
             <XMark size={62} />
           </At>
         )}
@@ -319,11 +331,11 @@ const SceneLimite: React.FC<SceneProps> = ({ P, wide }) => {
     <>
       {/* fumaça saindo do medidor */}
       {[0, 1, 2].map((i) => (
-        <At key={`p${i}`} x={g.x + (i - 1) * 60} y={g.y - 400 * g.s} s={0.9} className="ax fx lim-puff" delay={i * 0.32}>
+        <At key={`p${i}`} x={g.x + (i - 1) * 60} y={g.y - 400 * g.s} s={0.9} className="ax fx lim-puff" delay={i * 0.7}>
           <Puff />
         </At>
       ))}
-      <At x={g.x} y={g.y} s={g.s} className="ax lim-gauge">
+      <At x={g.x} y={g.y} s={g.s} className="ax lim-gauge" idle={0}>
         <Gauge />
       </At>
       {/* faíscas de "vai estourar" */}
@@ -333,16 +345,16 @@ const SceneLimite: React.FC<SceneProps> = ({ P, wide }) => {
         [g.x + 150 * g.s, g.y - 370 * g.s, 35],
         ...(wide ? [[g.x + 330 * g.s, g.y + 170 * g.s, -30]] : [])
       ].map(([x, y, r], i) => (
-        <At key={`b${i}`} x={x} y={y} r={r} s={0.8} className="ax fx lim-bolt" delay={0.55 + i * 0.12}>
+        <At key={`b${i}`} x={x} y={y} r={r} s={0.8} className="ax fx lim-bolt" delay={1.1 + i * 0.35}>
           <Bolt />
         </At>
       ))}
       <CharG c={c} className="lim-char" />
       {/* suor espirrando */}
       {[
-        [fx - c.faceW * 0.62, ft + 40, 'l', 0],
-        [fx - c.faceW * 0.45, ft - 60, 'l', 0.3],
-        [fx + c.faceW * 0.55, ft - 30, 'r', 0.15]
+        [fx - c.faceW * 0.62, ft + 40, 'l', 0.5],
+        [fx - c.faceW * 0.45, ft - 60, 'l', 1.1],
+        [fx + c.faceW * 0.55, ft - 30, 'r', 0.8]
       ].map(([x, y, d, delay], i) => (
         <At key={`d${i}`} x={x as number} y={y as number} s={0.75} className={`ax fx lim-drop-${d}`} delay={delay as number}>
           <Drop />
@@ -365,14 +377,14 @@ const SceneDuvido: React.FC<SceneProps> = ({ P, wide }) => {
         [mid - 10, b.faceCy - 40, 10],
         [mid + 30, b.faceCy + 90, -20]
       ].map(([x, y, r], i) => (
-        <At key={`t${i}`} x={x} y={y} r={r} s={0.62} className="ax fx duv-bolt" delay={0.35 + i * 0.15}>
+        <At key={`t${i}`} x={x} y={y} r={r} s={0.62} className="ax fx duv-bolt" delay={0.9 + i * 0.4}>
           <Bolt />
         </At>
       ))}
       {/* suor do blefador */}
       {[
-        [b.faceCx - b.faceW * 0.6, b.faceTop + 30, 0],
-        [b.faceCx - b.faceW * 0.42, b.faceTop - 70, 0.35]
+        [b.faceCx - b.faceW * 0.6, b.faceTop + 30, 0.4],
+        [b.faceCx - b.faceW * 0.42, b.faceTop - 70, 1.2]
       ].map(([x, y, d], i) => (
         <At key={`d${i}`} x={x} y={y} s={0.7} className="ax fx lim-drop-l" delay={d}>
           <Drop />
@@ -383,11 +395,11 @@ const SceneDuvido: React.FC<SceneProps> = ({ P, wide }) => {
           [b.left - 170, 380, TEAL, 0],
           [k.right + 170, 330, CRIMSON, 0.25]
         ].map(([x, y, col, d], i) => (
-          <At key={`q${i}`} x={x as number} y={y as number} s={0.9} className="ax duv-float" delay={d as number}>
+          <At key={`q${i}`} x={x as number} y={y as number} s={0.9} className="ax duv-float" delay={d as number} idle={i + 1}>
             <Glyph ch="?" color={col as string} size={150} />
           </At>
         ))}
-      <At x={mid + 70} y={k.faceTop - 205} s={wide ? 0.95 : 0.88} className="ax duv-bubble">
+      <At x={mid + 70} y={k.faceTop - 205} s={wide ? 0.95 : 0.88} className="ax duv-bubble" idle={2}>
         <DoubtBubble />
       </At>
     </>
@@ -413,8 +425,8 @@ const SceneProibido: React.FC<SceneProps> = ({ P, wide }) => {
         </g>
       </At>
       <CharG c={c} className="pro-char" />
-      <PieceG p={P.proibido_siren} {...siren} className="ob pro-siren" />
-      <PieceG p={P.proibido_sign} {...sign} className="pro-sign" />
+      <PieceG p={P.proibido_siren} {...siren} className="ob pro-siren" idle={1} />
+      <PieceG p={P.proibido_sign} {...sign} className="pro-sign" idle={2} />
       {wide &&
         [
           [c.left - 120, 700, -12],
@@ -440,14 +452,14 @@ const SceneNota: React.FC<SceneProps> = ({ P, wide }) => {
         const base = relTo(c, st);
         const cx = base.x + (st.w * c.s) / 2;
         const nx = c.faceCx + (cx - c.faceCx) * spread - (st.w * c.s) / 2;
-        return <PieceG key={i} p={st} x={nx} y={base.y + (wide ? 30 : 0)} s={c.s} className="nota-star" delay={i * 0.14} />;
+        return <PieceG key={i} p={st} x={nx} y={base.y + (wide ? 30 : 0)} s={c.s} className="nota-star" delay={i * 0.3} idle={i} />;
       })}
       {wide &&
         [
           [c.faceCx - 900, 560, CRIMSON, 0.2],
           [c.faceCx + 900, 420, TEAL, 0.5]
         ].map(([x, y, col, d], i) => (
-          <At key={`xs${i}`} x={x as number} y={y as number} s={1.1} className="ax nota-star" delay={d as number}>
+          <At key={`xs${i}`} x={x as number} y={y as number} s={1.1} className="ax nota-star" delay={d as number} idle={i + 2}>
             <Star color={col as string} />
           </At>
         ))}
@@ -457,7 +469,7 @@ const SceneNota: React.FC<SceneProps> = ({ P, wide }) => {
         [paddle.x + 150, paddle.y - 170, 0.25],
         [paddle.x - 120, paddle.y + 130, 0.5]
       ].map(([x, y, d], i) => (
-        <At key={`s${i}`} x={x} y={y} className="ax fx nota-spark" delay={d}>
+        <At key={`s${i}`} x={x} y={y} className="ax fx nota-spark" delay={d * 2.4}>
           <Sparkle />
         </At>
       ))}
@@ -477,18 +489,6 @@ const SceneTem: React.FC<SceneProps> = ({ P, wide }) => {
         <SurveyBoard rows={rows} width={bw} />
       </At>
       <CharG c={c} className="tem-char" />
-      {wide && (
-        <At x={c.right + 140} y={330}>
-          {[0, 1, 2].map((i) => (
-            <g key={i} transform={`translate(${i * 150} 0)`}>
-              <rect x={-62} y={-62} width={124} height={124} rx={16} fill={NAVY} stroke={CREAM} strokeWidth={10} />
-              <At x={0} y={0} className="ax fx tem-strike" delay={0.3 + i * 0.35}>
-                <XMark size={44} />
-              </At>
-            </g>
-          ))}
-        </At>
-      )}
     </>
   );
 };
@@ -503,7 +503,7 @@ const ScenePerguntas: React.FC<SceneProps> = ({ P, wide }) => {
           [c.faceCx - 820, 600, -14, TEAL, 0],
           [c.faceCx + 820, 560, 12, CRIMSON, 0.3]
         ].map(([x, y, r, col, d], i) => (
-          <At key={`c${i}`} x={x as number} y={y as number} r={r as number} s={1.05} className="ax pv-card" delay={d as number}>
+          <At key={`c${i}`} x={x as number} y={y as number} r={r as number} s={1.05} className="ax pv-card" delay={(d as number) * 2} idle={i}>
             <Card q={col as string} />
           </At>
         ))}
@@ -511,7 +511,7 @@ const ScenePerguntas: React.FC<SceneProps> = ({ P, wide }) => {
         {[0, 1, 2, 3].map((i) => {
           const bell = P[`pv_bell${i}`];
           return (
-            <At key={i} x={bell.ox - c.p.ox} y={bell.oy - c.p.oy} className="ax ot pv-bell" delay={i * 0.09}>
+            <At key={i} x={bell.ox - c.p.ox} y={bell.oy - c.p.oy} className="ax ot pv-bell" delay={i * 0.16}>
               <Shape p={bell} />
             </At>
           );
@@ -520,8 +520,8 @@ const ScenePerguntas: React.FC<SceneProps> = ({ P, wide }) => {
       {/* interrogações subindo das cartas */}
       {[
         [cards.x - 40, cards.y - 60, TEAL, 0],
-        [cards.x + 70, cards.y - 120, CRIMSON, 0.45],
-        [cards.x - 110, cards.y - 160, CREAM, 0.9]
+        [cards.x + 70, cards.y - 120, CRIMSON, 0.9],
+        [cards.x - 110, cards.y - 160, CREAM, 1.8]
       ].map(([x, y, col, d], i) => (
         <At key={`q${i}`} x={x as number} y={y as number} className="ax fx pv-q" delay={d as number}>
           <Glyph ch="?" color={col as string} size={110} />

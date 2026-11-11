@@ -2,6 +2,7 @@ import { themeBadge } from '../../utils/themeUtils';
 import React, { useEffect, useState } from 'react';
 import { GameRoom, DuvidoGameState, TeamId } from '../../types/game';
 import { sounds } from '../../utils/soundEffects';
+import { isShowRuleset, DUVIDO_SHOW_THEMES, DUVIDO_SHOW_WIN_TARGET } from '../../config/rulesets';
 import { generateRoundContent, generateThemeStrictFallbackRound, sanitizeCleanGameText } from '../../utils/aiGameGenerator';
 import { ActiveTurnBanner } from '../ActiveTurnBanner';
 import { TEAM_META, getActiveTeamIds, getNextTeamId } from '../../utils/teamUtils';
@@ -273,6 +274,16 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
 
   return (
     <div className="gap-1.5 h-full flex flex-col justify-between min-h-0 overflow-hidden">
+      {/* REG-01: regras do programa — 9 temas, vence quem chegar a 5 */}
+      {isShowRuleset(room.customConfig) && (
+        <div
+          data-testid="duvido-show-ruleset-chip"
+          className="shrink-0 px-2 py-0.5 border border-amber-400/60 bg-amber-950/40 text-amber-200 font-mono-code text-[10px] font-bold uppercase tracking-wider text-center"
+        >
+          📺 Regras do programa · tema {Math.min(room.roundNumber, DUVIDO_SHOW_THEMES)} de {DUVIDO_SHOW_THEMES} · vence quem chegar a {DUVIDO_SHOW_WIN_TARGET} temas
+        </div>
+      )}
+
       {/* Top Header: Multi-Team Scoreboard Strip (2, 3, or 4 Teams) */}
       <div
         className={`grid gap-2 shrink-0 ${

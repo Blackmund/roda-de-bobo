@@ -1430,6 +1430,16 @@ test('Tem ou Não Tem / Game Inputs: Fuzzy Match and Typo Tolerance', () => {
   assert.equal(checkAnswerFuzzyMatch('sol', 'sal'), false);
 });
 
+test('REG-10 Top 5: palpite errado não pontua ("praia" não revela "Shopping")', () => {
+  const synonyms = ['Praca de alimentacao'];
+  assert.equal(checkAnswerFuzzyMatch('praia', 'Shopping', synonyms), false, 'praia must not match Shopping');
+  assert.equal(checkAnswerFuzzyMatch('pra', 'Shopping', synonyms), false, '3-letter fragments must not match');
+  assert.equal(checkAnswerFuzzyMatch('ali', 'Shopping', synonyms), false);
+  assert.equal(checkAnswerFuzzyMatch('shoping', 'Shopping', synonyms), true, 'typo of 1 letter still matches');
+  assert.equal(checkAnswerFuzzyMatch('Shopping', 'Shopping', synonyms), true);
+  assert.equal(checkAnswerFuzzyMatch('praça de alimentação', 'Shopping', synonyms), true, 'accepted synonym');
+});
+
 test('2-Player Mode Bug: Strictly clamped to 2 teams (Team A vs Team B / 1x1 match)', () => {
   const twoPlayersRoom: any = {
     teamCount: 4,

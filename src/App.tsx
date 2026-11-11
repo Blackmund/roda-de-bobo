@@ -82,6 +82,7 @@ import { updateFixedPlayersAfterMatch } from './utils/fixedPlayers';
 import {
   accumulateRoundPlayerScores,
   computeSessionMVP,
+  computeMatchMVP,
   computeMatchPlayerComparison,
   shareMatchResults,
   buildMatchMVPSnapshot,
@@ -89,6 +90,7 @@ import {
   buildRoundActivityEvent,
   getMatchRoundActivityLog
 } from './utils/sessionPersistence';
+import { limiteExactBonusFor, isDuvidoShowWon } from './config/rulesets';
 import { getOrCreateDeviceClientId } from './utils/partyNetworkEngine';
 import {
   Tv,
@@ -230,6 +232,15 @@ export default function App() {
     cloudStatus,
     forceSync
   } = useGameRoom(roomIdParam, currentUserId, viewMode === 'host');
+
+  // UX-02: rede de segurança. Uma tela de jogo sem jogo ativo (estado salvo/sincronizado incompleto)
+  // renderizaria em branco; nesse caso volta ao lobby, onde "Retomar partida" fica disponível.
+  useEffect(() => {
+    if (viewMode !== 'host') return;
+    if ((room.screen === 'rules' || room.screen === 'playing' || room.screen === 'game-over') && !room.activeGame) {
+      updateScreen('lobby');
+    }
+  }, [viewMode, room.screen, room.activeGame]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Wrap broadcastState to automatically capture 1-level VAR snapshot during active gameplay
   const broadcastState = (updater: GameRoom | ((prev: GameRoom) => GameRoom)) => {
@@ -457,7 +468,8 @@ export default function App() {
             bustedPlayers: [],
             closestDifference: 0,
             pointsAwarded: {},
-            revealCountdown: null
+            revealCountdown: null,
+            exactBonus: limiteExactBonusFor(mergedCustomConfig)
           };
         } else if (gameId === 'duvido') {
           const teamAPlayers = prev.players.filter((p) => p.team === 'A');
@@ -732,6 +744,19 @@ export default function App() {
     sounds.playPowerup();
     let shouldStartNextRound = false;
     let nextMaxRoundsTarget = room.maxRounds;
+    // REG-01: no Duvido do programa a partida acaba quando uma equipe chega a 5 temas (decidido aqui, fora do
+    // updater, para também impedir o disparo da próxima rodada logo abaixo).
+    const duvidoEndsEarly =
+      room.activeGame === 'duvido' &&
+      isDuvidoShowWon(
+        room.customConfig,
+        Math.max(
+          0,
+          ...getActiveTeamIds(room).map(
+            (t) => (room.teams[t]?.score || 0) + (room.duvido?.resultWinnerTeam === t ? 1 : 0)
+          )
+        )
+      );
 
     broadcastState((prev) => {
       // Accumulate round points from active game across up to 4 teams
@@ -858,7 +883,7 @@ export default function App() {
       }
 
       setSuddenDeathBanner(null);
-      const isGameOver = nextRoundNum > prev.maxRounds;
+      const isGameOver = nextRoundNum > prev.maxRounds || duvidoEndsEarly;
 
       const clearedTemOuNaoTem = prev.temOuNaoTem
         ? { ...prev.temOuNaoTem, roundScore: { A: 0, B: 0, C: 0, D: 0 } }
@@ -881,7 +906,7 @@ export default function App() {
           scoreB: newScoreB,
           scoreC: newScoreC,
           scoreD: newScoreD,
-          roundsPlayed: prev.maxRounds,
+          roundsPlayed: duvidoEndsEarly ? prev.roundNumber : prev.maxRounds,
           theme: prev.theme,
           playerScores: updatedPlayers.map((p) => ({
             id: p.id,
@@ -954,7 +979,7 @@ export default function App() {
       };
     });
 
-    if (room.activeGame && (room.roundNumber < room.maxRounds || shouldStartNextRound)) {
+    if (room.activeGame && !duvidoEndsEarly && (room.roundNumber < room.maxRounds || shouldStartNextRound)) {
       prepareAndStartRound(
         room.activeGame,
         room.theme,
@@ -1638,7 +1663,7 @@ export default function App() {
           ) : room.screen === 'game-over' ? (
             /* Clean Victory Screen focused on Winning Team/Player & MVP, with clickable icon buttons for Achievements, Hall of Fame, Activity Log & Session History */
             (() => {
-              const mvp = computeSessionMVP(room);
+              const mvp = computeMatchMVP(room); // UX-15: MVP só da partida atual
               const playerComparison = computeMatchPlayerComparison(room);
               const roundActivityLog = getMatchRoundActivityLog(room);
               const partyAchievements = computePartyAchievements(room);
@@ -1790,8 +1815,9 @@ export default function App() {
                               ? 'INTEGRANTES DAS EQUIPES EMPATADAS'
                               : `EQUIPE CAMPEÃ (${winningTeamName} — PONTUAM JUNTOS)`}
                           </div>
-                          <div className="grid grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-2">
-                            {winningTeamPlayers.slice(0, 6).map((wp, idx) => {
+                          {/* UX-14: lista TODOS os jogadores (sem corte em 6); rola dentro do painel se faltar espaço */}
+                          <div className="grid grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-2 max-h-[34vh] overflow-y-auto pr-1">
+                            {winningTeamPlayers.map((wp, idx) => {
                               const isHighlightedWinner = isIndividualMatch
                                 ? idx === 0
                                 : winningTeamKey !== 'EMPATE';

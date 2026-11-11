@@ -1,5 +1,6 @@
 import { ConnectionMode, GameDifficulty, GameId, GameRoom, Player, TeamId } from '../types/game';
 import { sanitizeRoomCode } from './partyNetworkEngine';
+import { isApiAvailable } from './apiAvailability';
 
 /**
  * Unambiguous 32-character alphabet for 6-character room codes.
@@ -152,6 +153,9 @@ export async function fetchAndCacheLanOrigin(): Promise<{
   }
   isFetchingLanInfo = true;
   try {
+    if (!(await isApiAvailable())) {
+      return { lanOrigin: cachedLanOrigin, allIps: cachedLanIps, port: cachedLanPort };
+    }
     const res = await fetch('/api/network-info', { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();

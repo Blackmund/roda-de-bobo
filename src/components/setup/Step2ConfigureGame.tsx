@@ -8,6 +8,14 @@ import { DIFFICULTY_META } from '../../utils/multiplayerRoomEngine';
 import { getTemTotalRespondents } from '../../utils/aiGameGenerator';
 import { sounds } from '../../utils/soundEffects';
 import {
+  RULESET_LABELS,
+  applyRuleset,
+  getRulesetPreset,
+  hasShowRuleset,
+  resolveRuleset,
+  type GameRuleset
+} from '../../config/rulesets';
+import {
   Sparkles,
   RefreshCw,
   Dices,
@@ -114,6 +122,24 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
 
   const [isAllThemesExpanded, setIsAllThemesExpanded] = useState(false);
 
+  // UX-09: modo de regras (casa x programa). O preset ajusta rodadas, tempo e parametros; o host ainda pode mexer depois.
+  const ruleset = resolveRuleset(customConfig);
+  const showPreset = getRulesetPreset(activeGame, 'show');
+  const handleSelectRuleset = (next: GameRuleset) => {
+    sounds.playTick();
+    onChangeCustomConfig((prev) => applyRuleset(activeGame, prev, next));
+    if (next === 'show') {
+      if (showPreset?.rounds !== undefined) onChangeRounds(showPreset.rounds);
+      if (showPreset?.timer !== undefined) onChangeTimer(showPreset.timer);
+    }
+  };
+  // Garante que o numero de rodadas vindo do preset (ex.: 9 no Duvido) apareca como opcao.
+  const roundOptions = ROUND_OPTIONS.some((o) => o.value === rounds)
+    ? ROUND_OPTIONS
+    : [...ROUND_OPTIONS, { value: rounds, label: rounds + ' Rodadas', desc: 'Regras do programa' }].sort(
+        (a, b) => a.value - b.value
+      );
+
   // For Perguntas e Verdades, rounds must be [1, 3, 5, 7, 9] (defaults to 3 if outside)
   useEffect(() => {
     if (isPV && ![1, 3, 5, 7, 9].includes(rounds)) {
@@ -130,7 +156,50 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
     >
       <div className="space-y-1.5 sm:space-y-2 flex-1 min-h-0 overflow-y-auto scrollbar-none pr-0.5">
 
-        {/* =========================================================================
+                {/* MODO DE REGRAS: casa x programa (so para jogos que existem no programa) */}
+        {hasShowRuleset(activeGame) && (
+          <section
+            data-testid="ruleset-selector"
+            className="border-2 border-amber-400/40 bg-[#090b14] p-2 space-y-1.5 shadow-lg"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h4 className="font-anton text-xs sm:text-sm text-white uppercase tracking-wider leading-none">
+                📺 MODO DE REGRAS
+              </h4>
+              <div className="flex gap-1">
+                {(['home', 'show'] as const).map((rs) => (
+                  <button
+                    key={rs}
+                    type="button"
+                    data-testid={'ruleset-btn-' + rs}
+                    aria-pressed={ruleset === rs}
+                    onClick={() => handleSelectRuleset(rs)}
+                    className={
+                      'px-2.5 py-1 border font-anton text-xs uppercase tracking-wider cursor-pointer transition-all ' +
+                      (ruleset === rs
+                        ? 'border-amber-400 bg-amber-400 text-black font-black'
+                        : 'border-slate-800 bg-black/60 text-slate-300 hover:border-amber-400/50 hover:text-white')
+                    }
+                  >
+                    {RULESET_LABELS[rs]}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {ruleset === 'show' && showPreset && (
+              <ul
+                data-testid="ruleset-notes"
+                className="list-disc pl-4 text-[10px] sm:text-xs font-mono-code text-amber-200/90 space-y-0.5"
+              >
+                {showPreset.notes.map((n) => (
+                  <li key={n}>{n}</li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
+
+{/* =========================================================================
             CARD 1: TEMA CENTRAL DA PARTIDA (Estruturado, sem sobreposições)
            ========================================================================= */}
         {!isPV && (
@@ -455,7 +524,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
 
             <div className={`grid ${isPV ? 'grid-cols-5' : 'grid-cols-2 sm:grid-cols-4'} gap-1 flex-1 content-center`}>
-              {(isPV ? PV_ROUND_OPTIONS : ROUND_OPTIONS).map((opt) => {
+              {(isPV ? PV_ROUND_OPTIONS : roundOptions).map((opt) => {
                 const isSelected = rounds === opt.value;
                 return (
                   <button

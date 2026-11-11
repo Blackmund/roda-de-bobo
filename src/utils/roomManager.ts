@@ -45,6 +45,7 @@ import {
   syncTeamsRecordFromPlayers,
   normalizePlayersToTeamCount
 } from './teamUtils';
+import { isApiAvailable, markApiUnavailable } from './apiAvailability';
 
 const AVATARS = RETRO_AVATARS;
 const COLORS = [
@@ -136,9 +137,10 @@ export function useGameRoom(roomId: string, currentUserId: string, isHost: boole
       const hasPlayers = (saved.players || []).length >= 2;
       return {
         ...base,
-        screen: hasPlayers
-          ? (saved.screen === 'playing' ? 'lobby' : (saved.screen || 'lobby'))
-          : 'mode-select',
+        // UX-02: o jogo ativo (activeGame) não é restaurado aqui, então qualquer tela de jogo
+        // (rules, setup, playing, game-over…) ficaria em branco. Sempre volta ao lobby; a partida
+        // salva é oferecida em "Retomar partida" (resumableRoom).
+        screen: hasPlayers ? 'lobby' : 'mode-select',
         connectionMode: saved.connectionMode || base.connectionMode,
         teamCount: saved.teamCount || base.teamCount,
         players: saved.players || [],
@@ -171,6 +173,7 @@ export function useGameRoom(roomId: string, currentUserId: string, isHost: boole
   const cloudTransportRef = useRef<CloudPartyTransport | null>(null);
   const [cloudStatus, setCloudStatus] = useState<TransportStatus>('connecting');
   const reconnectTimerRef = useRef<number | null>(null);
+  const pollGenRef = useRef(0);
   const reconnectAttemptRef = useRef<number>(0);
   const unmountedRef = useRef<boolean>(false);
   const lastLocalUpdateRef = useRef<number>(0);
@@ -288,6 +291,7 @@ export function useGameRoom(roomId: string, currentUserId: string, isHost: boole
     }
 
     if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
       clearInterval(reconnectTimerRef.current);
       reconnectTimerRef.current = null;
     }
@@ -314,33 +318,74 @@ export function useGameRoom(roomId: string, currentUserId: string, isHost: boole
 
     setConnectionStatus('Connected');
 
+    // INF-02: polling com backoff exponencial (1,5 s → teto de 30 s). Quando a API não existe
+    // (ex.: site estático na Vercel, 404) ou falha várias vezes seguidas, para de insistir:
+    // o sincronismo continua pelo BroadcastChannel/MQTT.
+    const POLL_BASE_MS = 1500;
+    const POLL_MAX_MS = 30000;
+    const POLL_MAX_FAILURES = 5;
+    let failures = 0;
+    let stopped = false;
+    const gen = ++pollGenRef.current; // invalida loops antigos (ex.: respostas de fetch em voo após reconectar)
+
+    const schedule = (delay: number) => {
+      if (stopped || unmountedRef.current || gen !== pollGenRef.current) return;
+      reconnectTimerRef.current = window.setTimeout(pollRoomState, delay);
+    };
+
     const pollRoomState = () => {
-      if (unmountedRef.current) return;
-      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+      if (stopped || unmountedRef.current || gen !== pollGenRef.current) return;
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        schedule(POLL_BASE_MS);
+        return;
+      }
       if (typeof navigator !== 'undefined' && !navigator.onLine) {
         setConnectionStatus('Offline');
+        schedule(POLL_BASE_MS);
         return;
       }
       // Envia a versão local mais recente: o servidor responde "unchanged" sem reenviar o estado inteiro.
       const since = lastLocalUpdateRef.current;
       fetch(`/api/rooms/${activeRoomCode}${since > 0 ? `?since=${since}` : ''}`, { cache: 'no-store' })
-        .then((res) => (res.ok ? res.json() : null))
+        .then((res) => {
+          if (res.status === 404) {
+            // API ausente neste host: não adianta tentar de novo.
+            markApiUnavailable();
+            stopped = true;
+            return null;
+          }
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
         .then((json) => {
-          if (unmountedRef.current || !json) return;
-          setConnectionStatus('Connected');
-          if (json.state) {
-            applyRemoteState(json.state as GameRoom);
+          if (stopped || unmountedRef.current || gen !== pollGenRef.current) return;
+          failures = 0;
+          if (json) {
+            setConnectionStatus('Connected');
+            if (json.state) {
+              applyRemoteState(json.state as GameRoom);
+            }
+            if (typeof json.onlineCount === 'number') {
+              setPresenceCount(Math.max(1, json.onlineCount));
+            }
           }
-          if (typeof json.onlineCount === 'number') {
-            setPresenceCount(Math.max(1, json.onlineCount));
-          }
+          schedule(POLL_BASE_MS);
         })
         .catch(() => {
-          // Silently ignore transient fetch errors so console stays 100% clean
+          // Falha transitória: espera cada vez mais e desiste depois de N tentativas.
+          failures += 1;
+          if (failures >= POLL_MAX_FAILURES) {
+            stopped = true;
+            return;
+          }
+          schedule(Math.min(POLL_MAX_MS, POLL_BASE_MS * 2 ** failures));
         });
     };
 
-    reconnectTimerRef.current = window.setInterval(pollRoomState, 1500);
+    // Só começa a consultar se o servidor próprio existir (1 sondagem por sessão, em /api/health).
+    void isApiAvailable().then((available) => {
+      if (available) schedule(POLL_BASE_MS);
+    });
   }, [activeRoomCode, applyRemoteState]);
 
   useEffect(() => {
@@ -655,7 +700,8 @@ export function useGameRoom(roomId: string, currentUserId: string, isHost: boole
       window.clearInterval(heartbeatInterval);
       unsubscribePartyProtocol();
       if (reconnectTimerRef.current) {
-        clearInterval(reconnectTimerRef.current);
+        clearTimeout(reconnectTimerRef.current);
+      clearInterval(reconnectTimerRef.current);
       }
       supaSub.unsubscribe();
       bc.close();
@@ -710,6 +756,10 @@ export function useGameRoom(roomId: string, currentUserId: string, isHost: boole
       ...prev,
       activeGame: gameId,
       screen: 'game-setup',
+      // UX-04: o tema é por jogo; não herda o tema do jogo anterior (ex.: o tema fixo de Perguntas e Verdades).
+      theme: 'Geral',
+      // o modo de regras (casa x programa) também é por jogo: volta ao padrão ao escolher outro jogo
+      customConfig: prev.customConfig ? { ...prev.customConfig, ruleset: 'home' } : prev.customConfig,
       roundNumber: 1,
       roundLog: [],
       teams: syncTeamsRecordFromPlayers(prev.teams, prev.players, true)

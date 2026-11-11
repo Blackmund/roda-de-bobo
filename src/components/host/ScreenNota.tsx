@@ -10,6 +10,7 @@ import {
   computeNotaRoundPoints
 } from '../SpinningNumberWheel';
 import { ActiveTurnBanner } from '../ActiveTurnBanner';
+import { isShowRuleset } from '../../config/rulesets';
 import confetti from 'canvas-confetti';
 import {
   EyeOff,
@@ -43,6 +44,8 @@ export const ScreenNota: React.FC<ScreenNotaProps> = ({
   onNextRound
 }) => {
   const nota = room.nota;
+  // REG-02: regras do programa — duas perguntas (esporte + aleatória), demais jogadores vendados
+  const isShow = isShowRuleset(room.customConfig);
   const [isSwappingQuestion, setIsSwappingQuestion] = useState(false);
 
   if (!nota) {
@@ -309,8 +312,8 @@ export const ScreenNota: React.FC<ScreenNotaProps> = ({
         <div className="flex items-center gap-1 font-mono-code text-[10px] font-bold uppercase overflow-x-auto scrollbar-none py-0.5">
           {[
             { num: 1, label: '1. Sorteio' },
-            { num: 2, label: '2. 1ª Pista (IA)' },
-            { num: 3, label: '3. 2ª Pista (Mesa)' },
+            { num: 2, label: isShow ? '2. 1ª Pergunta (Esporte)' : '2. 1ª Pista (IA)' },
+            { num: 3, label: isShow ? '3. 2ª Pergunta (Aleatória)' : '3. 2ª Pista (Mesa)' },
             { num: 4, label: '4. Revelação' }
           ].map((st) => (
             <span
@@ -357,9 +360,9 @@ export const ScreenNota: React.FC<ScreenNotaProps> = ({
             {effectivePhase === 'STEP_1_DRAW' ? (
               <>🎲 🎤 <strong className="text-white">NARRADOR ({speaker?.name}):</strong> Gire a roleta ou sorteie a nota secreta [{scaleMin}-{scaleMax}]</>
             ) : effectivePhase === 'STEP_2_CLUE_1' ? (
-              <>🎤 <strong className="text-white">1ª PISTA:</strong> Narrador ({speaker?.name}) fala a dica inicial para a nota sorteada</>
+              <>🎤 <strong className="text-white">{isShow ? '1ª PERGUNTA (ESPORTE):' : '1ª PISTA:'}</strong> Narrador ({speaker?.name}) {isShow ? 'responde à pergunta de esporte (escolhida em consenso pelos outros) segundo a nota sorteada' : 'fala a dica inicial para a nota sorteada'}</>
             ) : effectivePhase === 'STEP_3_CLUE_2' ? (
-              <>🎤 <strong className="text-white">2ª PISTA:</strong> Narrador ({speaker?.name}) fala a dica comparativa complementar</>
+              <>🎤 <strong className="text-white">{isShow ? '2ª PERGUNTA (ALEATÓRIA):' : '2ª PISTA:'}</strong> Narrador ({speaker?.name}) {isShow ? 'responde à pergunta tirada do aquário segundo a mesma nota' : 'fala a dica comparativa complementar'}</>
             ) : revealSubState === 'SPINNING' || revealSubState === 'REVEALED_LOCKED' ? (
               <>🎰 <strong className="text-white">REVELAÇÃO DO PIÃO:</strong> Acompanhe o sorteio no telão revelando a nota secreta</>
             ) : (
@@ -564,7 +567,7 @@ export const ScreenNota: React.FC<ScreenNotaProps> = ({
           <div className="my-auto max-w-4xl mx-auto w-full border border-[#17B8B8]/40 bg-[#07080d]/80 p-4 md:p-6 text-center space-y-3 shadow-2xl">
             <div className="inline-flex items-center gap-1.5 px-3 py-0.5 bg-[#17B8B8] text-black font-anton text-xs uppercase tracking-widest">
               <Sparkles size={13} />
-              <span>1ª PISTA // PERGUNTA DO TEMA PRINCIPAL ({room.theme.toUpperCase()})</span>
+              <span>{isShow ? '1ª PERGUNTA // ESPORTE' : '1ª PISTA // PERGUNTA DO TEMA PRINCIPAL'} ({room.theme.toUpperCase()})</span>
             </div>
 
             <h2
@@ -608,7 +611,7 @@ export const ScreenNota: React.FC<ScreenNotaProps> = ({
         >
           <div className="flex items-center justify-between border-b border-white/10 pb-2 shrink-0">
             <span className="px-3 py-0.5 bg-[#E6194B] text-white font-anton text-xs uppercase tracking-widest">
-              ETAPA 3 DE 4 // 2ª PISTA AO VIVO NA RODA
+              ETAPA 3 DE 4 // {isShow ? '2ª PERGUNTA (ALEATÓRIA DO AQUÁRIO)' : '2ª PISTA AO VIVO NA RODA'}
             </span>
             <span className="text-xs font-mono-code text-rose-300 font-bold uppercase">
               NARRADOR: {speaker?.avatar} {speaker?.name}
@@ -625,7 +628,7 @@ export const ScreenNota: React.FC<ScreenNotaProps> = ({
               data-testid="nota-step-3-title"
               className="font-anton text-2xl sm:text-3xl md:text-4xl text-white uppercase tracking-wide"
             >
-              2ª PISTA: PERGUNTA LIVRE DA MESA
+              {isShow ? '2ª PERGUNTA: ALEATÓRIA, TIRADA DO AQUÁRIO' : '2ª PISTA: PERGUNTA LIVRE DA MESA'}
             </h2>
 
             <p className="font-mono-code text-xs sm:text-sm text-[#F5F2EB] leading-relaxed max-w-2xl mx-auto">

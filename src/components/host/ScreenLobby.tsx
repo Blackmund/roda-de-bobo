@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { GameRoom, GameId, VisualTheme, TeamId } from '../../types/game';
 import { isCazeFamily, themeBadge } from '../../utils/themeUtils';
 import { CazeArt } from '../RodaIcons';
+import { GAME_LIMITS } from '../../config/gameLimits';
 import {
   TEAM_META,
   getActiveTeamIds,
@@ -428,7 +429,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
               </span>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            <div className="flex items-center gap-2 min-w-0 max-w-full flex-wrap">
               {onGoToModeSelect && (
                 <button
                   type="button"
@@ -475,7 +476,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
           </div>
 
           {/* 6 Games Adaptive Grid: Protected Height (flex-1 min-h-0) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-rows-3 lg:grid-cols-3 lg:grid-rows-2 gap-3 md:gap-4 flex-1 min-h-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-rows-3 lg:grid-cols-3 lg:grid-rows-2 gap-3 md:gap-4 flex-1 min-h-0 max-sm:overflow-y-auto max-sm:auto-rows-[minmax(170px,1fr)] max-sm:pr-0.5">
             {GAMES.map((game) => (
               <div
                 key={game.id}
@@ -486,7 +487,9 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                   sounds.playTick();
                 }}
                 onMouseLeave={() => setHoveredGame(null)}
-                className={`group relative cursor-pointer transition-all duration-200 overflow-hidden flex flex-col justify-between [@media(max-height:700px)]:flex-row [@media(max-height:700px)]:items-center [@media(max-height:700px)]:justify-between [@media(max-height:700px)]:px-4 min-h-0 ${
+                className={`group relative cursor-pointer transition-all duration-200 overflow-hidden flex flex-col justify-between ${
+                  isCazeFamily(visualTheme) ? '' : '[@media(max-height:700px)]:flex-row [@media(max-height:700px)]:items-center [@media(max-height:700px)]:justify-between [@media(max-height:700px)]:px-4'
+                } min-h-0 ${
                   visualTheme === 'original'
                   ? 'bg-[#0a0b1e] border-2 border-[#17B8B8] hover:border-[#E6194B] shadow-none rounded-none'
                   : visualTheme === 'cazetv'
@@ -504,7 +507,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                 </div>
 
                 {/* Vertical Layout (Default when viewport height > 700px) */}
-                <div className="flex flex-col justify-between w-full h-full min-h-0 [@media(max-height:700px)]:hidden">
+                <div className={`flex flex-col justify-between w-full h-full min-h-0 ${isCazeFamily(visualTheme) ? '' : '[@media(max-height:700px)]:hidden'}`}>
                   {/* Priority #2: Illustration / Icon Area */}
                   {isCazeFamily(visualTheme) ? (
                     /* Modo CazéTV / Original: Ilustração em SVG vetorial animado com 2 layouts responsivos (compact / wide) */
@@ -531,7 +534,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
 
                   {/* Priority #1: Bottom Title Bar com animação de troca no Hover pelo Subtítulo/Legenda */}
                   <div
-                    className={`shrink-0 w-full py-2.5 px-3 border-t-2 transition-colors duration-200 z-10 flex items-center justify-between gap-2 overflow-hidden ${
+                    className={`shrink-0 w-full py-2.5 [@media(max-height:700px)]:py-1.5 px-3 border-t-2 transition-colors duration-200 z-10 flex items-center justify-between gap-2 overflow-hidden ${
                       visualTheme === 'original'
                       ? 'bg-[#0a0b1e] border-[#17B8B8] group-hover:bg-[#E6194B] group-hover:border-[#E6194B]'
                       : visualTheme === 'cazetv'
@@ -556,6 +559,16 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                         {game.tagline}
                       </span>
                     </div>
+                    {/* UX-03: intervalo de jogadores do jogo (GAME_LIMITS) */}
+                    {!game.badge.toUpperCase().includes('JOGADORES') && GAME_LIMITS[game.id as keyof typeof GAME_LIMITS] && (
+                      <span
+                        data-testid={`game-players-range-${game.id}`}
+                        className="shrink-0 text-[10px] font-mono-code font-bold text-slate-300 group-hover:text-white/90 whitespace-nowrap"
+                        title="Quantidade de jogadores"
+                      >
+                        👥 {GAME_LIMITS[game.id as keyof typeof GAME_LIMITS].min}–{GAME_LIMITS[game.id as keyof typeof GAME_LIMITS].max}
+                      </span>
+                    )}
                     <Play
                       size={14}
                       className="text-cyan-300 fill-cyan-300 group-hover:text-white group-hover:fill-white shrink-0 transition-colors"
@@ -564,7 +577,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                 </div>
 
                 {/* Automatic Horizontal Compact Layout for Short Screens (@media (max-height: 700px)) */}
-                <div className="hidden [@media(max-height:700px)]:flex flex-row items-center justify-between w-full h-full py-2 gap-3 min-h-0">
+                <div className={`hidden ${isCazeFamily(visualTheme) ? '' : '[@media(max-height:700px)]:flex'} flex-row items-center justify-between w-full h-full py-2 gap-3 min-h-0`}>
                   <div className="w-14 h-14 shrink-0 flex items-center justify-center overflow-hidden">
                     {isCazeFamily(visualTheme) ? (
                       <CazeArt
