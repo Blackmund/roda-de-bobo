@@ -3889,6 +3889,17 @@ export async function generateRoundContent(
   difficulty?: string,
   explicitSubAngle?: SubAngleDefinition
 ): Promise<GenerateRoundResponse<unknown>> {
+  // NOV-02: o Quem sou eu sorteia as identidades no proprio App (precisa do numero de jogadores); aqui so um marcador.
+  if (gameId === 'quem-sou-eu') {
+    return {
+      source: 'curated',
+      data: {},
+      themeUsed: 'Quem sou eu',
+      subthemeUsed: 'Identidades na testa',
+      signature: `qse-round-${Date.now()}`
+    };
+  }
+
   // NOV-01: a Mimica sorteia palavras do banco proprio (sem IA, sem cache); as ja usadas voltam em `excludeSignatures`.
   if (gameId === 'mimica') {
     const used = new Set<string>();

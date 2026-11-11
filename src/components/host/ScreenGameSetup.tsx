@@ -226,6 +226,10 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
         return 'TEM OU NÃO TEM';
       case 'perguntas-e-verdades':
         return 'PERGUNTAS E VERDADES';
+      case 'mimica':
+        return 'JOGO DA MÍMICA';
+      case 'quem-sou-eu':
+        return 'QUEM SOU EU';
       default:
         return 'RODA DE BOBO';
     }
@@ -234,6 +238,7 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
   const isIndividualMode =
     room.activeGame === 'nota' ||
     room.activeGame === 'limite' ||
+    room.activeGame === 'quem-sou-eu' ||
     room.activeGame === 'perguntas-e-verdades';
 
   const effectiveTeamCount = getTeamCount(room, customConfig.teamCount);

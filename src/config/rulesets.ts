@@ -63,6 +63,15 @@ const SHOW_PRESETS: Partial<Record<GameId, RulesetPreset>> = {
       'Pontuação do programa ainda não confirmada: mantém +1 por palpite certo'
     ]
   },
+  'quem-sou-eu': {
+    rounds: 1,
+    config: {},
+    notes: [
+      'Cada jogador tem uma identidade na testa: todos veem, menos ele',
+      'Na vez, pergunta de sim ou não (os outros só podem responder sim ou não) ou chuta a identidade, em rodízio',
+      'Pontuação do programa ainda não confirmada: o 1º a acertar leva mais pontos'
+    ]
+  },
   mimica: {
     rounds: 3,
     timer: 90,

@@ -118,7 +118,10 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
 }) => {
   const isPV = activeGame === 'perguntas-e-verdades';
   const isIndividualMode =
-    activeGame === 'limite' || activeGame === 'nota' || activeGame === 'perguntas-e-verdades';
+    activeGame === 'limite' ||
+    activeGame === 'nota' ||
+    activeGame === 'quem-sou-eu' ||
+    activeGame === 'perguntas-e-verdades';
 
   const [isAllThemesExpanded, setIsAllThemesExpanded] = useState(false);
 

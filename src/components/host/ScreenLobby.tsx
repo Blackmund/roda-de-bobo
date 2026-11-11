@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { GameRoom, GameId, VisualTheme, TeamId } from '../../types/game';
 import { isCazeFamily, themeBadge } from '../../utils/themeUtils';
-import { CazeArt, MimicaMasksArt } from '../RodaIcons';
+import { CazeArt, MimicaMasksArt, QuemSouEuArt } from '../RodaIcons';
 import { GAME_LIMITS } from '../../config/gameLimits';
 import {
   TEAM_META,
@@ -99,7 +99,8 @@ const GAME_TITLES: Record<GameId, string> = {
   nota: 'JOGO DA NOTA',
   'tem-ou-nao-tem': 'TEM OU NÃO TEM',
   'perguntas-e-verdades': 'PERGUNTAS E VERDADES',
-  mimica: 'JOGO DA MÍMICA'
+  mimica: 'JOGO DA MÍMICA',
+  'quem-sou-eu': 'QUEM SOU EU'
 };
 
 const GAMES: Array<{
@@ -208,6 +209,21 @@ const GAMES: Array<{
     color: '#F5B700',
     renderArt: (cls) => (
       <MimicaMasksArt
+        className={
+          cls ||
+          'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
+        }
+      />
+    )
+  },
+  {
+    id: 'quem-sou-eu',
+    name: 'QUEM SOU EU',
+    tagline: 'DESCUBRA A IDENTIDADE NA SUA TESTA',
+    badge: 'INDIVIDUAL',
+    color: '#38BDF8',
+    renderArt: (cls) => (
+      <QuemSouEuArt
         className={
           cls ||
           'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
@@ -331,7 +347,8 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
       'nota',
       'tem-ou-nao-tem',
       'perguntas-e-verdades',
-      'mimica'
+      'mimica',
+      'quem-sou-eu'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     handleGameClick(randomChoice);

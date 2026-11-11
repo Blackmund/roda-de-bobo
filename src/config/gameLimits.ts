@@ -24,6 +24,7 @@ export const GAME_LIMITS: Record<GameId, GameLimits> = {
   proibido: { min: 2, max: 8, recommended: 4, teamsRequired: true },
   nota: { min: 2, max: 8, recommended: 4, teamsRequired: false },
   mimica: { min: 2, max: 8, recommended: 4, teamsRequired: true },
+  'quem-sou-eu': { min: 3, max: 8, recommended: 4, teamsRequired: false },
   'tem-ou-nao-tem': { min: 2, max: 8, recommended: 4, teamsRequired: true },
   'perguntas-e-verdades': {
     min: 2,

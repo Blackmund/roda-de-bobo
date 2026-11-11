@@ -10,7 +10,8 @@ export type GameId =
   | 'nota'
   | 'tem-ou-nao-tem'
   | 'perguntas-e-verdades'
-  | 'mimica';
+  | 'mimica'
+  | 'quem-sou-eu';
 
 export type TeamId = 'A' | 'B' | 'C' | 'D';
 
@@ -187,6 +188,31 @@ export interface MimicaGameState {
   roundScore: number;
   /** o mimico ve as palavras; esconde na TV quando o parceiro esta olhando */
   wordsHidden?: boolean;
+}
+
+// NOV-02: QUEM SOU EU (cada jogador tem uma identidade na testa: todos veem, menos ele)
+export interface QuemSouEuEntry {
+  playerId: string;
+  identity: string;
+  category: string;
+  status: 'searching' | 'found' | 'out';
+  questions: number;
+  wrongGuesses: number;
+  /** 1 = primeiro a descobrir */
+  foundOrder?: number;
+}
+
+export interface QuemSouEuGameState {
+  phase: 'READY' | 'PLAYING' | 'SUMMARY';
+  entries: QuemSouEuEntry[];
+  turnPlayerId: string;
+  /** perguntas de sim/nao que cada jogador pode fazer antes de ficar de fora */
+  maxQuestions: number;
+  pointsAwarded: Record<string, number>;
+  /** na TV, as identidades so aparecem quando o diretor libera (quem esta jogando nao pode olhar) */
+  identitiesVisible: boolean;
+  /** ultimo evento, para a tela narrar o que aconteceu */
+  lastEvent?: string;
 }
 
 // 4. JOGO DA NOTA
@@ -503,6 +529,7 @@ export interface GameRoom {
   duvido?: DuvidoGameState;
   proibido?: ProibidoGameState;
   mimica?: MimicaGameState;
+  quemSouEu?: QuemSouEuGameState;
   nota?: NotaGameState;
   temOuNaoTem?: TemOuNaoTemGameState;
   perguntasEVerdades?: PerguntasEVerdadesGameState;
