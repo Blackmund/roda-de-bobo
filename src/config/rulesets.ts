@@ -63,6 +63,15 @@ const SHOW_PRESETS: Partial<Record<GameId, RulesetPreset>> = {
       'Pontuação do programa ainda não confirmada: mantém +1 por palpite certo'
     ]
   },
+  estadios: {
+    rounds: 10,
+    config: {},
+    notes: [
+      'Dez estádios por partida (como no episódio do programa)',
+      'Acertou de primeira = 5 pontos, de segunda = 4, e assim por diante até 1',
+      'No programa o estádio aparece em foto; aqui cada erro revela uma pista escrita a mais'
+    ]
+  },
   'respostas-sem-perguntas': {
     rounds: 5,
     config: {},

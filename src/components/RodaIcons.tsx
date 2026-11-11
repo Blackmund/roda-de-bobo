@@ -532,3 +532,19 @@ export const RespostasSemPerguntasArt: React.FC<{ className?: string }> = ({ cla
     <text x="80" y="112" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="52">?</text>
   </svg>
 );
+
+
+// 21. Estádios: campo visto de cima dentro de um anel de arquibancada.
+export const EstadiosArt: React.FC<{ className?: string }> = ({ className = 'w-28 h-24' }) => (
+  <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
+    <g stroke="#120A16" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round">
+      <ellipse cx="80" cy="72" rx="68" ry="50" fill="#E6194B" />
+      <ellipse cx="80" cy="72" rx="52" ry="35" fill="#F5F2EB" />
+      <rect x="40" y="52" width="80" height="40" rx="3" fill="#17B8B8" />
+      <path d="M80 52 V92" />
+      <circle cx="80" cy="72" r="8" fill="none" />
+      <rect x="40" y="62" width="10" height="20" fill="none" />
+      <rect x="110" y="62" width="10" height="20" fill="none" />
+    </g>
+  </svg>
+);

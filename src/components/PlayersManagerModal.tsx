@@ -52,7 +52,8 @@ const ALL_GAME_IDS: { id: GameId; label: string; color: string }[] = [
   { id: 'quem-sou-eu', label: 'Quem Sou Eu', color: '#38BDF8' },
   { id: 'mega-resenha', label: 'Mega Resenha', color: '#F97316' },
   { id: 'repetente', label: 'Repetente', color: '#84CC16' },
-  { id: 'respostas-sem-perguntas', label: 'Respostas sem Perguntas', color: '#F43F5E' }
+  { id: 'respostas-sem-perguntas', label: 'Respostas sem Perguntas', color: '#F43F5E' },
+  { id: 'estadios', label: 'Estádios', color: '#0EA5E9' }
 ];
 
 export const PlayersManagerModal: React.FC<PlayersManagerModalProps> = ({
