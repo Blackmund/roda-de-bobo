@@ -90,6 +90,7 @@ import {
   buildRoundActivityEvent,
   getMatchRoundActivityLog
 } from './utils/sessionPersistence';
+import { limiteExactBonusFor, isDuvidoShowWon } from './config/rulesets';
 import { getOrCreateDeviceClientId } from './utils/partyNetworkEngine';
 import {
   Tv,
@@ -467,7 +468,8 @@ export default function App() {
             bustedPlayers: [],
             closestDifference: 0,
             pointsAwarded: {},
-            revealCountdown: null
+            revealCountdown: null,
+            exactBonus: limiteExactBonusFor(mergedCustomConfig)
           };
         } else if (gameId === 'duvido') {
           const teamAPlayers = prev.players.filter((p) => p.team === 'A');
@@ -742,6 +744,19 @@ export default function App() {
     sounds.playPowerup();
     let shouldStartNextRound = false;
     let nextMaxRoundsTarget = room.maxRounds;
+    // REG-01: no Duvido do programa a partida acaba quando uma equipe chega a 5 temas (decidido aqui, fora do
+    // updater, para também impedir o disparo da próxima rodada logo abaixo).
+    const duvidoEndsEarly =
+      room.activeGame === 'duvido' &&
+      isDuvidoShowWon(
+        room.customConfig,
+        Math.max(
+          0,
+          ...getActiveTeamIds(room).map(
+            (t) => (room.teams[t]?.score || 0) + (room.duvido?.resultWinnerTeam === t ? 1 : 0)
+          )
+        )
+      );
 
     broadcastState((prev) => {
       // Accumulate round points from active game across up to 4 teams
@@ -868,7 +883,7 @@ export default function App() {
       }
 
       setSuddenDeathBanner(null);
-      const isGameOver = nextRoundNum > prev.maxRounds;
+      const isGameOver = nextRoundNum > prev.maxRounds || duvidoEndsEarly;
 
       const clearedTemOuNaoTem = prev.temOuNaoTem
         ? { ...prev.temOuNaoTem, roundScore: { A: 0, B: 0, C: 0, D: 0 } }
@@ -891,7 +906,7 @@ export default function App() {
           scoreB: newScoreB,
           scoreC: newScoreC,
           scoreD: newScoreD,
-          roundsPlayed: prev.maxRounds,
+          roundsPlayed: duvidoEndsEarly ? prev.roundNumber : prev.maxRounds,
           theme: prev.theme,
           playerScores: updatedPlayers.map((p) => ({
             id: p.id,
@@ -964,7 +979,7 @@ export default function App() {
       };
     });
 
-    if (room.activeGame && (room.roundNumber < room.maxRounds || shouldStartNextRound)) {
+    if (room.activeGame && !duvidoEndsEarly && (room.roundNumber < room.maxRounds || shouldStartNextRound)) {
       prepareAndStartRound(
         room.activeGame,
         room.theme,

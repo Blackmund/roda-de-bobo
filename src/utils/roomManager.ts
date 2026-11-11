@@ -758,6 +758,8 @@ export function useGameRoom(roomId: string, currentUserId: string, isHost: boole
       screen: 'game-setup',
       // UX-04: o tema é por jogo; não herda o tema do jogo anterior (ex.: o tema fixo de Perguntas e Verdades).
       theme: 'Geral',
+      // o modo de regras (casa x programa) também é por jogo: volta ao padrão ao escolher outro jogo
+      customConfig: prev.customConfig ? { ...prev.customConfig, ruleset: 'home' } : prev.customConfig,
       roundNumber: 1,
       roundLog: [],
       teams: syncTeamsRecordFromPlayers(prev.teams, prev.players, true)

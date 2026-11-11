@@ -108,6 +108,8 @@ export interface LimiteGameState {
   closestDifference: number;
   pointsAwarded: Record<string, number>;
   revealCountdown?: number | null;
+  /** Pontos de quem crava o número exato (regra da casa = 2; modo programa = 0). */
+  exactBonus?: number;
 }
 
 // 2. JOGO DO DUVIDO
@@ -309,6 +311,8 @@ export interface PerguntasEVerdadesGameState {
 }
 
 export interface GameCustomConfig {
+  // Conjunto de regras da sala: 'home' (casa, padrão) ou 'show' (fiel ao programa)
+  ruleset?: 'home' | 'show';
   // Tem ou Não Tem
   temItemsCount: number; // default 5 (range 3..10)
   temMaxStrikes: number; // default 2 (range 1..4)
@@ -345,6 +349,7 @@ export interface GameCustomConfig {
 }
 
 export const DEFAULT_GAME_CUSTOM_CONFIG: GameCustomConfig = {
+  ruleset: 'home',
   temItemsCount: 5,
   temMaxStrikes: 2,
   proibidoCardsCount: 5,

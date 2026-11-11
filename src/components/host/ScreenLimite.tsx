@@ -173,7 +173,8 @@ export function computeLimiteWinnerPoints(
   const exact = prev.roundData?.valor_exato;
   const guess = prev.guesses?.[playerId];
   const isExact = forceExact !== undefined ? forceExact : isLimiteGuessExact(guess, exact);
-  const basePoints = isExact ? 2 : 1;
+  // REG-03: bônus por cravar vem da configuração (casa = 2; modo programa = 0, ou seja, vale 1 como os demais)
+  const basePoints = isExact ? Math.max(1, prev.exactBonus ?? 2) : 1;
   const playedX2 = prev.powerCardsPlayed?.[playerId] === 'x2';
   return playedX2 ? basePoints * 2 : basePoints;
 }
@@ -733,7 +734,7 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
               <span className="hidden lg:inline text-[10px] font-mono-code text-slate-300 uppercase">
                 {limite.phase === 'SCORING'
                   ? '• REVELAÇÃO OFICIAL DOS PALPITES E PONTUAÇÃO FINAL'
-                  : '• QUEM CHEGAR MAIS PERTO DO NÚMERO EXATO SEM PASSAR! (CRAVOU EXATO = 2 PTS)'}
+                  : `• QUEM CHEGAR MAIS PERTO DO NÚMERO EXATO SEM PASSAR!${(limite.exactBonus ?? 2) > 1 ? ` (CRAVOU EXATO = ${limite.exactBonus ?? 2} PTS)` : ''}`}
               </span>
             </div>
           </div>
@@ -1004,7 +1005,7 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
                     data-testid="limite-multi-winner-hint"
                     className="text-[9px] font-mono-code text-[#17B8B8] font-bold"
                   >
-                    💡 Mais próximo ganha +1 pt • Cravou exato ganha +2 pts • Clique novamente para desmarcar
+                    💡 Mais próximo ganha +1 pt{(limite.exactBonus ?? 2) > 1 ? ` • Cravou exato ganha +${limite.exactBonus ?? 2} pts` : ''} • Clique novamente para desmarcar
                   </span>
                 )}
               </div>
@@ -1166,7 +1167,7 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
                               type="button"
                               data-testid={`limite-award-exact-${p.id}`}
                               aria-pressed={isScoredAsExact}
-                              title="Cravou a resposta exatamente (+2 pontos)"
+                              title={`Cravou a resposta exatamente (+${Math.max(1, limite.exactBonus ?? 2)} pontos)`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleAwardDirectMesaVictory(p.id, true);
