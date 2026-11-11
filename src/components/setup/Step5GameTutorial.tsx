@@ -503,6 +503,54 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
       'Dupla que combina as palavras: +1 ponto. Se só uma das duplas combina, ela leva +2 (leitura da regra do programa, a confirmar).',
       'Times com 3 ou mais jogadores só combinam se todos escreverem a mesma palavra.'
     ]
+  },
+  'respostas-sem-perguntas': {
+    gameId: 'respostas-sem-perguntas',
+    icon: '❓',
+    name: 'RESPOSTAS SEM PERGUNTAS',
+    welcomeTitle: 'Como Jogar Respostas sem Perguntas',
+    welcomeSubtitle:
+      'A pergunta existe, mas você não sabe qual é! Só se conhece a quantidade de palavras. Revele uma, chute a resposta e ganhe pontos.',
+    steps: [
+      {
+        stepNumber: 1,
+        icon: '🔢',
+        headline: 'Só Se Sabe Quantas Palavras Tem',
+        description:
+          'A tela mostra casinhas numeradas, uma para cada palavra da pergunta. O texto da pergunta e a resposta ficam escondidos.',
+        accentTag: 'Pergunta Oculta'
+      },
+      {
+        stepNumber: 2,
+        icon: '👆',
+        headline: 'Revele UMA Palavra e Chute',
+        description:
+          'Na sua vez, escolha uma posição para revelar (a 1ª costuma ser "Quem", "Qual"...) e então arrisque a resposta em voz alta.',
+        accentTag: 'Uma Palavra por Vez'
+      },
+      {
+        stepNumber: 3,
+        icon: '📉',
+        headline: 'Cada Erro Tira 1 Ponto',
+        description:
+          'Acertar vale tantos pontos quanto palavras na pergunta (11 palavras = 11 pontos). A cada erro, o valor cai 1 e a vez passa ao próximo.',
+        accentTag: 'Quem Erra Paga'
+      }
+    ],
+    proibido: [
+      'ESPIAR A TELA DO DIRETOR COM A RESPOSTA',
+      'REVELAR MAIS DE UMA PALAVRA NA MESMA VEZ',
+      'CHUTAR FORA DA SUA VEZ'
+    ],
+    permitido: [
+      'USAR AS PALAVRAS JÁ REVELADAS PARA DEDUZIR A PERGUNTA',
+      'ESCOLHER A 1ª PALAVRA PARA SABER O TIPO DA PERGUNTA',
+      'ARRISCAR QUALQUER RESPOSTA NA SUA VEZ'
+    ],
+    scoringSummary: [
+      'Quem acerta ganha o valor atual: número de palavras da pergunta menos 1 por erro já cometido (mínimo 1).',
+      'Se todas as palavras forem reveladas e ninguém acertar, a rodada termina sem pontos.'
+    ]
   }
 };
 

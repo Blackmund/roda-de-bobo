@@ -121,6 +121,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
     activeGame === 'limite' ||
     activeGame === 'nota' ||
     activeGame === 'quem-sou-eu' ||
+    activeGame === 'respostas-sem-perguntas' ||
     activeGame === 'perguntas-e-verdades';
 
   const [isAllThemesExpanded, setIsAllThemesExpanded] = useState(false);

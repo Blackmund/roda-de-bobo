@@ -8,6 +8,7 @@
  * - Uses direct, natural questions without "Perguntamos a 100 pessoas:" prefixes and 100% real, concrete answers
  */
 
+import { usesLocalContent } from '../config/localGames';
 import { drawMimicaWords, normalizeMimicaWord } from '../data/mimicaWords';
 import { MIMICA_WORDS_PER_ROUND } from './mimicaEngine';
 import { drawMegaResenhaWords, normalizeMegaWord } from '../data/megaResenhaWords';
@@ -3865,7 +3866,8 @@ export function prefetchRoundsForTheme(
   customConfig: GameCustomConfig = DEFAULT_GAME_CUSTOM_CONFIG,
   difficulty?: string
 ): void {
-  if (gameId === 'perguntas-e-verdades') return;
+  // Jogos de conteudo local nao usam IA: nada a pre-carregar.
+  if (usesLocalContent(gameId)) return;
   const theme = customTheme.trim();
   if (!theme || theme.length < 2) return;
 
@@ -3886,6 +3888,17 @@ export async function generateRoundContent(
   difficulty?: string,
   explicitSubAngle?: SubAngleDefinition
 ): Promise<GenerateRoundResponse<unknown>> {
+  // NOV-08: o Respostas sem perguntas sorteia a pergunta no proprio App; aqui so um marcador.
+  if (gameId === 'respostas-sem-perguntas') {
+    return {
+      source: 'curated',
+      data: {},
+      themeUsed: 'Respostas sem perguntas',
+      subthemeUsed: 'Pergunta oculta',
+      signature: `rsp-round-${Date.now()}`
+    };
+  }
+
   // NOV-05: o Repetente sorteia o tema no proprio App (precisa das equipes); aqui so um marcador.
   if (gameId === 'repetente') {
     return {

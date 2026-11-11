@@ -13,7 +13,8 @@ export type GameId =
   | 'mimica'
   | 'quem-sou-eu'
   | 'mega-resenha'
-  | 'repetente';
+  | 'repetente'
+  | 'respostas-sem-perguntas';
 
 export type TeamId = 'A' | 'B' | 'C' | 'D';
 
@@ -270,6 +271,33 @@ export interface RepetenteGameState {
   /** juiz: dupla -> considerar combinada mesmo com palavras diferentes */
   overrides: Record<string, boolean>;
   result?: { groups: RepetenteGroupResult[]; pointsByTeam: Record<TeamId, number> };
+}
+
+// NOV-08: RESPOSTAS SEM PERGUNTAS (a pergunta e oculta; so se sabe quantas palavras tem)
+export interface RespostasAttempt {
+  playerId: string;
+  /** posicao (0-based) da palavra revelada nesta tentativa */
+  position: number;
+  correct: boolean;
+}
+
+export interface RespostasSemPerguntasState {
+  phase: 'READY' | 'PLAYING' | 'SUMMARY';
+  category: string;
+  /** a pergunta inteira, palavra por palavra (sem o "?") */
+  words: string[];
+  /** resposta esperada (so o diretor ve) */
+  answer: string;
+  revealed: boolean[];
+  turnPlayerId: string;
+  /** 'pick' = escolhe a palavra a revelar; 'guess' = chuta a resposta */
+  step: 'pick' | 'guess';
+  attempts: RespostasAttempt[];
+  /** posicao revelada na etapa atual, aguardando o palpite */
+  pendingPosition?: number;
+  winnerPlayerId?: string;
+  pointsAwarded: Record<string, number>;
+  answerVisible: boolean;
 }
 
 // 4. JOGO DA NOTA
@@ -589,6 +617,7 @@ export interface GameRoom {
   quemSouEu?: QuemSouEuGameState;
   megaResenha?: MegaResenhaGameState;
   repetente?: RepetenteGameState;
+  respostasSemPerguntas?: RespostasSemPerguntasState;
   nota?: NotaGameState;
   temOuNaoTem?: TemOuNaoTemGameState;
   perguntasEVerdades?: PerguntasEVerdadesGameState;

@@ -513,3 +513,22 @@ export const RepetenteArt: React.FC<{ className?: string }> = ({ className = 'w-
     <path d="M70 12 l8 8 l12 -14" stroke="#17B8B8" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" fill="none" transform="translate(-2 6)" />
   </svg>
 );
+
+
+// 20. Respostas sem perguntas: casinhas numeradas e uma interrogação.
+export const RespostasSemPerguntasArt: React.FC<{ className?: string }> = ({ className = 'w-28 h-24' }) => (
+  <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
+    <g stroke="#120A16" strokeWidth="5" strokeLinejoin="round">
+      <rect x="6" y="14" width="30" height="30" rx="4" fill="#17B8B8" />
+      <rect x="42" y="14" width="30" height="30" rx="4" fill="#F5F2EB" />
+      <rect x="78" y="14" width="30" height="30" rx="4" fill="#F5F2EB" />
+      <rect x="114" y="14" width="30" height="30" rx="4" fill="#F5F2EB" />
+      <circle cx="80" cy="96" r="34" fill="#E6194B" />
+    </g>
+    <text x="21" y="36" textAnchor="middle" fill="#120A16" fontFamily="Anton, sans-serif" fontSize="20">1</text>
+    <text x="57" y="36" textAnchor="middle" fill="#120A16" fontFamily="Anton, sans-serif" fontSize="20">2</text>
+    <text x="93" y="36" textAnchor="middle" fill="#120A16" fontFamily="Anton, sans-serif" fontSize="20">3</text>
+    <text x="129" y="36" textAnchor="middle" fill="#120A16" fontFamily="Anton, sans-serif" fontSize="20">4</text>
+    <text x="80" y="112" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="52">?</text>
+  </svg>
+);

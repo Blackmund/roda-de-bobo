@@ -14,6 +14,7 @@ import {
   QuemSouEuGameState,
   MegaResenhaGameState,
   RepetenteGameState,
+  RespostasSemPerguntasState,
   NotaGameState,
   TemOuNaoTemGameState,
   PerguntasEVerdadesGameState,
@@ -33,10 +34,13 @@ import {
 } from './utils/teamUtils';
 import { generateRoundContent, normalizeTemVotesTo100, prefetchRoundsForTheme } from './utils/aiGameGenerator';
 import { dealValidRandomHand } from './utils/perguntasEVerdadesEngine';
+import { usesLocalContent } from './config/localGames';
 import { buildMimicaState, pickMimicaPair } from './utils/mimicaEngine';
 import { buildQuemSouEuState, drawIdentities } from './utils/quemSouEuEngine';
 import { buildMegaResenhaState } from './utils/megaResenhaEngine';
 import { buildRepetenteGroups, buildRepetenteState } from './utils/repetenteEngine';
+import { buildRespostasState } from './utils/respostasEngine';
+import { drawRespostaQuestion, normalizeRespostaKey } from './data/respostasSemPerguntas';
 import { drawRepetenteTheme, normalizeThemeKey } from './data/repetenteThemes';
 import { normalizeIdentity } from './data/quemSouEuIdentities';
 import { sounds } from './utils/soundEffects';
@@ -61,6 +65,9 @@ const ScreenLimite = lazy(() =>
 );
 const ScreenDuvido = lazy(() =>
   import('./components/host/ScreenDuvido').then((m) => ({ default: m.ScreenDuvido }))
+);
+const ScreenRespostasSemPerguntas = lazy(() =>
+  import('./components/host/ScreenRespostasSemPerguntas').then((m) => ({ default: m.ScreenRespostasSemPerguntas }))
 );
 const ScreenRepetente = lazy(() =>
   import('./components/host/ScreenRepetente').then((m) => ({ default: m.ScreenRepetente }))
@@ -149,7 +156,8 @@ const GAME_NAMES: Record<GameId, string> = {
   mimica: 'JOGO DA MÍMICA',
   'quem-sou-eu': 'QUEM SOU EU',
   'mega-resenha': 'MEGA RESENHA',
-  repetente: 'REPETENTE'
+  repetente: 'REPETENTE',
+  'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS'
 };
 
 export default function App() {
@@ -432,6 +440,7 @@ export default function App() {
         let quemSouEuState: QuemSouEuGameState | undefined = undefined;
         let megaResenhaState: MegaResenhaGameState | undefined = undefined;
         let repetenteState: RepetenteGameState | undefined = undefined;
+        let respostasState: RespostasSemPerguntasState | undefined = undefined;
         let extraSignature = '';
         let notaState: NotaGameState | undefined = undefined;
         let temOuNaoTemState: TemOuNaoTemGameState | undefined = undefined;
@@ -743,6 +752,18 @@ export default function App() {
           });
         }
 
+        if (gameId === 'respostas-sem-perguntas') {
+          // NOV-08: uma pergunta oculta por rodada (sem repetir na sessao); quem comeca roda a cada rodada.
+          const usedQuestions = new Set<string>();
+          (prev.usedRoundSignatures || []).forEach((sig) => {
+            if (typeof sig === 'string' && sig.startsWith('rsp:')) usedQuestions.add(normalizeRespostaKey(sig.slice(4)));
+          });
+          const picked = drawRespostaQuestion(usedQuestions);
+          const firstIdx = (Math.max(1, prev.roundNumber) - 1) % Math.max(1, nextMatchPlayers.length);
+          respostasState = buildRespostasState(picked, nextMatchPlayers, firstIdx);
+          extraSignature = 'rsp:' + picked.pergunta;
+        }
+
         if (gameId === 'repetente') {
           // NOV-05: um tema por rodada (sem repetir na sessao); as duplas saem das equipes.
           const usedThemes = new Set<string>();
@@ -813,19 +834,14 @@ export default function App() {
           quemSouEu: quemSouEuState,
           megaResenha: megaResenhaState,
           repetente: repetenteState,
+          respostasSemPerguntas: respostasState,
           nota: notaState,
           temOuNaoTem: temOuNaoTemState,
           perguntasEVerdades: perguntasEVerdadesState
         };
       });
       // Background prefetch for the NEXT round so transition is zero-delay!
-      if (
-        gameId !== 'perguntas-e-verdades' &&
-        gameId !== 'mimica' &&
-        gameId !== 'quem-sou-eu' &&
-        gameId !== 'mega-resenha' &&
-        gameId !== 'repetente'
-      ) {
+      if (!usesLocalContent(gameId)) {
         window.setTimeout(() => {
           prefetchRoundsForTheme(gameId, effectiveTheme, effectiveConfig);
         }, 400);
@@ -870,6 +886,11 @@ export default function App() {
           const spkTeam = prev.proibido.speakerTeam;
           roundPts[spkTeam] = (roundPts[spkTeam] || 0) + prev.proibido.roundScore;
         }
+      } else if (prev.activeGame === 'respostas-sem-perguntas' && prev.respostasSemPerguntas) {
+        Object.entries(prev.respostasSemPerguntas.pointsAwarded || {}).forEach(([pid, pts]) => {
+          const p = prev.players.find((pl) => pl.id === pid);
+          if (p?.team) roundPts[p.team] = (roundPts[p.team] || 0) + pts;
+        });
       } else if (prev.activeGame === 'repetente' && prev.repetente) {
         const pts = prev.repetente.result?.pointsByTeam;
         if (pts) {
@@ -976,6 +997,7 @@ export default function App() {
         prev.activeGame === 'limite' ||
         prev.activeGame === 'nota' ||
         prev.activeGame === 'quem-sou-eu' ||
+        prev.activeGame === 'respostas-sem-perguntas' ||
         prev.activeGame === 'perguntas-e-verdades';
 
       const sortedPlayers = [...updatedPlayers].sort((a, b) => (b.score || 0) - (a.score || 0));
@@ -1287,7 +1309,8 @@ export default function App() {
       'mimica',
       'quem-sou-eu',
       'mega-resenha',
-      'repetente'
+      'repetente',
+      'respostas-sem-perguntas'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     selectGame(randomChoice);
@@ -1644,6 +1667,19 @@ export default function App() {
                   onNextRound={handleNextRound}
                 />
               )}
+              {room.activeGame === 'respostas-sem-perguntas' && (
+                <ScreenRespostasSemPerguntas
+                  room={room}
+                  isTvMode={isTvMode}
+                  onUpdateRespostasState={(updater) =>
+                    broadcastState((prev) => ({
+                      ...prev,
+                      respostasSemPerguntas: prev.respostasSemPerguntas ? updater(prev.respostasSemPerguntas) : undefined
+                    }))
+                  }
+                  onNextRound={handleNextRound}
+                />
+              )}
               {room.activeGame === 'repetente' && (
                 <ScreenRepetente
                   room={room}
@@ -1874,6 +1910,7 @@ export default function App() {
                 room.activeGame === 'nota' ||
                 room.activeGame === 'limite' ||
                 room.activeGame === 'quem-sou-eu' ||
+                room.activeGame === 'respostas-sem-perguntas' ||
                 room.activeGame === 'perguntas-e-verdades';
 
               const sortedIndividualPlayers = [...room.players].sort(
