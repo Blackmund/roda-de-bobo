@@ -115,7 +115,7 @@ export const ActiveTurnBanner: React.FC<ActiveTurnBannerProps> = ({
             >
               {activePlayer ? activePlayer.name : activeTeamName || 'Mesa Pronta'}
             </span>
-            <span className="text-[11px] font-mono-code text-slate-200 truncate">
+            <span className="text-[11px] font-mono-code text-slate-200 sm:truncate">
               — {actionInstruction}
             </span>
           </div>

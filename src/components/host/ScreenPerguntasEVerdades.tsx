@@ -1026,7 +1026,7 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
 
           {/* Dynamic 1-line Action Guidance Banner ("O que eu faço agora?") */}
           <div className="shrink-0 px-3 py-1 bg-black/60 border border-white/10 flex items-center justify-between text-xs font-mono-code">
-            <div className="flex items-center gap-2 truncate">
+            <div className="flex items-start sm:items-center gap-2 sm:truncate">
               <span className="w-2 h-2 rounded-full bg-[#17B8B8] animate-pulse shrink-0" />
               <span className="text-slate-300">
                 🃏 🎤 <strong className="text-white">MONTAGEM DO BARALHO:</strong> Organize as 8 cartas de {currentSetupPlayer.name} em ordem crescente por naipe
@@ -1252,7 +1252,7 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
 
         {/* Dynamic 1-line Action Guidance Banner ("O que eu faço agora?") */}
         <div className="shrink-0 px-3 py-1 bg-black/60 border border-white/10 flex items-center justify-between text-xs font-mono-code">
-          <div className="flex items-center gap-2 truncate">
+          <div className="flex items-start sm:items-center gap-2 sm:truncate">
             <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
             <span className="text-slate-300">
               🪙 🎤 <strong className="text-white">LEILÃO DE FICHAS:</strong> Aposte de 0 a {maxTokensForBiddingPlayer} fichas para disputar o direito de responder ou passar a pergunta
@@ -1450,7 +1450,7 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
 
       {/* Dynamic 1-line Action Guidance Banner ("O que eu faço agora?") */}
       <div className="shrink-0 px-3 py-1 bg-black/60 border border-white/10 flex items-center justify-between text-xs font-mono-code mb-1">
-        <div className="flex items-center gap-2 truncate">
+        <div className="flex items-start sm:items-center gap-2 sm:truncate">
           <span className="w-2 h-2 rounded-full bg-[#17B8B8] animate-pulse shrink-0" />
           <span className="text-slate-300">
             {pv.phase === 'VICTORY' ? (

@@ -830,9 +830,9 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
 
         {/* Dynamic 1-Line Action Guidance Banner ("O que eu faço agora?") */}
         <div className="py-1 px-4 bg-black/70 border-b border-white/10 flex items-center justify-between text-xs font-mono-code font-bold uppercase tracking-wider shrink-0">
-          <div className="flex items-center gap-2 text-cyan-300 truncate">
+          <div className="flex items-start sm:items-center gap-2 text-cyan-300 sm:truncate">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shrink-0" />
-            <span className="truncate">
+            <span className="sm:truncate">
               {limite.phase === 'SCORING'
                 ? '🌟 REVELAÇÃO: CLIQUE NOS JOGADORES PARA AJUSTAR PONTOS (TOGGLE) E CONFIRME ABAIXO'
                 : limite.phase === 'CALL_TIMEOUT'
@@ -867,7 +867,7 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
               data-testid="limite-question-text"
               className={`${
                 limite.phase === 'SCORING'
-                  ? 'text-xs sm:text-sm font-bold text-slate-300 line-clamp-2 max-w-2xl py-0.5'
+                  ? 'text-xs sm:text-sm font-bold text-slate-300 line-clamp-4 sm:line-clamp-2 max-w-2xl py-0.5'
                   : 'text-base md:text-xl lg:text-2xl font-black text-[#F5F2EB]'
               } uppercase leading-snug tracking-normal text-center mx-auto transition-all`}
             >
