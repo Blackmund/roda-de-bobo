@@ -68,6 +68,7 @@ import {
 } from '../../utils/partyNetworkEngine';
 import { ScreenMobileJoin } from './ScreenMobileJoin';
 import { ScreenMobileController } from './ScreenMobileController';
+import { resolveSwapPair } from '../../utils/limiteSwap';
 import { MobileStandaloneGameView } from './MobileStandaloneGameView';
 import {
   TEAM_META,
@@ -76,7 +77,6 @@ import {
   resolveCurrentTurnSpotlight
 } from '../../utils/teamUtils';
 import { checkAnswerFuzzyMatch } from '../../utils/fuzzyMatch';
-import { resolveSwapPair } from '../../utils/limiteSwap';
 
 interface ControllerViewProps {
   room: GameRoom;
@@ -130,8 +130,8 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
   // Jogo do Limite Input State
   const [limiteGuess, setLimiteGuess] = useState<string>('');
   const [isEditingLimiteGuess, setIsEditingLimiteGuess] = useState<boolean>(false);
-  const [selectedSwapTarget, setSelectedSwapTarget] = useState<string>('');
   const [selectedSwapTarget2, setSelectedSwapTarget2] = useState<string>('');
+  const [selectedSwapTarget, setSelectedSwapTarget] = useState<string>('');
 
   // Reset secret guess input state when round or question changes
   useEffect(() => {
