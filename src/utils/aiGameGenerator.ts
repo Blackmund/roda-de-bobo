@@ -3966,6 +3966,17 @@ export async function generateRoundContent(
     };
   }
 
+  // NOV-06: o Onde estou sorteia os momentos no proprio App (precisa do numero de jogadores); aqui so um marcador.
+  if (gameId === 'onde-estou') {
+    return {
+      source: 'curated',
+      data: {},
+      themeUsed: 'Onde estou',
+      subthemeUsed: 'Grandes momentos na testa',
+      signature: `oe-round-${Date.now()}`
+    };
+  }
+
   // NOV-02: o Quem sou eu sorteia as identidades no proprio App (precisa do numero de jogadores); aqui so um marcador.
   if (gameId === 'quem-sou-eu') {
     return {

@@ -255,7 +255,7 @@ export function accumulateRoundPlayerScores(room: GameRoom): Player[] {
     Object.entries(room.respostasSemPerguntas.pointsAwarded || {}).forEach(([pid, pts]) => {
       deltas[pid] = (deltas[pid] || 0) + pts;
     });
-  } else if (room.activeGame === 'quem-sou-eu' && room.quemSouEu) {
+  } else if ((room.activeGame === 'quem-sou-eu' || room.activeGame === 'onde-estou') && room.quemSouEu) {
     Object.entries(room.quemSouEu.pointsAwarded || {}).forEach(([pid, pts]) => {
       deltas[pid] = (deltas[pid] || 0) + pts;
     });
@@ -876,7 +876,8 @@ const DEFAULT_GAME_NAMES: Record<GameId, string> = {
   repetente: 'REPETENTE',
   'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS',
   estadios: 'ESTÁDIOS',
-  'como-eu-pinto': 'COMO EU PINTO'
+  'como-eu-pinto': 'COMO EU PINTO',
+  'onde-estou': 'ONDE ESTOU'
 };
 
 /**

@@ -111,6 +111,15 @@ const SHOW_PRESETS: Partial<Record<GameId, RulesetPreset>> = {
       'Não vale a própria palavra nem o mesmo radical (a checagem é automática, o juiz pode contestar)'
     ]
   },
+  'onde-estou': {
+    rounds: 1,
+    config: {},
+    notes: [
+      'Cada jogador recebe um grande momento do esporte: todos veem, menos ele',
+      'Na vez, pergunta de sim ou não para descobrir qual é o momento (ou chuta), em rodízio',
+      'Pontuação do programa não confirmada: o 1º a acertar leva mais pontos'
+    ]
+  },
   'quem-sou-eu': {
     rounds: 1,
     config: {},

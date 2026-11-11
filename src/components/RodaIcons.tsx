@@ -562,3 +562,16 @@ export const ComoEuPintoArt: React.FC<{ className?: string }> = ({ className = '
     </g>
   </svg>
 );
+
+
+// 23. Onde estou: marcador de mapa com uma bola dentro.
+export const OndeEstouArt: React.FC<{ className?: string }> = ({ className = 'w-28 h-24' }) => (
+  <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
+    <g stroke="#120A16" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round">
+      <ellipse cx="80" cy="124" rx="38" ry="10" fill="#17B8B8" />
+      <path d="M80 118 C48 84 40 64 40 50 C40 26 58 10 80 10 C102 10 120 26 120 50 C120 64 112 84 80 118 Z" fill="#E6194B" />
+      <circle cx="80" cy="50" r="22" fill="#F5F2EB" />
+      <path d="M80 36 L91 44 L87 57 L73 57 L69 44 Z" fill="#120A16" />
+    </g>
+  </svg>
+);
