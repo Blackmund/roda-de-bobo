@@ -68,6 +68,7 @@ import {
 } from '../../utils/partyNetworkEngine';
 import { ScreenMobileJoin } from './ScreenMobileJoin';
 import { ScreenMobileController } from './ScreenMobileController';
+import { resolveSwapPair } from '../../utils/limiteSwap';
 import { MobileStandaloneGameView } from './MobileStandaloneGameView';
 import {
   TEAM_META,
@@ -129,6 +130,7 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
   // Jogo do Limite Input State
   const [limiteGuess, setLimiteGuess] = useState<string>('');
   const [isEditingLimiteGuess, setIsEditingLimiteGuess] = useState<boolean>(false);
+  const [selectedSwapTarget2, setSelectedSwapTarget2] = useState<string>('');
   const [selectedSwapTarget, setSelectedSwapTarget] = useState<string>('');
 
   // Reset secret guess input state when round or question changes
@@ -975,6 +977,11 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
         limite.powerCardsPlayed?.[player.id]
     );
     const otherPlayers = room.players.filter((p) => p.id !== player.id);
+    const swapPairView = resolveSwapPair(
+      [...otherPlayers.map((p) => p.id), player.id],
+      selectedSwapTarget,
+      selectedSwapTarget2
+    );
     const isTimeExpired =
       (room.timerConfig > 0 && (limite.timerSeconds ?? 0) <= 0) ||
       (limite.revealCountdown !== null && limite.revealCountdown !== undefined);
@@ -1021,8 +1028,12 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
           callTimer = prev.customConfig?.limiteCallTimeoutSeconds || 30;
         }
 
-        const effectiveSwapPartner =
-          selectedSwapTarget || prev.players.find((p) => p.id !== player.id)?.id || '';
+        // REG-05: Reverse troca os palpites de dois jogadores escolhidos (adversarios primeiro).
+        const swapPair = resolveSwapPair(
+          [...prev.players.filter((p) => p.id !== player.id).map((p) => p.id), player.id],
+          selectedSwapTarget,
+          selectedSwapTarget2
+        );
 
         return {
           ...prev,
@@ -1038,10 +1049,7 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
                   ...(prev.limite.usedPowerCardsByPlayer || {}),
                   [player.id]: true
                 },
-                swapTarget:
-                  card === 'troca' && effectiveSwapPartner
-                    ? { player1: player.id, player2: effectiveSwapPartner }
-                    : prev.limite.swapTarget
+                swapTarget: card === 'troca' && swapPair ? swapPair : prev.limite.swapTarget
               }
             : undefined
         };
@@ -1250,22 +1258,29 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
                   {myCardMeta.description}
                 </p>
 
-                {myAssignedCard === 'troca' && !isMyPowerCardUsed && otherPlayers.length > 0 && (
-                  <div className="pt-1 space-y-1">
+                {myAssignedCard === 'troca' && !isMyPowerCardUsed && room.players.length >= 2 && (
+                  <div className="pt-1 space-y-1" data-testid="limite-swap-picker">
                     <label className="block text-[10px] font-mono-code text-cyan-300 uppercase font-bold">
-                      Trocar palpite com qual jogador?
+                      Trocar os palpites de quais dois jogadores?
                     </label>
-                    <select
-                      value={selectedSwapTarget || otherPlayers[0]?.id || ''}
-                      onChange={(e) => setSelectedSwapTarget(e.target.value)}
-                      className="w-full bg-black border border-cyan-400/60 px-2.5 py-1.5 text-xs font-mono-code text-white"
-                    >
-                      {otherPlayers.map((op) => (
-                        <option key={op.id} value={op.id}>
-                          {op.avatar} {op.name}
-                        </option>
-                      ))}
-                    </select>
+                    {[0, 1].map((slot) => (
+                      <select
+                        key={slot}
+                        data-testid={`limite-swap-select-${slot + 1}`}
+                        value={slot === 0 ? swapPairView?.player1 || '' : swapPairView?.player2 || ''}
+                        onChange={(e) =>
+                          slot === 0 ? setSelectedSwapTarget(e.target.value) : setSelectedSwapTarget2(e.target.value)
+                        }
+                        className="w-full bg-black border border-cyan-400/60 px-2.5 py-1.5 text-xs font-mono-code text-white"
+                      >
+                        {[...otherPlayers, player].map((op) => (
+                          <option key={op.id} value={op.id}>
+                            {op.avatar} {op.name}
+                            {op.id === player.id ? ' (você)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    ))}
                   </div>
                 )}
 
@@ -1273,7 +1288,7 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
                   type="button"
                   data-testid="controller-limite-use-power-btn"
                   onClick={() => handlePlayCard(myAssignedCard)}
-                  disabled={isMyPowerCardUsed || isScoringPhase}
+                  disabled={isMyPowerCardUsed || isScoringPhase || (myAssignedCard === 'troca' && !swapPairView)}
                   className="w-full py-2.5 border border-amber-300 bg-amber-400 hover:bg-amber-300 disabled:opacity-35 text-black font-anton text-sm uppercase tracking-wider cursor-pointer"
                 >
                   {isMyPowerCardUsed

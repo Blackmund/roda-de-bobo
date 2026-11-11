@@ -66,6 +66,15 @@ const ScreenPerguntasEVerdades = lazy(() =>
     default: m.ScreenPerguntasEVerdades
   }))
 );
+// UX-07: o simulador de controles e ferramenta de desenvolvimento; so aparece em dev ou com ?dev na URL.
+const SHOW_DEV_TOOLS = (() => {
+  try {
+    return Boolean(import.meta.env.DEV) || new URLSearchParams(window.location.search).has('dev');
+  } catch {
+    return false;
+  }
+})();
+
 const DevControlsDrawer = lazy(() =>
   import('./components/dev/DevControlsDrawer').then((m) => ({ default: m.DevControlsDrawer }))
 );
@@ -2290,14 +2299,16 @@ export default function App() {
       </WindowWrapper>
 
       {/* Dev Multi-Player Simulator Drawer */}
-      <Suspense fallback={null}>
-        <DevControlsDrawer
-          room={room}
-          onUpdateRoom={broadcastState}
-          onRegisterPlayer={registerPlayer}
-          onRemovePlayer={removePlayer}
-        />
-      </Suspense>
+      {SHOW_DEV_TOOLS && (
+        <Suspense fallback={null}>
+          <DevControlsDrawer
+            room={room}
+            onUpdateRoom={broadcastState}
+            onRegisterPlayer={registerPlayer}
+            onRemovePlayer={removePlayer}
+          />
+        </Suspense>
+      )}
 
       {renderJoinRoomModal()}
     </div>

@@ -222,7 +222,7 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
     name: 'TEM OU NÃO TEM',
     welcomeTitle: 'Como Jogar o Tem ou Não Tem',
     welcomeSubtitle:
-      'Disputa de auditório em equipes: descubra as respostas mais populares da pesquisa antes de acumular 3 strikes vermelhos!',
+      'O Top 5 do programa: em equipes, descubra as respostas mais votadas da pesquisa antes de estourar os erros (3 strikes nas regras da casa, 2 nas do programa)!',
     steps: [
       {
         stepNumber: 1,
@@ -237,7 +237,7 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
         icon: '👥',
         headline: 'Palpites em Equipe e Revelação',
         description:
-          'A equipe da vez dá palpites juntos. Cada acerto vira a ripa no painel e soma os pontos correspondentes de votos ao time.',
+          'As equipes respondem alternadamente (a posse da rodada sai no par ou ímpar). Cada acerto abre a ripa no painel e soma ao time os votos daquela resposta.',
         accentTag: 'Pontos Revelados'
       },
       {
