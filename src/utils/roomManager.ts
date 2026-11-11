@@ -45,7 +45,7 @@ import {
   syncTeamsRecordFromPlayers,
   normalizePlayersToTeamCount
 } from './teamUtils';
-import { isApiAvailable, markApiUnavailable } from './apiAvailability';
+import { isApiAvailable, markApiUnavailable, postToApi } from './apiAvailability';
 
 const AVATARS = RETRO_AVATARS;
 const COLORS = [
@@ -268,14 +268,8 @@ export function useGameRoom(roomId: string, currentUserId: string, isHost: boole
         }
       }
 
-      // Background REST persistence (syncs with SSE broadcast on server)
-      fetch(`/api/rooms/${updated.roomId}/state`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated)
-      }).catch(() => {
-        // Silently handle if offline
-      });
+      // Background REST persistence (syncs with SSE broadcast on server); so se o servidor proprio existir
+      postToApi(`/api/rooms/${updated.roomId}/state`, updated);
 
       return updated;
     });
@@ -484,11 +478,7 @@ export function useGameRoom(roomId: string, currentUserId: string, isHost: boole
 
     // If Host is initializing or switching room codes, immediately publish state to local REST server
     if (isHost && roomRef.current) {
-      fetch(`/api/rooms/${activeRoomCode}/state`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...roomRef.current, roomId: activeRoomCode })
-      }).catch(() => {});
+      postToApi(`/api/rooms/${activeRoomCode}/state`, { ...roomRef.current, roomId: activeRoomCode });
     }
 
     // If Mobile Controller switched room codes while joining, immediately dispatch the pending join request
