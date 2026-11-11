@@ -45,7 +45,7 @@ import {
   syncTeamsRecordFromPlayers,
   normalizePlayersToTeamCount
 } from './teamUtils';
-import { isApiAvailable, markApiUnavailable, postToApi } from './apiAvailability';
+import { isRoomApiAvailable, markApiUnavailable, postToApi } from './apiAvailability';
 
 const AVATARS = RETRO_AVATARS;
 const COLORS = [
@@ -377,7 +377,7 @@ export function useGameRoom(roomId: string, currentUserId: string, isHost: boole
     };
 
     // Só começa a consultar se o servidor próprio existir (1 sondagem por sessão, em /api/health).
-    void isApiAvailable().then((available) => {
+    void isRoomApiAvailable().then((available) => {
       if (available) schedule(POLL_BASE_MS);
     });
   }, [activeRoomCode, applyRemoteState]);

@@ -11,8 +11,12 @@
  */
 const STORAGE_KEY = 'rb_api_available_v2';
 
+const ROOMS_KEY = 'rb_api_rooms_v2';
+
 let cached: boolean | null = null;
 let pending: Promise<boolean> | null = null;
+// Salas em tempo real (/ws, /api/rooms): na Vercel so a IA existe (funcoes sem estado), entao o health avisa `rooms: false`.
+let roomsCached: boolean | null = null;
 
 function readStored(): boolean | null {
   try {
@@ -29,6 +33,15 @@ function store(value: boolean) {
     window.sessionStorage?.setItem(STORAGE_KEY, value ? '1' : '0');
   } catch {
     // ignore (modo privado / storage bloqueado)
+  }
+}
+
+function storeRooms(value: boolean) {
+  roomsCached = value;
+  try {
+    window.sessionStorage?.setItem(ROOMS_KEY, value ? '1' : '0');
+  } catch {
+    // ignore
   }
 }
 
@@ -51,18 +64,33 @@ export function looksLikeApiHealth(res: { ok?: boolean; status?: number; headers
  * O corpo e serializado na hora, antes de esperar a sondagem.
  */
 export function postToApi(path: string, body: unknown): void {
+  // (usa isRoomApiAvailable: so envia estado de sala quando o servidor mantem salas)
   let payload: string;
   try {
     payload = JSON.stringify(body);
   } catch {
     return;
   }
-  void isApiAvailable().then((available) => {
+  void isRoomApiAvailable().then((available) => {
     if (!available || typeof fetch === 'undefined') return;
     fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload }).catch(() => {
       // offline: ignora
     });
   });
+}
+
+/** Servidor com salas em tempo real (/ws e /api/rooms)? Falso na Vercel (so IA) e em site estatico. */
+export async function isRoomApiAvailable(): Promise<boolean> {
+  if (!(await isApiAvailable())) return false;
+  if (roomsCached === null) {
+    try {
+      const v = window.sessionStorage?.getItem(ROOMS_KEY);
+      roomsCached = v === '0' ? false : true;
+    } catch {
+      roomsCached = true;
+    }
+  }
+  return roomsCached;
 }
 
 export function isApiAvailable(): Promise<boolean> {
@@ -71,9 +99,19 @@ export function isApiAvailable(): Promise<boolean> {
   if (cached !== null) return Promise.resolve(cached);
   if (!pending) {
     pending = fetch('/api/health', { cache: 'no-store' })
-      .then((res) => {
+      .then(async (res) => {
         const ok = looksLikeApiHealth(res);
         store(ok);
+        if (ok) {
+          let rooms = true;
+          try {
+            const body = await (res as Response).json();
+            if (body && body.rooms === false) rooms = false;
+          } catch {
+            // sem corpo legivel: assume servidor completo
+          }
+          storeRooms(rooms);
+        }
         return ok;
       })
       .catch(() => true) // falha de rede: não conclui nada, tenta de novo na próxima consulta

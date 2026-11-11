@@ -12,7 +12,7 @@
 import mqtt, { MqttClient, IClientOptions } from 'mqtt';
 import { GameRoom } from '../types/game';
 import { getMqttConfig, getAllBrokerEndpoints, getRoomMqttTopic } from '../config/mqttConfig';
-import { isApiAvailable, postToApi } from './apiAvailability';
+import { isRoomApiAvailable, postToApi } from './apiAvailability';
 
 export type TransportStatus = 'connecting' | 'connected' | 'reconnecting' | 'offline';
 
@@ -168,7 +168,7 @@ export class CloudPartyTransport {
   private initServerWebSocket() {
     if (typeof window === 'undefined') return;
     // Sem servidor próprio (ex.: Vercel estático) não há /ws: evita o erro de conexão e segue só com MQTT/BroadcastChannel.
-    void isApiAvailable().then((available) => {
+    void isRoomApiAvailable().then((available) => {
       if (available && !this.isDestroyed) this.openServerWebSocket();
     });
   }

@@ -264,6 +264,9 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Vercel: o app vira uma funcao (api/index.mjs) so com as rotas de IA; sem porta, sem Vite, sem salas em memoria.
+const IS_SERVERLESS = Boolean(process.env.VERCEL);
+
 const app = express();
 const server = createServer(app);
 const wss = new WebSocketServer({ noServer: true });
@@ -870,7 +873,8 @@ async function generateContentWithFallback(ai: GoogleGenAI, params: { contents: 
 
 // Health Check Endpoint for Cloud Run
 app.get('/api/health', (_req, res) => {
-  res.status(200).json({ status: 'ok' });
+  // Na Vercel (funcoes sem estado) so a IA existe: o cliente nao deve usar /ws nem /api/rooms.
+  res.status(200).json({ status: 'ok', rooms: !IS_SERVERLESS });
 });
 
 // AI Status Endpoint for Settings / Config Modal
@@ -1478,5 +1482,9 @@ async function setupServer() {
   server.listen(initialPort, '0.0.0.0');
 }
 
-setupServer();
+if (!IS_SERVERLESS) {
+  setupServer();
+}
+
+export default app;
 
