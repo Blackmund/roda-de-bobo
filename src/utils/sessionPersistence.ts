@@ -58,7 +58,7 @@ export interface MVPStats {
  * (so MVP must NOT be counted individually).
  */
 export function isTeamCollectiveGame(gameId?: GameId | null): boolean {
-  return gameId === 'tem-ou-nao-tem' || gameId === 'proibido' || gameId === 'duvido' || gameId === 'mimica' || gameId === 'mega-resenha' || gameId === 'repetente';
+  return gameId === 'tem-ou-nao-tem' || gameId === 'proibido' || gameId === 'duvido' || gameId === 'mimica' || gameId === 'mega-resenha' || gameId === 'repetente' || gameId === 'como-eu-pinto';
 }
 
 /**
@@ -875,7 +875,8 @@ const DEFAULT_GAME_NAMES: Record<GameId, string> = {
   'mega-resenha': 'MEGA RESENHA',
   repetente: 'REPETENTE',
   'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS',
-  estadios: 'ESTÁDIOS'
+  estadios: 'ESTÁDIOS',
+  'como-eu-pinto': 'COMO EU PINTO'
 };
 
 /**

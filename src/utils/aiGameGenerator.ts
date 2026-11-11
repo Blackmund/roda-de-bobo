@@ -9,6 +9,8 @@
  */
 
 import { usesLocalContent } from '../config/localGames';
+import { drawDesenhoWords, normalizeDesenhoWord } from '../data/desenhoWords';
+import { PINTO_WORDS_PER_ROUND } from './comoEuPintoEngine';
 import { drawMimicaWords, normalizeMimicaWord } from '../data/mimicaWords';
 import { MIMICA_WORDS_PER_ROUND } from './mimicaEngine';
 import { drawMegaResenhaWords, normalizeMegaWord } from '../data/megaResenhaWords';
@@ -3888,6 +3890,25 @@ export async function generateRoundContent(
   difficulty?: string,
   explicitSubAngle?: SubAngleDefinition
 ): Promise<GenerateRoundResponse<unknown>> {
+  // NOV-07: o Como eu pinto sorteia 3 palavras desenhaveis do banco proprio (sem IA); as ja usadas voltam em `excludeSignatures`.
+  if (gameId === 'como-eu-pinto') {
+    const used = new Set<string>();
+    excludeSignatures.forEach((sig) => {
+      if (typeof sig === 'string' && sig.startsWith('cep-')) {
+        sig.slice(4).split('|').forEach((w) => used.add(normalizeDesenhoWord(w)));
+      }
+    });
+    const picked = drawDesenhoWords(PINTO_WORDS_PER_ROUND, used);
+    const words = picked.map((p) => p.palavra);
+    return {
+      source: 'curated',
+      data: words,
+      themeUsed: 'Como eu pinto',
+      subthemeUsed: picked.map((p) => p.categoria).join(' · '),
+      signature: `cep-${words.join('|')}`
+    };
+  }
+
   // NOV-06: o Estadios sorteia o estadio no proprio App; aqui so um marcador.
   if (gameId === 'estadios') {
     return {

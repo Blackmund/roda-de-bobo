@@ -239,6 +239,8 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
         return 'RESPOSTAS SEM PERGUNTAS';
       case 'estadios':
         return 'ESTÁDIOS';
+      case 'como-eu-pinto':
+        return 'COMO EU PINTO';
       default:
         return 'RODA DE BOBO';
     }

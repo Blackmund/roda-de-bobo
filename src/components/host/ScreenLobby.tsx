@@ -9,7 +9,8 @@ import {
   QuemSouEuArt,
   RepetenteArt,
   RespostasSemPerguntasArt,
-  EstadiosArt
+  EstadiosArt,
+  ComoEuPintoArt
 } from '../RodaIcons';
 import { GAME_LIMITS } from '../../config/gameLimits';
 import {
@@ -111,7 +112,8 @@ const GAME_TITLES: Record<GameId, string> = {
   'mega-resenha': 'MEGA RESENHA',
   repetente: 'REPETENTE',
   'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS',
-  estadios: 'ESTÁDIOS'
+  estadios: 'ESTÁDIOS',
+  'como-eu-pinto': 'COMO EU PINTO'
 };
 
 /** Maximo de cards por pagina do catalogo (o grid e 3x2 no desktop e 2x3 no tablet). */
@@ -304,6 +306,21 @@ const GAMES: Array<{
         }
       />
     )
+  },
+  {
+    id: 'como-eu-pinto',
+    name: 'COMO EU PINTO',
+    tagline: 'DESENHE A PALAVRA E O PARCEIRO ADIVINHA',
+    badge: 'EM EQUIPE',
+    color: '#A855F7',
+    renderArt: (cls) => (
+      <ComoEuPintoArt
+        className={
+          cls ||
+          'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
+        }
+      />
+    )
   }
 ];
 
@@ -419,7 +436,8 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
       'mega-resenha',
       'repetente',
       'respostas-sem-perguntas',
-      'estadios'
+      'estadios',
+      'como-eu-pinto'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     handleGameClick(randomChoice);

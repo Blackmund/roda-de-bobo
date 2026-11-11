@@ -45,7 +45,8 @@ const GAME_TITLES: Record<GameId, string> = {
   'mega-resenha': 'MEGA RESENHA',
   repetente: 'REPETENTE',
   'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS',
-  estadios: 'ESTÁDIOS'
+  estadios: 'ESTÁDIOS',
+  'como-eu-pinto': 'COMO EU PINTO'
 };
 
 interface WindowWrapperProps {

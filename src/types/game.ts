@@ -15,7 +15,8 @@ export type GameId =
   | 'mega-resenha'
   | 'repetente'
   | 'respostas-sem-perguntas'
-  | 'estadios';
+  | 'estadios'
+  | 'como-eu-pinto';
 
 export type TeamId = 'A' | 'B' | 'C' | 'D';
 
@@ -321,6 +322,36 @@ export interface EstadiosGameState {
   winnerPlayerId?: string;
   pointsAwarded: Record<string, number>;
   answerVisible: boolean;
+}
+
+// NOV-07: COMO EU PINTO (duplas; um desenha a palavra, o parceiro adivinha; a dupla rival rouba as que faltarem)
+export interface DrawStroke {
+  /** pontos normalizados (0 a 1) em relacao a largura e a altura da area de desenho */
+  points: Array<[number, number]>;
+  color: string;
+  /** espessura relativa a largura da area (ex.: 0.008) */
+  width: number;
+}
+
+export interface ComoEuPintoState {
+  /** STEAL = acabou o tempo e a dupla rival tenta as palavras que faltam */
+  phase: 'READY' | 'PLAYING' | 'STEAL' | 'SUMMARY';
+  words: string[];
+  currentIndex: number;
+  /** 'correct' = a dupla que desenha acertou; 'stolen' = a dupla rival roubou */
+  outcomes: Array<'pending' | 'correct' | 'stolen'>;
+  drawTeam: TeamId;
+  /** equipe rival (a que rouba); ausente no modo cooperativo (2 jogadores) */
+  rivalTeam?: TeamId;
+  drawerPlayerId: string;
+  guesserPlayerId?: string;
+  timerSeconds: number;
+  timerActive: boolean;
+  /** desenho da palavra atual */
+  strokes: DrawStroke[];
+  /** desenhos ja feitos, um por palavra (para o resumo) */
+  drawings: DrawStroke[][];
+  wordHidden?: boolean;
 }
 
 // 4. JOGO DA NOTA
@@ -642,6 +673,7 @@ export interface GameRoom {
   repetente?: RepetenteGameState;
   respostasSemPerguntas?: RespostasSemPerguntasState;
   estadios?: EstadiosGameState;
+  comoEuPinto?: ComoEuPintoState;
   nota?: NotaGameState;
   temOuNaoTem?: TemOuNaoTemGameState;
   perguntasEVerdades?: PerguntasEVerdadesGameState;

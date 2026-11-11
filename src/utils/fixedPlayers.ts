@@ -106,7 +106,8 @@ export const GAME_FRIENDLY_NAMES: Record<GameId, string> = {
   'mega-resenha': 'Mega Resenha',
   repetente: 'Repetente',
   'respostas-sem-perguntas': 'Respostas s/ Perguntas',
-  estadios: 'Estádios'
+  estadios: 'Estádios',
+  'como-eu-pinto': 'Como Eu Pinto'
 };
 
 /**
