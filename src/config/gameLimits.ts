@@ -28,6 +28,7 @@ export const GAME_LIMITS: Record<GameId, GameLimits> = {
   'mega-resenha': { min: 2, max: 8, recommended: 4, teamsRequired: true },
   repetente: { min: 2, max: 8, recommended: 4, teamsRequired: true },
   'respostas-sem-perguntas': { min: 2, max: 8, recommended: 4, teamsRequired: false },
+  estadios: { min: 2, max: 8, recommended: 4, teamsRequired: false },
   'tem-ou-nao-tem': { min: 2, max: 8, recommended: 4, teamsRequired: true },
   'perguntas-e-verdades': {
     min: 2,

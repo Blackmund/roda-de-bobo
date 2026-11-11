@@ -8,7 +8,8 @@ import {
   MimicaMasksArt,
   QuemSouEuArt,
   RepetenteArt,
-  RespostasSemPerguntasArt
+  RespostasSemPerguntasArt,
+  EstadiosArt
 } from '../RodaIcons';
 import { GAME_LIMITS } from '../../config/gameLimits';
 import {
@@ -110,7 +111,8 @@ const GAME_TITLES: Record<GameId, string> = {
   'quem-sou-eu': 'QUEM SOU EU',
   'mega-resenha': 'MEGA RESENHA',
   repetente: 'REPETENTE',
-  'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS'
+  'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS',
+  estadios: 'ESTÁDIOS'
 };
 
 /** Maximo de cards por pagina do catalogo (o grid e 3x2 no desktop e 2x3 no tablet). */
@@ -288,6 +290,21 @@ const GAMES: Array<{
         }
       />
     )
+  },
+  {
+    id: 'estadios',
+    name: 'ESTÁDIOS',
+    tagline: 'DESCUBRA O ESTÁDIO: 5, 4, 3, 2, 1 PONTOS',
+    badge: 'INDIVIDUAL',
+    color: '#0EA5E9',
+    renderArt: (cls) => (
+      <EstadiosArt
+        className={
+          cls ||
+          'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
+        }
+      />
+    )
   }
 ];
 
@@ -414,7 +431,8 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
       'quem-sou-eu',
       'mega-resenha',
       'repetente',
-      'respostas-sem-perguntas'
+      'respostas-sem-perguntas',
+      'estadios'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     handleGameClick(randomChoice);

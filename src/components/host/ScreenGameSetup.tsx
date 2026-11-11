@@ -237,6 +237,8 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
         return 'REPETENTE';
       case 'respostas-sem-perguntas':
         return 'RESPOSTAS SEM PERGUNTAS';
+      case 'estadios':
+        return 'ESTÁDIOS';
       default:
         return 'RODA DE BOBO';
     }
@@ -247,6 +249,7 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
     room.activeGame === 'limite' ||
     room.activeGame === 'quem-sou-eu' ||
     room.activeGame === 'respostas-sem-perguntas' ||
+    room.activeGame === 'estadios' ||
     room.activeGame === 'perguntas-e-verdades';
 
   const effectiveTeamCount = getTeamCount(room, customConfig.teamCount);

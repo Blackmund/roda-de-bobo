@@ -247,6 +247,10 @@ export function accumulateRoundPlayerScores(room: GameRoom): Player[] {
     Object.entries(room.nota.pointsAwarded || {}).forEach(([pid, pts]) => {
       deltas[pid] = (deltas[pid] || 0) + pts;
     });
+  } else if (room.activeGame === 'estadios' && room.estadios) {
+    Object.entries(room.estadios.pointsAwarded || {}).forEach(([pid, pts]) => {
+      deltas[pid] = (deltas[pid] || 0) + pts;
+    });
   } else if (room.activeGame === 'respostas-sem-perguntas' && room.respostasSemPerguntas) {
     Object.entries(room.respostasSemPerguntas.pointsAwarded || {}).forEach(([pid, pts]) => {
       deltas[pid] = (deltas[pid] || 0) + pts;
@@ -870,7 +874,8 @@ const DEFAULT_GAME_NAMES: Record<GameId, string> = {
   'quem-sou-eu': 'QUEM SOU EU',
   'mega-resenha': 'MEGA RESENHA',
   repetente: 'REPETENTE',
-  'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS'
+  'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS',
+  estadios: 'ESTÁDIOS'
 };
 
 /**

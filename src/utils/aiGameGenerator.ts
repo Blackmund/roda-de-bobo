@@ -3893,6 +3893,17 @@ export async function generateRoundContent(
   difficulty?: string,
   explicitSubAngle?: SubAngleDefinition
 ): Promise<GenerateRoundResponse<unknown>> {
+  // NOV-06: o Estadios sorteia o estadio no proprio App; aqui so um marcador.
+  if (gameId === 'estadios') {
+    return {
+      source: 'curated',
+      data: {},
+      themeUsed: 'Estádios',
+      subthemeUsed: 'Descubra o estádio pelas pistas',
+      signature: `est-round-${Date.now()}`
+    };
+  }
+
   // NOV-08: o Respostas sem perguntas sorteia a pergunta no proprio App; aqui so um marcador.
   if (gameId === 'respostas-sem-perguntas') {
     return {

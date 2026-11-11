@@ -15,6 +15,7 @@ import {
   MegaResenhaGameState,
   RepetenteGameState,
   RespostasSemPerguntasState,
+  EstadiosGameState,
   NotaGameState,
   TemOuNaoTemGameState,
   PerguntasEVerdadesGameState,
@@ -40,6 +41,8 @@ import { buildQuemSouEuState, drawIdentities } from './utils/quemSouEuEngine';
 import { buildMegaResenhaState } from './utils/megaResenhaEngine';
 import { buildRepetenteGroups, buildRepetenteState } from './utils/repetenteEngine';
 import { buildRespostasState } from './utils/respostasEngine';
+import { buildEstadiosState } from './utils/estadiosEngine';
+import { drawEstadio, normalizeEstadioKey } from './data/estadiosBank';
 import { drawRespostaQuestion, normalizeRespostaKey } from './data/respostasSemPerguntas';
 import { drawRepetenteTheme, normalizeThemeKey } from './data/repetenteThemes';
 import { normalizeIdentity } from './data/quemSouEuIdentities';
@@ -65,6 +68,9 @@ const ScreenLimite = lazy(() =>
 );
 const ScreenDuvido = lazy(() =>
   import('./components/host/ScreenDuvido').then((m) => ({ default: m.ScreenDuvido }))
+);
+const ScreenEstadios = lazy(() =>
+  import('./components/host/ScreenEstadios').then((m) => ({ default: m.ScreenEstadios }))
 );
 const ScreenRespostasSemPerguntas = lazy(() =>
   import('./components/host/ScreenRespostasSemPerguntas').then((m) => ({ default: m.ScreenRespostasSemPerguntas }))
@@ -167,7 +173,8 @@ const GAME_NAMES: Record<GameId, string> = {
   'quem-sou-eu': 'QUEM SOU EU',
   'mega-resenha': 'MEGA RESENHA',
   repetente: 'REPETENTE',
-  'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS'
+  'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS',
+  estadios: 'ESTÁDIOS'
 };
 
 export default function App() {
@@ -460,6 +467,7 @@ export default function App() {
         let megaResenhaState: MegaResenhaGameState | undefined = undefined;
         let repetenteState: RepetenteGameState | undefined = undefined;
         let respostasState: RespostasSemPerguntasState | undefined = undefined;
+        let estadiosState: EstadiosGameState | undefined = undefined;
         let extraSignature = '';
         let notaState: NotaGameState | undefined = undefined;
         let temOuNaoTemState: TemOuNaoTemGameState | undefined = undefined;
@@ -771,6 +779,18 @@ export default function App() {
           });
         }
 
+        if (gameId === 'estadios') {
+          // NOV-06: um estadio por rodada (sem repetir na sessao); quem comeca roda a cada rodada.
+          const usedStadiums = new Set<string>();
+          (prev.usedRoundSignatures || []).forEach((sig) => {
+            if (typeof sig === 'string' && sig.startsWith('est:')) usedStadiums.add(normalizeEstadioKey(sig.slice(4)));
+          });
+          const picked = drawEstadio(usedStadiums);
+          const firstIdx = (Math.max(1, prev.roundNumber) - 1) % Math.max(1, nextMatchPlayers.length);
+          estadiosState = buildEstadiosState(picked, nextMatchPlayers, firstIdx);
+          extraSignature = 'est:' + picked.nome;
+        }
+
         if (gameId === 'respostas-sem-perguntas') {
           // NOV-08: uma pergunta oculta por rodada (sem repetir na sessao); quem comeca roda a cada rodada.
           const usedQuestions = new Set<string>();
@@ -854,6 +874,7 @@ export default function App() {
           megaResenha: megaResenhaState,
           repetente: repetenteState,
           respostasSemPerguntas: respostasState,
+          estadios: estadiosState,
           nota: notaState,
           temOuNaoTem: temOuNaoTemState,
           perguntasEVerdades: perguntasEVerdadesState
@@ -905,6 +926,11 @@ export default function App() {
           const spkTeam = prev.proibido.speakerTeam;
           roundPts[spkTeam] = (roundPts[spkTeam] || 0) + prev.proibido.roundScore;
         }
+      } else if (prev.activeGame === 'estadios' && prev.estadios) {
+        Object.entries(prev.estadios.pointsAwarded || {}).forEach(([pid, pts]) => {
+          const p = prev.players.find((pl) => pl.id === pid);
+          if (p?.team) roundPts[p.team] = (roundPts[p.team] || 0) + pts;
+        });
       } else if (prev.activeGame === 'respostas-sem-perguntas' && prev.respostasSemPerguntas) {
         Object.entries(prev.respostasSemPerguntas.pointsAwarded || {}).forEach(([pid, pts]) => {
           const p = prev.players.find((pl) => pl.id === pid);
@@ -1017,6 +1043,7 @@ export default function App() {
         prev.activeGame === 'nota' ||
         prev.activeGame === 'quem-sou-eu' ||
         prev.activeGame === 'respostas-sem-perguntas' ||
+        prev.activeGame === 'estadios' ||
         prev.activeGame === 'perguntas-e-verdades';
 
       const sortedPlayers = [...updatedPlayers].sort((a, b) => (b.score || 0) - (a.score || 0));
@@ -1329,7 +1356,8 @@ export default function App() {
       'quem-sou-eu',
       'mega-resenha',
       'repetente',
-      'respostas-sem-perguntas'
+      'respostas-sem-perguntas',
+      'estadios'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     selectGame(randomChoice);
@@ -1686,6 +1714,19 @@ export default function App() {
                   onNextRound={handleNextRound}
                 />
               )}
+              {room.activeGame === 'estadios' && (
+                <ScreenEstadios
+                  room={room}
+                  isTvMode={isTvMode}
+                  onUpdateEstadiosState={(updater) =>
+                    broadcastState((prev) => ({
+                      ...prev,
+                      estadios: prev.estadios ? updater(prev.estadios) : undefined
+                    }))
+                  }
+                  onNextRound={handleNextRound}
+                />
+              )}
               {room.activeGame === 'respostas-sem-perguntas' && (
                 <ScreenRespostasSemPerguntas
                   room={room}
@@ -1923,6 +1964,7 @@ export default function App() {
                 room.activeGame === 'limite' ||
                 room.activeGame === 'quem-sou-eu' ||
                 room.activeGame === 'respostas-sem-perguntas' ||
+                room.activeGame === 'estadios' ||
                 room.activeGame === 'perguntas-e-verdades';
 
               const sortedIndividualPlayers = [...room.players].sort(

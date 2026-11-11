@@ -14,7 +14,8 @@ export type GameId =
   | 'quem-sou-eu'
   | 'mega-resenha'
   | 'repetente'
-  | 'respostas-sem-perguntas';
+  | 'respostas-sem-perguntas'
+  | 'estadios';
 
 export type TeamId = 'A' | 'B' | 'C' | 'D';
 
@@ -297,6 +298,28 @@ export interface RespostasSemPerguntasState {
   attempts: RespostasAttempt[];
   /** posicao revelada na etapa atual, aguardando o palpite */
   pendingPosition?: number;
+  winnerPlayerId?: string;
+  pointsAwarded: Record<string, number>;
+  answerVisible: boolean;
+}
+
+// NOV-06: ESTADIOS (descubra o estadio; cada erro revela mais uma pista e tira 1 ponto: 5, 4, 3, 2, 1)
+export interface EstadiosAttempt {
+  playerId: string;
+  correct: boolean;
+}
+
+export interface EstadiosGameState {
+  phase: 'READY' | 'PLAYING' | 'SUMMARY';
+  nome: string;
+  cidade: string;
+  pais: string;
+  /** as 5 pistas, da mais vaga para a mais obvia */
+  pistas: string[];
+  /** foto opcional (caminho de imagem) */
+  foto?: string;
+  turnPlayerId: string;
+  attempts: EstadiosAttempt[];
   winnerPlayerId?: string;
   pointsAwarded: Record<string, number>;
   answerVisible: boolean;
@@ -620,6 +643,7 @@ export interface GameRoom {
   megaResenha?: MegaResenhaGameState;
   repetente?: RepetenteGameState;
   respostasSemPerguntas?: RespostasSemPerguntasState;
+  estadios?: EstadiosGameState;
   nota?: NotaGameState;
   temOuNaoTem?: TemOuNaoTemGameState;
   perguntasEVerdades?: PerguntasEVerdadesGameState;

@@ -551,6 +551,54 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
       'Quem acerta ganha o valor atual: número de palavras da pergunta menos 1 por erro já cometido (mínimo 1).',
       'Se todas as palavras forem reveladas e ninguém acertar, a rodada termina sem pontos.'
     ]
+  },
+  estadios: {
+    gameId: 'estadios',
+    icon: '🏟️',
+    name: 'ESTÁDIOS',
+    welcomeTitle: 'Como Jogar Estádios',
+    welcomeSubtitle:
+      'Descubra qual é o estádio! Quanto antes acertar, mais pontos: 5 de primeira, 4 de segunda, e assim por diante.',
+    steps: [
+      {
+        stepNumber: 1,
+        icon: '🏟️',
+        headline: 'Um Estádio Misterioso',
+        description:
+          'O jogo escolhe um estádio famoso. Começa só com a primeira pista (a mais vaga); no programa essa pista é uma foto.',
+        accentTag: 'Pista 1 de 5'
+      },
+      {
+        stepNumber: 2,
+        icon: '🎯',
+        headline: 'Chute na Sua Vez',
+        description:
+          'Em rodízio, cada jogador arrisca o nome do estádio. O diretor confere com a resposta e marca se acertou ou errou.',
+        accentTag: 'Rodízio de Chutes'
+      },
+      {
+        stepNumber: 3,
+        icon: '📉',
+        headline: 'Cada Erro Libera Uma Pista',
+        description:
+          'Errou? A vez passa, uma pista nova aparece e o valor cai 1 ponto: 5, 4, 3, 2, 1. Errar as 5 pistas encerra sem pontos.',
+        accentTag: '5, 4, 3, 2, 1'
+      }
+    ],
+    proibido: [
+      'PESQUISAR NO CELULAR DURANTE A RODADA',
+      'CHUTAR FORA DA SUA VEZ',
+      'ESPIAR A RESPOSTA NA TELA DO DIRETOR'
+    ],
+    permitido: [
+      'ARRISCAR O NOME OFICIAL OU O APELIDO DO ESTÁDIO',
+      'USAR AS PISTAS JÁ LIBERADAS PARA DEDUZIR',
+      'PEDIR AO DIRETOR PARA ACEITAR UMA VARIAÇÃO DO NOME'
+    ],
+    scoringSummary: [
+      'Acertou de primeira: 5 pontos; de segunda: 4; de terceira: 3; de quarta: 2; de quinta: 1.',
+      'Se ninguém acertar depois da quinta pista, a rodada termina sem pontos.'
+    ]
   }
 };
 
