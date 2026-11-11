@@ -12,6 +12,16 @@ import {
 } from './src/utils/partyNetworkEngine.ts';
 import { DEFAULT_GAME_CUSTOM_CONFIG } from './src/types/game.ts';
 import {
+  AI_HEALTH_TTL_MS,
+  aiStatusPayload,
+  blockMsFor,
+  classifyGeminiError,
+  healthFromError,
+  isTerminalForModel,
+  type AiHealthState
+} from './src/utils/geminiErrors.ts';
+import { pickThemes } from './src/utils/themeBank.ts';
+import {
   selectFewShotLimiteExamples,
   buildLimitePrompt,
   type LimiteQuestion
@@ -761,6 +771,15 @@ function sanitizeCleanGameText(rawText: string, gameId?: string): string {
 // Cache models that hit quota/errors with TTL so subsequent requests don't waste time waiting on them
 const unavailableModels = new Map<string, number>();
 
+// Saude real da IA (402/403 nao ficam mais escondidos atras de um "Conectada" fixo).
+let aiHealth: { state: AiHealthState; at: number } = { state: 'unknown', at: 0 };
+function setAiHealth(state: AiHealthState) {
+  if (aiHealth.state !== state) {
+    console.warn(`[IA] estado: ${aiHealth.state} -> ${state}`);
+  }
+  aiHealth = { state, at: Date.now() };
+}
+
 // Helper to execute a single Gemini SDK call with a strict 5-second timeout and exponential backoff
 async function callModelWithTimeoutAndBackoff<T>(
   fn: () => Promise<T>,
@@ -784,13 +803,8 @@ async function callModelWithTimeoutAndBackoff<T>(
       if (timer) clearTimeout(timer);
       lastErr = err;
       const msg = String(err?.message || '');
-      // Do not retry quota or 404 on the same model; immediately move to next fallback model
-      if (
-        msg.includes('429') ||
-        msg.includes('RESOURCE_EXHAUSTED') ||
-        msg.includes('404') ||
-        msg.includes('NOT_FOUND')
-      ) {
+      // Credito (402), permissao (403), quota (429) e 404 nao melhoram repetindo: vai direto ao proximo modelo
+      if (isTerminalForModel(classifyGeminiError(err))) {
         throw err;
       }
       if (attempt < maxRetries) {
@@ -824,7 +838,7 @@ async function generateContentWithFallback(ai: GoogleGenAI, params: { contents: 
           : {})
       };
 
-      return await callModelWithTimeoutAndBackoff(
+      const result = await callModelWithTimeoutAndBackoff(
         () =>
           ai.models.generateContent({
             model,
@@ -835,17 +849,22 @@ async function generateContentWithFallback(ai: GoogleGenAI, params: { contents: 
         model === 'gemini-3.1-flash-lite-preview' ? 1 : 0,
         250
       );
+      setAiHealth('ok');
+      return result;
     } catch (err: any) {
       lastError = err;
-      const msg = String(err?.message || '');
-      if (msg.includes('404') || msg.includes('not found') || msg.includes('NOT_FOUND')) {
-        unavailableModels.set(model, Date.now() + 60 * 60 * 1000);
-      } else if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('quota')) {
-        unavailableModels.set(model, Date.now() + 8 * 1000);
+      const kind = classifyGeminiError(err);
+      const blockMs = blockMsFor(kind);
+      if (blockMs > 0) unavailableModels.set(model, Date.now() + blockMs);
+      if (kind === 'no_credit' || kind === 'auth') {
+        console.warn(`[IA] ${model} recusado (${kind}): ${String(err?.message || '').slice(0, 160)}`);
+        setAiHealth(healthFromError(kind));
       }
       continue;
     }
   }
+  // Todos os modelos de lado: mantem o diagnostico anterior (ex.: sem credito) em vez de trocar por um erro generico
+  if (aiHealth.state === 'unknown' || aiHealth.state === 'ok') setAiHealth('error');
   throw lastError || new Error('All Gemini models unavailable');
 }
 
@@ -855,17 +874,28 @@ app.get('/api/health', (_req, res) => {
 });
 
 // AI Status Endpoint for Settings / Config Modal
-app.get('/api/ai-status', (_req, res) => {
+app.get('/api/ai-status', async (_req, res) => {
   const apiKey = process.env.GEMINI_API_KEY;
   const hasKey = Boolean(apiKey && apiKey !== 'MY_GEMINI_API_KEY' && apiKey.trim() !== '');
-  // INF-09: o rotulo reflete a chave configurada, sem prometer IA quando nao ha chave.
-  return res.json({
-    connected: hasKey,
-    hasServerKey: hasKey,
-    statusLabel: hasKey
-      ? '🟢 IA Gemini Conectada (Gerando temas em tempo real)'
-      : '🟡 Sem chave do Gemini: usando os bancos prontos'
-  });
+  if (!hasKey) return res.json(aiStatusPayload('no_key', false));
+
+  // INF-09: status REAL. Uma chamada minima de teste, com o resultado guardado por 5 minutos.
+  const fresh = aiHealth.state !== 'unknown' && Date.now() - aiHealth.at < AI_HEALTH_TTL_MS;
+  if (!fresh) {
+    try {
+      const ai = new GoogleGenAI({ apiKey: apiKey as string, httpOptions: { headers: { 'User-Agent': 'aistudio-build' } } });
+      await generateContentWithFallback(ai, {
+        contents: 'Responda apenas: ok',
+        config: { maxOutputTokens: 8, temperature: 0 }
+      });
+    } catch (err: any) {
+      const kind = classifyGeminiError(err);
+      // modelos de lado por erro anterior: mantem o diagnostico (so renova o relogio)
+      if (aiHealth.state === 'no_credit' || aiHealth.state === 'auth') setAiHealth(aiHealth.state);
+      else setAiHealth(healthFromError(kind));
+    }
+  }
+  return res.json(aiStatusPayload(aiHealth.state, true));
 });
 
 // Gemini AI Dynamic Themes Generator Endpoint ("✨ Gerar Novos Temas com IA")
@@ -873,31 +903,11 @@ app.post('/api/generate-themes', async (req, res) => {
   const { excludeThemes = [] } = req.body || {};
   const apiKey = process.env.GEMINI_API_KEY;
 
-  const fallbackPool = [
-    'Novelas Clássicas e Vilões da TV Brasileira',
-    'Churrasco de Domingo, Boteco e Comidas de Rua',
-    'Nostalgia Anos 90 e Infância Brasileira',
-    'Super-Heróis, Quadrinhos e Vilões do Cinema',
-    'Perrengues de Viagem, Aeroporto e Férias',
-    'Copas do Mundo e Lendas do Futebol',
-    'Músicas de Karaokê, Pagode e Sertanejo',
-    'Mistérios do Espaço, Ciência e Corpo Humano',
-    'Games Clássicos, Consoles e Cultura Geek',
-    'Fofocas de Celebridades, Memes e Reality Shows',
-    'Casamento, Festas de Família e Parentes',
-    'Carros Antigos, Velocidade e Trânsito',
-    'Praia, Verão, Carnaval e Sol',
-    'Escola, Faculdade e Época de Provas',
-    'Filmes de Terror, Suspense e Mistério',
-    'Culinária Mundial, Doces e Sobremesas'
-  ];
+  // Reserva SEM IA: banco local de temas (2.300+ temas-base, ~53 mil combinacoes), sem repetir os ja usados.
+  const localThemes = () => pickThemes({ count: 8, exclude: Array.isArray(excludeThemes) ? excludeThemes : [] });
 
   if (!apiKey || apiKey === 'MY_GEMINI_API_KEY' || apiKey.trim() === '') {
-    const shuffled = [...fallbackPool]
-      .filter((t) => !excludeThemes.includes(t))
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 8);
-    return res.status(200).json({ themes: shuffled, fallback: true });
+    return res.status(200).json({ themes: localThemes(), fallback: true, reason: 'no_key' });
   }
 
   try {
@@ -945,11 +955,11 @@ Cada tema deve ser curto (3 a 6 palavras), direto e sem aspas.`,
         return res.json({ themes: cleaned, fallback: false });
       }
     }
-    const shuffled = [...fallbackPool].sort(() => Math.random() - 0.5).slice(0, 8);
-    return res.json({ themes: shuffled, fallback: true });
+    return res.json({ themes: localThemes(), fallback: true, reason: 'empty' });
   } catch (err: any) {
-    const shuffled = [...fallbackPool].sort(() => Math.random() - 0.5).slice(0, 8);
-    return res.status(200).json({ themes: shuffled, fallback: true, error: err?.message });
+    // 402/403 agora aparecem: reason diz POR QUE caiu no banco local (antes ficava mudo)
+    const kind = classifyGeminiError(err);
+    return res.status(200).json({ themes: localThemes(), fallback: true, reason: kind, error: err?.message });
   }
 });
 

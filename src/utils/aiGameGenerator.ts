@@ -3824,6 +3824,14 @@ export async function generateNewThemesWithAI(excludeThemes: string[] = []): Pro
   } catch {
     // Fall through to local creative pool if offline
   }
+  // Banco local de temas (sem IA, sem rede): carregado sob demanda para nao pesar no pacote principal.
+  try {
+    const { pickThemes } = await import('./themeBank');
+    const fromBank = pickThemes({ count: 8, exclude: excludeThemes });
+    if (fromBank.length >= 4) return fromBank;
+  } catch {
+    // segue para a lista fixa abaixo
+  }
   const creativeBackup = [
     'Reality Shows',
     'Comidas de Rua',
