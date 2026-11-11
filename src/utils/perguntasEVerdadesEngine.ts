@@ -849,3 +849,40 @@ export function checkMatchSeriesWin(
   };
 }
 
+
+/** Pontos individuais do vencedor da partida de Perguntas e Verdades. */
+export const PV_MATCH_WIN_POINTS = 100;
+
+export interface PVMatchStatPlayer {
+  id: string;
+  score: number;
+  roundsPlayed?: number;
+  roundsWon?: number;
+  accuracy?: number;
+}
+
+/**
+ * UX-19: estatisticas do fim da partida calculadas so a partir da propria serie (rodadas disputadas e vitorias
+ * por jogador), sem somar em cima de contadores que ja existiam. Uma partida de 1 rodada termina com
+ * "1 rodada / 1 vitoria" e 100 pontos para o vencedor, mesmo se o jogador trouxer valores antigos.
+ */
+export function applyPVMatchResult<T extends PVMatchStatPlayer>(
+  players: T[],
+  winnerId: string,
+  matchRounds: number,
+  winsByPlayer: Record<string, number>
+): T[] {
+  const rounds = Math.max(1, Math.floor(matchRounds) || 1);
+  return players.map((p) => {
+    const wins = winsByPlayer[p.id] ?? (p.id === winnerId ? 1 : 0);
+    return p.id === winnerId
+      ? { ...p, score: PV_MATCH_WIN_POINTS, roundsPlayed: rounds, roundsWon: wins, accuracy: 100 }
+      : {
+          ...p,
+          score: 0,
+          roundsPlayed: rounds,
+          roundsWon: wins,
+          accuracy: Math.round((wins / rounds) * 100)
+        };
+  });
+}
