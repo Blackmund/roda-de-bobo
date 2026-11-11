@@ -12,7 +12,7 @@
 import mqtt, { MqttClient, IClientOptions } from 'mqtt';
 import { GameRoom } from '../types/game';
 import { getMqttConfig, getAllBrokerEndpoints, getRoomMqttTopic } from '../config/mqttConfig';
-import { isApiAvailable } from './apiAvailability';
+import { isApiAvailable, postToApi } from './apiAvailability';
 
 export type TransportStatus = 'connecting' | 'connected' | 'reconnecting' | 'offline';
 
@@ -532,13 +532,7 @@ export class CloudPartyTransport {
     });
 
     // Also persist to server REST endpoint
-    if (typeof fetch !== 'undefined') {
-      fetch(`/api/rooms/${this.roomCode}/state`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(state)
-      }).catch(() => {});
-    }
+    postToApi(`/api/rooms/${this.roomCode}/state`, state);
   }
 
   /**

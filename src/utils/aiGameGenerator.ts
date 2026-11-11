@@ -75,6 +75,7 @@ import {
   selectFewShotTemOuNaoTemExamples,
   buildTemOuNaoTemPrompt
 } from './temOuNaoTemGoldenDatabase';
+import { isApiAvailable } from './apiAvailability';
 
 export {
   LIMITE_GOLDEN_QUESTIONS,
@@ -810,6 +811,7 @@ export async function generateRandomSubthemes(
 ): Promise<string[]> {
   const base = centralTheme.trim() || 'Cultura Pop e Curiosidades';
   try {
+    if (!(await isApiAvailable())) throw new Error('API_UNAVAILABLE');
     const res = await fetch('/api/generate-subthemes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -3621,6 +3623,8 @@ async function fetchBatchFromApi(
   explicitSubAngle?: SubAngleDefinition,
   consumePrimaryImmediately: boolean = true
 ): Promise<GenerateRoundResponse<unknown> | null> {
+  // Sem servidor proprio (ex.: Vercel estatico) a IA nao existe: cai direto nos bancos prontos, sem tentativas nem 404.
+  if (!(await isApiAvailable())) return null;
   const randomSubAngle = explicitSubAngle || SessionMemoryManager.drawRandomSubAngle(theme);
   const subtheme = randomSubAngle.label || pickNextRandomSubtheme(theme);
   const sessionMemorySnapshot = SessionMemoryManager.getSnapshot();
@@ -3793,6 +3797,7 @@ function scheduleBackgroundCacheRefill(
  */
 export async function generateNewThemesWithAI(excludeThemes: string[] = []): Promise<string[]> {
   try {
+    if (!(await isApiAvailable())) throw new Error('API_UNAVAILABLE');
     const json = await withTimeoutAndExponentialBackoff(
       async (_attempt, signal) => {
         const res = await fetch('/api/generate-themes', {

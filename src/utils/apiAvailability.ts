@@ -4,9 +4,12 @@
  * No site publicado na Vercel só o front-end estático é servido, então essas rotas respondem 404.
  * Em vez de cada módulo insistir e poluir o console, a presença da API é verificada UMA vez por sessão
  * (/api/health), o resultado fica em memória + sessionStorage e todos os módulos consultam a mesma resposta.
- * Em falha de rede (não 404) assume-se "disponível" sem gravar, para tentar de novo depois.
+ * Em falha de rede (fetch rejeitado) assume-se "disponível" sem gravar, para tentar de novo depois.
+ *
+ * A resposta precisa ser JSON (o `server.ts` devolve `{ status: 'ok' }`): hospedagens estáticas com fallback de SPA
+ * respondem 200 com `index.html` para qualquer rota, e isso NÃO significa que a API existe.
  */
-const STORAGE_KEY = 'rb_api_available_v1';
+const STORAGE_KEY = 'rb_api_available_v2';
 
 let cached: boolean | null = null;
 let pending: Promise<boolean> | null = null;
@@ -35,6 +38,33 @@ export function markApiUnavailable() {
 }
 
 /** Resolve true se o servidor próprio responde neste host. Uma única requisição por sessão. */
+/** A resposta de /api/health e do nosso servidor? (2xx e JSON; 404 ou HTML de fallback de SPA = nao). */
+export function looksLikeApiHealth(res: { ok?: boolean; status?: number; headers?: { get?: (n: string) => string | null } }): boolean {
+  if (!res || res.ok === false || (typeof res.status === 'number' && (res.status < 200 || res.status >= 300))) return false;
+  const type = res.headers?.get?.('content-type') ?? '';
+  return /json/i.test(type);
+}
+
+/**
+ * Envia JSON por POST ao servidor proprio SO se ele existir neste host (fire-and-forget).
+ * Sem isso, cada mudanca de estado no site estatico geraria um POST /api/rooms/... com 404.
+ * O corpo e serializado na hora, antes de esperar a sondagem.
+ */
+export function postToApi(path: string, body: unknown): void {
+  let payload: string;
+  try {
+    payload = JSON.stringify(body);
+  } catch {
+    return;
+  }
+  void isApiAvailable().then((available) => {
+    if (!available || typeof fetch === 'undefined') return;
+    fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload }).catch(() => {
+      // offline: ignora
+    });
+  });
+}
+
 export function isApiAvailable(): Promise<boolean> {
   if (typeof window === 'undefined' || typeof fetch === 'undefined') return Promise.resolve(false);
   if (cached === null) cached = readStored();
@@ -42,7 +72,7 @@ export function isApiAvailable(): Promise<boolean> {
   if (!pending) {
     pending = fetch('/api/health', { cache: 'no-store' })
       .then((res) => {
-        const ok = res.status !== 404;
+        const ok = looksLikeApiHealth(res);
         store(ok);
         return ok;
       })

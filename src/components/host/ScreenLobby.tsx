@@ -13,6 +13,7 @@ import {
 import { DynamicQRCode } from '../DynamicQRCode';
 import { GlobalStats } from '../GlobalStats';
 import { sounds } from '../../utils/soundEffects';
+import { isApiAvailable } from '../../utils/apiAvailability';
 import {
   LimiteArcadeArt,
   TelefoneSemFioBoyArt,
@@ -245,16 +246,28 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
   const editingPlayer = room.players.find((p) => p.id === editingAvatarPlayerId) || null;
 
   useEffect(() => {
-    fetch('/api/ai-status')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((json) => {
-        if (json?.statusLabel) {
-          setAiStatusLabel(json.statusLabel);
-        }
-      })
-      .catch(() => {
-        // Keep default connected status badge
-      });
+    let cancelled = false;
+    void isApiAvailable().then((available) => {
+      if (cancelled) return;
+      if (!available) {
+        // Sem servidor proprio neste site: nao existe IA, so os bancos prontos (nada de "Gemini conectada").
+        setAiStatusLabel('🟡 Sem servidor de IA neste site: usando os bancos prontos');
+        return;
+      }
+      fetch('/api/ai-status')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((json) => {
+          if (!cancelled && json?.statusLabel) {
+            setAiStatusLabel(json.statusLabel);
+          }
+        })
+        .catch(() => {
+          // Keep default connected status badge
+        });
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
