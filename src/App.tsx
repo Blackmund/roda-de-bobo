@@ -101,6 +101,7 @@ import {
 } from './utils/sessionPersistence';
 import { limiteExactBonusFor, isDuvidoShowWon } from './config/rulesets';
 import { getOrCreateDeviceClientId } from './utils/partyNetworkEngine';
+import { applyPVMatchResult } from './utils/perguntasEVerdadesEngine';
 import {
   Tv,
   Smartphone,
@@ -1565,21 +1566,14 @@ export default function App() {
                       const bonusB = winPlayer?.team === 'B' ? 100 : 0;
                       const newScoreA = prev.teams.A.score + bonusA;
                       const newScoreB = prev.teams.B.score + bonusB;
-                      const updatedPlayers = prev.players.map((p) =>
-                        p.id === winnerPlayerId
-                          ? {
-                              ...p,
-                              score: p.score + 100,
-                              roundsPlayed: (p.roundsPlayed || 0) + 1,
-                              roundsWon: (p.roundsWon || 0) + 1,
-                              accuracy: 100
-                            }
-                          : {
-                              ...p,
-                              roundsPlayed: (p.roundsPlayed || 0) + 1,
-                              accuracy: p.accuracy || 50
-                            }
-                      );
+                      // UX-19: estatisticas da partida a partir da propria serie, sem somar sobre valores antigos.
+                      const pvPrev = prev.perguntasEVerdades;
+                      const pvMatchRounds = Math.max(1, pvPrev?.matchRoundNumber || 1);
+                      const pvWins = {
+                        ...(pvPrev?.roundWinsByPlayer || {}),
+                        [winnerPlayerId]: (pvPrev?.roundWinsByPlayer?.[winnerPlayerId] || 0) + 1
+                      };
+                      const updatedPlayers = applyPVMatchResult(prev.players, winnerPlayerId, pvMatchRounds, pvWins);
 
                       const winnerTeam: 'A' | 'B' | 'EMPATE' =
                         newScoreA > newScoreB ? 'A' : newScoreB > newScoreA ? 'B' : 'EMPATE';
@@ -1611,7 +1605,7 @@ export default function App() {
                         winnerTeam,
                         scoreA: newScoreA,
                         scoreB: newScoreB,
-                        roundsPlayed: prev.perguntasEVerdades?.auctionRound || 1,
+                        roundsPlayed: pvMatchRounds,
                         theme: 'O Jogo do Diabo: Perguntas e Verdades',
                         playerScores: updatedPlayers.map((p) => ({
                           id: p.id,
@@ -1627,7 +1621,7 @@ export default function App() {
                           updatedPlayers,
                           newScoreA,
                           newScoreB,
-                          prev.perguntasEVerdades?.auctionRound || 1,
+                          pvMatchRounds,
                           prev.teams.A.name,
                           prev.teams.B.name
                         ),

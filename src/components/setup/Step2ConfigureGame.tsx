@@ -1006,7 +1006,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
               <span>
                 {isIndividualMode
                   ? `JOGADORES (${connectedPlayersCount ?? '—'})`
-                  : `DEFINIR EQUIPES (${connectedPlayersCount ?? '—'})`}
+                  : `DEFINIR EQUIPES (${connectedPlayersCount ?? '—'} JOGADORES)`}
               </span>
               <ArrowRight size={13} />
             </button>
