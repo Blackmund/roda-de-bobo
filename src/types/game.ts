@@ -11,7 +11,8 @@ export type GameId =
   | 'tem-ou-nao-tem'
   | 'perguntas-e-verdades'
   | 'mimica'
-  | 'quem-sou-eu';
+  | 'quem-sou-eu'
+  | 'mega-resenha';
 
 export type TeamId = 'A' | 'B' | 'C' | 'D';
 
@@ -212,6 +213,33 @@ export interface QuemSouEuGameState {
   /** na TV, as identidades so aparecem quando o diretor libera (quem esta jogando nao pode olhar) */
   identitiesVisible: boolean;
   /** ultimo evento, para a tela narrar o que aconteceu */
+  lastEvent?: string;
+}
+
+// NOV-03: MEGA RESENHA (duplas; quem da as dicas ve a palavra, o parceiro vendado chuta; dica = UMA palavra)
+export interface MegaResenhaClue {
+  text: string;
+  /** false = dica invalida (varias palavras, a propria palavra ou mesmo radical); nao conta */
+  valid: boolean;
+  reason?: string;
+  /** o juiz aceitou mesmo assim */
+  overruled?: boolean;
+}
+
+export interface MegaResenhaGameState {
+  phase: 'READY' | 'PLAYING' | 'SUMMARY';
+  words: string[];
+  currentIndex: number;
+  outcomes: Array<'pending' | 'correct' | 'skipped'>;
+  /** dicas dadas em cada palavra */
+  clues: MegaResenhaClue[][];
+  team: TeamId;
+  giverPlayerId: string;
+  guesserPlayerId?: string;
+  timerSeconds: number;
+  timerActive: boolean;
+  roundScore: number;
+  wordsHidden?: boolean;
   lastEvent?: string;
 }
 
@@ -530,6 +558,7 @@ export interface GameRoom {
   proibido?: ProibidoGameState;
   mimica?: MimicaGameState;
   quemSouEu?: QuemSouEuGameState;
+  megaResenha?: MegaResenhaGameState;
   nota?: NotaGameState;
   temOuNaoTem?: TemOuNaoTemGameState;
   perguntasEVerdades?: PerguntasEVerdadesGameState;

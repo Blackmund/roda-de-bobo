@@ -407,6 +407,54 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
       'O primeiro a acertar leva tantos pontos quanto jogadores na sala; cada acerto seguinte vale 1 ponto a menos (mínimo 1).',
       'Quem esgotar as perguntas ou não descobrir antes do fim da rodada não pontua. (A pontuação do programa ainda não foi confirmada.)'
     ]
+  },
+  'mega-resenha': {
+    gameId: 'mega-resenha',
+    icon: '🗣️',
+    name: 'MEGA RESENHA',
+    welcomeTitle: 'Como Jogar a Mega Resenha',
+    welcomeSubtitle:
+      'Duas duplas, uma palavra secreta e dicas de UMA palavra só: faça o parceiro vendado acertar o máximo de palavras em 1 minuto!',
+    steps: [
+      {
+        stepNumber: 1,
+        icon: '👀',
+        headline: 'Quem Dá as Dicas Vê a Palavra',
+        description:
+          'A palavra aparece só para quem dá as dicas. O parceiro fica vendado e tenta adivinhar ouvindo as dicas.',
+        accentTag: '5 Palavras em 1 Minuto'
+      },
+      {
+        stepNumber: 2,
+        icon: '☝️',
+        headline: 'Uma Palavra por Dica',
+        description:
+          'Cada dica é UMA palavra só: sem frase, sem nome composto, sem a própria palavra e sem o mesmo radical.',
+        accentTag: 'Dica de Uma Palavra'
+      },
+      {
+        stepNumber: 3,
+        icon: '⚖️',
+        headline: 'O Juiz Decide as Polêmicas',
+        description:
+          'O jogo avisa quando a dica parece inválida. Se o juiz achar que vale, aceita a dica e a rodada segue.',
+        accentTag: 'Checagem Automática'
+      }
+    ],
+    proibido: [
+      'DAR UMA FRASE OU UM NOME COMPOSTO COMO DICA',
+      'DIZER A PRÓPRIA PALAVRA OU UMA DO MESMO RADICAL',
+      'O ADVERSÁRIO DAR DICAS OU REVELAR A PALAVRA'
+    ],
+    permitido: [
+      'DAR VÁRIAS DICAS DE UMA PALAVRA EM SEQUÊNCIA',
+      'PULAR A PALAVRA E VOLTAR A ELA DEPOIS',
+      'O PARCEIRO CHUTAR QUANTAS VEZES QUISER'
+    ],
+    scoringSummary: [
+      'Cada palavra acertada vale 1 ponto para a equipe da vez (regra da casa; o programa não confirmou a pontuação).',
+      'Palavras puladas ou não acertadas até o fim do tempo não pontuam.'
+    ]
   }
 };
 

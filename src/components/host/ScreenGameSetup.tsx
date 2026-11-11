@@ -230,6 +230,8 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
         return 'JOGO DA MÍMICA';
       case 'quem-sou-eu':
         return 'QUEM SOU EU';
+      case 'mega-resenha':
+        return 'MEGA RESENHA';
       default:
         return 'RODA DE BOBO';
     }
