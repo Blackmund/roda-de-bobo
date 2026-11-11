@@ -2,7 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { GameRoom, GameId, VisualTheme, TeamId } from '../../types/game';
 import { isCazeFamily, themeBadge } from '../../utils/themeUtils';
-import { CazeArt, MegaResenhaArt, MimicaMasksArt, QuemSouEuArt, RepetenteArt } from '../RodaIcons';
+import {
+  CazeArt,
+  MegaResenhaArt,
+  MimicaMasksArt,
+  QuemSouEuArt,
+  RepetenteArt,
+  RespostasSemPerguntasArt
+} from '../RodaIcons';
 import { GAME_LIMITS } from '../../config/gameLimits';
 import {
   TEAM_META,
@@ -102,7 +109,8 @@ const GAME_TITLES: Record<GameId, string> = {
   mimica: 'JOGO DA MÍMICA',
   'quem-sou-eu': 'QUEM SOU EU',
   'mega-resenha': 'MEGA RESENHA',
-  repetente: 'REPETENTE'
+  repetente: 'REPETENTE',
+  'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS'
 };
 
 const GAMES: Array<{
@@ -262,6 +270,21 @@ const GAMES: Array<{
         }
       />
     )
+  },
+  {
+    id: 'respostas-sem-perguntas',
+    name: 'RESPOSTAS SEM PERGUNTAS',
+    tagline: 'ADIVINHE A RESPOSTA DE UMA PERGUNTA OCULTA',
+    badge: 'INDIVIDUAL',
+    color: '#F43F5E',
+    renderArt: (cls) => (
+      <RespostasSemPerguntasArt
+        className={
+          cls ||
+          'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
+        }
+      />
+    )
   }
 ];
 
@@ -382,7 +405,8 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
       'mimica',
       'quem-sou-eu',
       'mega-resenha',
-      'repetente'
+      'repetente',
+      'respostas-sem-perguntas'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     handleGameClick(randomChoice);

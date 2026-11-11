@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { usesLocalContent } from '../../config/localGames';
 import {
   GameRoom,
   GameId,
@@ -194,7 +195,7 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
 
   // Warm the AI round cache as soon as the host selects or types a theme
   useEffect(() => {
-    if (!room.activeGame || room.activeGame === 'perguntas-e-verdades') return;
+    if (!room.activeGame || usesLocalContent(room.activeGame)) return;
     const clean = theme.trim();
     if (clean.length < 3) return;
     const timeoutId = window.setTimeout(() => {
@@ -234,6 +235,8 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
         return 'MEGA RESENHA';
       case 'repetente':
         return 'REPETENTE';
+      case 'respostas-sem-perguntas':
+        return 'RESPOSTAS SEM PERGUNTAS';
       default:
         return 'RODA DE BOBO';
     }
@@ -243,6 +246,7 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
     room.activeGame === 'nota' ||
     room.activeGame === 'limite' ||
     room.activeGame === 'quem-sou-eu' ||
+    room.activeGame === 'respostas-sem-perguntas' ||
     room.activeGame === 'perguntas-e-verdades';
 
   const effectiveTeamCount = getTeamCount(room, customConfig.teamCount);

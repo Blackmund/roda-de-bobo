@@ -104,7 +104,8 @@ export const GAME_FRIENDLY_NAMES: Record<GameId, string> = {
   mimica: 'J. da Mímica',
   'quem-sou-eu': 'Quem Sou Eu',
   'mega-resenha': 'Mega Resenha',
-  repetente: 'Repetente'
+  repetente: 'Repetente',
+  'respostas-sem-perguntas': 'Respostas s/ Perguntas'
 };
 
 /**

@@ -63,6 +63,15 @@ const SHOW_PRESETS: Partial<Record<GameId, RulesetPreset>> = {
       'Pontuação do programa ainda não confirmada: mantém +1 por palpite certo'
     ]
   },
+  'respostas-sem-perguntas': {
+    rounds: 5,
+    config: {},
+    notes: [
+      'A pergunta fica oculta: só se sabe quantas palavras ela tem',
+      'Na vez, o jogador escolhe UMA palavra para revelar e então chuta a resposta',
+      'Acertar vale tantos pontos quanto palavras na pergunta; cada erro tira 1 do valor'
+    ]
+  },
   repetente: {
     rounds: 5,
     timer: 30,
