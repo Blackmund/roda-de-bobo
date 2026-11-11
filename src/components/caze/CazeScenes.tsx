@@ -1,5 +1,4 @@
-import React from 'react';
-import rawPieces from './cazePieces.json';
+import React, { useEffect, useState } from 'react';
 
 /**
  * Cenas animadas do lobby no estilo cartoon CazéTV (Roda de Bobo).
@@ -33,7 +32,27 @@ const BLEED = 16; // corpo "sangra" na borda inferior
 
 const SCENE_W: Record<'compact' | 'wide', number> = { compact: 1700, wide: 2600 };
 
-const PIECES: PieceMap = rawPieces as unknown as PieceMap;
+// COD-03: o JSON das pecas (~240 KB) sai do pacote principal; carrega em segundo plano na primeira vez.
+let piecesCache: PieceMap | null = null;
+let piecesPromise: Promise<PieceMap> | null = null;
+function loadPieces(): Promise<PieceMap> {
+  if (!piecesPromise) {
+    piecesPromise = import('./cazePieces.json').then((m) => {
+      piecesCache = ((m as { default?: unknown }).default ?? m) as unknown as PieceMap;
+      return piecesCache;
+    });
+  }
+  return piecesPromise;
+}
+function usePieces(): PieceMap | null {
+  const [pieces, setPieces] = useState<PieceMap | null>(piecesCache);
+  useEffect(() => {
+    if (!pieces) void loadPieces().then(setPieces);
+  }, [pieces]);
+  return pieces;
+}
+// Comeca a baixar assim que o modulo e importado, sem esperar o primeiro card aparecer.
+void loadPieces();
 
 // ---------------------------------------------------------------------------
 // Primitivas
@@ -557,8 +576,9 @@ export const CazeScene: React.FC<{ gameId: string; layout: SceneLayout; classNam
   layout,
   className = ''
 }) => {
+  const PIECES = usePieces();
   const Scene = SCENES[gameId];
-  if (!Scene) return null;
+  if (!Scene || !PIECES) return null;
   const isIcon = layout === 'icon';
   const W = SCENE_W[isIcon ? 'compact' : layout];
   const fx = ICON_FOCUS[gameId] ?? 850;
