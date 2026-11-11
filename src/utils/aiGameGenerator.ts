@@ -10,6 +10,8 @@
 
 import { drawMimicaWords, normalizeMimicaWord } from '../data/mimicaWords';
 import { MIMICA_WORDS_PER_ROUND } from './mimicaEngine';
+import { drawMegaResenhaWords, normalizeMegaWord } from '../data/megaResenhaWords';
+import { MEGA_WORDS_PER_ROUND } from './megaResenhaEngine';
 import {
   GameId,
   GameCustomConfig,
@@ -3884,6 +3886,25 @@ export async function generateRoundContent(
   difficulty?: string,
   explicitSubAngle?: SubAngleDefinition
 ): Promise<GenerateRoundResponse<unknown>> {
+  // NOV-03: a Mega Resenha sorteia 5 palavras do banco proprio (sem IA); as ja usadas voltam em `excludeSignatures`.
+  if (gameId === 'mega-resenha') {
+    const used = new Set<string>();
+    excludeSignatures.forEach((sig) => {
+      if (typeof sig === 'string' && sig.startsWith('mega-')) {
+        sig.slice(5).split('|').forEach((w) => used.add(normalizeMegaWord(w)));
+      }
+    });
+    const picked = drawMegaResenhaWords(MEGA_WORDS_PER_ROUND, used);
+    const words = picked.map((p) => p.palavra);
+    return {
+      source: 'curated',
+      data: words,
+      themeUsed: 'Mega Resenha',
+      subthemeUsed: picked.map((p) => p.categoria).join(' · '),
+      signature: `mega-${words.join('|')}`
+    };
+  }
+
   // NOV-02: o Quem sou eu sorteia as identidades no proprio App (precisa do numero de jogadores); aqui so um marcador.
   if (gameId === 'quem-sou-eu') {
     return {

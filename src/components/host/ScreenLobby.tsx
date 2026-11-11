@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { GameRoom, GameId, VisualTheme, TeamId } from '../../types/game';
 import { isCazeFamily, themeBadge } from '../../utils/themeUtils';
-import { CazeArt, MimicaMasksArt, QuemSouEuArt } from '../RodaIcons';
+import { CazeArt, MegaResenhaArt, MimicaMasksArt, QuemSouEuArt } from '../RodaIcons';
 import { GAME_LIMITS } from '../../config/gameLimits';
 import {
   TEAM_META,
@@ -99,7 +99,8 @@ const GAME_TITLES: Record<GameId, string> = {
   'tem-ou-nao-tem': 'TEM OU NÃO TEM',
   'perguntas-e-verdades': 'PERGUNTAS E VERDADES',
   mimica: 'JOGO DA MÍMICA',
-  'quem-sou-eu': 'QUEM SOU EU'
+  'quem-sou-eu': 'QUEM SOU EU',
+  'mega-resenha': 'MEGA RESENHA'
 };
 
 const GAMES: Array<{
@@ -229,6 +230,21 @@ const GAMES: Array<{
         }
       />
     )
+  },
+  {
+    id: 'mega-resenha',
+    name: 'MEGA RESENHA',
+    tagline: 'DICAS DE UMA PALAVRA SÓ PARA O PARCEIRO ACERTAR',
+    badge: 'EM EQUIPE',
+    color: '#F97316',
+    renderArt: (cls) => (
+      <MegaResenhaArt
+        className={
+          cls ||
+          'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
+        }
+      />
+    )
   }
 ];
 
@@ -335,7 +351,8 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
       'tem-ou-nao-tem',
       'perguntas-e-verdades',
       'mimica',
-      'quem-sou-eu'
+      'quem-sou-eu',
+      'mega-resenha'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     handleGameClick(randomChoice);

@@ -485,3 +485,16 @@ export const QuemSouEuArt: React.FC<{ className?: string }> = ({ className = 'w-
     </g>
   </svg>
 );
+
+
+// 18. Mega Resenha: dois balões de fala (uma palavra por dica).
+export const MegaResenhaArt: React.FC<{ className?: string }> = ({ className = 'w-28 h-24' }) => (
+  <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
+    <g stroke="#120A16" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round">
+      <path d="M14 18 H92 a10 10 0 0 1 10 10 V62 a10 10 0 0 1 -10 10 H48 L28 90 V72 H14 a10 10 0 0 1 -10 -10 V28 a10 10 0 0 1 10 -10 Z" fill="#17B8B8" />
+      <path d="M68 62 H146 a10 10 0 0 1 10 10 V104 a10 10 0 0 1 -10 10 H132 V132 L112 114 H68 a10 10 0 0 1 -10 -10 V72 a10 10 0 0 1 10 -10 Z" fill="#E6194B" transform="translate(-4 0)" />
+    </g>
+    <text x="53" y="52" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="26">GOL</text>
+    <text x="100" y="100" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="26">???</text>
+  </svg>
+);

@@ -12,6 +12,7 @@ import {
   ProibidoGameState,
   MimicaGameState,
   QuemSouEuGameState,
+  MegaResenhaGameState,
   NotaGameState,
   TemOuNaoTemGameState,
   PerguntasEVerdadesGameState,
@@ -33,6 +34,7 @@ import { generateRoundContent, normalizeTemVotesTo100, prefetchRoundsForTheme } 
 import { dealValidRandomHand } from './utils/perguntasEVerdadesEngine';
 import { buildMimicaState, pickMimicaPair } from './utils/mimicaEngine';
 import { buildQuemSouEuState, drawIdentities } from './utils/quemSouEuEngine';
+import { buildMegaResenhaState } from './utils/megaResenhaEngine';
 import { normalizeIdentity } from './data/quemSouEuIdentities';
 import { sounds } from './utils/soundEffects';
 import { WindowWrapper } from './components/WindowWrapper';
@@ -56,6 +58,9 @@ const ScreenLimite = lazy(() =>
 );
 const ScreenDuvido = lazy(() =>
   import('./components/host/ScreenDuvido').then((m) => ({ default: m.ScreenDuvido }))
+);
+const ScreenMegaResenha = lazy(() =>
+  import('./components/host/ScreenMegaResenha').then((m) => ({ default: m.ScreenMegaResenha }))
 );
 const ScreenQuemSouEu = lazy(() =>
   import('./components/host/ScreenQuemSouEu').then((m) => ({ default: m.ScreenQuemSouEu }))
@@ -136,7 +141,8 @@ const GAME_NAMES: Record<GameId, string> = {
   'tem-ou-nao-tem': 'TEM OU NÃO TEM',
   'perguntas-e-verdades': 'PERGUNTAS E VERDADES',
   mimica: 'JOGO DA MÍMICA',
-  'quem-sou-eu': 'QUEM SOU EU'
+  'quem-sou-eu': 'QUEM SOU EU',
+  'mega-resenha': 'MEGA RESENHA'
 };
 
 export default function App() {
@@ -417,6 +423,7 @@ export default function App() {
         let proibidoState: ProibidoGameState | undefined = undefined;
         let mimicaState: MimicaGameState | undefined = undefined;
         let quemSouEuState: QuemSouEuGameState | undefined = undefined;
+        let megaResenhaState: MegaResenhaGameState | undefined = undefined;
         let extraSignature = '';
         let notaState: NotaGameState | undefined = undefined;
         let temOuNaoTemState: TemOuNaoTemGameState | undefined = undefined;
@@ -728,6 +735,19 @@ export default function App() {
           });
         }
 
+        if (gameId === 'mega-resenha') {
+          // NOV-03: quem da as dicas e quem chuta revezam dentro da equipe que joga a rodada.
+          const words = (Array.isArray(data) ? data : []).map((x: unknown) => String(x));
+          const pair = pickMimicaPair(nextMatchPlayers, startingTeam, prev.roundNumber, activeTeamIds.length);
+          megaResenhaState = buildMegaResenhaState({
+            words,
+            team: startingTeam,
+            giverPlayerId: pair.mimePlayerId,
+            guesserPlayerId: pair.guesserPlayerId,
+            timerSeconds: effectiveTimer
+          });
+        }
+
         if (gameId === 'quem-sou-eu') {
           // NOV-02: uma identidade por jogador, sem repetir as ja usadas na sessao; quem comeca roda a cada rodada.
           const usedIdentities = new Set<string>();
@@ -767,13 +787,19 @@ export default function App() {
           proibido: proibidoState,
           mimica: mimicaState,
           quemSouEu: quemSouEuState,
+          megaResenha: megaResenhaState,
           nota: notaState,
           temOuNaoTem: temOuNaoTemState,
           perguntasEVerdades: perguntasEVerdadesState
         };
       });
       // Background prefetch for the NEXT round so transition is zero-delay!
-      if (gameId !== 'perguntas-e-verdades' && gameId !== 'mimica' && gameId !== 'quem-sou-eu') {
+      if (
+        gameId !== 'perguntas-e-verdades' &&
+        gameId !== 'mimica' &&
+        gameId !== 'quem-sou-eu' &&
+        gameId !== 'mega-resenha'
+      ) {
         window.setTimeout(() => {
           prefetchRoundsForTheme(gameId, effectiveTheme, effectiveConfig);
         }, 400);
@@ -817,6 +843,14 @@ export default function App() {
         } else {
           const spkTeam = prev.proibido.speakerTeam;
           roundPts[spkTeam] = (roundPts[spkTeam] || 0) + prev.proibido.roundScore;
+        }
+      } else if (prev.activeGame === 'mega-resenha' && prev.megaResenha) {
+        // Pontos da rodada para a equipe que jogou; com 2 jogadores (cooperativo) as duas equipes somam.
+        if (prev.players.length === 2) {
+          roundPts.A += prev.megaResenha.roundScore || 0;
+          roundPts.B += prev.megaResenha.roundScore || 0;
+        } else {
+          roundPts[prev.megaResenha.team] = (roundPts[prev.megaResenha.team] || 0) + (prev.megaResenha.roundScore || 0);
         }
       } else if (prev.activeGame === 'quem-sou-eu' && prev.quemSouEu) {
         Object.entries(prev.quemSouEu.pointsAwarded || {}).forEach(([pid, pts]) => {
@@ -1217,7 +1251,8 @@ export default function App() {
       'tem-ou-nao-tem',
       'perguntas-e-verdades',
       'mimica',
-      'quem-sou-eu'
+      'quem-sou-eu',
+      'mega-resenha'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     selectGame(randomChoice);
@@ -1569,6 +1604,19 @@ export default function App() {
                     broadcastState((prev) => ({
                       ...prev,
                       proibido: prev.proibido ? updater(prev.proibido) : undefined
+                    }))
+                  }
+                  onNextRound={handleNextRound}
+                />
+              )}
+              {room.activeGame === 'mega-resenha' && (
+                <ScreenMegaResenha
+                  room={room}
+                  isTvMode={isTvMode}
+                  onUpdateMegaState={(updater) =>
+                    broadcastState((prev) => ({
+                      ...prev,
+                      megaResenha: prev.megaResenha ? updater(prev.megaResenha) : undefined
                     }))
                   }
                   onNextRound={handleNextRound}

@@ -63,6 +63,16 @@ const SHOW_PRESETS: Partial<Record<GameId, RulesetPreset>> = {
       'Pontuação do programa ainda não confirmada: mantém +1 por palpite certo'
     ]
   },
+  'mega-resenha': {
+    rounds: 4,
+    timer: 60,
+    config: {},
+    notes: [
+      '5 palavras por rodada em 1 minuto; quem dá as dicas vê a palavra e o parceiro chuta de olhos vendados',
+      'Cada dica é UMA palavra só (sem frase nem nome composto)',
+      'Não vale a própria palavra nem o mesmo radical (a checagem é automática, o juiz pode contestar)'
+    ]
+  },
   'quem-sou-eu': {
     rounds: 1,
     config: {},

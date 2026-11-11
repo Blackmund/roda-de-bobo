@@ -58,7 +58,7 @@ export interface MVPStats {
  * (so MVP must NOT be counted individually).
  */
 export function isTeamCollectiveGame(gameId?: GameId | null): boolean {
-  return gameId === 'tem-ou-nao-tem' || gameId === 'proibido' || gameId === 'duvido' || gameId === 'mimica';
+  return gameId === 'tem-ou-nao-tem' || gameId === 'proibido' || gameId === 'duvido' || gameId === 'mimica' || gameId === 'mega-resenha';
 }
 
 /**
@@ -863,7 +863,8 @@ const DEFAULT_GAME_NAMES: Record<GameId, string> = {
   'tem-ou-nao-tem': 'TEM OU NÃO TEM',
   'perguntas-e-verdades': 'PERGUNTAS E VERDADES',
   mimica: 'JOGO DA MÍMICA',
-  'quem-sou-eu': 'QUEM SOU EU'
+  'quem-sou-eu': 'QUEM SOU EU',
+  'mega-resenha': 'MEGA RESENHA'
 };
 
 /**
