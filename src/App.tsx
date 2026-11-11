@@ -28,7 +28,7 @@ import {
   normalizePlayersToTeamCount
 } from './utils/teamUtils';
 import { generateRoundContent, normalizeTemVotesTo100, prefetchRoundsForTheme } from './utils/aiGameGenerator';
-import { dealValidRandomHand, applyPVMatchResult } from './utils/perguntasEVerdadesEngine';
+import { dealValidRandomHand } from './utils/perguntasEVerdadesEngine';
 import { sounds } from './utils/soundEffects';
 import { WindowWrapper } from './components/WindowWrapper';
 import { ScreenModeSelect } from './components/host/ScreenModeSelect';
@@ -92,6 +92,7 @@ import {
 } from './utils/sessionPersistence';
 import { limiteExactBonusFor, isDuvidoShowWon } from './config/rulesets';
 import { getOrCreateDeviceClientId } from './utils/partyNetworkEngine';
+import { applyPVMatchResult } from './utils/perguntasEVerdadesEngine';
 import {
   Tv,
   Smartphone,
