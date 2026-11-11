@@ -42,7 +42,8 @@ const GAME_TITLES: Record<GameId, string> = {
   'perguntas-e-verdades': 'PERGUNTAS E VERDADES',
   mimica: 'JOGO DA MÍMICA',
   'quem-sou-eu': 'QUEM SOU EU',
-  'mega-resenha': 'MEGA RESENHA'
+  'mega-resenha': 'MEGA RESENHA',
+  repetente: 'REPETENTE'
 };
 
 interface WindowWrapperProps {

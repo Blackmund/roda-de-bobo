@@ -63,6 +63,16 @@ const SHOW_PRESETS: Partial<Record<GameId, RulesetPreset>> = {
       'Pontuação do programa ainda não confirmada: mantém +1 por palpite certo'
     ]
   },
+  repetente: {
+    rounds: 5,
+    timer: 30,
+    config: {},
+    notes: [
+      'Tema sorteado: cada jogador escreve UMA palavra em segredo, tentando bater com a do parceiro',
+      'Combinou = ponto; se só uma dupla combina, ela leva 2 pontos (leitura da regra, a confirmar)',
+      'Palavras quase iguais (ex.: plural, acento): o juiz pode aceitar como combinada'
+    ]
+  },
   'mega-resenha': {
     rounds: 4,
     timer: 60,

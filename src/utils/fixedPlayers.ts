@@ -103,7 +103,8 @@ export const GAME_FRIENDLY_NAMES: Record<GameId, string> = {
   'perguntas-e-verdades': 'P. & Verdades',
   mimica: 'J. da Mímica',
   'quem-sou-eu': 'Quem Sou Eu',
-  'mega-resenha': 'Mega Resenha'
+  'mega-resenha': 'Mega Resenha',
+  repetente: 'Repetente'
 };
 
 /**

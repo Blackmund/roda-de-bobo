@@ -13,6 +13,7 @@ import {
   MimicaGameState,
   QuemSouEuGameState,
   MegaResenhaGameState,
+  RepetenteGameState,
   NotaGameState,
   TemOuNaoTemGameState,
   PerguntasEVerdadesGameState,
@@ -35,6 +36,8 @@ import { dealValidRandomHand } from './utils/perguntasEVerdadesEngine';
 import { buildMimicaState, pickMimicaPair } from './utils/mimicaEngine';
 import { buildQuemSouEuState, drawIdentities } from './utils/quemSouEuEngine';
 import { buildMegaResenhaState } from './utils/megaResenhaEngine';
+import { buildRepetenteGroups, buildRepetenteState } from './utils/repetenteEngine';
+import { drawRepetenteTheme, normalizeThemeKey } from './data/repetenteThemes';
 import { normalizeIdentity } from './data/quemSouEuIdentities';
 import { sounds } from './utils/soundEffects';
 import { WindowWrapper } from './components/WindowWrapper';
@@ -58,6 +61,9 @@ const ScreenLimite = lazy(() =>
 );
 const ScreenDuvido = lazy(() =>
   import('./components/host/ScreenDuvido').then((m) => ({ default: m.ScreenDuvido }))
+);
+const ScreenRepetente = lazy(() =>
+  import('./components/host/ScreenRepetente').then((m) => ({ default: m.ScreenRepetente }))
 );
 const ScreenMegaResenha = lazy(() =>
   import('./components/host/ScreenMegaResenha').then((m) => ({ default: m.ScreenMegaResenha }))
@@ -152,7 +158,8 @@ const GAME_NAMES: Record<GameId, string> = {
   'perguntas-e-verdades': 'PERGUNTAS E VERDADES',
   mimica: 'JOGO DA MÍMICA',
   'quem-sou-eu': 'QUEM SOU EU',
-  'mega-resenha': 'MEGA RESENHA'
+  'mega-resenha': 'MEGA RESENHA',
+  repetente: 'REPETENTE'
 };
 
 export default function App() {
@@ -443,6 +450,7 @@ export default function App() {
         let mimicaState: MimicaGameState | undefined = undefined;
         let quemSouEuState: QuemSouEuGameState | undefined = undefined;
         let megaResenhaState: MegaResenhaGameState | undefined = undefined;
+        let repetenteState: RepetenteGameState | undefined = undefined;
         let extraSignature = '';
         let notaState: NotaGameState | undefined = undefined;
         let temOuNaoTemState: TemOuNaoTemGameState | undefined = undefined;
@@ -754,6 +762,22 @@ export default function App() {
           });
         }
 
+        if (gameId === 'repetente') {
+          // NOV-05: um tema por rodada (sem repetir na sessao); as duplas saem das equipes.
+          const usedThemes = new Set<string>();
+          (prev.usedRoundSignatures || []).forEach((sig) => {
+            if (typeof sig === 'string' && sig.startsWith('rep:')) usedThemes.add(normalizeThemeKey(sig.slice(4)));
+          });
+          const picked = drawRepetenteTheme(usedThemes);
+          repetenteState = buildRepetenteState({
+            theme: picked.tema,
+            category: picked.categoria,
+            groups: buildRepetenteGroups(nextMatchPlayers, activeTeamIds),
+            timerSeconds: effectiveTimer
+          });
+          extraSignature = 'rep:' + picked.tema;
+        }
+
         if (gameId === 'mega-resenha') {
           // NOV-03: quem da as dicas e quem chuta revezam dentro da equipe que joga a rodada.
           const words = (Array.isArray(data) ? data : []).map((x: unknown) => String(x));
@@ -807,6 +831,7 @@ export default function App() {
           mimica: mimicaState,
           quemSouEu: quemSouEuState,
           megaResenha: megaResenhaState,
+          repetente: repetenteState,
           nota: notaState,
           temOuNaoTem: temOuNaoTemState,
           perguntasEVerdades: perguntasEVerdadesState
@@ -817,7 +842,8 @@ export default function App() {
         gameId !== 'perguntas-e-verdades' &&
         gameId !== 'mimica' &&
         gameId !== 'quem-sou-eu' &&
-        gameId !== 'mega-resenha'
+        gameId !== 'mega-resenha' &&
+        gameId !== 'repetente'
       ) {
         window.setTimeout(() => {
           prefetchRoundsForTheme(gameId, effectiveTheme, effectiveConfig);
@@ -862,6 +888,14 @@ export default function App() {
         } else {
           const spkTeam = prev.proibido.speakerTeam;
           roundPts[spkTeam] = (roundPts[spkTeam] || 0) + prev.proibido.roundScore;
+        }
+      } else if (prev.activeGame === 'repetente' && prev.repetente) {
+        const pts = prev.repetente.result?.pointsByTeam;
+        if (pts) {
+          roundPts.A += pts.A || 0;
+          roundPts.B += pts.B || 0;
+          roundPts.C += pts.C || 0;
+          roundPts.D += pts.D || 0;
         }
       } else if (prev.activeGame === 'mega-resenha' && prev.megaResenha) {
         // Pontos da rodada para a equipe que jogou; com 2 jogadores (cooperativo) as duas equipes somam.
@@ -1271,7 +1305,8 @@ export default function App() {
       'perguntas-e-verdades',
       'mimica',
       'quem-sou-eu',
-      'mega-resenha'
+      'mega-resenha',
+      'repetente'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     selectGame(randomChoice);
@@ -1623,6 +1658,19 @@ export default function App() {
                     broadcastState((prev) => ({
                       ...prev,
                       proibido: prev.proibido ? updater(prev.proibido) : undefined
+                    }))
+                  }
+                  onNextRound={handleNextRound}
+                />
+              )}
+              {room.activeGame === 'repetente' && (
+                <ScreenRepetente
+                  room={room}
+                  isTvMode={isTvMode}
+                  onUpdateRepetenteState={(updater) =>
+                    broadcastState((prev) => ({
+                      ...prev,
+                      repetente: prev.repetente ? updater(prev.repetente) : undefined
                     }))
                   }
                   onNextRound={handleNextRound}

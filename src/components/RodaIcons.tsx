@@ -498,3 +498,18 @@ export const MegaResenhaArt: React.FC<{ className?: string }> = ({ className = '
     <text x="100" y="100" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="26">???</text>
   </svg>
 );
+
+
+// 19. Repetente: duas lousinhas com a mesma palavra.
+export const RepetenteArt: React.FC<{ className?: string }> = ({ className = 'w-28 h-24' }) => (
+  <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
+    <g stroke="#120A16" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round">
+      <rect x="6" y="28" width="68" height="62" rx="6" fill="#0C0D16" />
+      <rect x="86" y="28" width="68" height="62" rx="6" fill="#0C0D16" />
+      <path d="M40 90 v20 M120 90 v20 M26 112 h28 M106 112 h28" />
+    </g>
+    <text x="40" y="68" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="22">MAR</text>
+    <text x="120" y="68" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="22">MAR</text>
+    <path d="M70 12 l8 8 l12 -14" stroke="#17B8B8" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" fill="none" transform="translate(-2 6)" />
+  </svg>
+);

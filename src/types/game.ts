@@ -12,7 +12,8 @@ export type GameId =
   | 'perguntas-e-verdades'
   | 'mimica'
   | 'quem-sou-eu'
-  | 'mega-resenha';
+  | 'mega-resenha'
+  | 'repetente';
 
 export type TeamId = 'A' | 'B' | 'C' | 'D';
 
@@ -241,6 +242,36 @@ export interface MegaResenhaGameState {
   roundScore: number;
   wordsHidden?: boolean;
   lastEvent?: string;
+}
+
+// NOV-05: REPETENTE (duplas escrevem em segredo UMA palavra para o mesmo tema; combinou = ponto)
+export interface RepetenteGroup {
+  id: string;
+  /** equipe da dupla; ausente no modo cooperativo (2 jogadores): os dois somam para as duas equipes */
+  team?: TeamId;
+  playerIds: string[];
+}
+
+export interface RepetenteGroupResult {
+  groupId: string;
+  matched: boolean;
+  /** o juiz aceitou como combinada (palavras quase iguais) */
+  overruled?: boolean;
+  points: number;
+}
+
+export interface RepetenteGameState {
+  phase: 'READY' | 'WRITING' | 'REVEAL';
+  theme: string;
+  category: string;
+  groups: RepetenteGroup[];
+  /** palavra de cada jogador (so aparece na TV depois da revelacao) */
+  answers: Record<string, string>;
+  timerSeconds: number;
+  timerActive: boolean;
+  /** juiz: dupla -> considerar combinada mesmo com palavras diferentes */
+  overrides: Record<string, boolean>;
+  result?: { groups: RepetenteGroupResult[]; pointsByTeam: Record<TeamId, number> };
 }
 
 // 4. JOGO DA NOTA
@@ -559,6 +590,7 @@ export interface GameRoom {
   mimica?: MimicaGameState;
   quemSouEu?: QuemSouEuGameState;
   megaResenha?: MegaResenhaGameState;
+  repetente?: RepetenteGameState;
   nota?: NotaGameState;
   temOuNaoTem?: TemOuNaoTemGameState;
   perguntasEVerdades?: PerguntasEVerdadesGameState;
