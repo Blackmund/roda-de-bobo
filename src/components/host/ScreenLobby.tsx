@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { GameRoom, GameId, VisualTheme, TeamId } from '../../types/game';
 import { isCazeFamily, themeBadge } from '../../utils/themeUtils';
-import { isApiAvailable } from '../../utils/apiAvailability';
 import { CazeArt } from '../RodaIcons';
 import { GAME_LIMITS } from '../../config/gameLimits';
 import {
@@ -14,6 +13,7 @@ import {
 import { DynamicQRCode } from '../DynamicQRCode';
 import { GlobalStats } from '../GlobalStats';
 import { sounds } from '../../utils/soundEffects';
+import { isApiAvailable } from '../../utils/apiAvailability';
 import {
   LimiteArcadeArt,
   TelefoneSemFioBoyArt,
