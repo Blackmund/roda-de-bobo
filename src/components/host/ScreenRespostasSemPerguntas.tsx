@@ -95,39 +95,6 @@ export const ScreenRespostasSemPerguntas: React.FC<ScreenRespostasProps> = ({
         </div>
       )}
 
-      {/* A pergunta, palavra por palavra: so aparecem as reveladas */}
-      <div className="shrink-0 border-2 border-cyan-400/50 bg-[#07080d] p-3">
-        <div className="font-mono-code text-[10px] text-cyan-300 uppercase font-bold text-center mb-2">
-          A pergunta tem {rsp.words.length} palavras{done ? ` · tema: ${rsp.category}` : ''}
-        </div>
-        <div className="flex flex-wrap justify-center gap-1.5" data-testid="rsp-words">
-          {rsp.words.map((w, i) => {
-            const shown = rsp.revealed[i] || done;
-            const canPick = rsp.phase === 'PLAYING' && rsp.step === 'pick' && !rsp.revealed[i];
-            return (
-              <button
-                key={i}
-                type="button"
-                data-testid={`rsp-word-${i}`}
-                disabled={!canPick}
-                onClick={() => pick(i)}
-                className={`min-w-[3.2rem] px-2.5 py-1.5 border font-anton text-lg md:text-2xl uppercase ${
-                  rsp.revealed[i]
-                    ? 'border-emerald-400 bg-emerald-950/40 text-emerald-200'
-                    : done
-                    ? 'border-white/20 text-slate-400'
-                    : canPick
-                    ? 'border-cyan-400 bg-cyan-950/40 text-cyan-200 hover:bg-cyan-400 hover:text-black cursor-pointer'
-                    : 'border-white/15 bg-black/50 text-slate-600'
-                }`}
-              >
-                {shown ? w : i + 1}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {rsp.phase === 'READY' && (
         <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-3 border border-white/10 bg-black/40 p-4 text-center">
           <p className="font-mono-code text-xs text-slate-300 max-w-xl">
@@ -215,6 +182,74 @@ export const ScreenRespostasSemPerguntas: React.FC<ScreenRespostasProps> = ({
           </div>
         </div>
       )}
+
+      {/* Faixa inferior no estilo do programa: selo do jogo | palavras numeradas | contador */}
+      <div
+        data-testid="rsp-strip"
+        className="shrink-0 mt-auto grid grid-cols-2 sm:grid-cols-[auto_1fr_auto] items-stretch border-2 border-[#E6194B]/80 bg-[#0b0e24] shadow-[0_0_18px_rgba(230,25,75,0.25)]"
+      >
+        <div className="flex flex-col justify-center gap-1.5 px-2 py-2 border-r-2 border-[#E6194B]/80 w-auto sm:w-28 md:w-44">
+          <div className="font-anton text-[11px] md:text-sm text-white uppercase tracking-wider leading-none">
+            RODA <span className="text-[#E6194B]">DE</span> BOBO
+          </div>
+          <div className="bg-[#E6194B] px-1.5 py-1.5 font-anton text-[10px] md:text-xs text-white uppercase leading-tight tracking-wide">
+            Respostas sem perguntas
+          </div>
+        </div>
+
+        <div className="col-span-2 order-3 sm:col-span-1 sm:order-none border-t-2 sm:border-t-0 border-[#E6194B]/80 px-2 py-2 flex flex-wrap items-center justify-center gap-1.5 md:gap-2" data-testid="rsp-words">
+          {rsp.words.map((w, i) => {
+            const shown = rsp.revealed[i] || done;
+            const canPick = rsp.phase === 'PLAYING' && rsp.step === 'pick' && !rsp.revealed[i];
+            const last = i === rsp.words.length - 1;
+            return (
+              <button
+                key={i}
+                type="button"
+                data-testid={`rsp-word-${i}`}
+                aria-label={shown ? `Palavra ${i + 1}: ${w}` : `Revelar a palavra ${i + 1}`}
+                disabled={!canPick}
+                onClick={() => pick(i)}
+                className={`relative min-w-[3.6rem] md:min-w-[5.2rem] h-10 md:h-12 px-2 border text-center transition-colors ${
+                  shown
+                    ? 'border-white/10 bg-[#141a40]'
+                    : canPick
+                    ? 'border-cyan-400/80 bg-[#141a40] hover:bg-cyan-500/20 cursor-pointer'
+                    : 'border-white/10 bg-[#101534]'
+                }`}
+              >
+                {/* numero pequeno: mostra qual posicao pedir */}
+                <span
+                  className={`absolute top-0.5 left-1 font-mono-code text-[8px] md:text-[10px] leading-none ${
+                    shown ? 'text-slate-500' : canPick ? 'text-cyan-300' : 'text-slate-500'
+                  }`}
+                >
+                  {i + 1}
+                </span>
+                {shown ? (
+                  <span
+                    className={`font-anton text-base md:text-xl text-white uppercase tracking-wide border-b-2 ${
+                      rsp.revealed[i] ? 'border-[#17B8B8]' : 'border-transparent'
+                    }`}
+                  >
+                    {w}
+                  </span>
+                ) : (
+                  <span className="inline-block w-8 md:w-12 h-[3px] bg-[#F5F2EB]/90 align-middle" />
+                )}
+                {last && <span className="absolute -right-0.5 -bottom-0.5 font-anton text-lg text-white leading-none">?</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        <div
+          data-testid="rsp-counter"
+          className="order-2 sm:order-none flex items-center justify-center px-3 border-l-2 border-[#E6194B]/80 font-anton text-xl md:text-3xl text-[#17B8B8] tracking-wide min-w-[4.5rem]"
+        >
+          {rsp.revealed.filter(Boolean).length}/{rsp.words.length}
+        </div>
+      </div>
     </div>
   );
 };

@@ -112,6 +112,9 @@ const GAME_TITLES: Record<GameId, string> = {
   'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS'
 };
 
+/** Maximo de cards por pagina do catalogo (o grid e 3x2 no desktop e 2x3 no tablet). */
+export const GAMES_PER_PAGE = 6;
+
 const GAMES: Array<{
   id: GameId;
   name: string;
@@ -311,6 +314,11 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const [hoveredGame, setHoveredGame] = useState<GameId | null>(null);
+  // Catalogo paginado: no maximo GAMES_PER_PAGE jogos por pagina (a 1a pagina e a tela original com 6).
+  const [gamePage, setGamePage] = useState(0);
+  const gamePageCount = Math.max(1, Math.ceil(GAMES.length / GAMES_PER_PAGE));
+  const currentGamePage = Math.min(gamePage, gamePageCount - 1);
+  const pageGames = GAMES.slice(currentGamePage * GAMES_PER_PAGE, (currentGamePage + 1) * GAMES_PER_PAGE);
   const [guestName, setGuestName] = useState('');
   const [guestTeam, setGuestTeam] = useState<TeamId>('A');
   const activeTeamIds = getActiveTeamIds(room);
@@ -569,7 +577,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
 
           {/* 6 Games Adaptive Grid: Protected Height (flex-1 min-h-0) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-rows-3 lg:grid-cols-3 lg:grid-rows-2 gap-3 md:gap-4 flex-1 min-h-0 max-sm:overflow-y-auto max-sm:auto-rows-[minmax(170px,1fr)] max-sm:pr-0.5">
-            {GAMES.map((game) => (
+            {pageGames.map((game) => (
               <div
                 key={game.id}
                 data-testid={`lobby-game-card-${game.id}`}
@@ -702,6 +710,63 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
               </div>
             ))}
           </div>
+
+          {gamePageCount > 1 && (
+            <nav
+              data-testid="lobby-pagination"
+              aria-label="Páginas de jogos"
+              className="shrink-0 flex items-center justify-center gap-3 pt-1"
+            >
+              <button
+                type="button"
+                data-testid="lobby-page-prev"
+                disabled={currentGamePage === 0}
+                onClick={() => {
+                  sounds.playTick();
+                  setGamePage(Math.max(0, currentGamePage - 1));
+                }}
+                className="px-3 py-1 border border-cyan-500/50 bg-black/70 text-cyan-200 font-anton text-xs uppercase tracking-wider disabled:opacity-30 enabled:hover:bg-cyan-400 enabled:hover:text-black cursor-pointer"
+                aria-label="Página anterior"
+              >
+                ◀ ANTERIOR
+              </button>
+              <div className="flex items-center gap-1.5" role="tablist">
+                {Array.from({ length: gamePageCount }, (_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    role="tab"
+                    aria-selected={i === currentGamePage}
+                    data-testid={`lobby-page-dot-${i}`}
+                    onClick={() => {
+                      sounds.playTick();
+                      setGamePage(i);
+                    }}
+                    className={`w-7 h-7 border font-anton text-xs cursor-pointer ${
+                      i === currentGamePage
+                        ? 'border-cyan-300 bg-cyan-400 text-black'
+                        : 'border-white/20 bg-black/60 text-slate-300 hover:border-cyan-400'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                data-testid="lobby-page-next"
+                disabled={currentGamePage >= gamePageCount - 1}
+                onClick={() => {
+                  sounds.playTick();
+                  setGamePage(Math.min(gamePageCount - 1, currentGamePage + 1));
+                }}
+                className="px-3 py-1 border border-cyan-500/50 bg-black/70 text-cyan-200 font-anton text-xs uppercase tracking-wider disabled:opacity-30 enabled:hover:bg-cyan-400 enabled:hover:text-black cursor-pointer"
+                aria-label="Próxima página"
+              >
+                PRÓXIMA ▶
+              </button>
+            </nav>
+          )}
         </div>
 
         {/* Clean Lobby: Sidebar removed from main screen so the 6 Game Cards have 100% spotlight */}
