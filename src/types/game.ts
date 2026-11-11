@@ -16,7 +16,8 @@ export type GameId =
   | 'repetente'
   | 'respostas-sem-perguntas'
   | 'estadios'
-  | 'como-eu-pinto';
+  | 'como-eu-pinto'
+  | 'onde-estou';
 
 export type TeamId = 'A' | 'B' | 'C' | 'D';
 

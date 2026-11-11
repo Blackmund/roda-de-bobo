@@ -39,6 +39,7 @@ import { dealValidRandomHand } from './utils/perguntasEVerdadesEngine';
 import { usesLocalContent } from './config/localGames';
 import { buildMimicaState, pickMimicaPair } from './utils/mimicaEngine';
 import { buildQuemSouEuState, drawIdentities } from './utils/quemSouEuEngine';
+import { drawMoments, normalizeMomentKey } from './data/ondeEstouMoments';
 import { buildMegaResenhaState } from './utils/megaResenhaEngine';
 import { buildRepetenteGroups, buildRepetenteState } from './utils/repetenteEngine';
 import { buildRespostasState } from './utils/respostasEngine';
@@ -170,7 +171,8 @@ const GAME_NAMES: Record<GameId, string> = {
   repetente: 'REPETENTE',
   'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS',
   estadios: 'ESTÁDIOS',
-  'como-eu-pinto': 'COMO EU PINTO'
+  'como-eu-pinto': 'COMO EU PINTO',
+  'onde-estou': 'ONDE ESTOU'
 };
 
 export default function App() {
@@ -834,6 +836,20 @@ export default function App() {
           });
         }
 
+        if (gameId === 'onde-estou') {
+          // NOV-06: um grande momento por jogador, sem repetir os ja usados na sessao (mesma dinamica do Quem sou eu).
+          const usedMoments = new Set<string>();
+          (prev.usedRoundSignatures || []).forEach((sig) => {
+            if (typeof sig === 'string' && sig.startsWith('oe:')) {
+              sig.slice(3).split('|').forEach((n) => usedMoments.add(normalizeMomentKey(n)));
+            }
+          });
+          const moments = drawMoments(nextMatchPlayers.length, usedMoments);
+          const firstIdx = (Math.max(1, prev.roundNumber) - 1) % Math.max(1, nextMatchPlayers.length);
+          quemSouEuState = buildQuemSouEuState(nextMatchPlayers, moments, firstIdx);
+          extraSignature = 'oe:' + moments.map((i) => i.nome).join('|');
+        }
+
         if (gameId === 'quem-sou-eu') {
           // NOV-02: uma identidade por jogador, sem repetir as ja usadas na sessao; quem comeca roda a cada rodada.
           const usedIdentities = new Set<string>();
@@ -967,7 +983,7 @@ export default function App() {
         } else {
           roundPts[prev.megaResenha.team] = (roundPts[prev.megaResenha.team] || 0) + (prev.megaResenha.roundScore || 0);
         }
-      } else if (prev.activeGame === 'quem-sou-eu' && prev.quemSouEu) {
+      } else if ((prev.activeGame === 'quem-sou-eu' || prev.activeGame === 'onde-estou') && prev.quemSouEu) {
         Object.entries(prev.quemSouEu.pointsAwarded || {}).forEach(([pid, pts]) => {
           const p = prev.players.find((pl) => pl.id === pid);
           if (p?.team) roundPts[p.team] = (roundPts[p.team] || 0) + pts;
@@ -1057,6 +1073,7 @@ export default function App() {
         prev.activeGame === 'limite' ||
         prev.activeGame === 'nota' ||
         prev.activeGame === 'quem-sou-eu' ||
+        prev.activeGame === 'onde-estou' ||
         prev.activeGame === 'respostas-sem-perguntas' ||
         prev.activeGame === 'estadios' ||
         prev.activeGame === 'perguntas-e-verdades';
@@ -1373,7 +1390,8 @@ export default function App() {
       'repetente',
       'respostas-sem-perguntas',
       'estadios',
-      'como-eu-pinto'
+      'como-eu-pinto',
+      'onde-estou'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     selectGame(randomChoice);
@@ -1795,7 +1813,7 @@ export default function App() {
                   onNextRound={handleNextRound}
                 />
               )}
-              {room.activeGame === 'quem-sou-eu' && (
+              {(room.activeGame === 'quem-sou-eu' || room.activeGame === 'onde-estou') && (
                 <ScreenQuemSouEu
                   room={room}
                   isTvMode={isTvMode}
@@ -1999,6 +2017,7 @@ export default function App() {
                 room.activeGame === 'nota' ||
                 room.activeGame === 'limite' ||
                 room.activeGame === 'quem-sou-eu' ||
+                room.activeGame === 'onde-estou' ||
                 room.activeGame === 'respostas-sem-perguntas' ||
                 room.activeGame === 'estadios' ||
                 room.activeGame === 'perguntas-e-verdades';

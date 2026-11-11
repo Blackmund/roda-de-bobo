@@ -2789,8 +2789,9 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
   }
 
   // NOV-02: Quem sou eu no celular. Mostra a identidade de todos, menos a do proprio jogador.
-  if (room.activeGame === 'quem-sou-eu' && room.quemSouEu) {
+  if ((room.activeGame === 'quem-sou-eu' || room.activeGame === 'onde-estou') && room.quemSouEu) {
     const q = room.quemSouEu;
+    const isMomentGame = room.activeGame === 'onde-estou';
     const mine = q.entries.find((e) => e.playerId === player.id);
     const turnName = room.players.find((p) => p.id === q.turnPlayerId)?.name || '—';
     const isMyTurn = q.phase === 'PLAYING' && q.turnPlayerId === player.id;
@@ -2799,7 +2800,7 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
         data-testid="controller-qse-view"
         className="min-h-screen bg-[#07080d] p-4 flex flex-col gap-3 max-w-md mx-auto text-white"
       >
-        <div className="font-anton text-lg uppercase">🪪 Quem sou eu</div>
+        <div className="font-anton text-lg uppercase">{isMomentGame ? '📍 Onde estou' : '🪪 Quem sou eu'}</div>
         <div
           className={'border p-3 text-center ' + (isMyTurn ? 'border-cyan-300 bg-cyan-950/40' : 'border-white/15 bg-black/50')}
         >
@@ -2823,7 +2824,7 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
           )}
         </div>
         <div className="font-mono-code text-[10px] text-amber-200 uppercase font-bold">
-          Quem é quem (a sua fica escondida)
+          {isMomentGame ? 'Quem tem qual momento (o seu fica escondido)' : 'Quem é quem (a sua fica escondida)'}
         </div>
         <ul className="space-y-1">
           {q.entries.map((e) => {

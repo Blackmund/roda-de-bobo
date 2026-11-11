@@ -24,6 +24,8 @@ export const ScreenQuemSouEu: React.FC<ScreenQuemSouEuProps> = ({ room, onUpdate
     return <div className="p-6 text-center font-mono-code text-slate-300">Carregando rodada do Quem sou eu...</div>;
   }
   const isShow = isShowRuleset(room.customConfig);
+  // NOV-06: o 'Onde estou' usa a mesma dinamica, com grandes momentos do esporte no lugar das identidades.
+  const moment = room.activeGame === 'onde-estou';
   const nameOf = (id: string) => room.players.find((p) => p.id === id)?.name || '—';
   const avatarOf = (id: string) => room.players.find((p) => p.id === id)?.avatar || '🙂';
   const turn = qse.entries.find((e) => e.playerId === qse.turnPlayerId);
@@ -62,7 +64,7 @@ export const ScreenQuemSouEu: React.FC<ScreenQuemSouEuProps> = ({ room, onUpdate
     <div data-testid="qse-screen" className="gap-2 h-full flex flex-col min-h-0 overflow-y-auto">
       <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 border border-white/10 bg-[#07080d]/95 px-2 py-1.5">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-anton text-sm md:text-base text-white uppercase tracking-wider">🪪 QUEM SOU EU</span>
+          <span className="font-anton text-sm md:text-base text-white uppercase tracking-wider">{moment ? '📍 ONDE ESTOU' : '🪪 QUEM SOU EU'}</span>
           {isShow && (
             <span
               data-testid="qse-show-ruleset-chip"
@@ -82,7 +84,13 @@ export const ScreenQuemSouEu: React.FC<ScreenQuemSouEuProps> = ({ room, onUpdate
           className="px-2 py-1 border border-amber-400/60 bg-amber-950/60 text-amber-200 font-mono-code text-[10px] font-bold uppercase flex items-center gap-1 cursor-pointer"
         >
           {qse.identitiesVisible ? <EyeOff size={12} /> : <Eye size={12} />}
-          {qse.identitiesVisible ? 'OCULTAR IDENTIDADES' : 'MOSTRAR IDENTIDADES (quem joga não olha!)'}
+          {qse.identitiesVisible
+            ? moment
+              ? 'OCULTAR MOMENTOS'
+              : 'OCULTAR IDENTIDADES'
+            : moment
+            ? 'MOSTRAR MOMENTOS (quem joga não olha!)'
+            : 'MOSTRAR IDENTIDADES (quem joga não olha!)'}
         </button>
       </div>
 
@@ -110,7 +118,9 @@ export const ScreenQuemSouEu: React.FC<ScreenQuemSouEuProps> = ({ room, onUpdate
               </div>
               <div
                 data-testid={`qse-identity-${e.playerId}`}
-                className="font-anton text-lg md:text-xl leading-tight text-[#F5F2EB] uppercase min-h-[2.6rem] flex items-center justify-center break-words"
+                className={`font-anton leading-tight text-[#F5F2EB] uppercase flex items-center justify-center break-words ${
+                  moment ? 'text-xs md:text-sm min-h-[4.2rem]' : 'text-lg md:text-xl min-h-[2.6rem]'
+                }`}
               >
                 {showIdentity ? e.identity : '❓'}
               </div>
@@ -129,10 +139,11 @@ export const ScreenQuemSouEu: React.FC<ScreenQuemSouEuProps> = ({ room, onUpdate
 
       {qse.phase === 'READY' && (
         <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-3 border border-white/10 bg-black/40 p-4 text-center">
-          <div className="font-anton text-2xl text-white uppercase">Cada um tem uma identidade na testa</div>
+          <div className="font-anton text-2xl text-white uppercase">{moment ? 'Cada um tem um grande momento na testa' : 'Cada um tem uma identidade na testa'}</div>
           <p className="font-mono-code text-xs text-slate-300 max-w-xl">
-            Todos veem, menos o dono. Na sua vez, o jogador faz uma pergunta de sim ou não ou chuta quem é. Os outros só
-            respondem sim ou não. Quem descobre primeiro ganha mais pontos.
+            {moment
+              ? 'Todos veem, menos o dono. Na sua vez, o jogador faz uma pergunta de sim ou não para descobrir qual é o momento (ou chuta). Os outros só respondem sim ou não. Quem descobre primeiro ganha mais pontos.'
+              : 'Todos veem, menos o dono. Na sua vez, o jogador faz uma pergunta de sim ou não ou chuta quem é. Os outros só respondem sim ou não. Quem descobre primeiro ganha mais pontos.'}
           </p>
           <button
             type="button"
@@ -197,7 +208,7 @@ export const ScreenQuemSouEu: React.FC<ScreenQuemSouEuProps> = ({ room, onUpdate
 
       {qse.phase === 'SUMMARY' && (
         <div data-testid="qse-summary" className="flex-1 min-h-0 flex flex-col gap-2 border border-white/10 bg-black/40 p-3">
-          <div className="font-anton text-2xl text-white uppercase text-center">Identidades reveladas</div>
+          <div className="font-anton text-2xl text-white uppercase text-center">{moment ? 'Momentos revelados' : 'Identidades reveladas'}</div>
           <ul className="space-y-1">
             {[...qse.entries]
               .sort((a, b) => (a.foundOrder ?? 99) - (b.foundOrder ?? 99))

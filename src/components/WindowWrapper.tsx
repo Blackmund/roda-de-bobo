@@ -46,7 +46,8 @@ const GAME_TITLES: Record<GameId, string> = {
   repetente: 'REPETENTE',
   'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS',
   estadios: 'ESTÁDIOS',
-  'como-eu-pinto': 'COMO EU PINTO'
+  'como-eu-pinto': 'COMO EU PINTO',
+  'onde-estou': 'ONDE ESTOU'
 };
 
 interface WindowWrapperProps {

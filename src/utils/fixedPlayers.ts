@@ -107,7 +107,8 @@ export const GAME_FRIENDLY_NAMES: Record<GameId, string> = {
   repetente: 'Repetente',
   'respostas-sem-perguntas': 'Respostas s/ Perguntas',
   estadios: 'Estádios',
-  'como-eu-pinto': 'Como Eu Pinto'
+  'como-eu-pinto': 'Como Eu Pinto',
+  'onde-estou': 'Onde Estou'
 };
 
 /**

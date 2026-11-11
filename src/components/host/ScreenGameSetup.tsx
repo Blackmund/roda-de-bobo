@@ -241,6 +241,8 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
         return 'ESTÁDIOS';
       case 'como-eu-pinto':
         return 'COMO EU PINTO';
+      case 'onde-estou':
+        return 'ONDE ESTOU';
       default:
         return 'RODA DE BOBO';
     }
@@ -250,6 +252,7 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
     room.activeGame === 'nota' ||
     room.activeGame === 'limite' ||
     room.activeGame === 'quem-sou-eu' ||
+    room.activeGame === 'onde-estou' ||
     room.activeGame === 'respostas-sem-perguntas' ||
     room.activeGame === 'estadios' ||
     room.activeGame === 'perguntas-e-verdades';

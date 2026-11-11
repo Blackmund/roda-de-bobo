@@ -10,7 +10,8 @@ import {
   RepetenteArt,
   RespostasSemPerguntasArt,
   EstadiosArt,
-  ComoEuPintoArt
+  ComoEuPintoArt,
+  OndeEstouArt
 } from '../RodaIcons';
 import { GAME_LIMITS } from '../../config/gameLimits';
 import {
@@ -113,7 +114,8 @@ const GAME_TITLES: Record<GameId, string> = {
   repetente: 'REPETENTE',
   'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS',
   estadios: 'ESTÁDIOS',
-  'como-eu-pinto': 'COMO EU PINTO'
+  'como-eu-pinto': 'COMO EU PINTO',
+  'onde-estou': 'ONDE ESTOU'
 };
 
 /** Maximo de cards por pagina do catalogo (o grid e 3x2 no desktop e 2x3 no tablet). */
@@ -321,6 +323,21 @@ const GAMES: Array<{
         }
       />
     )
+  },
+  {
+    id: 'onde-estou',
+    name: 'ONDE ESTOU',
+    tagline: 'DESCUBRA O GRANDE MOMENTO NA SUA TESTA',
+    badge: 'INDIVIDUAL',
+    color: '#22C55E',
+    renderArt: (cls) => (
+      <OndeEstouArt
+        className={
+          cls ||
+          'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
+        }
+      />
+    )
   }
 ];
 
@@ -437,7 +454,8 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
       'repetente',
       'respostas-sem-perguntas',
       'estadios',
-      'como-eu-pinto'
+      'como-eu-pinto',
+      'onde-estou'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     handleGameClick(randomChoice);

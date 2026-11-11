@@ -647,6 +647,54 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
       'Cada palavra acertada pela dupla que desenha vale 1 ponto.',
       'Palavras que faltarem quando o tempo acabar podem ser roubadas pela dupla rival: 1 ponto cada (valor do roubo a confirmar).'
     ]
+  },
+  'onde-estou': {
+    gameId: 'onde-estou',
+    icon: '📍',
+    name: 'ONDE ESTOU',
+    welcomeTitle: 'Como Jogar o Onde Estou',
+    welcomeSubtitle:
+      'Todo mundo vê o seu grande momento do esporte, menos você! Descubra qual é com perguntas de sim ou não antes dos outros.',
+    steps: [
+      {
+        stepNumber: 1,
+        icon: '📍',
+        headline: 'Um Grande Momento na Testa',
+        description:
+          'Cada jogador recebe um momento histórico do esporte (uma final, um gol, um recorde). A TV e o celular dos outros mostram para todos, menos para o dono.',
+        accentTag: 'Todos Veem, Menos Você'
+      },
+      {
+        stepNumber: 2,
+        icon: '❓',
+        headline: 'Pergunte na Sua Vez',
+        description:
+          'Em rodízio, faça uma pergunta de sim ou não ("Foi numa Copa do Mundo?", "Foi antes de 2000?") ou chute o momento. Os outros só podem responder sim ou não.',
+        accentTag: 'Só Sim ou Não'
+      },
+      {
+        stepNumber: 3,
+        icon: '🏁',
+        headline: 'Quem Acerta Primeiro Pontua Mais',
+        description:
+          'O 1º a descobrir leva mais pontos, o 2º um pouco menos, e assim por diante. Quem gastar todas as perguntas fica de fora.',
+        accentTag: 'Corrida de Descoberta'
+      }
+    ],
+    proibido: [
+      'DAR DICAS ALÉM DE "SIM" OU "NÃO"',
+      'OLHAR A TELA OU O CELULAR COM O SEU MOMENTO',
+      'CHUTAR VÁRIAS VEZES NA MESMA VEZ'
+    ],
+    permitido: [
+      'PERGUNTAR SOBRE ANO, ESPORTE, PAÍS, TIME OU COMPETIÇÃO',
+      'COMEÇAR POR "FOI EM UMA COPA DO MUNDO?" PARA SEPARAR O TIPO DE MOMENTO',
+      'ANOTAR AS RESPOSTAS PARA NÃO REPETIR PERGUNTA'
+    ],
+    scoringSummary: [
+      'O primeiro a acertar leva tantos pontos quanto jogadores na sala; cada acerto seguinte vale 1 ponto a menos (mínimo 1).',
+      'Quem esgotar as perguntas ou não descobrir antes do fim da rodada não pontua. (A pontuação do programa ainda não foi confirmada.)'
+    ]
   }
 };
 
