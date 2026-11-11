@@ -83,6 +83,16 @@ import {
   buildTemOuNaoTemPrompt
 } from './temOuNaoTemGoldenDatabase';
 import { isApiAvailable } from './apiAvailability';
+import {
+  clearSeenMemory,
+  contentRepeated,
+  isSeen,
+  looksRepeated,
+  markContentSeen,
+  markSeen,
+  normalizeSeenText,
+  seenOrder
+} from './seenMemory';
 
 export {
   LIMITE_GOLDEN_QUESTIONS,
@@ -235,6 +245,7 @@ export function clearUsedRoundSignatures(): void {
   persistUsedQuestions(usedQuestionsTracker);
   persistUsedProibidoWords(usedProibidoWords);
   SessionMemoryManager.clear();
+  clearSeenMemory();
   clearRoundContentCache();
 }
 
@@ -2934,6 +2945,57 @@ const DUVIDO_BANKS_BY_CATEGORY: Record<ThemeCategory, DuvidoRoundData[]> = {
  * Every category has its own dedicated multi-round bank across all 5 games so Round 2, 3, 4+
  * NEVER drift into unrelated themes!
  */
+/**
+ * Itens dos bancos "dourados" (os originais + os 1.435 importados de analise/banco) que combinam com a categoria do tema.
+ * Antes so o Limite lia esses bancos no sorteio sem IA; agora Nota, Tem ou Nao Tem, Duvido e Proibido tambem.
+ * Tema livre ("custom") usa tudo.
+ */
+const GOLDEN_CATEGORY_MATCH: Record<ThemeCategory, RegExp | null> = {
+  futebol: /futebol|esporte/,
+  cinema: /cinema|cultura pop|entretenimento/,
+  musica: /musica|entretenimento/,
+  games: /game|cultura pop|geek/,
+  ciencia: /ciencia|natureza|corpo/,
+  animais: /animais|natureza|ciencia/,
+  comida: /comida|bebida/,
+  cotidiano: /cotidiano|casa|brasil|marcas/,
+  relacionamentos: /cotidiano|dates|relacion/,
+  profissoes: /trabalho|profiss|vida adulta/,
+  cultura_pop: /cultura pop|cinema|entretenimento|brasil/,
+  custom: null
+};
+
+function goldenFor(game: 'tem' | 'nota' | 'proibido' | 'duvido', category: ThemeCategory): any[] {
+  const source: any[] =
+    game === 'tem'
+      ? TEM_OU_NAO_TEM_GOLDEN_QUESTIONS
+      : game === 'nota'
+      ? NOTA_GOLDEN_PROMPTS
+      : game === 'proibido'
+      ? PROIBIDO_GOLDEN_CARDS
+      : DUVIDO_GOLDEN_CATEGORIES;
+  const re = GOLDEN_CATEGORY_MATCH[category];
+  if (!re) return source;
+  return source.filter((it) => {
+    const cat = String(game === 'duvido' ? it.tema_macro : it.categoria || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    return re.test(cat);
+  });
+}
+
+/** Parcela das rodadas em que o banco proprio vai na frente da IA (quando o tema tem banco proprio): o resto e IA. */
+export const BANK_SHARE = 0.4;
+
+/** Lancada no modo estrito quando o banco do tema ja nao tem nada que o jogador nao tenha visto. */
+export class BankExhaustedError extends Error {
+  constructor() {
+    super('BANK_EXHAUSTED');
+    this.name = 'BankExhaustedError';
+  }
+}
+
 export function generateThemeStrictFallbackRound(
   gameId: GameId,
   customTheme: string,
@@ -2941,6 +3003,20 @@ export function generateThemeStrictFallbackRound(
   customConfig: GameCustomConfig = DEFAULT_GAME_CUSTOM_CONFIG,
   excludeSignatures: string[] = [],
   difficulty: string = 'dificil'
+): { data: unknown; signature: string; subthemeUsed?: string } {
+  const round = drawFallbackRound(gameId, customTheme, subtheme, customConfig, excludeSignatures, difficulty, false);
+  markContentSeen(gameId, round.data);
+  return round;
+}
+
+function drawFallbackRound(
+  gameId: GameId,
+  customTheme: string,
+  subtheme: string,
+  customConfig: GameCustomConfig,
+  excludeSignatures: string[],
+  difficulty: string,
+  strictFresh: boolean
 ): { data: unknown; signature: string; subthemeUsed?: string } {
   const targetDiff = (difficulty || customConfig?.difficulty || 'dificil').toLowerCase().trim();
   const category = detectThemeCategory(customTheme);
@@ -2954,14 +3030,32 @@ export function generateThemeStrictFallbackRound(
   const pickUnused = <T>(
     pool: T[],
     getSig: (item: T, idx: number) => string,
-    preferFilter?: (item: T) => boolean
+    preferFilter?: (item: T) => boolean,
+    getText?: (item: T) => string
   ): { item: T; sig: string; idx: number } => {
     const indexed = pool.map((item, idx) => ({ item, idx, sig: getSig(item, idx) }));
     const shuffledIndexed = fisherYatesShuffle(indexed);
     const available = shuffledIndexed.filter(
-      (x) => !excluded.has(x.sig) && !usedQuestionsTracker.has(x.sig)
+      (x) =>
+        !excluded.has(x.sig) &&
+        !usedQuestionsTracker.has(x.sig) &&
+        !(getText && looksRepeated(getText(x.item)))
     );
-    const baseSource = available.length > 0 ? available : shuffledIndexed;
+    let baseSource = available;
+    if (available.length === 0) {
+      // Tudo do banco ja foi visto: no modo estrito deixa a IA tentar; senao repete o que foi visto HA MAIS TEMPO.
+      if (strictFresh) throw new BankExhaustedError();
+      if (getText) {
+        const orderOf = (x: { item: T }) => {
+          const o = seenOrder(getText(x.item));
+          return o === -1 ? Number.MAX_SAFE_INTEGER : o;
+        };
+        const oldest = [...shuffledIndexed].sort((a, b) => orderOf(a) - orderOf(b));
+        baseSource = oldest.slice(0, Math.max(1, Math.ceil(oldest.length * 0.1)));
+      } else {
+        baseSource = shuffledIndexed;
+      }
+    }
     const preferred = preferFilter ? baseSource.filter((x) => preferFilter(x.item)) : [];
     const source = preferred.length > 0 ? preferred : baseSource;
     const picked = source[0];
@@ -2979,7 +3073,10 @@ export function generateThemeStrictFallbackRound(
 
   // 1. Tem ou Não Tem
   if (gameId === 'tem-ou-nao-tem') {
-    const categoryBank = TEM_BANKS_BY_CATEGORY[category] || POP_GERAL_TEM_OU_NAO_TEM;
+    const categoryBank = [
+      ...(TEM_BANKS_BY_CATEGORY[category] || POP_GERAL_TEM_OU_NAO_TEM),
+      ...(goldenFor('tem', category) as TemOuNaoTemRoundData[])
+    ];
     const picked = pickUnused(
       categoryBank,
       (it) => `${category}-tem-${it.pergunta}`,
@@ -2990,7 +3087,8 @@ export function generateThemeStrictFallbackRound(
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '');
         return subKeywords.some((kw) => text.includes(kw));
-      }
+      },
+      (it) => sanitizeCleanGameText(stripPerguntamosPrefix(it.pergunta), 'tem-ou-nao-tem')
     );
     const finalQuestion = sanitizeCleanGameText(stripPerguntamosPrefix(picked.item.pergunta), 'tem-ou-nao-tem');
 
@@ -3013,8 +3111,16 @@ export function generateThemeStrictFallbackRound(
 
   // 2. Jogo da Nota
   if (gameId === 'nota') {
-    const notaPool = NOTA_BANKS_BY_CATEGORY[category] || COTIDIANO_NOTA;
-    const picked = pickUnused(notaPool, (it) => `${category}-nota-${it.pergunta}`);
+    const notaPool = [
+      ...(NOTA_BANKS_BY_CATEGORY[category] || COTIDIANO_NOTA),
+      ...(goldenFor('nota', category) as NotaRoundData[])
+    ];
+    const picked = pickUnused(
+      notaPool,
+      (it) => `${category}-nota-${it.pergunta}`,
+      undefined,
+      (it) => sanitizeCleanGameText(it.pergunta, 'nota')
+    );
     const cleanQ = sanitizeCleanGameText(picked.item.pergunta, 'nota');
     registerUsedSignature(cleanQ);
     return {
@@ -3025,11 +3131,33 @@ export function generateThemeStrictFallbackRound(
 
   // 3. Jogo do Proibido
   if (gameId === 'proibido') {
-    const proibidoPool = PROIBIDO_BANKS_BY_CATEGORY[category] || CULTURA_POP_PROIBIDO_CARDS;
+    // Banco da categoria + banco dourado, sem a mesma palavra-alvo duas vezes (ex.: PELÉ nos dois).
+    const proibidoPool: ProibidoCard[] = [];
+    const proibidoWordsInPool = new Set<string>();
+    for (const card of [
+      ...(PROIBIDO_BANKS_BY_CATEGORY[category] || CULTURA_POP_PROIBIDO_CARDS),
+      ...(goldenFor('proibido', category) as ProibidoCard[])
+    ]) {
+      const k = normalizeSeenText(card.palavra_alvo);
+      if (!k || proibidoWordsInPool.has(k)) continue;
+      proibidoWordsInPool.add(k);
+      proibidoPool.push(card);
+    }
     const usedSet = new Set(usedProibidoWords.map((w) => w.toUpperCase()));
-    const unusedCards = proibidoPool.filter((c) => !usedSet.has(c.palavra_alvo.toUpperCase()));
-    const pool = unusedCards.length >= customConfig.proibidoCardsCount ? unusedCards : proibidoPool;
-    const shuffled = fisherYatesShuffle(pool);
+    const unusedCards = proibidoPool.filter(
+      (c) => !usedSet.has(c.palavra_alvo.toUpperCase()) && !isSeen(`proibido ${c.palavra_alvo}`)
+    );
+    if (strictFresh && unusedCards.length < customConfig.proibidoCardsCount) throw new BankExhaustedError();
+    const unusedSet = new Set(unusedCards);
+    const seenOrderOf = (c: { palavra_alvo: string }) => {
+      const o = seenOrder(`proibido ${c.palavra_alvo}`);
+      return o === -1 ? -1 : o;
+    };
+    // Cartas novas primeiro; se faltar, completa com as vistas ha mais tempo.
+    const restOldestFirst = proibidoPool
+      .filter((c) => !unusedSet.has(c))
+      .sort((a, b) => seenOrderOf(a) - seenOrderOf(b));
+    const shuffled = [...fisherYatesShuffle(unusedCards), ...restOldestFirst];
     const selected = shuffled.slice(0, customConfig.proibidoCardsCount).map((c) => ({
       palavra_alvo: c.palavra_alvo,
       palavras_proibidas: ensureStrictForbiddenWordsCount(
@@ -3053,7 +3181,8 @@ export function generateThemeStrictFallbackRound(
         !excluded.has(q.id) &&
         !excluded.has(q.pergunta) &&
         !usedQuestionsTracker.has(q.id) &&
-        !usedQuestionsTracker.has(q.pergunta)
+        !usedQuestionsTracker.has(q.pergunta) &&
+        !looksRepeated(q.pergunta)
     );
     if (diffGoldenCandidates.length > 0) {
       const goldenCat = matchThemeToGoldenCategory(customTheme);
@@ -3079,7 +3208,8 @@ export function generateThemeStrictFallbackRound(
           !excluded.has(q.id) &&
           !excluded.has(q.pergunta) &&
           !usedQuestionsTracker.has(q.id) &&
-          !usedQuestionsTracker.has(q.pergunta)
+          !usedQuestionsTracker.has(q.pergunta) &&
+          !looksRepeated(q.pergunta)
       );
       if (goldenCandidates.length > 0) {
         const pickedGolden = fisherYatesShuffle(goldenCandidates)[0];
@@ -3099,18 +3229,23 @@ export function generateThemeStrictFallbackRound(
     const picked = pickUnused(
       limitePool,
       (it) => `${category}-limite-${it.pergunta}`,
-      (it) => !usedQuestionsTracker.has(it.pergunta)
+      (it) => !usedQuestionsTracker.has(it.pergunta),
+      (it) => it.pergunta
     );
     registerUsedSignature(picked.item.pergunta);
     return { data: picked.item, signature: picked.sig };
   }
 
   // 5. Jogo do Duvido
-  const duvidoPool = DUVIDO_BANKS_BY_CATEGORY[category] || CURATED_DUVIDO;
+  const duvidoPool = [
+    ...(DUVIDO_BANKS_BY_CATEGORY[category] || CURATED_DUVIDO),
+    ...(goldenFor('duvido', category) as DuvidoRoundData[])
+  ];
   const picked = pickUnused(
     duvidoPool,
     (it) => `${category}-duvido-${it.categoria_secreta}`,
-    (it) => !usedQuestionsTracker.has(it.categoria_secreta)
+    (it) => !usedQuestionsTracker.has(it.categoria_secreta),
+    (it) => `duvido ${sanitizeCleanGameText(it.categoria_secreta, 'duvido')}`
   );
   registerUsedSignature(picked.item.categoria_secreta);
   return {
@@ -3539,7 +3674,8 @@ function consumeFreshCachedRound(
   for (const candidate of queued) {
     const isFresh =
       !excludedSet.has(candidate.signature) &&
-      SessionMemoryManager.isContentFresh(gameId, candidate.data, excludeSignatures);
+      SessionMemoryManager.isContentFresh(gameId, candidate.data, excludeSignatures) &&
+      !contentRepeated(gameId, candidate.data);
     if (!isFresh) continue;
 
     if (!chosen && isCachedEntryCompatibleWithConfig(gameId, candidate, customConfig)) {
@@ -3621,6 +3757,9 @@ function sanitizeAndFormatRoundItem(
   return null;
 }
 
+/** A ultima chamada a IA devolveu algo que o jogador ja viu (ou quase igual)? Permite tentar de novo antes de cair no banco. */
+let lastFetchWasDuplicate = false;
+
 async function fetchBatchFromApi(
   gameId: GameId,
   theme: string,
@@ -3632,6 +3771,7 @@ async function fetchBatchFromApi(
 ): Promise<GenerateRoundResponse<unknown> | null> {
   // Sem servidor proprio (ex.: Vercel estatico) a IA nao existe: cai direto nos bancos prontos, sem tentativas nem 404.
   if (!(await isApiAvailable())) return null;
+  lastFetchWasDuplicate = false;
   const randomSubAngle = explicitSubAngle || SessionMemoryManager.drawRandomSubAngle(theme);
   const subtheme = randomSubAngle.label || pickNextRandomSubtheme(theme);
   const sessionMemorySnapshot = SessionMemoryManager.getSnapshot();
@@ -3714,13 +3854,18 @@ async function fetchBatchFromApi(
       const primary = sanitizeAndFormatRoundItem(gameId, json.data, customConfig, theme);
       if (primary) {
         const resolvedSubtheme = json.subthemeUsed || subtheme;
+        const primaryRepeated = contentRepeated(gameId, primary.data);
 
         // Aggressive Caching: Save any extraRounds returned by the batch into RoundContentCache
         const extraRaw: any[] = Array.isArray(json.extraRounds) ? json.extraRounds : [];
         const extraCacheEntries: CachedRoundEntry[] = [];
         for (const extraItem of extraRaw) {
           const formattedExtra = sanitizeAndFormatRoundItem(gameId, extraItem, customConfig, theme);
-          if (formattedExtra && formattedExtra.signature !== primary.signature) {
+          if (
+            formattedExtra &&
+            formattedExtra.signature !== primary.signature &&
+            !contentRepeated(gameId, formattedExtra.data)
+          ) {
             extraCacheEntries.push({
               data: formattedExtra.data,
               subthemeUsed: resolvedSubtheme,
@@ -3732,7 +3877,7 @@ async function fetchBatchFromApi(
         }
 
         if (!consumePrimaryImmediately) {
-          extraCacheEntries.unshift({
+          if (!primaryRepeated) extraCacheEntries.unshift({
             data: primary.data,
             subthemeUsed: resolvedSubtheme,
             subAngleId: randomSubAngle.id,
@@ -3743,6 +3888,11 @@ async function fetchBatchFromApi(
         } else {
           if (extraCacheEntries.length > 0) {
             pushToRoundContentCache(gameId, theme, customConfig, extraCacheEntries);
+          }
+          if (primaryRepeated) {
+            // A IA devolveu algo que o jogador ja viu: nao entra em jogo (o chamador tenta de novo ou usa o banco).
+            lastFetchWasDuplicate = true;
+            return null;
           }
           // Record consumed round in SessionMemoryManager immediately
           SessionMemoryManager.recordRoundData(gameId, primary.data, theme, randomSubAngle);
@@ -3802,6 +3952,44 @@ function scheduleBackgroundCacheRefill(
  * Dynamically generates 8 brand-new creative themes using the Gemini API
  * for the "✨ Gerar Novos Temas com IA" button in Setup.
  */
+const themeKey = (t: string) => `tema ${t}`;
+
+function rememberThemes(themes: string[]): string[] {
+  themes.forEach((t) => markSeen(themeKey(t)));
+  return themes;
+}
+
+/** Temas que o jogador ainda nao viu (nem estao na lista de excluidos), sem duplicar dentro do lote. */
+async function freshThemesOnly(candidates: string[], excludeThemes: string[]): Promise<string[]> {
+  const excluded = new Set(excludeThemes);
+  const out: string[] = [];
+  for (const t of candidates) {
+    if (typeof t !== 'string' || t.trim().length < 2) continue;
+    if (excluded.has(t) || out.includes(t) || looksRepeated(themeKey(t))) continue;
+    out.push(t);
+  }
+  return out;
+}
+
+/** Completa a lista com temas do banco local (2.300+ temas-base) que o jogador ainda nao viu. */
+async function topUpThemesFromBank(current: string[], excludeThemes: string[], target: number): Promise<string[]> {
+  const { pickThemes } = await import('./themeBank');
+  const out = [...current];
+  for (let attempt = 0; attempt < 8 && out.length < target; attempt++) {
+    const batch = pickThemes({ count: 24, exclude: [...excludeThemes, ...out] });
+    for (const t of await freshThemesOnly(batch, [...excludeThemes, ...out])) {
+      if (out.length < target) out.push(t);
+    }
+  }
+  if (out.length < target) {
+    // banco quase todo visto: completa com o que for, preferindo qualquer tema fora dos excluidos
+    for (const t of pickThemes({ count: target, exclude: [...excludeThemes, ...out] })) {
+      if (out.length < target && !out.includes(t)) out.push(t);
+    }
+  }
+  return out;
+}
+
 export async function generateNewThemesWithAI(excludeThemes: string[] = []): Promise<string[]> {
   try {
     if (!(await isApiAvailable())) throw new Error('API_UNAVAILABLE');
@@ -3819,16 +4007,19 @@ export async function generateNewThemesWithAI(excludeThemes: string[] = []): Pro
       { timeoutMs: 3500, maxRetries: 1, baseDelayMs: 250 }
     );
     if (Array.isArray(json?.themes) && json.themes.length > 0) {
-      return json.themes;
+      const fresh = await freshThemesOnly(json.themes as string[], excludeThemes);
+      if (fresh.length >= 8) return rememberThemes(fresh.slice(0, 8));
+      // IA repetiu temas ja mostrados: completa com o banco local de temas
+      const topUp = await topUpThemesFromBank(fresh, excludeThemes, 8);
+      if (topUp.length >= 4) return rememberThemes(topUp);
     }
   } catch {
     // Fall through to local creative pool if offline
   }
   // Banco local de temas (sem IA, sem rede): carregado sob demanda para nao pesar no pacote principal.
   try {
-    const { pickThemes } = await import('./themeBank');
-    const fromBank = pickThemes({ count: 8, exclude: excludeThemes });
-    if (fromBank.length >= 4) return fromBank;
+    const topUp = await topUpThemesFromBank([], excludeThemes, 8);
+    if (topUp.length >= 4) return rememberThemes(topUp);
   } catch {
     // segue para a lista fixa abaixo
   }
@@ -3896,6 +4087,27 @@ export function prefetchRoundsForTheme(
  * sub-angle, Few-Shot Style Guide, and explicit SessionMemory snapshot injection.
  */
 export async function generateRoundContent(
+  gameId: GameId,
+  customTheme: string = '',
+  customConfig: GameCustomConfig = DEFAULT_GAME_CUSTOM_CONFIG,
+  excludeSignatures: string[] = [],
+  difficulty?: string,
+  explicitSubAngle?: SubAngleDefinition
+): Promise<GenerateRoundResponse<unknown>> {
+  const round = await generateRoundContentCore(
+    gameId,
+    customTheme,
+    customConfig,
+    excludeSignatures,
+    difficulty,
+    explicitSubAngle
+  );
+  // Memoria de vistos (longo prazo): o que sai daqui nao deve voltar tao cedo, venha do banco, do cache ou da IA.
+  markContentSeen(gameId, round.data);
+  return round;
+}
+
+async function generateRoundContentCore(
   gameId: GameId,
   customTheme: string = '',
   customConfig: GameCustomConfig = DEFAULT_GAME_CUSTOM_CONFIG,
@@ -4036,6 +4248,34 @@ export async function generateRoundContent(
     ...sessionMemoryHistory
   ]);
 
+  // 0. INTERCALAR banco proprio e IA: parte das rodadas sai do banco (so itens que o jogador nunca viu) e o resto da IA.
+  // So para temas que tem banco proprio (tema livre/"custom" vai direto para a IA); sem item novo no banco, segue para a IA.
+  if (detectThemeCategory(theme) !== 'custom' && Math.random() < BANK_SHARE) {
+    try {
+      const bankAngle = explicitSubAngle || SessionMemoryManager.drawRandomSubAngle(theme);
+      const fromBank = drawFallbackRound(
+        gameId,
+        theme,
+        bankAngle.label || pickNextRandomSubtheme(theme),
+        customConfig,
+        Array.from(allExcludedSet),
+        effectiveDifficulty,
+        true
+      );
+      SessionMemoryManager.recordRoundData(gameId, fromBank.data, theme, bankAngle);
+      scheduleBackgroundCacheRefill(gameId, theme, customConfig, effectiveDifficulty);
+      return {
+        source: 'curated',
+        data: fromBank.data,
+        themeUsed: theme,
+        subthemeUsed: fromBank.subthemeUsed || bankAngle.label,
+        signature: fromBank.signature
+      };
+    } catch (err) {
+      if (!(err instanceof BankExhaustedError)) throw err;
+    }
+  }
+
   // 1. AGGRESSIVE CACHE HIT: Check if RoundContentCache already has a verified-fresh round
   const cachedRound = consumeFreshCachedRound(
     gameId,
@@ -4107,7 +4347,7 @@ export async function generateRoundContent(
   }
 
   // 3. Call Gemini API directly (with warm background cache)
-  const apiResult = await fetchBatchFromApi(
+  let apiResult = await fetchBatchFromApi(
     gameId,
     theme,
     customConfig,
@@ -4116,6 +4356,18 @@ export async function generateRoundContent(
     explicitSubAngle,
     true
   );
+  if (!apiResult && lastFetchWasDuplicate) {
+    // A IA repetiu algo ja visto: uma nova tentativa (outro angulo sorteado) antes de recorrer ao banco.
+    apiResult = await fetchBatchFromApi(
+      gameId,
+      theme,
+      customConfig,
+      Array.from(allExcludedSet),
+      effectiveDifficulty,
+      undefined,
+      true
+    );
+  }
 
   if (apiResult) {
     scheduleBackgroundCacheRefill(gameId, theme, customConfig, effectiveDifficulty);

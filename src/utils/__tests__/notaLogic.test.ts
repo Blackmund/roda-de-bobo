@@ -464,7 +464,15 @@ describe('Jogo da Nota — CSPRNG, Reversible Toggle & Scoring Logic', () => {
     assert.ok(store.has('rb_ai_cache::nota::cinema e filmes clássicos'));
 
     const start = Date.now();
-    const res = await generateRoundContent('nota', theme, DEFAULT_GAME_CUSTOM_CONFIG);
+    // O sorteio banco x IA e aleatorio (BANK_SHARE); aqui queremos o caminho do cache de IA, entao fixamos o sorteio.
+    const realRandom = Math.random;
+    Math.random = () => 0.99;
+    let res;
+    try {
+      res = await generateRoundContent('nota', theme, DEFAULT_GAME_CUSTOM_CONFIG);
+    } finally {
+      Math.random = realRandom;
+    }
     const elapsed = Date.now() - start;
 
     // Must skip the stale first item rejected by SessionMemory and return the fresh second item from cache
@@ -534,7 +542,15 @@ describe('Jogo da Nota — CSPRNG, Reversible Toggle & Scoring Logic', () => {
     ]);
 
     const config10 = { ...DEFAULT_GAME_CUSTOM_CONFIG, temItemsCount: 10 };
-    const round10 = await generateRoundContent('tem-ou-nao-tem', theme, config10);
+    // O sorteio banco x IA e aleatorio (BANK_SHARE); aqui queremos o caminho do cache de IA, entao fixamos o sorteio.
+    const realRandom = Math.random;
+    Math.random = () => 0.99;
+    let round10;
+    try {
+      round10 = await generateRoundContent('tem-ou-nao-tem', theme, config10);
+    } finally {
+      Math.random = realRandom;
+    }
     const data10 = round10.data as any;
 
     assert.equal(data10.pergunta, 'Quais os maiores artilheiros da história das Copas?');
