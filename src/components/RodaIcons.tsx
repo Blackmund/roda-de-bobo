@@ -453,20 +453,29 @@ export const RodaDeBoboOriginalLogo: React.FC<{ className?: string }> = ({ class
 // 16. Mímica: duas máscaras de teatro (feliz e triste) no mesmo traço grosso das outras artes.
 export const MimicaMasksArt: React.FC<{ className?: string }> = ({ className = 'w-28 h-24' }) => (
   <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
-    {/* máscara de trás: triste (teal) */}
-    <g transform="translate(58 22) rotate(10 40 50)" stroke="#120A16" strokeWidth="6" strokeLinejoin="round">
-      <path d="M2 4 H78 V52 C78 86 58 106 40 106 C22 106 2 86 2 52 Z" fill="#17B8B8" />
-      <path d="M14 36 Q26 28 34 40 Q24 46 14 36 Z" fill="#F5F2EB" />
-      <path d="M46 40 Q54 28 66 36 Q56 46 46 40 Z" fill="#F5F2EB" />
-      <path d="M24 82 Q40 66 56 82" fill="none" strokeLinecap="round" />
+    <defs>
+      <filter id="rbSticker" x="-10%" y="-10%" width="125%" height="130%">
+        <feDropShadow dx="5" dy="6" stdDeviation="0" floodColor="#120A16" floodOpacity="0.55" />
+      </filter>
+    </defs>
+    <g filter="url(#rbSticker)">
+      {/* máscara de trás: triste (teal) */}
+      <g transform="translate(58 22) rotate(10 40 50)" stroke="#120A16" strokeWidth="6" strokeLinejoin="round">
+        <path d="M2 4 H78 V52 C78 86 58 106 40 106 C22 106 2 86 2 52 Z" fill="#17B8B8" />
+        <path d="M14 36 Q26 28 34 40 Q24 46 14 36 Z" fill="#F5F2EB" />
+        <path d="M46 40 Q54 28 66 36 Q56 46 46 40 Z" fill="#F5F2EB" />
+        <path d="M24 82 Q40 66 56 82" fill="none" strokeLinecap="round" />
+      </g>
+      {/* máscara da frente: feliz (crimson) */}
+      <g transform="translate(8 12) rotate(-8 40 50)" stroke="#120A16" strokeWidth="6" strokeLinejoin="round">
+        <path d="M2 4 H78 V52 C78 86 58 106 40 106 C22 106 2 86 2 52 Z" fill="#E6194B" />
+        <path d="M14 40 Q24 28 36 38 Q26 48 14 40 Z" fill="#F5F2EB" />
+        <path d="M44 38 Q56 28 66 40 Q54 48 44 38 Z" fill="#F5F2EB" />
+        <path d="M20 66 Q40 92 60 66" fill="#F5F2EB" strokeLinecap="round" />
+      </g>
     </g>
-    {/* máscara da frente: feliz (crimson) */}
-    <g transform="translate(8 12) rotate(-8 40 50)" stroke="#120A16" strokeWidth="6" strokeLinejoin="round">
-      <path d="M2 4 H78 V52 C78 86 58 106 40 106 C22 106 2 86 2 52 Z" fill="#E6194B" />
-      <path d="M14 40 Q24 28 36 38 Q26 48 14 40 Z" fill="#F5F2EB" />
-      <path d="M44 38 Q56 28 66 40 Q54 48 44 38 Z" fill="#F5F2EB" />
-      <path d="M20 66 Q40 92 60 66" fill="#F5F2EB" strokeLinecap="round" />
-    </g>
+    <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" transform="translate(146 18) scale(1)" fill="#F5B700" stroke="#120A16" strokeWidth="2" strokeLinejoin="round" />
+    <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" transform="translate(12 124) scale(0.7)" fill="#17B8B8" stroke="#120A16" strokeWidth="2" strokeLinejoin="round" />
   </svg>
 );
 
@@ -474,15 +483,24 @@ export const MimicaMasksArt: React.FC<{ className?: string }> = ({ className = '
 // 17. Quem sou eu: rosto com a plaquinha de identidade "?" presa na testa.
 export const QuemSouEuArt: React.FC<{ className?: string }> = ({ className = 'w-28 h-24' }) => (
   <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
-    <g stroke="#120A16" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round">
-      <path d="M34 52 H126" stroke="#E6194B" strokeWidth="10" />
-      <path d="M40 54 C40 30 58 18 80 18 C102 18 120 30 120 54 L120 84 C120 112 102 128 80 128 C58 128 40 112 40 84 Z" fill="#F5F2EB" />
-      <rect x="54" y="26" width="52" height="34" rx="4" fill="#E6194B" />
-      <text x="80" y="53" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="30" stroke="none">?</text>
-      <circle cx="64" cy="82" r="6" fill="#120A16" stroke="none" />
-      <circle cx="96" cy="82" r="6" fill="#120A16" stroke="none" />
-      <path d="M62 106 Q80 98 98 106" fill="none" />
+    <defs>
+      <filter id="rbSticker" x="-10%" y="-10%" width="125%" height="130%">
+        <feDropShadow dx="5" dy="6" stdDeviation="0" floodColor="#120A16" floodOpacity="0.55" />
+      </filter>
+    </defs>
+    <g filter="url(#rbSticker)">
+      <g stroke="#120A16" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round">
+        <path d="M34 52 H126" stroke="#E6194B" strokeWidth="10" />
+        <path d="M40 54 C40 30 58 18 80 18 C102 18 120 30 120 54 L120 84 C120 112 102 128 80 128 C58 128 40 112 40 84 Z" fill="#F5F2EB" />
+        <rect x="54" y="26" width="52" height="34" rx="4" fill="#E6194B" />
+        <text x="80" y="53" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="30" stroke="none">?</text>
+        <circle cx="64" cy="82" r="6" fill="#120A16" stroke="none" />
+        <circle cx="96" cy="82" r="6" fill="#120A16" stroke="none" />
+        <path d="M62 106 Q80 98 98 106" fill="none" />
+      </g>
     </g>
+    <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" transform="translate(18 22) scale(1)" fill="#F5B700" stroke="#120A16" strokeWidth="2" strokeLinejoin="round" />
+    <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" transform="translate(146 112) scale(0.8)" fill="#17B8B8" stroke="#120A16" strokeWidth="2" strokeLinejoin="round" />
   </svg>
 );
 
@@ -490,12 +508,21 @@ export const QuemSouEuArt: React.FC<{ className?: string }> = ({ className = 'w-
 // 18. Mega Resenha: dois balões de fala (uma palavra por dica).
 export const MegaResenhaArt: React.FC<{ className?: string }> = ({ className = 'w-28 h-24' }) => (
   <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
-    <g stroke="#120A16" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round">
-      <path d="M14 18 H92 a10 10 0 0 1 10 10 V62 a10 10 0 0 1 -10 10 H48 L28 90 V72 H14 a10 10 0 0 1 -10 -10 V28 a10 10 0 0 1 10 -10 Z" fill="#17B8B8" />
-      <path d="M68 62 H146 a10 10 0 0 1 10 10 V104 a10 10 0 0 1 -10 10 H132 V132 L112 114 H68 a10 10 0 0 1 -10 -10 V72 a10 10 0 0 1 10 -10 Z" fill="#E6194B" transform="translate(-4 0)" />
+    <defs>
+      <filter id="rbSticker" x="-10%" y="-10%" width="125%" height="130%">
+        <feDropShadow dx="5" dy="6" stdDeviation="0" floodColor="#120A16" floodOpacity="0.55" />
+      </filter>
+    </defs>
+    <g filter="url(#rbSticker)">
+      <g stroke="#120A16" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round">
+        <path d="M14 18 H92 a10 10 0 0 1 10 10 V62 a10 10 0 0 1 -10 10 H48 L28 90 V72 H14 a10 10 0 0 1 -10 -10 V28 a10 10 0 0 1 10 -10 Z" fill="#17B8B8" />
+        <path d="M68 62 H146 a10 10 0 0 1 10 10 V104 a10 10 0 0 1 -10 10 H132 V132 L112 114 H68 a10 10 0 0 1 -10 -10 V72 a10 10 0 0 1 10 -10 Z" fill="#E6194B" transform="translate(-4 0)" />
+      </g>
+      <text x="53" y="52" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="26">GOL</text>
+      <text x="100" y="100" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="26">???</text>
     </g>
-    <text x="53" y="52" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="26">GOL</text>
-    <text x="100" y="100" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="26">???</text>
+    <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" transform="translate(142 24) scale(0.9)" fill="#F5B700" stroke="#120A16" strokeWidth="2" strokeLinejoin="round" />
+    <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" transform="translate(14 118) scale(0.7)" fill="#F5F2EB" stroke="#120A16" strokeWidth="2" strokeLinejoin="round" />
   </svg>
 );
 
@@ -503,14 +530,23 @@ export const MegaResenhaArt: React.FC<{ className?: string }> = ({ className = '
 // 19. Repetente: duas lousinhas com a mesma palavra.
 export const RepetenteArt: React.FC<{ className?: string }> = ({ className = 'w-28 h-24' }) => (
   <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
-    <g stroke="#120A16" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round">
-      <rect x="6" y="28" width="68" height="62" rx="6" fill="#0C0D16" />
-      <rect x="86" y="28" width="68" height="62" rx="6" fill="#0C0D16" />
-      <path d="M40 90 v20 M120 90 v20 M26 112 h28 M106 112 h28" />
+    <defs>
+      <filter id="rbSticker" x="-10%" y="-10%" width="125%" height="130%">
+        <feDropShadow dx="5" dy="6" stdDeviation="0" floodColor="#120A16" floodOpacity="0.55" />
+      </filter>
+    </defs>
+    <g filter="url(#rbSticker)">
+      <g stroke="#120A16" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round">
+        <rect x="6" y="28" width="68" height="62" rx="6" fill="#0C0D16" />
+        <rect x="86" y="28" width="68" height="62" rx="6" fill="#0C0D16" />
+        <path d="M40 90 v20 M120 90 v20 M26 112 h28 M106 112 h28" />
+      </g>
+      <text x="40" y="68" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="22">MAR</text>
+      <text x="120" y="68" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="22">MAR</text>
+      <path d="M70 12 l8 8 l12 -14" stroke="#17B8B8" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" fill="none" transform="translate(-2 6)" />
     </g>
-    <text x="40" y="68" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="22">MAR</text>
-    <text x="120" y="68" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="22">MAR</text>
-    <path d="M70 12 l8 8 l12 -14" stroke="#17B8B8" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" fill="none" transform="translate(-2 6)" />
+    <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" transform="translate(80 124) scale(0.9)" fill="#F5B700" stroke="#120A16" strokeWidth="2" strokeLinejoin="round" />
+    <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" transform="translate(150 12) scale(0.7)" fill="#E6194B" stroke="#120A16" strokeWidth="2" strokeLinejoin="round" />
   </svg>
 );
 
@@ -518,18 +554,27 @@ export const RepetenteArt: React.FC<{ className?: string }> = ({ className = 'w-
 // 20. Respostas sem perguntas: casinhas numeradas e uma interrogação.
 export const RespostasSemPerguntasArt: React.FC<{ className?: string }> = ({ className = 'w-28 h-24' }) => (
   <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
-    <g stroke="#120A16" strokeWidth="5" strokeLinejoin="round">
-      <rect x="6" y="14" width="30" height="30" rx="4" fill="#17B8B8" />
-      <rect x="42" y="14" width="30" height="30" rx="4" fill="#F5F2EB" />
-      <rect x="78" y="14" width="30" height="30" rx="4" fill="#F5F2EB" />
-      <rect x="114" y="14" width="30" height="30" rx="4" fill="#F5F2EB" />
-      <circle cx="80" cy="96" r="34" fill="#E6194B" />
+    <defs>
+      <filter id="rbSticker" x="-10%" y="-10%" width="125%" height="130%">
+        <feDropShadow dx="5" dy="6" stdDeviation="0" floodColor="#120A16" floodOpacity="0.55" />
+      </filter>
+    </defs>
+    <g filter="url(#rbSticker)">
+      <g stroke="#120A16" strokeWidth="5" strokeLinejoin="round">
+        <rect x="6" y="14" width="30" height="30" rx="4" fill="#17B8B8" />
+        <rect x="42" y="14" width="30" height="30" rx="4" fill="#F5F2EB" />
+        <rect x="78" y="14" width="30" height="30" rx="4" fill="#F5F2EB" />
+        <rect x="114" y="14" width="30" height="30" rx="4" fill="#F5F2EB" />
+        <circle cx="80" cy="96" r="34" fill="#E6194B" />
+      </g>
+      <text x="21" y="36" textAnchor="middle" fill="#120A16" fontFamily="Anton, sans-serif" fontSize="20">1</text>
+      <text x="57" y="36" textAnchor="middle" fill="#120A16" fontFamily="Anton, sans-serif" fontSize="20">2</text>
+      <text x="93" y="36" textAnchor="middle" fill="#120A16" fontFamily="Anton, sans-serif" fontSize="20">3</text>
+      <text x="129" y="36" textAnchor="middle" fill="#120A16" fontFamily="Anton, sans-serif" fontSize="20">4</text>
+      <text x="80" y="112" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="52">?</text>
     </g>
-    <text x="21" y="36" textAnchor="middle" fill="#120A16" fontFamily="Anton, sans-serif" fontSize="20">1</text>
-    <text x="57" y="36" textAnchor="middle" fill="#120A16" fontFamily="Anton, sans-serif" fontSize="20">2</text>
-    <text x="93" y="36" textAnchor="middle" fill="#120A16" fontFamily="Anton, sans-serif" fontSize="20">3</text>
-    <text x="129" y="36" textAnchor="middle" fill="#120A16" fontFamily="Anton, sans-serif" fontSize="20">4</text>
-    <text x="80" y="112" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="52">?</text>
+    <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" transform="translate(16 128) scale(0.8)" fill="#F5B700" stroke="#120A16" strokeWidth="2" strokeLinejoin="round" />
+    <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" transform="translate(146 124) scale(0.9)" fill="#17B8B8" stroke="#120A16" strokeWidth="2" strokeLinejoin="round" />
   </svg>
 );
 
@@ -537,15 +582,24 @@ export const RespostasSemPerguntasArt: React.FC<{ className?: string }> = ({ cla
 // 21. Estádios: campo visto de cima dentro de um anel de arquibancada.
 export const EstadiosArt: React.FC<{ className?: string }> = ({ className = 'w-28 h-24' }) => (
   <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
-    <g stroke="#120A16" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round">
-      <ellipse cx="80" cy="72" rx="68" ry="50" fill="#E6194B" />
-      <ellipse cx="80" cy="72" rx="52" ry="35" fill="#F5F2EB" />
-      <rect x="40" y="52" width="80" height="40" rx="3" fill="#17B8B8" />
-      <path d="M80 52 V92" />
-      <circle cx="80" cy="72" r="8" fill="none" />
-      <rect x="40" y="62" width="10" height="20" fill="none" />
-      <rect x="110" y="62" width="10" height="20" fill="none" />
+    <defs>
+      <filter id="rbSticker" x="-10%" y="-10%" width="125%" height="130%">
+        <feDropShadow dx="5" dy="6" stdDeviation="0" floodColor="#120A16" floodOpacity="0.55" />
+      </filter>
+    </defs>
+    <g filter="url(#rbSticker)">
+      <g stroke="#120A16" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round">
+        <ellipse cx="80" cy="72" rx="68" ry="50" fill="#E6194B" />
+        <ellipse cx="80" cy="72" rx="52" ry="35" fill="#F5F2EB" />
+        <rect x="40" y="52" width="80" height="40" rx="3" fill="#17B8B8" />
+        <path d="M80 52 V92" />
+        <circle cx="80" cy="72" r="8" fill="none" />
+        <rect x="40" y="62" width="10" height="20" fill="none" />
+        <rect x="110" y="62" width="10" height="20" fill="none" />
+      </g>
     </g>
+    <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" transform="translate(148 14) scale(0.9)" fill="#F5B700" stroke="#120A16" strokeWidth="2" strokeLinejoin="round" />
+    <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" transform="translate(12 18) scale(0.7)" fill="#17B8B8" stroke="#120A16" strokeWidth="2" strokeLinejoin="round" />
   </svg>
 );
 
@@ -553,13 +607,22 @@ export const EstadiosArt: React.FC<{ className?: string }> = ({ className = 'w-2
 // 22. Como eu pinto: pincel sobre uma tela com um traço colorido.
 export const ComoEuPintoArt: React.FC<{ className?: string }> = ({ className = 'w-28 h-24' }) => (
   <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
-    <g stroke="#120A16" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round">
-      <rect x="10" y="18" width="104" height="78" rx="5" fill="#F5F2EB" />
-      <path d="M26 74 Q46 34 66 62 T104 44" stroke="#E6194B" strokeWidth="8" fill="none" />
-      <circle cx="40" cy="42" r="8" fill="#17B8B8" />
-      <path d="M96 118 L146 36 L156 44 L106 126 Z" fill="#F5B700" />
-      <path d="M96 118 L84 132 L106 126 Z" fill="#120A16" />
+    <defs>
+      <filter id="rbSticker" x="-10%" y="-10%" width="125%" height="130%">
+        <feDropShadow dx="5" dy="6" stdDeviation="0" floodColor="#120A16" floodOpacity="0.55" />
+      </filter>
+    </defs>
+    <g filter="url(#rbSticker)">
+      <g stroke="#120A16" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round">
+        <rect x="10" y="18" width="104" height="78" rx="5" fill="#F5F2EB" />
+        <path d="M26 74 Q46 34 66 62 T104 44" stroke="#E6194B" strokeWidth="8" fill="none" />
+        <circle cx="40" cy="42" r="8" fill="#17B8B8" />
+        <path d="M96 118 L146 36 L156 44 L106 126 Z" fill="#F5B700" />
+        <path d="M96 118 L84 132 L106 126 Z" fill="#120A16" />
+      </g>
     </g>
+    <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" transform="translate(140 100) scale(0.8)" fill="#E6194B" stroke="#120A16" strokeWidth="2" strokeLinejoin="round" />
+    <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" transform="translate(14 118) scale(0.9)" fill="#F5B700" stroke="#120A16" strokeWidth="2" strokeLinejoin="round" />
   </svg>
 );
 
@@ -567,11 +630,20 @@ export const ComoEuPintoArt: React.FC<{ className?: string }> = ({ className = '
 // 23. Onde estou: marcador de mapa com uma bola dentro.
 export const OndeEstouArt: React.FC<{ className?: string }> = ({ className = 'w-28 h-24' }) => (
   <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
-    <g stroke="#120A16" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round">
-      <ellipse cx="80" cy="124" rx="38" ry="10" fill="#17B8B8" />
-      <path d="M80 118 C48 84 40 64 40 50 C40 26 58 10 80 10 C102 10 120 26 120 50 C120 64 112 84 80 118 Z" fill="#E6194B" />
-      <circle cx="80" cy="50" r="22" fill="#F5F2EB" />
-      <path d="M80 36 L91 44 L87 57 L73 57 L69 44 Z" fill="#120A16" />
+    <defs>
+      <filter id="rbSticker" x="-10%" y="-10%" width="125%" height="130%">
+        <feDropShadow dx="5" dy="6" stdDeviation="0" floodColor="#120A16" floodOpacity="0.55" />
+      </filter>
+    </defs>
+    <g filter="url(#rbSticker)">
+      <g stroke="#120A16" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round">
+        <ellipse cx="80" cy="124" rx="38" ry="10" fill="#17B8B8" />
+        <path d="M80 118 C48 84 40 64 40 50 C40 26 58 10 80 10 C102 10 120 26 120 50 C120 64 112 84 80 118 Z" fill="#E6194B" />
+        <circle cx="80" cy="50" r="22" fill="#F5F2EB" />
+        <path d="M80 36 L91 44 L87 57 L73 57 L69 44 Z" fill="#120A16" />
+      </g>
     </g>
+    <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" transform="translate(20 30) scale(0.9)" fill="#F5B700" stroke="#120A16" strokeWidth="2" strokeLinejoin="round" />
+    <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" transform="translate(140 100) scale(0.8)" fill="#17B8B8" stroke="#120A16" strokeWidth="2" strokeLinejoin="round" />
   </svg>
 );
