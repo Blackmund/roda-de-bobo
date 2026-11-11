@@ -9,7 +9,8 @@ export type GameId =
   | 'proibido'
   | 'nota'
   | 'tem-ou-nao-tem'
-  | 'perguntas-e-verdades';
+  | 'perguntas-e-verdades'
+  | 'mimica';
 
 export type TeamId = 'A' | 'B' | 'C' | 'D';
 
@@ -166,6 +167,26 @@ export interface ProibidoGameState {
   is2PlayerMode?: boolean;
   /** Ultima carta anulada por falta (permite contestar: o juiz devolve a carta). */
   lastFoulIndex?: number;
+}
+
+// NOV-01: JOGO DA MIMICA (duplas; o mimico faz 3 palavras em tempo limitado; o parceiro adivinha)
+export interface MimicaGameState {
+  phase: 'READY' | 'PLAYING' | 'SUMMARY';
+  /** palavras da rodada (3 no programa) */
+  words: string[];
+  currentIndex: number;
+  /** resultado de cada palavra */
+  outcomes: Array<'pending' | 'correct' | 'skipped'>;
+  mimeTeam: TeamId;
+  mimePlayerId: string;
+  guesserPlayerId?: string;
+  timerSeconds: number;
+  timerActive: boolean;
+  /** pontos por palavra acertada nesta rodada (no programa: 1, 2 e 3 nas rodadas 1 a 3) */
+  roundValue: number;
+  roundScore: number;
+  /** o mimico ve as palavras; esconde na TV quando o parceiro esta olhando */
+  wordsHidden?: boolean;
 }
 
 // 4. JOGO DA NOTA
@@ -481,6 +502,7 @@ export interface GameRoom {
   limite?: LimiteGameState;
   duvido?: DuvidoGameState;
   proibido?: ProibidoGameState;
+  mimica?: MimicaGameState;
   nota?: NotaGameState;
   temOuNaoTem?: TemOuNaoTemGameState;
   perguntasEVerdades?: PerguntasEVerdadesGameState;

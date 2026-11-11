@@ -311,6 +311,54 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
       'Empate no leilão devolve as fichas e bonifica ambos com +2 fichas extras.',
       'Cravar todas as 8 cartas do oponente na Declaração da Verdade garante vitória imediata!'
     ]
+  },
+  mimica: {
+    gameId: 'mimica',
+    icon: '🎭',
+    name: 'JOGO DA MÍMICA',
+    welcomeTitle: 'Como Jogar a Mímica',
+    welcomeSubtitle:
+      'Duplas em ação: um faz mímica das palavras, o parceiro (de olhos vendados na sala principal) adivinha antes do tempo acabar!',
+    steps: [
+      {
+        stepNumber: 1,
+        icon: '👀',
+        headline: 'O Mímico Vê 3 Palavras',
+        description:
+          'Só quem faz a mímica olha as palavras (na tela ou no celular). O parceiro que vai adivinhar fica de costas ou vendado.',
+        accentTag: '3 Palavras'
+      },
+      {
+        stepNumber: 2,
+        icon: '🤐',
+        headline: 'Sem Falar, Sem Apontar',
+        description:
+          'Vale gesto, expressão e movimento. Não vale falar, soprar sons nem apontar para objetos que revelem a palavra.',
+        accentTag: 'Só Mímica'
+      },
+      {
+        stepNumber: 3,
+        icon: '⏱️',
+        headline: 'Acertou, Pulou ou Acabou o Tempo',
+        description:
+          'O parceiro chuta. O diretor confirma "acertou" ou pula a palavra. Cada rodada vale mais pontos que a anterior (1, 2 e 3 por palavra).',
+        accentTag: '1min30 por Rodada'
+      }
+    ],
+    proibido: [
+      'FALAR, SUSSURRAR OU FAZER SONS QUE REVELEM A PALAVRA',
+      'APONTAR PARA OBJETOS OU PESSOAS QUE DÊEM A RESPOSTA',
+      'O ADVERSÁRIO DAR DICAS (ELE PODE OBSERVAR, MAS NÃO PODE AJUDAR)'
+    ],
+    permitido: [
+      'USAR O CORPO INTEIRO E EXPRESSÕES FACIAIS',
+      'PULAR UMA PALAVRA E VOLTAR A ELA DEPOIS',
+      'O PARCEIRO CHUTAR QUANTAS VEZES QUISER'
+    ],
+    scoringSummary: [
+      'Cada palavra acertada vale o valor da rodada (rodada 1 = 1 ponto, rodada 2 = 2, rodada 3 = 3 nas regras do programa; 1 ponto nas regras da casa).',
+      'Palavras puladas ou não acertadas no tempo não pontuam.'
+    ]
   }
 };
 
