@@ -11,6 +11,7 @@ import {
   DuvidoGameState,
   ProibidoGameState,
   MimicaGameState,
+  QuemSouEuGameState,
   NotaGameState,
   TemOuNaoTemGameState,
   PerguntasEVerdadesGameState,
@@ -31,6 +32,8 @@ import {
 import { generateRoundContent, normalizeTemVotesTo100, prefetchRoundsForTheme } from './utils/aiGameGenerator';
 import { dealValidRandomHand } from './utils/perguntasEVerdadesEngine';
 import { buildMimicaState, pickMimicaPair } from './utils/mimicaEngine';
+import { buildQuemSouEuState, drawIdentities } from './utils/quemSouEuEngine';
+import { normalizeIdentity } from './data/quemSouEuIdentities';
 import { sounds } from './utils/soundEffects';
 import { WindowWrapper } from './components/WindowWrapper';
 import { ScreenModeSelect } from './components/host/ScreenModeSelect';
@@ -53,6 +56,9 @@ const ScreenLimite = lazy(() =>
 );
 const ScreenDuvido = lazy(() =>
   import('./components/host/ScreenDuvido').then((m) => ({ default: m.ScreenDuvido }))
+);
+const ScreenQuemSouEu = lazy(() =>
+  import('./components/host/ScreenQuemSouEu').then((m) => ({ default: m.ScreenQuemSouEu }))
 );
 const ScreenMimica = lazy(() =>
   import('./components/host/ScreenMimica').then((m) => ({ default: m.ScreenMimica }))
@@ -129,7 +135,8 @@ const GAME_NAMES: Record<GameId, string> = {
   nota: 'JOGO DA NOTA',
   'tem-ou-nao-tem': 'TEM OU NÃO TEM',
   'perguntas-e-verdades': 'PERGUNTAS E VERDADES',
-  mimica: 'JOGO DA MÍMICA'
+  mimica: 'JOGO DA MÍMICA',
+  'quem-sou-eu': 'QUEM SOU EU'
 };
 
 export default function App() {
@@ -409,6 +416,8 @@ export default function App() {
         let duvidoState: DuvidoGameState | undefined = undefined;
         let proibidoState: ProibidoGameState | undefined = undefined;
         let mimicaState: MimicaGameState | undefined = undefined;
+        let quemSouEuState: QuemSouEuGameState | undefined = undefined;
+        let extraSignature = '';
         let notaState: NotaGameState | undefined = undefined;
         let temOuNaoTemState: TemOuNaoTemGameState | undefined = undefined;
         let perguntasEVerdadesState: PerguntasEVerdadesGameState | undefined = undefined;
@@ -719,6 +728,20 @@ export default function App() {
           });
         }
 
+        if (gameId === 'quem-sou-eu') {
+          // NOV-02: uma identidade por jogador, sem repetir as ja usadas na sessao; quem comeca roda a cada rodada.
+          const usedIdentities = new Set<string>();
+          (prev.usedRoundSignatures || []).forEach((sig) => {
+            if (typeof sig === 'string' && sig.startsWith('qse:')) {
+              sig.slice(4).split('|').forEach((n) => usedIdentities.add(normalizeIdentity(n)));
+            }
+          });
+          const identities = drawIdentities(nextMatchPlayers.length, usedIdentities);
+          const firstIdx = (Math.max(1, prev.roundNumber) - 1) % Math.max(1, nextMatchPlayers.length);
+          quemSouEuState = buildQuemSouEuState(nextMatchPlayers, identities, firstIdx);
+          extraSignature = 'qse:' + identities.map((i) => i.nome).join('|');
+        }
+
         const updatedSignatures = generated.signature
           ? Array.from(new Set([...(prev.usedRoundSignatures || []), generated.signature]))
           : prev.usedRoundSignatures || [];
@@ -730,7 +753,7 @@ export default function App() {
           players: nextMatchPlayers,
           theme: customTheme || prev.theme,
           activeSubtheme: generated.subthemeUsed || prev.activeSubtheme || '',
-          usedRoundSignatures: updatedSignatures,
+          usedRoundSignatures: extraSignature ? [...updatedSignatures, extraSignature] : updatedSignatures,
           customConfig: {
             ...mergedCustomConfig,
             teamCount: effectiveTeamCount
@@ -743,13 +766,14 @@ export default function App() {
           duvido: duvidoState,
           proibido: proibidoState,
           mimica: mimicaState,
+          quemSouEu: quemSouEuState,
           nota: notaState,
           temOuNaoTem: temOuNaoTemState,
           perguntasEVerdades: perguntasEVerdadesState
         };
       });
       // Background prefetch for the NEXT round so transition is zero-delay!
-      if (gameId !== 'perguntas-e-verdades' && gameId !== 'mimica') {
+      if (gameId !== 'perguntas-e-verdades' && gameId !== 'mimica' && gameId !== 'quem-sou-eu') {
         window.setTimeout(() => {
           prefetchRoundsForTheme(gameId, effectiveTheme, effectiveConfig);
         }, 400);
@@ -794,6 +818,11 @@ export default function App() {
           const spkTeam = prev.proibido.speakerTeam;
           roundPts[spkTeam] = (roundPts[spkTeam] || 0) + prev.proibido.roundScore;
         }
+      } else if (prev.activeGame === 'quem-sou-eu' && prev.quemSouEu) {
+        Object.entries(prev.quemSouEu.pointsAwarded || {}).forEach(([pid, pts]) => {
+          const p = prev.players.find((pl) => pl.id === pid);
+          if (p?.team) roundPts[p.team] = (roundPts[p.team] || 0) + pts;
+        });
       } else if (prev.activeGame === 'mimica' && prev.mimica) {
         // Pontos da rodada para a equipe do mimico; com 2 jogadores (cooperativo) as duas equipes somam.
         if (prev.players.length === 2) {
@@ -878,6 +907,7 @@ export default function App() {
       const isIndividualGame =
         prev.activeGame === 'limite' ||
         prev.activeGame === 'nota' ||
+        prev.activeGame === 'quem-sou-eu' ||
         prev.activeGame === 'perguntas-e-verdades';
 
       const sortedPlayers = [...updatedPlayers].sort((a, b) => (b.score || 0) - (a.score || 0));
@@ -1186,7 +1216,8 @@ export default function App() {
       'nota',
       'tem-ou-nao-tem',
       'perguntas-e-verdades',
-      'mimica'
+      'mimica',
+      'quem-sou-eu'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     selectGame(randomChoice);
@@ -1543,6 +1574,19 @@ export default function App() {
                   onNextRound={handleNextRound}
                 />
               )}
+              {room.activeGame === 'quem-sou-eu' && (
+                <ScreenQuemSouEu
+                  room={room}
+                  isTvMode={isTvMode}
+                  onUpdateQuemSouEuState={(updater) =>
+                    broadcastState((prev) => ({
+                      ...prev,
+                      quemSouEu: prev.quemSouEu ? updater(prev.quemSouEu) : undefined
+                    }))
+                  }
+                  onNextRound={handleNextRound}
+                />
+              )}
               {room.activeGame === 'mimica' && (
                 <ScreenMimica
                   room={room}
@@ -1733,6 +1777,7 @@ export default function App() {
               const isIndividualMatch =
                 room.activeGame === 'nota' ||
                 room.activeGame === 'limite' ||
+                room.activeGame === 'quem-sou-eu' ||
                 room.activeGame === 'perguntas-e-verdades';
 
               const sortedIndividualPlayers = [...room.players].sort(

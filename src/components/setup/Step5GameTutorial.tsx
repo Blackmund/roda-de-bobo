@@ -359,6 +359,54 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
       'Cada palavra acertada vale o valor da rodada (rodada 1 = 1 ponto, rodada 2 = 2, rodada 3 = 3 nas regras do programa; 1 ponto nas regras da casa).',
       'Palavras puladas ou não acertadas no tempo não pontuam.'
     ]
+  },
+  'quem-sou-eu': {
+    gameId: 'quem-sou-eu',
+    icon: '🪪',
+    name: 'QUEM SOU EU',
+    welcomeTitle: 'Como Jogar o Quem Sou Eu',
+    welcomeSubtitle:
+      'Todo mundo vê quem você é, menos você! Descubra a sua identidade com perguntas de sim ou não antes dos outros jogadores.',
+    steps: [
+      {
+        stepNumber: 1,
+        icon: '🪪',
+        headline: 'Uma Identidade na Testa',
+        description:
+          'Cada jogador recebe uma pessoa ou personagem. A TV (e o celular dos outros) mostra para todos, menos para o dono.',
+        accentTag: 'Todos Veem, Menos Você'
+      },
+      {
+        stepNumber: 2,
+        icon: '❓',
+        headline: 'Pergunte ou Chute na Sua Vez',
+        description:
+          'Em rodízio, faça uma pergunta de sim ou não ("Eu sou real?", "Sou jogador?") ou chute quem você é. Os outros só podem responder sim ou não.',
+        accentTag: 'Só Sim ou Não'
+      },
+      {
+        stepNumber: 3,
+        icon: '🏁',
+        headline: 'Quem Acerta Primeiro Pontua Mais',
+        description:
+          'O 1º a descobrir leva mais pontos, o 2º um pouco menos, e assim por diante. Quem gastar todas as perguntas fica de fora.',
+        accentTag: 'Corrida de Descoberta'
+      }
+    ],
+    proibido: [
+      'DAR DICAS ALÉM DE "SIM" OU "NÃO"',
+      'OLHAR A TELA OU O CELULAR COM A SUA IDENTIDADE',
+      'CHUTAR VÁRIAS VEZES NA MESMA VEZ'
+    ],
+    permitido: [
+      'PERGUNTAR SOBRE PROFISSÃO, ORIGEM, IDADE E FEITOS',
+      'COMEÇAR POR "EU SOU REAL?" PARA SEPARAR PESSOA DE PERSONAGEM',
+      'ANOTAR AS RESPOSTAS PARA NÃO REPETIR PERGUNTA'
+    ],
+    scoringSummary: [
+      'O primeiro a acertar leva tantos pontos quanto jogadores na sala; cada acerto seguinte vale 1 ponto a menos (mínimo 1).',
+      'Quem esgotar as perguntas ou não descobrir antes do fim da rodada não pontua. (A pontuação do programa ainda não foi confirmada.)'
+    ]
   }
 };
 

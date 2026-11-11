@@ -469,3 +469,19 @@ export const MimicaMasksArt: React.FC<{ className?: string }> = ({ className = '
     </g>
   </svg>
 );
+
+
+// 17. Quem sou eu: rosto com a plaquinha de identidade "?" presa na testa.
+export const QuemSouEuArt: React.FC<{ className?: string }> = ({ className = 'w-28 h-24' }) => (
+  <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
+    <g stroke="#120A16" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round">
+      <path d="M34 52 H126" stroke="#E6194B" strokeWidth="10" />
+      <path d="M40 54 C40 30 58 18 80 18 C102 18 120 30 120 54 L120 84 C120 112 102 128 80 128 C58 128 40 112 40 84 Z" fill="#F5F2EB" />
+      <rect x="54" y="26" width="52" height="34" rx="4" fill="#E6194B" />
+      <text x="80" y="53" textAnchor="middle" fill="#F5F2EB" fontFamily="Anton, sans-serif" fontSize="30" stroke="none">?</text>
+      <circle cx="64" cy="82" r="6" fill="#120A16" stroke="none" />
+      <circle cx="96" cy="82" r="6" fill="#120A16" stroke="none" />
+      <path d="M62 106 Q80 98 98 106" fill="none" />
+    </g>
+  </svg>
+);

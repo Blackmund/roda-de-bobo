@@ -47,7 +47,9 @@ const ALL_GAME_IDS: { id: GameId; label: string; color: string }[] = [
   { id: 'proibido', label: 'Proibido', color: '#10B981' },
   { id: 'nota', label: 'Nota', color: '#A855F7' },
   { id: 'tem-ou-nao-tem', label: 'Tem ou Não Tem', color: '#17B8B8' },
-  { id: 'perguntas-e-verdades', label: 'Perguntas e Verdades', color: '#EC4899' }
+  { id: 'perguntas-e-verdades', label: 'Perguntas e Verdades', color: '#EC4899' },
+  { id: 'mimica', label: 'Mímica', color: '#F5B700' },
+  { id: 'quem-sou-eu', label: 'Quem Sou Eu', color: '#38BDF8' }
 ];
 
 export const PlayersManagerModal: React.FC<PlayersManagerModalProps> = ({

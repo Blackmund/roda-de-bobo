@@ -40,7 +40,8 @@ const GAME_TITLES: Record<GameId, string> = {
   nota: 'JOGO DA NOTA',
   'tem-ou-nao-tem': 'TEM OU NÃO TEM',
   'perguntas-e-verdades': 'PERGUNTAS E VERDADES',
-  mimica: 'JOGO DA MÍMICA'
+  mimica: 'JOGO DA MÍMICA',
+  'quem-sou-eu': 'QUEM SOU EU'
 };
 
 interface WindowWrapperProps {

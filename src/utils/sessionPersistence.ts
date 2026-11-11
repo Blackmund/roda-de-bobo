@@ -247,6 +247,10 @@ export function accumulateRoundPlayerScores(room: GameRoom): Player[] {
     Object.entries(room.nota.pointsAwarded || {}).forEach(([pid, pts]) => {
       deltas[pid] = (deltas[pid] || 0) + pts;
     });
+  } else if (room.activeGame === 'quem-sou-eu' && room.quemSouEu) {
+    Object.entries(room.quemSouEu.pointsAwarded || {}).forEach(([pid, pts]) => {
+      deltas[pid] = (deltas[pid] || 0) + pts;
+    });
   } else if (room.activeGame === 'proibido' && room.proibido) {
     const score = room.proibido.roundScore || 0;
     if (score > 0) {
@@ -858,7 +862,8 @@ const DEFAULT_GAME_NAMES: Record<GameId, string> = {
   nota: 'JOGO DA NOTA',
   'tem-ou-nao-tem': 'TEM OU NÃO TEM',
   'perguntas-e-verdades': 'PERGUNTAS E VERDADES',
-  mimica: 'JOGO DA MÍMICA'
+  mimica: 'JOGO DA MÍMICA',
+  'quem-sou-eu': 'QUEM SOU EU'
 };
 
 /**
