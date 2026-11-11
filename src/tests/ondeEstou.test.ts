@@ -9,6 +9,7 @@ import {
 import { GAME_LIMITS } from '../config/gameLimits.ts';
 import { usesLocalContent } from '../config/localGames.ts';
 import { hasShowRuleset } from '../config/rulesets.ts';
+import type { QuemSouEuGameState } from '../types/game.ts';
 
 test('NOV-06: banco de momentos sem repeticao, com ano em todos e origem declarada', () => {
   const keys = ONDE_ESTOU_MOMENTS.map((x) => normalizeMomentKey(x.nome));
@@ -35,7 +36,7 @@ test('NOV-06: sorteia um momento por jogador, sem repetir, e recomeca quando o b
 test('NOV-06: a dinamica e a do Quem sou eu: rodizio, ordem de acerto e pontos', () => {
   const players = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
   const moments = drawMoments(3);
-  let s = { ...buildQuemSouEuState(players, moments, 0), phase: 'PLAYING' as const };
+  let s: QuemSouEuGameState = { ...buildQuemSouEuState(players, moments, 0), phase: 'PLAYING' };
   assert.deepEqual(s.entries.map((e) => e.identity), moments.map((m) => m.nome));
   s = recordQuestion(s);
   assert.equal(s.turnPlayerId, 'b');
