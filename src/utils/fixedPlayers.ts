@@ -100,7 +100,8 @@ export const GAME_FRIENDLY_NAMES: Record<GameId, string> = {
   proibido: 'J. Proibido',
   nota: 'J. da Nota',
   'tem-ou-nao-tem': 'Tem ou Não Tem',
-  'perguntas-e-verdades': 'P. & Verdades'
+  'perguntas-e-verdades': 'P. & Verdades',
+  mimica: 'J. da Mímica'
 };
 
 /**

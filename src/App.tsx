@@ -10,6 +10,7 @@ import {
   LimiteGameState,
   DuvidoGameState,
   ProibidoGameState,
+  MimicaGameState,
   NotaGameState,
   TemOuNaoTemGameState,
   PerguntasEVerdadesGameState,
@@ -29,6 +30,7 @@ import {
 } from './utils/teamUtils';
 import { generateRoundContent, normalizeTemVotesTo100, prefetchRoundsForTheme } from './utils/aiGameGenerator';
 import { dealValidRandomHand } from './utils/perguntasEVerdadesEngine';
+import { buildMimicaState, pickMimicaPair } from './utils/mimicaEngine';
 import { sounds } from './utils/soundEffects';
 import { WindowWrapper } from './components/WindowWrapper';
 import { ScreenModeSelect } from './components/host/ScreenModeSelect';
@@ -51,6 +53,9 @@ const ScreenLimite = lazy(() =>
 );
 const ScreenDuvido = lazy(() =>
   import('./components/host/ScreenDuvido').then((m) => ({ default: m.ScreenDuvido }))
+);
+const ScreenMimica = lazy(() =>
+  import('./components/host/ScreenMimica').then((m) => ({ default: m.ScreenMimica }))
 );
 const ScreenProibido = lazy(() =>
   import('./components/host/ScreenProibido').then((m) => ({ default: m.ScreenProibido }))
@@ -123,7 +128,8 @@ const GAME_NAMES: Record<GameId, string> = {
   proibido: 'JOGO DO PROIBIDO',
   nota: 'JOGO DA NOTA',
   'tem-ou-nao-tem': 'TEM OU NÃO TEM',
-  'perguntas-e-verdades': 'PERGUNTAS E VERDADES'
+  'perguntas-e-verdades': 'PERGUNTAS E VERDADES',
+  mimica: 'JOGO DA MÍMICA'
 };
 
 export default function App() {
@@ -402,6 +408,7 @@ export default function App() {
         let limiteState: LimiteGameState | undefined = undefined;
         let duvidoState: DuvidoGameState | undefined = undefined;
         let proibidoState: ProibidoGameState | undefined = undefined;
+        let mimicaState: MimicaGameState | undefined = undefined;
         let notaState: NotaGameState | undefined = undefined;
         let temOuNaoTemState: TemOuNaoTemGameState | undefined = undefined;
         let perguntasEVerdadesState: PerguntasEVerdadesGameState | undefined = undefined;
@@ -697,6 +704,21 @@ export default function App() {
           };
         }
 
+        if (gameId === 'mimica') {
+          // NOV-01: mimico e parceiro revezam dentro da equipe que joga a rodada.
+          const words = (Array.isArray(data) ? data : []).map((x: unknown) => String(x));
+          const pair = pickMimicaPair(nextMatchPlayers, startingTeam, prev.roundNumber, activeTeamIds.length);
+          mimicaState = buildMimicaState({
+            words,
+            mimeTeam: startingTeam,
+            mimePlayerId: pair.mimePlayerId,
+            guesserPlayerId: pair.guesserPlayerId,
+            timerSeconds: effectiveTimer,
+            roundNumber: prev.roundNumber,
+            config: mergedCustomConfig
+          });
+        }
+
         const updatedSignatures = generated.signature
           ? Array.from(new Set([...(prev.usedRoundSignatures || []), generated.signature]))
           : prev.usedRoundSignatures || [];
@@ -720,13 +742,14 @@ export default function App() {
           limite: limiteState,
           duvido: duvidoState,
           proibido: proibidoState,
+          mimica: mimicaState,
           nota: notaState,
           temOuNaoTem: temOuNaoTemState,
           perguntasEVerdades: perguntasEVerdadesState
         };
       });
       // Background prefetch for the NEXT round so transition is zero-delay!
-      if (gameId !== 'perguntas-e-verdades') {
+      if (gameId !== 'perguntas-e-verdades' && gameId !== 'mimica') {
         window.setTimeout(() => {
           prefetchRoundsForTheme(gameId, effectiveTheme, effectiveConfig);
         }, 400);
@@ -770,6 +793,14 @@ export default function App() {
         } else {
           const spkTeam = prev.proibido.speakerTeam;
           roundPts[spkTeam] = (roundPts[spkTeam] || 0) + prev.proibido.roundScore;
+        }
+      } else if (prev.activeGame === 'mimica' && prev.mimica) {
+        // Pontos da rodada para a equipe do mimico; com 2 jogadores (cooperativo) as duas equipes somam.
+        if (prev.players.length === 2) {
+          roundPts.A += prev.mimica.roundScore || 0;
+          roundPts.B += prev.mimica.roundScore || 0;
+        } else {
+          roundPts[prev.mimica.mimeTeam] = (roundPts[prev.mimica.mimeTeam] || 0) + (prev.mimica.roundScore || 0);
         }
       } else if (prev.activeGame === 'duvido' && prev.duvido) {
         const winTeam = prev.duvido.resultWinnerTeam;
@@ -1154,7 +1185,8 @@ export default function App() {
       'proibido',
       'nota',
       'tem-ou-nao-tem',
-      'perguntas-e-verdades'
+      'perguntas-e-verdades',
+      'mimica'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     selectGame(randomChoice);
@@ -1506,6 +1538,19 @@ export default function App() {
                     broadcastState((prev) => ({
                       ...prev,
                       proibido: prev.proibido ? updater(prev.proibido) : undefined
+                    }))
+                  }
+                  onNextRound={handleNextRound}
+                />
+              )}
+              {room.activeGame === 'mimica' && (
+                <ScreenMimica
+                  room={room}
+                  isTvMode={isTvMode}
+                  onUpdateMimicaState={(updater) =>
+                    broadcastState((prev) => ({
+                      ...prev,
+                      mimica: prev.mimica ? updater(prev.mimica) : undefined
                     }))
                   }
                   onNextRound={handleNextRound}

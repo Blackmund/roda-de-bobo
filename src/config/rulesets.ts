@@ -63,6 +63,16 @@ const SHOW_PRESETS: Partial<Record<GameId, RulesetPreset>> = {
       'Pontuação do programa ainda não confirmada: mantém +1 por palpite certo'
     ]
   },
+  mimica: {
+    rounds: 3,
+    timer: 90,
+    config: {},
+    notes: [
+      '3 palavras por rodada, 1min30 para o mímico (o parceiro adivinha de olhos vendados na sala principal)',
+      'Cada rodada vale mais: 1, 2 e 3 pontos por palavra acertada',
+      'Pode pular palavra; o adversário pode ver, mas não pode dar dicas'
+    ]
+  },
   'tem-ou-nao-tem': {
     config: { temItemsCount: 5, temMaxStrikes: 2 },
     notes: ['Top 5 (pontos = votos)', '2 erros por equipe', 'Respostas alternadas entre as equipes']

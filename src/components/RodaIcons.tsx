@@ -449,3 +449,23 @@ export const RodaDeBoboOriginalLogo: React.FC<{ className?: string }> = ({ class
     <span>BOBO</span>
   </div>
 );
+
+// 16. Mímica: duas máscaras de teatro (feliz e triste) no mesmo traço grosso das outras artes.
+export const MimicaMasksArt: React.FC<{ className?: string }> = ({ className = 'w-28 h-24' }) => (
+  <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
+    {/* máscara de trás: triste (teal) */}
+    <g transform="translate(58 22) rotate(10 40 50)" stroke="#120A16" strokeWidth="6" strokeLinejoin="round">
+      <path d="M2 4 H78 V52 C78 86 58 106 40 106 C22 106 2 86 2 52 Z" fill="#17B8B8" />
+      <path d="M14 36 Q26 28 34 40 Q24 46 14 36 Z" fill="#F5F2EB" />
+      <path d="M46 40 Q54 28 66 36 Q56 46 46 40 Z" fill="#F5F2EB" />
+      <path d="M24 82 Q40 66 56 82" fill="none" strokeLinecap="round" />
+    </g>
+    {/* máscara da frente: feliz (crimson) */}
+    <g transform="translate(8 12) rotate(-8 40 50)" stroke="#120A16" strokeWidth="6" strokeLinejoin="round">
+      <path d="M2 4 H78 V52 C78 86 58 106 40 106 C22 106 2 86 2 52 Z" fill="#E6194B" />
+      <path d="M14 40 Q24 28 36 38 Q26 48 14 40 Z" fill="#F5F2EB" />
+      <path d="M44 38 Q56 28 66 40 Q54 48 44 38 Z" fill="#F5F2EB" />
+      <path d="M20 66 Q40 92 60 66" fill="#F5F2EB" strokeLinecap="round" />
+    </g>
+  </svg>
+);

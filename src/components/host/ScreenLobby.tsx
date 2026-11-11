@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { GameRoom, GameId, VisualTheme, TeamId } from '../../types/game';
 import { isCazeFamily, themeBadge } from '../../utils/themeUtils';
-import { CazeArt } from '../RodaIcons';
+import { CazeArt, MimicaMasksArt } from '../RodaIcons';
 import { GAME_LIMITS } from '../../config/gameLimits';
 import {
   TEAM_META,
@@ -97,7 +97,8 @@ const GAME_TITLES: Record<GameId, string> = {
   proibido: 'JOGO DO PROIBIDO',
   nota: 'JOGO DA NOTA',
   'tem-ou-nao-tem': 'TEM OU NÃO TEM',
-  'perguntas-e-verdades': 'PERGUNTAS E VERDADES'
+  'perguntas-e-verdades': 'PERGUNTAS E VERDADES',
+  mimica: 'JOGO DA MÍMICA'
 };
 
 const GAMES: Array<{
@@ -191,6 +192,21 @@ const GAMES: Array<{
     color: '#FF1E56',
     renderArt: (cls) => (
       <PerguntasEVerdadesArt
+        className={
+          cls ||
+          'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
+        }
+      />
+    )
+  },
+  {
+    id: 'mimica',
+    name: 'JOGO DA MÍMICA',
+    tagline: 'FAÇA A MÍMICA E O PARCEIRO ADIVINHA',
+    badge: 'EM EQUIPE',
+    color: '#F5B700',
+    renderArt: (cls) => (
+      <MimicaMasksArt
         className={
           cls ||
           'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
@@ -301,7 +317,8 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
       'proibido',
       'nota',
       'tem-ou-nao-tem',
-      'perguntas-e-verdades'
+      'perguntas-e-verdades',
+      'mimica'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     handleGameClick(randomChoice);
@@ -414,7 +431,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                   visualTheme === 'neon' ? 'text-cyan-300' : ''
                 }`}
               >
-                · ESCOLHA UM DOS 6 JOGOS
+                · ESCOLHA UM DOS {GAMES.length} JOGOS
               </span>
 
               <span

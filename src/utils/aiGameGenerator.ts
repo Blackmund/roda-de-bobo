@@ -8,6 +8,8 @@
  * - Uses direct, natural questions without "Perguntamos a 100 pessoas:" prefixes and 100% real, concrete answers
  */
 
+import { drawMimicaWords, normalizeMimicaWord } from '../data/mimicaWords';
+import { MIMICA_WORDS_PER_ROUND } from './mimicaEngine';
 import {
   GameId,
   GameCustomConfig,
@@ -3882,6 +3884,25 @@ export async function generateRoundContent(
   difficulty?: string,
   explicitSubAngle?: SubAngleDefinition
 ): Promise<GenerateRoundResponse<unknown>> {
+  // NOV-01: a Mimica sorteia palavras do banco proprio (sem IA, sem cache); as ja usadas voltam em `excludeSignatures`.
+  if (gameId === 'mimica') {
+    const used = new Set<string>();
+    excludeSignatures.forEach((sig) => {
+      if (typeof sig === 'string' && sig.startsWith('mimica-')) {
+        sig.slice(7).split('|').forEach((w) => used.add(normalizeMimicaWord(w)));
+      }
+    });
+    const picked = drawMimicaWords(MIMICA_WORDS_PER_ROUND, { used, difficulty: (difficulty as 'facil' | 'medio' | 'dificil') || undefined });
+    const words = picked.map((p) => p.palavra);
+    return {
+      source: 'curated',
+      data: words,
+      themeUsed: 'Mímica',
+      subthemeUsed: picked.map((p) => p.categoria).join(' · '),
+      signature: `mimica-${words.join('|')}`
+    };
+  }
+
   if (gameId === 'perguntas-e-verdades') {
     return {
       source: 'curated',
