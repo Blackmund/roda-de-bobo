@@ -12,7 +12,8 @@ export const LOCAL_CONTENT_GAMES: readonly GameId[] = [
   'mega-resenha',
   'repetente',
   'respostas-sem-perguntas',
-  'estadios'
+  'estadios',
+  'como-eu-pinto'
 ];
 
 export function usesLocalContent(gameId: GameId | null | undefined): boolean {

@@ -599,6 +599,54 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
       'Acertou de primeira: 5 pontos; de segunda: 4; de terceira: 3; de quarta: 2; de quinta: 1.',
       'Se ninguém acertar depois da quinta pista, a rodada termina sem pontos.'
     ]
+  },
+  'como-eu-pinto': {
+    gameId: 'como-eu-pinto',
+    icon: '🎨',
+    name: 'COMO EU PINTO',
+    welcomeTitle: 'Como Jogar o Como Eu Pinto',
+    welcomeSubtitle:
+      'Duas duplas, 3 palavras e 2 minutos: um desenha, o parceiro adivinha. Acabou o tempo? A dupla rival tenta roubar as palavras que faltaram!',
+    steps: [
+      {
+        stepNumber: 1,
+        icon: '🎨',
+        headline: 'Um Desenha, o Outro Adivinha',
+        description:
+          'Quem desenha vê a palavra e a desenha na tela (na TV ou no celular). O parceiro olha o desenho e chuta a palavra em voz alta.',
+        accentTag: '3 Palavras em 2 Minutos'
+      },
+      {
+        stepNumber: 2,
+        icon: '🚫',
+        headline: 'Sem Letras, Números ou Dicas',
+        description:
+          'É proibido escrever letras ou números e falar qualquer coisa sobre a palavra. Só vale desenho (setas e símbolos que não sejam letras).',
+        accentTag: 'Só Desenho'
+      },
+      {
+        stepNumber: 3,
+        icon: '🏴‍☠️',
+        headline: 'A Dupla Rival Pode Roubar',
+        description:
+          'Acabou o tempo e faltam palavras? A dupla rival palpita as que sobraram e leva 1 ponto por cada acerto. Quem desenha não pode falar nada!',
+        accentTag: 'Roubo no Final'
+      }
+    ],
+    proibido: [
+      'ESCREVER LETRAS OU NÚMEROS NO DESENHO',
+      'FALAR OU DAR DICAS SOBRE A PALAVRA ENQUANTO DESENHA',
+      'FALAR QUALQUER COISA QUANDO O TEMPO ACABAR (A OUTRA DUPLA ESTÁ PALPITANDO)'
+    ],
+    permitido: [
+      'USAR CORES, SETAS E SÍMBOLOS QUE NÃO SEJAM LETRAS',
+      'DESFAZER E LIMPAR O DESENHO À VONTADE',
+      'PULAR UMA PALAVRA E VOLTAR A ELA DEPOIS'
+    ],
+    scoringSummary: [
+      'Cada palavra acertada pela dupla que desenha vale 1 ponto.',
+      'Palavras que faltarem quando o tempo acabar podem ser roubadas pela dupla rival: 1 ponto cada (valor do roubo a confirmar).'
+    ]
   }
 };
 

@@ -548,3 +548,17 @@ export const EstadiosArt: React.FC<{ className?: string }> = ({ className = 'w-2
     </g>
   </svg>
 );
+
+
+// 22. Como eu pinto: pincel sobre uma tela com um traço colorido.
+export const ComoEuPintoArt: React.FC<{ className?: string }> = ({ className = 'w-28 h-24' }) => (
+  <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
+    <g stroke="#120A16" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round">
+      <rect x="10" y="18" width="104" height="78" rx="5" fill="#F5F2EB" />
+      <path d="M26 74 Q46 34 66 62 T104 44" stroke="#E6194B" strokeWidth="8" fill="none" />
+      <circle cx="40" cy="42" r="8" fill="#17B8B8" />
+      <path d="M96 118 L146 36 L156 44 L106 126 Z" fill="#F5B700" />
+      <path d="M96 118 L84 132 L106 126 Z" fill="#120A16" />
+    </g>
+  </svg>
+);

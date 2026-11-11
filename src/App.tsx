@@ -16,6 +16,7 @@ import {
   RepetenteGameState,
   RespostasSemPerguntasState,
   EstadiosGameState,
+  ComoEuPintoState,
   NotaGameState,
   TemOuNaoTemGameState,
   PerguntasEVerdadesGameState,
@@ -42,6 +43,7 @@ import { buildMegaResenhaState } from './utils/megaResenhaEngine';
 import { buildRepetenteGroups, buildRepetenteState } from './utils/repetenteEngine';
 import { buildRespostasState } from './utils/respostasEngine';
 import { buildEstadiosState } from './utils/estadiosEngine';
+import { buildComoEuPintoState, pickPintoPair, pintoRoundPoints } from './utils/comoEuPintoEngine';
 import { drawEstadio, normalizeEstadioKey } from './data/estadiosBank';
 import { drawRespostaQuestion, normalizeRespostaKey } from './data/respostasSemPerguntas';
 import { drawRepetenteTheme, normalizeThemeKey } from './data/repetenteThemes';
@@ -68,6 +70,9 @@ const ScreenLimite = lazy(() =>
 );
 const ScreenDuvido = lazy(() =>
   import('./components/host/ScreenDuvido').then((m) => ({ default: m.ScreenDuvido }))
+);
+const ScreenComoEuPinto = lazy(() =>
+  import('./components/host/ScreenComoEuPinto').then((m) => ({ default: m.ScreenComoEuPinto }))
 );
 const ScreenEstadios = lazy(() =>
   import('./components/host/ScreenEstadios').then((m) => ({ default: m.ScreenEstadios }))
@@ -174,7 +179,8 @@ const GAME_NAMES: Record<GameId, string> = {
   'mega-resenha': 'MEGA RESENHA',
   repetente: 'REPETENTE',
   'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS',
-  estadios: 'ESTÁDIOS'
+  estadios: 'ESTÁDIOS',
+  'como-eu-pinto': 'COMO EU PINTO'
 };
 
 export default function App() {
@@ -468,6 +474,7 @@ export default function App() {
         let repetenteState: RepetenteGameState | undefined = undefined;
         let respostasState: RespostasSemPerguntasState | undefined = undefined;
         let estadiosState: EstadiosGameState | undefined = undefined;
+        let pintoState: ComoEuPintoState | undefined = undefined;
         let extraSignature = '';
         let notaState: NotaGameState | undefined = undefined;
         let temOuNaoTemState: TemOuNaoTemGameState | undefined = undefined;
@@ -779,6 +786,20 @@ export default function App() {
           });
         }
 
+        if (gameId === 'como-eu-pinto') {
+          // NOV-07: quem desenha e quem adivinha revezam dentro da equipe; a rival (so com 3+ jogadores) rouba no fim.
+          const words = (Array.isArray(data) ? data : []).map((x: unknown) => String(x));
+          const pair = pickPintoPair(nextMatchPlayers, startingTeam, prev.roundNumber, activeTeamIds.length);
+          pintoState = buildComoEuPintoState({
+            words,
+            drawTeam: startingTeam,
+            rivalTeam: nextMatchPlayers.length > 2 ? opposingTeam : undefined,
+            drawerPlayerId: pair.drawerPlayerId,
+            guesserPlayerId: pair.guesserPlayerId,
+            timerSeconds: effectiveTimer
+          });
+        }
+
         if (gameId === 'estadios') {
           // NOV-06: um estadio por rodada (sem repetir na sessao); quem comeca roda a cada rodada.
           const usedStadiums = new Set<string>();
@@ -875,6 +896,7 @@ export default function App() {
           repetente: repetenteState,
           respostasSemPerguntas: respostasState,
           estadios: estadiosState,
+          comoEuPinto: pintoState,
           nota: notaState,
           temOuNaoTem: temOuNaoTemState,
           perguntasEVerdades: perguntasEVerdadesState
@@ -925,6 +947,18 @@ export default function App() {
         } else {
           const spkTeam = prev.proibido.speakerTeam;
           roundPts[spkTeam] = (roundPts[spkTeam] || 0) + prev.proibido.roundScore;
+        }
+      } else if (prev.activeGame === 'como-eu-pinto' && prev.comoEuPinto) {
+        const r = pintoRoundPoints(prev.comoEuPinto);
+        if (prev.players.length === 2) {
+          // cooperativo: os dois formam a dupla e somam juntos
+          roundPts.A += r.draw;
+          roundPts.B += r.draw;
+        } else {
+          roundPts[prev.comoEuPinto.drawTeam] = (roundPts[prev.comoEuPinto.drawTeam] || 0) + r.draw;
+          if (prev.comoEuPinto.rivalTeam) {
+            roundPts[prev.comoEuPinto.rivalTeam] = (roundPts[prev.comoEuPinto.rivalTeam] || 0) + r.rival;
+          }
         }
       } else if (prev.activeGame === 'estadios' && prev.estadios) {
         Object.entries(prev.estadios.pointsAwarded || {}).forEach(([pid, pts]) => {
@@ -1357,7 +1391,8 @@ export default function App() {
       'mega-resenha',
       'repetente',
       'respostas-sem-perguntas',
-      'estadios'
+      'estadios',
+      'como-eu-pinto'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     selectGame(randomChoice);
@@ -1709,6 +1744,19 @@ export default function App() {
                     broadcastState((prev) => ({
                       ...prev,
                       proibido: prev.proibido ? updater(prev.proibido) : undefined
+                    }))
+                  }
+                  onNextRound={handleNextRound}
+                />
+              )}
+              {room.activeGame === 'como-eu-pinto' && (
+                <ScreenComoEuPinto
+                  room={room}
+                  isTvMode={isTvMode}
+                  onUpdatePintoState={(updater) =>
+                    broadcastState((prev) => ({
+                      ...prev,
+                      comoEuPinto: prev.comoEuPinto ? updater(prev.comoEuPinto) : undefined
                     }))
                   }
                   onNextRound={handleNextRound}

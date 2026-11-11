@@ -63,6 +63,16 @@ const SHOW_PRESETS: Partial<Record<GameId, RulesetPreset>> = {
       'Pontuação do programa ainda não confirmada: mantém +1 por palpite certo'
     ]
   },
+  'como-eu-pinto': {
+    rounds: 4,
+    timer: 120,
+    config: {},
+    notes: [
+      'Duplas: um desenha, o outro adivinha. 3 palavras em 2 minutos',
+      'Cada acerto vale 1 ponto. Proibido escrever letras ou números e falar da palavra',
+      'Acabou o tempo: a dupla rival tenta adivinhar as palavras que faltam (1 ponto cada, a confirmar)'
+    ]
+  },
   estadios: {
     rounds: 10,
     config: {},
