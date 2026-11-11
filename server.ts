@@ -858,10 +858,13 @@ app.get('/api/health', (_req, res) => {
 app.get('/api/ai-status', (_req, res) => {
   const apiKey = process.env.GEMINI_API_KEY;
   const hasKey = Boolean(apiKey && apiKey !== 'MY_GEMINI_API_KEY' && apiKey.trim() !== '');
+  // INF-09: o rotulo reflete a chave configurada, sem prometer IA quando nao ha chave.
   return res.json({
-    connected: true,
+    connected: hasKey,
     hasServerKey: hasKey,
-    statusLabel: '🟢 IA Gemini Conectada (Gerando temas em tempo real)'
+    statusLabel: hasKey
+      ? '🟢 IA Gemini Conectada (Gerando temas em tempo real)'
+      : '🟡 Sem chave do Gemini: usando os bancos prontos'
   });
 });
 

@@ -211,11 +211,16 @@ export function sanitizeRoomCode(raw: string): string {
  * Excludes O, 0, I, 1 to avoid confusion on TVs and phones.
  */
 export function generateNewRoomCode(): string {
+  // INF-04: codigo gerado com crypto.getRandomValues (32 simbolos, entao `byte % 32` nao tem vies).
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
+  const bytes = new Uint8Array(6);
+  if (typeof globalThis !== 'undefined' && globalThis.crypto?.getRandomValues) {
+    globalThis.crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
   }
+  let code = '';
+  for (let i = 0; i < 6; i++) code += chars[bytes[i] % chars.length];
   return code === 'BOBO' ? 'K9X4M2' : code;
 }
 
