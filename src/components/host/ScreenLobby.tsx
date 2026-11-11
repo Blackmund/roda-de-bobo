@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { GameRoom, GameId, VisualTheme, TeamId } from '../../types/game';
 import { isCazeFamily, themeBadge } from '../../utils/themeUtils';
 import { CazeArt } from '../RodaIcons';
+import { GAME_LIMITS } from '../../config/gameLimits';
 import {
   TEAM_META,
   getActiveTeamIds,
@@ -428,7 +429,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
               </span>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            <div className="flex items-center gap-2 min-w-0 max-w-full flex-wrap">
               {onGoToModeSelect && (
                 <button
                   type="button"
@@ -475,7 +476,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
           </div>
 
           {/* 6 Games Adaptive Grid: Protected Height (flex-1 min-h-0) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-rows-3 lg:grid-cols-3 lg:grid-rows-2 gap-3 md:gap-4 flex-1 min-h-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-rows-3 lg:grid-cols-3 lg:grid-rows-2 gap-3 md:gap-4 flex-1 min-h-0 max-sm:overflow-y-auto max-sm:auto-rows-[minmax(170px,1fr)] max-sm:pr-0.5">
             {GAMES.map((game) => (
               <div
                 key={game.id}
@@ -558,6 +559,16 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                         {game.tagline}
                       </span>
                     </div>
+                    {/* UX-03: intervalo de jogadores do jogo (GAME_LIMITS) */}
+                    {!game.badge.toUpperCase().includes('JOGADORES') && GAME_LIMITS[game.id as keyof typeof GAME_LIMITS] && (
+                      <span
+                        data-testid={`game-players-range-${game.id}`}
+                        className="shrink-0 text-[10px] font-mono-code font-bold text-slate-300 group-hover:text-white/90 whitespace-nowrap"
+                        title="Quantidade de jogadores"
+                      >
+                        👥 {GAME_LIMITS[game.id as keyof typeof GAME_LIMITS].min}–{GAME_LIMITS[game.id as keyof typeof GAME_LIMITS].max}
+                      </span>
+                    )}
                     <Play
                       size={14}
                       className="text-cyan-300 fill-cyan-300 group-hover:text-white group-hover:fill-white shrink-0 transition-colors"

@@ -82,6 +82,7 @@ import { updateFixedPlayersAfterMatch } from './utils/fixedPlayers';
 import {
   accumulateRoundPlayerScores,
   computeSessionMVP,
+  computeMatchMVP,
   computeMatchPlayerComparison,
   shareMatchResults,
   buildMatchMVPSnapshot,
@@ -230,6 +231,15 @@ export default function App() {
     cloudStatus,
     forceSync
   } = useGameRoom(roomIdParam, currentUserId, viewMode === 'host');
+
+  // UX-02: rede de segurança. Uma tela de jogo sem jogo ativo (estado salvo/sincronizado incompleto)
+  // renderizaria em branco; nesse caso volta ao lobby, onde "Retomar partida" fica disponível.
+  useEffect(() => {
+    if (viewMode !== 'host') return;
+    if ((room.screen === 'rules' || room.screen === 'playing' || room.screen === 'game-over') && !room.activeGame) {
+      updateScreen('lobby');
+    }
+  }, [viewMode, room.screen, room.activeGame]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Wrap broadcastState to automatically capture 1-level VAR snapshot during active gameplay
   const broadcastState = (updater: GameRoom | ((prev: GameRoom) => GameRoom)) => {
@@ -1638,7 +1648,7 @@ export default function App() {
           ) : room.screen === 'game-over' ? (
             /* Clean Victory Screen focused on Winning Team/Player & MVP, with clickable icon buttons for Achievements, Hall of Fame, Activity Log & Session History */
             (() => {
-              const mvp = computeSessionMVP(room);
+              const mvp = computeMatchMVP(room); // UX-15: MVP só da partida atual
               const playerComparison = computeMatchPlayerComparison(room);
               const roundActivityLog = getMatchRoundActivityLog(room);
               const partyAchievements = computePartyAchievements(room);
@@ -1790,8 +1800,9 @@ export default function App() {
                               ? 'INTEGRANTES DAS EQUIPES EMPATADAS'
                               : `EQUIPE CAMPEÃ (${winningTeamName} — PONTUAM JUNTOS)`}
                           </div>
-                          <div className="grid grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-2">
-                            {winningTeamPlayers.slice(0, 6).map((wp, idx) => {
+                          {/* UX-14: lista TODOS os jogadores (sem corte em 6); rola dentro do painel se faltar espaço */}
+                          <div className="grid grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-2 max-h-[34vh] overflow-y-auto pr-1">
+                            {winningTeamPlayers.map((wp, idx) => {
                               const isHighlightedWinner = isIndividualMatch
                                 ? idx === 0
                                 : winningTeamKey !== 'EMPATE';

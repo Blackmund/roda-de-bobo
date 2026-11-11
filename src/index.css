@@ -16,7 +16,7 @@
   #root {
     height: 100dvh;
     max-height: 100dvh;
-    width: 100vw;
+    width: 100%; /* UX-01: 100vw inclui a barra de rolagem e estourava em telas estreitas */
     overflow: hidden;
     margin: 0;
     padding: 0;

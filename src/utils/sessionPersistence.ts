@@ -14,6 +14,16 @@ export const ROOM_STORAGE_PREFIX = 'rb_room_state_';
 export const GLOBAL_ROOM_STORAGE_KEY = 'roda_de_bobo_room_state';
 export const ACTIVE_STATE_STORAGE_KEY = 'RODA_DE_BOBO_ACTIVE_STATE';
 
+/** INF-05: versão do formato salvo. Estados de versão maior (ou com forma inválida) são descartados; sem versão = legado, aceito e regravado. */
+export const ROOM_SCHEMA_VERSION = 2;
+
+function hasValidRoomShape(parsed: any): boolean {
+  if (typeof parsed.schemaVersion === 'number' && parsed.schemaVersion > ROOM_SCHEMA_VERSION) return false;
+  if (parsed.players !== undefined && !Array.isArray(parsed.players)) return false;
+  if (parsed.teams !== undefined && (parsed.teams === null || typeof parsed.teams !== 'object')) return false;
+  return true;
+}
+
 export interface MVPHistoryItem {
   matchId: string;
   gameName: string;
@@ -156,7 +166,7 @@ export function saveRoomStateToStorage(
   if (!targetStorage) return false;
 
   try {
-    const serialized = JSON.stringify(room);
+    const serialized = JSON.stringify({ ...room, schemaVersion: ROOM_SCHEMA_VERSION });
     const roomKey = `${ROOM_STORAGE_PREFIX}${room.roomId.toUpperCase()}`;
     targetStorage.setItem(roomKey, serialized);
     targetStorage.setItem(GLOBAL_ROOM_STORAGE_KEY, serialized);
@@ -189,6 +199,7 @@ export function loadRoomStateFromStorage(
 
     const parsed = JSON.parse(raw) as GameRoom;
     if (!parsed || typeof parsed !== 'object' || !parsed.roomId) return null;
+    if (!hasValidRoomShape(parsed)) return null;
     if (parsed.roomId.toUpperCase() !== normalizedId) return null;
     if (!isRoomWorthSaving(parsed)) return null;
 
@@ -288,6 +299,45 @@ export function accumulateRoundPlayerScores(room: GameRoom): Player[] {
       accuracy
     };
   });
+}
+
+/**
+ * UX-15: MVP da PARTIDA ATUAL. Usa apenas os jogadores da sala (placar e métricas são zerados a cada
+ * início de partida), sem olhar o histórico da sessão. Evita mostrar, no fim de um jogo, o MVP (e os
+ * pontos) de uma partida anterior. Sem jogadores, cai no cálculo da sessão.
+ */
+export function computeMatchMVP(room: GameRoom): MVPStats {
+  const players = room.players || [];
+  if (players.length === 0) return computeSessionMVP(room);
+
+  const top = [...players].sort((a, b) => {
+    if ((b.score || 0) !== (a.score || 0)) return (b.score || 0) - (a.score || 0);
+    if ((b.roundsWon || 0) !== (a.roundsWon || 0)) return (b.roundsWon || 0) - (a.roundsWon || 0);
+    return a.name.localeCompare(b.name);
+  })[0];
+
+  const roundsPlayed = Math.max(1, top.roundsPlayed || room.roundNumber || room.maxRounds || 1);
+  const roundsWon = top.roundsWon || 0;
+  const accuracy =
+    typeof top.accuracy === 'number' && top.accuracy > 0
+      ? top.accuracy
+      : Math.round((roundsWon / roundsPlayed) * 100);
+  const teamName = room.teams?.[top.team]?.name || `Equipe ${top.team}`;
+  const sessionVictories = room.sessionStats as unknown as Record<string, number | undefined>;
+
+  return {
+    playerId: top.id,
+    name: top.name,
+    avatar: top.avatar || '🦁',
+    team: top.team,
+    teamName,
+    score: top.score || 0,
+    roundsPlayed,
+    roundsWon,
+    accuracy,
+    matchesWon: sessionVictories?.[`victories${top.team}`] || 0,
+    highlightReason: 'Maior pontuação individual da partida'
+  };
 }
 
 /**

@@ -10,6 +10,7 @@ import {
 } from '../../types/game';
 import { getActiveTeamIds, getTeamCount, TEAM_META, cyclePlayerTeamId } from '../../utils/teamUtils';
 import { sounds } from '../../utils/soundEffects';
+import { validatePlayerCount } from '../../config/gameLimits';
 import {
   PRESET_THEMES,
   prefetchRoundsForTheme,
@@ -160,7 +161,8 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
   const [theme, setTheme] = useState(() =>
     !room.theme ||
     room.theme === 'Futebol Brasileiro, Filmes e Cultura Pop' ||
-    room.theme === 'Animais e Vida Selvagem'
+    room.theme === 'Animais e Vida Selvagem' ||
+    (room.activeGame !== 'perguntas-e-verdades' && room.theme === 'O Jogo do Diabo: Perguntas e Verdades')
       ? 'Geral'
       : room.theme
   );
@@ -184,6 +186,9 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
   });
 
   const [showMissingPlayersWarning, setShowMissingPlayersWarning] = useState(false);
+  // UX-03: limites de jogadores por jogo (GAME_LIMITS)
+  const playerCountCheck = validatePlayerCount(room.activeGame, room.players.length);
+  const playerLimitBlocked = !playerCountCheck.ok && playerCountCheck.reason === 'too-many';
   const [dynamicThemes, setDynamicThemes] = useState<string[]>(PRESET_THEMES);
   const [isGeneratingThemes, setIsGeneratingThemes] = useState(false);
 
@@ -393,6 +398,10 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
       setShowMissingPlayersWarning(true);
       return;
     }
+    if (playerLimitBlocked) {
+      sounds.playBuzzer();
+      return;
+    }
     const cleanTheme =
       room.activeGame === 'perguntas-e-verdades'
         ? 'O Jogo do Diabo: Perguntas e Verdades'
@@ -413,6 +422,7 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
     });
   }, [
     room.players.length,
+    playerLimitBlocked,
     room.activeGame,
     theme,
     timer,
@@ -427,6 +437,10 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
     if (room.players.length < 2) {
       sounds.playBuzzer();
       setShowMissingPlayersWarning(true);
+      return;
+    }
+    if (playerLimitBlocked) {
+      sounds.playBuzzer();
       return;
     }
     const cleanTheme =
@@ -449,6 +463,7 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
     });
   }, [
     room.players.length,
+    playerLimitBlocked,
     room.activeGame,
     theme,
     timer,
@@ -531,6 +546,24 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
           </button>
         </div>
       </div>
+
+      {/* UX-03: excesso de jogadores bloqueia o início; sobra de jogadores só avisa */}
+      {!playerCountCheck.ok && playerCountCheck.reason === 'too-many' && (
+        <div
+          data-testid="setup-too-many-players-banner"
+          className="px-3 py-1.5 bg-rose-950 border border-rose-500 text-rose-200 font-mono-code text-xs"
+        >
+          ⚠️ {playerCountCheck.message}
+        </div>
+      )}
+      {playerCountCheck.ok && playerCountCheck.warning && (
+        <div
+          data-testid="setup-players-notice-banner"
+          className="px-3 py-1.5 bg-amber-950/60 border border-amber-500/60 text-amber-200 font-mono-code text-xs"
+        >
+          ℹ️ {playerCountCheck.warning}
+        </div>
+      )}
 
       {/* AVISO DE JOGADORES INSUFICIENTES (SE HOUVER) */}
       {showMissingPlayersWarning && room.players.length < 2 && (

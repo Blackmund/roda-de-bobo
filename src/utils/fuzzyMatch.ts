@@ -89,13 +89,13 @@ export function levenshteinDistance(a: string, b: string): number {
 /**
  * Define o limite máximo de distância de Levenshtein tolerado com base no comprimento da palavra:
  * - Palavras muito curtas (<= 3 letras): 0 (apenas exato, evita falsos positivos como "sol" e "sal")
- * - Palavras curtas (4 a 5 letras): até 1 erro (ex: "gato" -> "gatos", "maca" -> "maca")
+ * - Palavras curtas (4 a 5 letras): 0 erros (REG-10: com 1 erro "praia" casava com "praça" e pontuava errado;
+ *   plural/variações curtas continuam aceitos pela regra de substring)
  * - Palavras médias (6 a 8 letras): até 2 erros (ex: "abacaxi" -> "abacxi", "bicicreta" -> "bicicleta")
  * - Palavras longas (>= 9 letras): até 3 erros (ex: "spiber" -> "spielberg", "schwarzenegger")
  */
 export function maxAllowedDistance(length: number): number {
-  if (length <= 4) return 0;
-  if (length <= 5) return 1;
+  if (length <= 5) return 0;
   if (length <= 8) return 2;
   return 3;
 }
@@ -107,9 +107,9 @@ function isSingleTermMatch(input: string, target: string): boolean {
   if (!input || !target) return false;
   if (input === target) return true;
 
-  // Substring direta se o input tiver tamanho representativo (>= 3 caracteres)
-  if (input.length >= 3 && target.includes(input)) return true;
-  if (target.length >= 3 && input.includes(target)) return true;
+  // Substring direta se o trecho tiver tamanho representativo (>= 4 caracteres; 3 gerava falsos positivos como "pra" em "praca")
+  if (input.length >= 4 && target.includes(input)) return true;
+  if (target.length >= 4 && input.includes(target)) return true;
 
   // Levenshtein direto
   const maxDist = maxAllowedDistance(Math.max(input.length, target.length));
@@ -154,7 +154,10 @@ export function checkAnswerFuzzyMatch(
     if (inputNorm === candNorm) return true;
 
     // 2. Substring direta completa
-    if (candNorm.includes(inputNorm) || inputNorm.includes(candNorm)) {
+    if (
+      (inputNorm.length >= 4 && candNorm.includes(inputNorm)) ||
+      (candNorm.length >= 4 && inputNorm.includes(candNorm))
+    ) {
       return true;
     }
 

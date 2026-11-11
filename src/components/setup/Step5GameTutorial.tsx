@@ -45,7 +45,7 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
         icon: '🤫',
         headline: 'Palpite Secreto pelo Celular',
         description:
-          'Envie seu número em segredo. Atenção máxima: quem der um lance maior que o valor real estoura e zera na rodada!',
+          'Envie seu número em segredo. Atenção máxima: quem der um lance maior que o valor real estoura! Se TODOS estourarem, vence quem estourou menos.',
         accentTag: 'Sem Ultrapassar'
       },
       {
@@ -53,7 +53,7 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
         icon: '🃏',
         headline: 'Cartas de Poder e Revelação',
         description:
-          'Ative sua carta especial antes de revelar. O palpite mais próximo fatura 1 ponto; cravar o valor exato vale 2 pontos diretos!',
+          'São 4 cartas de poder sorteadas às cegas: cada jogador pega UMA e só pode usá-la uma vez na partida. O palpite mais próximo sem passar fatura 1 ponto; cravar o valor exato vale 2 pontos diretos!',
         accentTag: 'Cravou = 2 Pontos'
       }
     ],
@@ -63,12 +63,12 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
       'PESQUISAR NA INTERNET SEM A CARTA DE LIGAÇÃO'
     ],
     permitido: [
-      'USAR A CARTA DE PODER SORTEADA (UMA VEZ POR PARTIDA)',
+      'USAR A CARTA DE PODER SORTEADA (UMA CARTA POR JOGADOR, USO ÚNICO)',
       'CRAVAR O NÚMERO EXATO PARA GANHAR 2 PONTOS DIRETOS',
       'ARREDONDAR PARA BAIXO COM CAUTELA PARA NÃO ESTOURAR'
     ],
     scoringSummary: [
-      'Maior palpite que não ultrapassar o valor real fatura +1 ponto.',
+      'Maior palpite que não ultrapassar o valor real fatura +1 ponto. Se todos estourarem, vence quem estourou menos.',
       'SUPER BÔNUS: Cravar o número exato vale 2 PONTOS diretos!'
     ]
   },

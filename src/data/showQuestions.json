@@ -1,0 +1,3442 @@
+[
+ {
+  "id": "limite-001",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Tob, cão canadense, estourou balões e entrou no Guinness desafiando o relógio: em quanto tempo estourou 100 balões?",
+  "resposta": null,
+  "unidade": "segundos",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "9tzeBB-VZGI",
+   "segundos": 212,
+   "url": "https://youtu.be/9tzeBB-VZGI?t=212",
+   "bruto": "9tzeBB-VZGI@3:32"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta (enunciado)",
+  "contexto": "Pergunta nº 1. Discussão sobre unidade (segundos).",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-002",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "O americano Eric Gunstrom cultivou uma berinjela recorde: quantos centímetros tinha?",
+  "resposta": null,
+  "unidade": "centímetros",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "9tzeBB-VZGI",
+   "segundos": 529,
+   "url": "https://youtu.be/9tzeBB-VZGI?t=529",
+   "bruto": "9tzeBB-VZGI@8:49"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Pergunta nº 2. Piada recorrente da 'berinjela'.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-003",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "O espanhol Tony Bou fez um desafio de equilíbrio de moto saltando de barril em barril só com a roda traseira: quantos barris saltou consecutivamente?",
+  "resposta": null,
+  "unidade": "barris",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "9tzeBB-VZGI",
+   "segundos": 985,
+   "url": "https://youtu.be/9tzeBB-VZGI?t=985",
+   "bruto": "9tzeBB-VZGI@16:25"
+  },
+  "confianca": "media",
+  "confiancaNota": "média (nome)",
+  "contexto": "Rodada do meio do jogo.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-004",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Maratona britânica em que Luiz Warwick fez crochê correndo: quantos metros tinha a corrente de crochê produzida no percurso?",
+  "resposta": "145 (mencionado na recapitulação em 45:03; conferir)",
+  "unidade": "metros",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "9tzeBB-VZGI",
+   "segundos": 1178,
+   "url": "https://youtu.be/9tzeBB-VZGI?t=1178",
+   "bruto": "9tzeBB-VZGI@19:38"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Debate sobre unidade; resposta aparece citada de passagem.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-005",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "A temporada 2023/24 da Premier League terminou com recorde de gols: somando todos os times e partidas, quantos gols foram marcados?",
+  "resposta": null,
+  "unidade": "gols",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "9tzeBB-VZGI",
+   "segundos": 1560,
+   "url": "https://youtu.be/9tzeBB-VZGI?t=1560",
+   "bruto": "9tzeBB-VZGI@26:00"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Pergunta de esporte (rodada 5).",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-006",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Na Itália, Alberto Bonaldo encarou 12 h de tiro ao prato e entrou pro Guinness: quantos alvos acertou?",
+  "resposta": null,
+  "unidade": "pratos",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "9tzeBB-VZGI",
+   "segundos": 1941,
+   "url": "https://youtu.be/9tzeBB-VZGI?t=1941",
+   "bruto": "9tzeBB-VZGI@32:21"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Pergunta nº 6.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-007",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Recorde Guinness de coleta de assinaturas (Índia): quantas assinaturas ele reuniu?",
+  "resposta": null,
+  "unidade": "assinaturas",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "9tzeBB-VZGI",
+   "segundos": 2263,
+   "url": "https://youtu.be/9tzeBB-VZGI?t=2263",
+   "bruto": "9tzeBB-VZGI@37:43"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Detalhes do enunciado só em parte captados.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-008",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Ramed, dos Emirados Árabes, fez embaixadinhas só com o joelho em apenas 1 minuto: quantas conseguiu?",
+  "resposta": null,
+  "unidade": "embaixadinhas",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "9tzeBB-VZGI",
+   "segundos": 2450,
+   "url": "https://youtu.be/9tzeBB-VZGI?t=2450",
+   "bruto": "9tzeBB-VZGI@40:50"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Discussão: um joelho ou dois.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-009",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Série 'A Grande Família' (14 temporadas): quantos episódios foram produzidos ao todo?",
+  "resposta": null,
+  "unidade": "episódios",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "9tzeBB-VZGI",
+   "segundos": 2713,
+   "url": "https://youtu.be/9tzeBB-VZGI?t=2713",
+   "bruto": "9tzeBB-VZGI@45:13"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Casé/Donan chutaram 30+/10 por ano.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-010",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "De quantos metros foi o arremesso que entrou para o Guinness?",
+  "resposta": null,
+  "unidade": "metros",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "9tzeBB-VZGI",
+   "segundos": 3144,
+   "url": "https://youtu.be/9tzeBB-VZGI?t=3144",
+   "bruto": "9tzeBB-VZGI@52:24"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Última pergunta; enunciado completo não captado.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-011",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Em 2021, o goleiro Tom King (Newport County x Cheltenham) marcou gol de tiro de meta recorde: qual a distância do gol?",
+  "resposta": "",
+  "unidade": "metros",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "tErUZJpBEME",
+   "segundos": 588,
+   "url": "https://youtu.be/tErUZJpBEME?t=588",
+   "bruto": "tErUZJpBEME@9:48"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Pergunta nº 1 (esporte).",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-012",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Quantos tapas o Seu Madruga levou ao longo da série (Chaves)?",
+  "resposta": null,
+  "unidade": "tapas",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "tErUZJpBEME",
+   "segundos": 883,
+   "url": "https://youtu.be/tErUZJpBEME?t=883",
+   "bruto": "tErUZJpBEME@14:43"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Debate sobre número de episódios.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-013",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Em 2021 o Bayern de Munique liderou o ranking mundial de venda de camisas: quantas camisas vendeu no ano?",
+  "resposta": null,
+  "unidade": "camisas",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "tErUZJpBEME",
+   "segundos": 1086,
+   "url": "https://youtu.be/tErUZJpBEME?t=1086",
+   "bruto": "tErUZJpBEME@18:06"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Pergunta nº 3.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-014",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Quantas camisas o Real Madrid vendeu naquele ano?",
+  "resposta": null,
+  "unidade": "camisas",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "tErUZJpBEME",
+   "segundos": 1286,
+   "url": "https://youtu.be/tErUZJpBEME?t=1286",
+   "bruto": "tErUZJpBEME@21:26"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Pergunta pareada com a do Bayern.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-015",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Quantas rosas Roberto Carlos distribui em cada show?",
+  "resposta": "100 (discussão em 35:21 sugere que a resposta era 100; conferir)",
+  "unidade": "rosas",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "tErUZJpBEME",
+   "segundos": 1908,
+   "url": "https://youtu.be/tErUZJpBEME?t=1908",
+   "bruto": "tErUZJpBEME@31:48"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-016",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Maratona de pebolim (resistência física e mental): quantos minutos durou?",
+  "resposta": null,
+  "unidade": "minutos",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "tErUZJpBEME",
+   "segundos": 2675,
+   "url": "https://youtu.be/tErUZJpBEME?t=2675",
+   "bruto": "tErUZJpBEME@44:35"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Jogadores chutaram em dias.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-017",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Por quantos anos um homem ficou sem tomar banho?",
+  "resposta": null,
+  "unidade": "anos",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "tErUZJpBEME",
+   "segundos": 3028,
+   "url": "https://youtu.be/tErUZJpBEME?t=3028",
+   "bruto": "tErUZJpBEME@50:28"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-018",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Qual o maior número de aces já feitos por um só jogador em uma única partida de tênis profissional?",
+  "resposta": null,
+  "unidade": "aces",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "1_SnoGkOcGU",
+   "segundos": 322,
+   "url": "https://youtu.be/1_SnoGkOcGU?t=322",
+   "bruto": "1_SnoGkOcGU@5:22"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Pergunta nº 1 (tênis).",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-019",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Quantas raças existem (344)? Quantos cães da mesma raça participaram do maior encontro de cachorros já registrado?",
+  "resposta": null,
+  "unidade": "cães",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "1_SnoGkOcGU",
+   "segundos": 816,
+   "url": "https://youtu.be/1_SnoGkOcGU?t=816",
+   "bruto": "1_SnoGkOcGU@13:36"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Dica dada: 344 raças.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-020",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Quantas visualizações tem o vídeo mais visto da história do YouTube?",
+  "resposta": null,
+  "unidade": "visualizações",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "1_SnoGkOcGU",
+   "segundos": 1471,
+   "url": "https://youtu.be/1_SnoGkOcGU?t=1471",
+   "bruto": "1_SnoGkOcGU@24:31"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Usada a carta Telefone (30 s para pesquisar).",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-021",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Quantos cartões vermelhos foram mostrados na última edição da Copa Libertadores?",
+  "resposta": null,
+  "unidade": "cartões",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "1_SnoGkOcGU",
+   "segundos": 1832,
+   "url": "https://youtu.be/1_SnoGkOcGU?t=1832",
+   "bruto": "1_SnoGkOcGU@30:32"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-022",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Quantos pontos Wayne Gretzky fez ao longo da carreira na NHL (gols + assistências)?",
+  "resposta": null,
+  "unidade": "pontos",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "1_SnoGkOcGU",
+   "segundos": 2110,
+   "url": "https://youtu.be/1_SnoGkOcGU?t=2110",
+   "bruto": "1_SnoGkOcGU@35:10"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Pontos = gols + assistências.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-023",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Quantos discos 'The Life of a Showgirl' (Taylor Swift, 2025) vendeu?",
+  "resposta": null,
+  "unidade": "discos",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "1_SnoGkOcGU",
+   "segundos": 2352,
+   "url": "https://youtu.be/1_SnoGkOcGU?t=2352",
+   "bruto": "1_SnoGkOcGU@39:12"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-024",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Quantos shows Taylor Swift fez na turnê Eras?",
+  "resposta": null,
+  "unidade": "shows",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "1_SnoGkOcGU",
+   "segundos": 2372,
+   "url": "https://youtu.be/1_SnoGkOcGU?t=2372",
+   "bruto": "1_SnoGkOcGU@39:32"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-025",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Quantos minutos tem o filme vencedor do Oscar de melhor filme mais longo da história?",
+  "resposta": null,
+  "unidade": "minutos",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "1_SnoGkOcGU",
+   "segundos": 2563,
+   "url": "https://youtu.be/1_SnoGkOcGU?t=2563",
+   "bruto": "1_SnoGkOcGU@42:43"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-026",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Quantos gols foram marcados na Copa do Mundo de 2022?",
+  "resposta": "172",
+  "unidade": "gols",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "D5IiGBVK-qo",
+   "segundos": 271,
+   "url": "https://youtu.be/D5IiGBVK-qo?t=271",
+   "bruto": "D5IiGBVK-qo@4:31"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Citado como exemplo; resposta 172.",
+  "origem": "programa",
+  "aConferir": false
+ },
+ {
+  "id": "limite-027",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Quantos patinhos de borracha distintos Charlotte Lee tinha em sua coleção (recorde)?",
+  "resposta": null,
+  "unidade": "patinhos",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "D5IiGBVK-qo",
+   "segundos": 427,
+   "url": "https://youtu.be/D5IiGBVK-qo?t=427",
+   "bruto": "D5IiGBVK-qo@7:07"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-028",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Em 2025, de acordo com o SofaScore, quantos passes certos Danielzinho deu no Brasileirão?",
+  "resposta": null,
+  "unidade": "passes",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "D5IiGBVK-qo",
+   "segundos": 608,
+   "url": "https://youtu.be/D5IiGBVK-qo?t=608",
+   "bruto": "D5IiGBVK-qo@10:08"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-029",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Qual foi o peso sustentado pela língua de Thomas?",
+  "resposta": null,
+  "unidade": "kg",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "D5IiGBVK-qo",
+   "segundos": 779,
+   "url": "https://youtu.be/D5IiGBVK-qo?t=779",
+   "bruto": "D5IiGBVK-qo@12:59"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Pergunta criticada por falta de clareza (carta de anulação debatida).",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-030",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Quantos rebotes LeBron James tem em jogos de NBA (23 temporadas, regular + playoffs)?",
+  "resposta": null,
+  "unidade": "rebotes",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "D5IiGBVK-qo",
+   "segundos": 1133,
+   "url": "https://youtu.be/D5IiGBVK-qo?t=1133",
+   "bruto": "D5IiGBVK-qo@18:53"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-031",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Quantos shows a banda Jonas Brothers já fez na carreira?",
+  "resposta": null,
+  "unidade": "shows",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "D5IiGBVK-qo",
+   "segundos": 1373,
+   "url": "https://youtu.be/D5IiGBVK-qo?t=1373",
+   "bruto": "D5IiGBVK-qo@22:53"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Formada em 2005, pausa 2013, volta 2019 (lido no vídeo).",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-032",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Quantos holes-in-one Tiger Woods fez na carreira?",
+  "resposta": null,
+  "unidade": "holes-in-one",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "D5IiGBVK-qo",
+   "segundos": 1612,
+   "url": "https://youtu.be/D5IiGBVK-qo?t=1612",
+   "bruto": "D5IiGBVK-qo@26:52"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Problema de entendimento do conceito.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "limite-033",
+  "jogo": "limite",
+  "tipo": "numerica",
+  "enunciado": "Quantos degraus a cadela Sweet Pecer desceu sem derramar uma gota d'água?",
+  "resposta": null,
+  "unidade": "degraus",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "D5IiGBVK-qo",
+   "segundos": 1974,
+   "url": "https://youtu.be/D5IiGBVK-qo?t=1974",
+   "bruto": "D5IiGBVK-qo@32:54"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Recapitulada em 1_SnoGkOcGU @0:09 (Luizinho palpitou 236).",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "duvido-001",
+  "jogo": "duvido",
+  "tipo": "lista",
+  "enunciado": "Citar times de futebol (exemplo da rodada-teste: 'consegue falar 20 times em 1 minuto')",
+  "resposta": null,
+  "unidade": "citar times de futebol",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "LVbaAFKTc5U",
+   "segundos": 156,
+   "url": "https://youtu.be/LVbaAFKTc5U?t=156",
+   "bruto": "LVbaAFKTc5U@2:36"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Demonstração das regras; a oferta sobe até 40 e a dupla adversária diz 'duvido'.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "duvido-002",
+  "jogo": "duvido",
+  "tipo": "lista",
+  "enunciado": "Países com a letra B (alvo: 6) em 1 minuto",
+  "resposta": "",
+  "unidade": "6",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "LVbaAFKTc5U",
+   "segundos": 301,
+   "url": "https://youtu.be/LVbaAFKTc5U?t=301",
+   "bruto": "LVbaAFKTc5U@5:01"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "duvido-003",
+  "jogo": "duvido",
+  "tipo": "lista",
+  "enunciado": "Países que têm o português como língua principal (alvo: 5) em 1 minuto",
+  "resposta": "Cabo Verde, Angola, Brasil… (lista parcial)",
+  "unidade": "5",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "LVbaAFKTc5U",
+   "segundos": 543,
+   "url": "https://youtu.be/LVbaAFKTc5U?t=543",
+   "bruto": "LVbaAFKTc5U@9:03"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "duvido-004",
+  "jogo": "duvido",
+  "tipo": "lista",
+  "enunciado": "Animais nas cédulas do real (alvo: 4) em 1 minuto",
+  "resposta": "",
+  "unidade": "4",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "LVbaAFKTc5U",
+   "segundos": 725,
+   "url": "https://youtu.be/LVbaAFKTc5U?t=725",
+   "bruto": "LVbaAFKTc5U@12:05"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "duvido-005",
+  "jogo": "duvido",
+  "tipo": "lista",
+  "enunciado": "Moedas do mundo / tipos de moeda (lista ditada: real, dólar, euro, libra, iene, franco suíço, pesos…)",
+  "resposta": null,
+  "unidade": "moedas",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "LVbaAFKTc5U",
+   "segundos": 1113,
+   "url": "https://youtu.be/LVbaAFKTc5U?t=1113",
+   "bruto": "LVbaAFKTc5U@18:33"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Polêmica: 'dólar canadense' e 'dólar australiano' contam como moedas distintas?",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "duvido-006",
+  "jogo": "duvido",
+  "tipo": "lista",
+  "enunciado": "Instrumentos de sopro (alvo: 7) em 1 minuto",
+  "resposta": null,
+  "unidade": "7",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "LVbaAFKTc5U",
+   "segundos": 1322,
+   "url": "https://youtu.be/LVbaAFKTc5U?t=1322",
+   "bruto": "LVbaAFKTc5U@22:02"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "duvido-007",
+  "jogo": "duvido",
+  "tipo": "lista",
+  "enunciado": "Anões da Branca de Neve (alvo: 5)",
+  "resposta": "",
+  "unidade": "5",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "LVbaAFKTc5U",
+   "segundos": 1743,
+   "url": "https://youtu.be/LVbaAFKTc5U?t=1743",
+   "bruto": "LVbaAFKTc5U@29:03"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "duvido-008",
+  "jogo": "duvido",
+  "tipo": "lista",
+  "enunciado": "Campeões do Big Brother Brasil (alvo: 8) em 1 minuto",
+  "resposta": "Ber Bamban, David Brito, Diego Alemão… (parcial)",
+  "unidade": "8",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "LVbaAFKTc5U",
+   "segundos": 2126,
+   "url": "https://youtu.be/LVbaAFKTc5U?t=2126",
+   "bruto": "LVbaAFKTc5U@35:26"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": false
+ },
+ {
+  "id": "duvido-009",
+  "jogo": "duvido",
+  "tipo": "lista",
+  "enunciado": "Pessoas pelo nome inteiro (tema com nome completo, alvo 7): 'vale nome completo'",
+  "resposta": null,
+  "unidade": "7",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "GeRHRvcGw7Q",
+   "segundos": 538,
+   "url": "https://youtu.be/GeRHRvcGw7Q?t=538",
+   "bruto": "GeRHRvcGw7Q@8:58"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Tema exato não captado; regra de nome completo explícita.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "duvido-010",
+  "jogo": "duvido",
+  "tipo": "lista",
+  "enunciado": "Músicas de Michael Jackson (alvo: 10) em 60 s",
+  "resposta": "Jackson 5 vale",
+  "unidade": "10",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "GeRHRvcGw7Q",
+   "segundos": 1528,
+   "url": "https://youtu.be/GeRHRvcGw7Q?t=1528",
+   "bruto": "GeRHRvcGw7Q@25:28"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": false
+ },
+ {
+  "id": "duvido-011",
+  "jogo": "duvido",
+  "tipo": "lista",
+  "enunciado": "Instrumentos de corda (alvo: 7) em 1 minuto",
+  "resposta": "violão, violino, violoncelo, cavaquinho…",
+  "unidade": "7",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "GeRHRvcGw7Q",
+   "segundos": 2125,
+   "url": "https://youtu.be/GeRHRvcGw7Q?t=2125",
+   "bruto": "GeRHRvcGw7Q@35:25"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": false
+ },
+ {
+  "id": "duvido-012",
+  "jogo": "duvido",
+  "tipo": "lista",
+  "enunciado": "Tema alvo 12 (tema não captado), 1 minuto",
+  "resposta": null,
+  "unidade": "12",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "GeRHRvcGw7Q",
+   "segundos": 2507,
+   "url": "https://youtu.be/GeRHRvcGw7Q?t=2507",
+   "bruto": "GeRHRvcGw7Q@41:47"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "duvido-013",
+  "jogo": "duvido",
+  "tipo": "lista",
+  "enunciado": "Piada: 'falar 11 letras do alfabeto' (tema real não captado)",
+  "resposta": null,
+  "unidade": "11",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "GeRHRvcGw7Q",
+   "segundos": 3034,
+   "url": "https://youtu.be/GeRHRvcGw7Q?t=3034",
+   "bruto": "GeRHRvcGw7Q@50:34"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "proibido-001",
+  "jogo": "proibido",
+  "tipo": "palavra",
+  "enunciado": "Palavra-alvo: LUTADOR (exemplo de pulo por usar palavra proibida)",
+  "resposta": null,
+  "unidade": "lutador",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "4mPuaMRZKqA",
+   "segundos": 39,
+   "url": "https://youtu.be/4mPuaMRZKqA?t=39",
+   "bruto": "4mPuaMRZKqA@0:39"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "proibido-002",
+  "jogo": "proibido",
+  "tipo": "palavra",
+  "enunciado": "Palavra-alvo: COBERTURA (gol) — 'encobrir' não é do mesmo radical; juiz decidiu a favor",
+  "resposta": null,
+  "unidade": "cobertura",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "4mPuaMRZKqA",
+   "segundos": 80,
+   "url": "https://youtu.be/4mPuaMRZKqA?t=80",
+   "bruto": "4mPuaMRZKqA@1:20"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Polêmica de radical.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "proibido-003",
+  "jogo": "proibido",
+  "tipo": "palavra",
+  "enunciado": "Palavra-alvo: VALDERRAMA (considerada muito difícil)",
+  "resposta": null,
+  "unidade": "valderrama",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "4mPuaMRZKqA",
+   "segundos": 1169,
+   "url": "https://youtu.be/4mPuaMRZKqA?t=1169",
+   "bruto": "4mPuaMRZKqA@19:29"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "proibido-004",
+  "jogo": "proibido",
+  "tipo": "palavra",
+  "enunciado": "Exemplo didático: FUTEBOL — proibidas: pé, bola, jogo…",
+  "resposta": null,
+  "unidade": "futebol",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "68rpVaqwAEw",
+   "segundos": 79,
+   "url": "https://youtu.be/68rpVaqwAEw?t=79",
+   "bruto": "68rpVaqwAEw@1:19"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Exemplo do diretor; as 5 proibidas completas não foram lidas.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "proibido-005",
+  "jogo": "proibido",
+  "tipo": "palavra",
+  "enunciado": "Palavra-alvo: ABACAXI (dica dada: 'alimento que é rei')",
+  "resposta": null,
+  "unidade": "abacaxi",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "68rpVaqwAEw",
+   "segundos": 335,
+   "url": "https://youtu.be/68rpVaqwAEw?t=335",
+   "bruto": "68rpVaqwAEw@5:35"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "proibido-006",
+  "jogo": "proibido",
+  "tipo": "palavra",
+  "enunciado": "Palavra-alvo: APRESENTADORA",
+  "resposta": null,
+  "unidade": "apresentadora",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "68rpVaqwAEw",
+   "segundos": 510,
+   "url": "https://youtu.be/68rpVaqwAEw?t=510",
+   "bruto": "68rpVaqwAEw@8:30"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "proibido-007",
+  "jogo": "proibido",
+  "tipo": "palavra",
+  "enunciado": "Palavra-alvo: JUSTIN BIEBER",
+  "resposta": null,
+  "unidade": "justin bieber",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "68rpVaqwAEw",
+   "segundos": 555,
+   "url": "https://youtu.be/68rpVaqwAEw?t=555",
+   "bruto": "68rpVaqwAEw@9:15"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "proibido-008",
+  "jogo": "proibido",
+  "tipo": "palavra",
+  "enunciado": "Polêmica: 'encobrir' vs 'cobertura' — regra do português (prefixo en- + radical cobr-); exigiu regra adicional",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "68rpVaqwAEw",
+   "segundos": 934,
+   "url": "https://youtu.be/68rpVaqwAEw?t=934",
+   "bruto": "68rpVaqwAEw@15:34"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Regra: radical segue a língua portuguesa, mas diretor decide.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "proibido-009",
+  "jogo": "proibido",
+  "tipo": "palavra",
+  "enunciado": "Palavra-alvo: CICLISMO (proibida: filhote em outra carta; polêmica bike/bicicleta)",
+  "resposta": null,
+  "unidade": "ciclismo",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "68rpVaqwAEw",
+   "segundos": 1084,
+   "url": "https://youtu.be/68rpVaqwAEw?t=1084",
+   "bruto": "68rpVaqwAEw@18:04"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "nota-001",
+  "jogo": "nota",
+  "tipo": "tema",
+  "enunciado": "Tema de exemplo: um calçado (nota sorteada: 0 — 'o que o Igor usava naquele dia')",
+  "resposta": null,
+  "unidade": null,
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "LFueUB64lxg",
+   "segundos": 48,
+   "url": "https://youtu.be/LFueUB64lxg?t=48",
+   "bruto": "LFueUB64lxg@0:48"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Exemplo do diretor.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "nota-002",
+  "jogo": "nota",
+  "tipo": "tema",
+  "enunciado": "Tema de exemplo: uma coisa para se fazer no sábado",
+  "resposta": null,
+  "unidade": null,
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "LFueUB64lxg",
+   "segundos": 57,
+   "url": "https://youtu.be/LFueUB64lxg?t=57",
+   "bruto": "LFueUB64lxg@0:57"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Exemplo do diretor.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "nota-003",
+  "jogo": "nota",
+  "tipo": "tema",
+  "enunciado": "Esporte: 'Se você fosse uma contratação de um clube brasileiro em 2026, quem seria?' (nota = nível do jogador)",
+  "resposta": null,
+  "unidade": null,
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "LFueUB64lxg",
+   "segundos": 323,
+   "url": "https://youtu.be/LFueUB64lxg?t=323",
+   "bruto": "LFueUB64lxg@5:23"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Pergunta criada pelos jogadores.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "nota-004",
+  "jogo": "nota",
+  "tipo": "tema",
+  "enunciado": "'Uma promessa se o time for campeão' (10 = promessa mais difícil/absurda)",
+  "resposta": null,
+  "unidade": null,
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "8iXgR3BS12M",
+   "segundos": 601,
+   "url": "https://youtu.be/8iXgR3BS12M?t=601",
+   "bruto": "8iXgR3BS12M@10:01"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "nota-005",
+  "jogo": "nota",
+  "tipo": "tema",
+  "enunciado": "Pergunta sobre o que o narrador diria/faria depois da final da Copa do Mundo (pergunta criticada pelos próprios jogadores)",
+  "resposta": null,
+  "unidade": null,
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "8iXgR3BS12M",
+   "segundos": 3487,
+   "url": "https://youtu.be/8iXgR3BS12M?t=3487",
+   "bruto": "8iXgR3BS12M@58:07"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "nota-006",
+  "jogo": "nota",
+  "tipo": "tema",
+  "enunciado": "Qual esporte você praticaria no auge? (críticas: só tem futebol no portfólio)",
+  "resposta": null,
+  "unidade": null,
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "8iXgR3BS12M",
+   "segundos": 4223,
+   "url": "https://youtu.be/8iXgR3BS12M?t=4223",
+   "bruto": "8iXgR3BS12M@70:23"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Debate: escolher esporte; a pergunta foi considerada ruim.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "nota-007",
+  "jogo": "nota",
+  "tipo": "tema",
+  "enunciado": "'Você vai falar uma música e ela vai explodir' (nota 10 = hit)",
+  "resposta": null,
+  "unidade": null,
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "8iXgR3BS12M",
+   "segundos": 5201,
+   "url": "https://youtu.be/8iXgR3BS12M?t=5201",
+   "bruto": "8iXgR3BS12M@86:41"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "nota-008",
+  "jogo": "nota",
+  "tipo": "tema",
+  "enunciado": "Batedor de falta correspondente a essa nota",
+  "resposta": null,
+  "unidade": null,
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "8iXgR3BS12M",
+   "segundos": 6116,
+   "url": "https://youtu.be/8iXgR3BS12M?t=6116",
+   "bruto": "8iXgR3BS12M@101:56"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "nota-009",
+  "jogo": "nota",
+  "tipo": "tema",
+  "enunciado": "Uma seleção campeã do mundo (ano e país) correspondente à nota",
+  "resposta": null,
+  "unidade": null,
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "8iXgR3BS12M",
+   "segundos": 6221,
+   "url": "https://youtu.be/8iXgR3BS12M?t=6221",
+   "bruto": "8iXgR3BS12M@103:41"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "nota-010",
+  "jogo": "nota",
+  "tipo": "tema",
+  "enunciado": "Você está em Acapulco com a turma do Chaves e vai jantar com um dos personagens: quem?",
+  "resposta": null,
+  "unidade": null,
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "V6_od5dEWtQ",
+   "segundos": 2400,
+   "url": "https://youtu.be/V6_od5dEWtQ?t=2400",
+   "bruto": "V6_od5dEWtQ@40:00"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Pergunta dos próprios jogadores.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "nota-011",
+  "jogo": "nota",
+  "tipo": "tema",
+  "enunciado": "Uma situação durante a partida de futebol (pergunta preparada em papel)",
+  "resposta": null,
+  "unidade": null,
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "V6_od5dEWtQ",
+   "segundos": 3766,
+   "url": "https://youtu.be/V6_od5dEWtQ?t=3766",
+   "bruto": "V6_od5dEWtQ@62:46"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "nota-012",
+  "jogo": "nota",
+  "tipo": "tema",
+  "enunciado": "Tema: um mascote do meio do esporte global",
+  "resposta": null,
+  "unidade": null,
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "mbewd7Bxdxc",
+   "segundos": 597,
+   "url": "https://youtu.be/mbewd7Bxdxc?t=597",
+   "bruto": "mbewd7Bxdxc@9:57"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Duas urnas de temas: futebol e 'aleatoriedades' (02:18).",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "nota-013",
+  "jogo": "nota",
+  "tipo": "tema",
+  "enunciado": "Tema: um gol",
+  "resposta": null,
+  "unidade": null,
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "mbewd7Bxdxc",
+   "segundos": 1006,
+   "url": "https://youtu.be/mbewd7Bxdxc?t=1006",
+   "bruto": "mbewd7Bxdxc@16:46"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "nota-014",
+  "jogo": "nota",
+  "tipo": "tema",
+  "enunciado": "Tema: casamento do Bruninho (nota = quão bom/ruim)",
+  "resposta": null,
+  "unidade": null,
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "Z68DA2ctTno",
+   "segundos": 803,
+   "url": "https://youtu.be/Z68DA2ctTno?t=803",
+   "bruto": "Z68DA2ctTno@13:23"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "repetente-001",
+  "jogo": "repetente",
+  "tipo": "regra",
+  "enunciado": "Tema (exemplo): pior jogador do Desafio Itaú",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "Xrgm25JrG98",
+   "segundos": 34,
+   "url": "https://youtu.be/Xrgm25JrG98?t=34",
+   "bruto": "Xrgm25JrG98@0:34"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Exemplo do diretor.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "repetente-002",
+  "jogo": "repetente",
+  "tipo": "regra",
+  "enunciado": "Tema (exemplo): um time de futebol (Flamengo/Fluminense/Vasco/Fortaleza)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "Xrgm25JrG98",
+   "segundos": 75,
+   "url": "https://youtu.be/Xrgm25JrG98?t=75",
+   "bruto": "Xrgm25JrG98@1:15"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Exemplo de cruzamento de palavras.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "onde_estou-001",
+  "jogo": "onde_estou",
+  "tipo": "regra",
+  "enunciado": "Vampeta posa nu (1999) — origem do 'Vampetaço'",
+  "resposta": "momento 1",
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "WW_LfGe6miE",
+   "segundos": 30,
+   "url": "https://youtu.be/WW_LfGe6miE?t=30",
+   "bruto": "WW_LfGe6miE@0:30"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Lista cronológica lida pelo diretor.",
+  "origem": "programa",
+  "aConferir": false
+ },
+ {
+  "id": "onde_estou-002",
+  "jogo": "onde_estou",
+  "tipo": "regra",
+  "enunciado": "Ronaldo Fenômeno adota o 'cabelo Cascão' na semifinal contra a Turquia (2002)",
+  "resposta": "momento 2",
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "WW_LfGe6miE",
+   "segundos": 50,
+   "url": "https://youtu.be/WW_LfGe6miE?t=50",
+   "bruto": "WW_LfGe6miE@0:50"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": false
+ },
+ {
+  "id": "onde_estou-003",
+  "jogo": "onde_estou",
+  "tipo": "regra",
+  "enunciado": "André Luiz (Botafogo) dá cartão ao juiz em jogo contra Estudiantes (2008)",
+  "resposta": "momento 3",
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "WW_LfGe6miE",
+   "segundos": 75,
+   "url": "https://youtu.be/WW_LfGe6miE?t=75",
+   "bruto": "WW_LfGe6miE@1:15"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": false
+ },
+ {
+  "id": "onde_estou-004",
+  "jogo": "onde_estou",
+  "tipo": "regra",
+  "enunciado": "Dayverson cai após encostão do árbitro Pitana no fim da final da Libertadores (2021)",
+  "resposta": "momento 4",
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "WW_LfGe6miE",
+   "segundos": 105,
+   "url": "https://youtu.be/WW_LfGe6miE?t=105",
+   "bruto": "WW_LfGe6miE@1:45"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": false
+ },
+ {
+  "id": "estadios-001",
+  "jogo": "estadios",
+  "tipo": "regra",
+  "enunciado": "Palpite dado: Estádio Libertadores de América (Independiente)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "6CX3f9V3jLk",
+   "segundos": 221,
+   "url": "https://youtu.be/6CX3f9V3jLk?t=221",
+   "bruto": "6CX3f9V3jLk@3:41"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Palpites durante o jogo; respostas oficiais não lidas.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "estadios-002",
+  "jogo": "estadios",
+  "tipo": "regra",
+  "enunciado": "Palpite: Estádio da Luz (Lisboa)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "6CX3f9V3jLk",
+   "segundos": 339,
+   "url": "https://youtu.be/6CX3f9V3jLk?t=339",
+   "bruto": "6CX3f9V3jLk@5:39"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "estadios-003",
+  "jogo": "estadios",
+  "tipo": "regra",
+  "enunciado": "Palpite: Estádio Rei Pelé",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "6CX3f9V3jLk",
+   "segundos": 534,
+   "url": "https://youtu.be/6CX3f9V3jLk?t=534",
+   "bruto": "6CX3f9V3jLk@8:54"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "estadios-004",
+  "jogo": "estadios",
+  "tipo": "regra",
+  "enunciado": "Respostas reveladas: Metropolitano → ? → Canindé → ? (ordem de estádios acertados)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "6CX3f9V3jLk",
+   "segundos": 1139,
+   "url": "https://youtu.be/6CX3f9V3jLk?t=1139",
+   "bruto": "6CX3f9V3jLk@18:59"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Recapitulação ao final; conferir no vídeo.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "como_pinto-001",
+  "jogo": "como_pinto",
+  "tipo": "regra",
+  "enunciado": "Palavra do piloto: BENFICA (errada: 'águia/falcão' no desenho do Beltrão)",
+  "resposta": null,
+  "unidade": "benfica",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "56glz6hfmno",
+   "segundos": 90,
+   "url": "https://youtu.be/56glz6hfmno?t=90",
+   "bruto": "56glz6hfmno@1:30"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Piloto, citado em 03_Ufpw83TEPOY @0:20.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "respostas_sem_perguntas-001",
+  "jogo": "respostas_sem_perguntas",
+  "tipo": "regra",
+  "enunciado": "Exemplo: 'Quem é o produtor mais bonito do Roda de Bobo?' (resp.: Caio Fumaça) — depois 'Quem é o lanterna do Desafio Itaú?'",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "qRe5BhwOq5M",
+   "segundos": 80,
+   "url": "https://youtu.be/qRe5BhwOq5M?t=80",
+   "bruto": "qRe5BhwOq5M@1:20"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Exemplos do diretor; perguntas reais do episódio não extraídas ainda.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "ritmo-001",
+  "jogo": "ritmo",
+  "tipo": "regra",
+  "enunciado": "Exemplo: sequência 'Pedro Pedro 44' no ritmo da música",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "ACE7fr1NPtA",
+   "segundos": 30,
+   "url": "https://youtu.be/ACE7fr1NPtA?t=30",
+   "bruto": "ACE7fr1NPtA@0:30"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Exemplo de explicação.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "top5-001",
+  "jogo": "top5",
+  "tipo": "ranking",
+  "enunciado": "Quem é o melhor jogador atuando no Brasil? (1º Arrascaeta, 19 votos)",
+  "resposta": "1º Arrascaeta 19",
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "hMfnB79L84o",
+   "segundos": 197,
+   "url": "https://youtu.be/hMfnB79L84o?t=197",
+   "bruto": "hMfnB79L84o@3:17"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Base: membros do canal.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "top5-002",
+  "jogo": "top5",
+  "tipo": "ranking",
+  "enunciado": "Qual o bobo favorito do programa? (exemplo didático; Donan 92, Casimiro 4…)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "hMfnB79L84o",
+   "segundos": 44,
+   "url": "https://youtu.be/hMfnB79L84o?t=44",
+   "bruto": "hMfnB79L84o@0:44"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Exemplo.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "top5-003",
+  "jogo": "top5",
+  "tipo": "ranking",
+  "enunciado": "Um jogador que você lembra quando o assunto é pênalti",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "hMfnB79L84o",
+   "segundos": 2546,
+   "url": "https://youtu.be/hMfnB79L84o?t=2546",
+   "bruto": "hMfnB79L84o@42:26"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "top5-004",
+  "jogo": "top5",
+  "tipo": "ranking",
+  "enunciado": "Brincadeiras de infância (queimada, amarelinha, pique-pega/polícia e ladrão aparecem nos palpites)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "hMfnB79L84o",
+   "segundos": 2080,
+   "url": "https://youtu.be/hMfnB79L84o?t=2080",
+   "bruto": "hMfnB79L84o@34:40"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Pergunta inferida pelos palpites.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "top5-005",
+  "jogo": "top5",
+  "tipo": "ranking",
+  "enunciado": "Melhores momentos do Donan na opinião do povo (1º: não conseguir pegar a garrafa, 35 votos; 3º truco, 21; 4º Copa, 15)",
+  "resposta": "1º garrafa 35; 2º 27 (não lido); 3º truco 21; 4º Copa 15",
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "BDrgA3mdUDg",
+   "segundos": 20,
+   "url": "https://youtu.be/BDrgA3mdUDg?t=20",
+   "bruto": "BDrgA3mdUDg@0:20"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Ranking lido na abertura.",
+  "origem": "programa",
+  "aConferir": false
+ },
+ {
+  "id": "top5-006",
+  "jogo": "top5",
+  "tipo": "ranking",
+  "enunciado": "O que não pode faltar no churrasco?",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "BDrgA3mdUDg",
+   "segundos": 620,
+   "url": "https://youtu.be/BDrgA3mdUDg?t=620",
+   "bruto": "BDrgA3mdUDg@10:20"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "top5-007",
+  "jogo": "top5",
+  "tipo": "ranking",
+  "enunciado": "Qual clube tem mais títulos no mundo? (debatido na rodada)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "BDrgA3mdUDg",
+   "segundos": 244,
+   "url": "https://youtu.be/BDrgA3mdUDg?t=244",
+   "bruto": "BDrgA3mdUDg@4:04"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "top5-008",
+  "jogo": "top5",
+  "tipo": "ranking",
+  "enunciado": "Melhor jogador jovem da temporada (Yamal citado em palpites)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "BDrgA3mdUDg",
+   "segundos": 1190,
+   "url": "https://youtu.be/BDrgA3mdUDg?t=1190",
+   "bruto": "BDrgA3mdUDg@19:50"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Enunciado inferido.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "top5-009",
+  "jogo": "top5",
+  "tipo": "ranking",
+  "enunciado": "Super-heróis/vilões (Gru citado em palpites)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "BDrgA3mdUDg",
+   "segundos": 1880,
+   "url": "https://youtu.be/BDrgA3mdUDg?t=1880",
+   "bruto": "BDrgA3mdUDg@31:20"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Enunciado inferido.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-001",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Mestre-sala e porta-bandeira (alegórico)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "v9Tck__zVwQ",
+   "segundos": 197,
+   "url": "https://youtu.be/v9Tck__zVwQ?t=197",
+   "bruto": "v9Tck__zVwQ@3:17"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-002",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Remo",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "v9Tck__zVwQ",
+   "segundos": 189,
+   "url": "https://youtu.be/v9Tck__zVwQ?t=189",
+   "bruto": "v9Tck__zVwQ@3:09"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-003",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Robinho (pedalada)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "v9Tck__zVwQ",
+   "segundos": 341,
+   "url": "https://youtu.be/v9Tck__zVwQ?t=341",
+   "bruto": "v9Tck__zVwQ@5:41"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-004",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Santos (escudo)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "v9Tck__zVwQ",
+   "segundos": 424,
+   "url": "https://youtu.be/v9Tck__zVwQ?t=424",
+   "bruto": "v9Tck__zVwQ@7:04"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-005",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Pipocada",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "v9Tck__zVwQ",
+   "segundos": 447,
+   "url": "https://youtu.be/v9Tck__zVwQ?t=447",
+   "bruto": "v9Tck__zVwQ@7:27"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Considerada difícil.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-006",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Driblador (sinônimos aceitos: provocador, catimba, firula)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "Ufpw83TEPOY",
+   "segundos": 50,
+   "url": "https://youtu.be/Ufpw83TEPOY?t=50",
+   "bruto": "Ufpw83TEPOY@0:50"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-007",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Filme: Mágico (Josh)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "yqYucaKJiXQ",
+   "segundos": 452,
+   "url": "https://youtu.be/yqYucaKJiXQ?t=452",
+   "bruto": "yqYucaKJiXQ@7:32"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-008",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Bandeirinha",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "yqYucaKJiXQ",
+   "segundos": 1270,
+   "url": "https://youtu.be/yqYucaKJiXQ?t=1270",
+   "bruto": "yqYucaKJiXQ@21:10"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-009",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Chitãozinho (chorar/escorar)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "yqYucaKJiXQ",
+   "segundos": 1413,
+   "url": "https://youtu.be/yqYucaKJiXQ?t=1413",
+   "bruto": "yqYucaKJiXQ@23:33"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-010",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "O Mágico de Oz",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "vj6CkIz73bM",
+   "segundos": 960,
+   "url": "https://youtu.be/vj6CkIz73bM?t=960",
+   "bruto": "vj6CkIz73bM@16:00"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-011",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Bambu",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "t9w8aAGNkhQ",
+   "segundos": 349,
+   "url": "https://youtu.be/t9w8aAGNkhQ?t=349",
+   "bruto": "t9w8aAGNkhQ@5:49"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-012",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Cuiabano (jogador)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "t9w8aAGNkhQ",
+   "segundos": 481,
+   "url": "https://youtu.be/t9w8aAGNkhQ?t=481",
+   "bruto": "t9w8aAGNkhQ@8:01"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-013",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Um estádio; ponto de saque (tênis); mascote",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "Jd9qgnaEPMU",
+   "segundos": 1448,
+   "url": "https://youtu.be/Jd9qgnaEPMU?t=1448",
+   "bruto": "Jd9qgnaEPMU@24:08"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-014",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Bola",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "uOSqZ-XM0tk",
+   "segundos": 674,
+   "url": "https://youtu.be/uOSqZ-XM0tk?t=674",
+   "bruto": "uOSqZ-XM0tk@11:14"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-001",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Edição anterior: Usain Bolt (Beltrão), Shakira (Luizinho), Canarinho Pistola (Igor), Donan (Donan)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "So27pjCDljs",
+   "segundos": 7,
+   "url": "https://youtu.be/So27pjCDljs?t=7",
+   "bruto": "So27pjCDljs@0:07"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Respostas lidas no recap.",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mega_resenha-001",
+  "jogo": "mega_resenha",
+  "tipo": "regra",
+  "enunciado": "Palavra com dicas: goleador, matador, campeonato, artilharia, artilheiro… → Artilheiro (exemplo)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "7hSI_3uDmgg",
+   "segundos": 115,
+   "url": "https://youtu.be/7hSI_3uDmgg?t=115",
+   "bruto": "7hSI_3uDmgg@1:55"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mega_resenha-002",
+  "jogo": "mega_resenha",
+  "tipo": "regra",
+  "enunciado": "Faixa (de pedestre)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "7m4a3L66A0c",
+   "segundos": 299,
+   "url": "https://youtu.be/7m4a3L66A0c?t=299",
+   "bruto": "7m4a3L66A0c@4:59"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mega_resenha-003",
+  "jogo": "mega_resenha",
+  "tipo": "regra",
+  "enunciado": "Mictório",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "7m4a3L66A0c",
+   "segundos": 313,
+   "url": "https://youtu.be/7m4a3L66A0c?t=313",
+   "bruto": "7m4a3L66A0c@5:13"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mega_resenha-004",
+  "jogo": "mega_resenha",
+  "tipo": "regra",
+  "enunciado": "Pluto",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "7m4a3L66A0c",
+   "segundos": 321,
+   "url": "https://youtu.be/7m4a3L66A0c?t=321",
+   "bruto": "7m4a3L66A0c@5:21"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-002",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou real?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: existência",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "nIdI_VyeZOo",
+   "segundos": 213,
+   "url": "https://youtu.be/nIdI_VyeZOo?t=213",
+   "bruto": "nIdI_VyeZOo@03:33"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Abertura clássica: separa pessoa real de personagem",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-003",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou um jogador de futebol?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: profissão",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "nIdI_VyeZOo",
+   "segundos": 337,
+   "url": "https://youtu.be/nIdI_VyeZOo?t=337",
+   "bruto": "nIdI_VyeZOo@05:37"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Resposta \"não\" no vídeo",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-004",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou um animal?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: categoria",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "nIdI_VyeZOo",
+   "segundos": 485,
+   "url": "https://youtu.be/nIdI_VyeZOo?t=485",
+   "bruto": "nIdI_VyeZOo@08:05"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Resposta \"não\"; em seguida confirmam que é \"Igor\"",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-005",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu já disputei Jogos Olímpicos?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: feitos",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "nIdI_VyeZOo",
+   "segundos": 808,
+   "url": "https://youtu.be/nIdI_VyeZOo?t=808",
+   "bruto": "nIdI_VyeZOo@13:28"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-006",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu já ganhei algum campeonato mundial?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: feitos",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "nIdI_VyeZOo",
+   "segundos": 893,
+   "url": "https://youtu.be/nIdI_VyeZOo?t=893",
+   "bruto": "nIdI_VyeZOo@14:53"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-007",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu tô menos de 30 ou mais de 30?",
+  "resposta": null,
+  "unidade": "pergunta de faixa: idade",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "nIdI_VyeZOo",
+   "segundos": 1664,
+   "url": "https://youtu.be/nIdI_VyeZOo?t=1664",
+   "bruto": "nIdI_VyeZOo@27:44"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Pergunta de escolha, não só sim/não",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-008",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Palpite: Zé Gotinho (propaganda de vacinação)",
+  "resposta": null,
+  "unidade": "palpite errado",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "nIdI_VyeZOo",
+   "segundos": 719,
+   "url": "https://youtu.be/nIdI_VyeZOo?t=719",
+   "bruto": "nIdI_VyeZOo@11:59"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Após \"eu sou tipo um personagem de propaganda\"; resposta \"não\"",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-009",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Palpite: Rafael Moura (atleta)",
+  "resposta": null,
+  "unidade": "palpite errado",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "nIdI_VyeZOo",
+   "segundos": 1674,
+   "url": "https://youtu.be/nIdI_VyeZOo?t=1674",
+   "bruto": "nIdI_VyeZOo@27:54"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-010",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou protagonista?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: papel",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "bYxhrGrOIn8",
+   "segundos": 222,
+   "url": "https://youtu.be/bYxhrGrOIn8?t=222",
+   "bruto": "bYxhrGrOIn8@03:42"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-011",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou árbitro?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: profissão",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "bYxhrGrOIn8",
+   "segundos": 506,
+   "url": "https://youtu.be/bYxhrGrOIn8?t=506",
+   "bruto": "bYxhrGrOIn8@08:26"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Resposta \"não\"",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-012",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu tenho ligação com esporte?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: área",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "bYxhrGrOIn8",
+   "segundos": 513,
+   "url": "https://youtu.be/bYxhrGrOIn8?t=513",
+   "bruto": "bYxhrGrOIn8@08:33"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Repetida aos 09:25 por outro jogador",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-013",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou real?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: existência",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "bYxhrGrOIn8",
+   "segundos": 694,
+   "url": "https://youtu.be/bYxhrGrOIn8?t=694",
+   "bruto": "bYxhrGrOIn8@11:34"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-014",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu faço teatro?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: profissão",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "bYxhrGrOIn8",
+   "segundos": 994,
+   "url": "https://youtu.be/bYxhrGrOIn8?t=994",
+   "bruto": "bYxhrGrOIn8@16:34"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Resposta \"não\"",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-015",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou brasileira?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: nacionalidade",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "bYxhrGrOIn8",
+   "segundos": 1639,
+   "url": "https://youtu.be/bYxhrGrOIn8?t=1639",
+   "bruto": "bYxhrGrOIn8@27:19"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Identidade feminina (jogador usa feminino)",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-016",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Meu trabalho é focado no TikTok?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: profissão",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "bYxhrGrOIn8",
+   "segundos": 2520,
+   "url": "https://youtu.be/bYxhrGrOIn8?t=2520",
+   "bruto": "bYxhrGrOIn8@42:00"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-017",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Palpite: Tino Júnior (radialista)",
+  "resposta": null,
+  "unidade": "palpite",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "bYxhrGrOIn8",
+   "segundos": 646,
+   "url": "https://youtu.be/bYxhrGrOIn8?t=646",
+   "bruto": "bYxhrGrOIn8@10:46"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Dito como pergunta \"eu sou Tino Júnior?\", reação de espanto (\"você é gênio\")",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-018",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Palpite: Fausto Silva",
+  "resposta": null,
+  "unidade": "palpite errado",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "bYxhrGrOIn8",
+   "segundos": 1397,
+   "url": "https://youtu.be/bYxhrGrOIn8?t=1397",
+   "bruto": "bYxhrGrOIn8@23:17"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Resposta \"não\"",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-019",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Palpite: Augustinho Carrara",
+  "resposta": null,
+  "unidade": "palpite errado",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "bYxhrGrOIn8",
+   "segundos": 2516,
+   "url": "https://youtu.be/bYxhrGrOIn8?t=2516",
+   "bruto": "bYxhrGrOIn8@41:56"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Resposta \"não\"",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-020",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Palpite: Maria, mãe de Deus",
+  "resposta": null,
+  "unidade": "palpite errado",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "bYxhrGrOIn8",
+   "segundos": 2988,
+   "url": "https://youtu.be/bYxhrGrOIn8?t=2988",
+   "bruto": "bYxhrGrOIn8@49:48"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Palpite desesperado no fim",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-021",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Louro José (personagem) levantado como possibilidade",
+  "resposta": null,
+  "unidade": "palpite",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "bYxhrGrOIn8",
+   "segundos": 1208,
+   "url": "https://youtu.be/bYxhrGrOIn8?t=1208",
+   "bruto": "bYxhrGrOIn8@20:08"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Discussão se é homem; resposta incerta",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-022",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou um objeto?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: categoria",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "QNk1nIJ5wwM",
+   "segundos": 217,
+   "url": "https://youtu.be/QNk1nIJ5wwM?t=217",
+   "bruto": "QNk1nIJ5wwM@03:37"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-023",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou um clube?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: categoria",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "QNk1nIJ5wwM",
+   "segundos": 651,
+   "url": "https://youtu.be/QNk1nIJ5wwM?t=651",
+   "bruto": "QNk1nIJ5wwM@10:51"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Em seguida: \"falei que sou homem\"",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-024",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Palpite: Pong",
+  "resposta": null,
+  "unidade": "palpite",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "QNk1nIJ5wwM",
+   "segundos": 2133,
+   "url": "https://youtu.be/QNk1nIJ5wwM?t=2133",
+   "bruto": "QNk1nIJ5wwM@35:33"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-025",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou real?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: existência",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "5au0dBCEB8o",
+   "segundos": 297,
+   "url": "https://youtu.be/5au0dBCEB8o?t=297",
+   "bruto": "5au0dBCEB8o@04:57"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Resposta \"sim\"",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-026",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou um atleta?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: profissão",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "5au0dBCEB8o",
+   "segundos": 299,
+   "url": "https://youtu.be/5au0dBCEB8o?t=299",
+   "bruto": "5au0dBCEB8o@04:59"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-027",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou jogador de futebol?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: profissão",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "5au0dBCEB8o",
+   "segundos": 321,
+   "url": "https://youtu.be/5au0dBCEB8o?t=321",
+   "bruto": "5au0dBCEB8o@05:21"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-028",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu trabalho no futebol?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: área",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "5au0dBCEB8o",
+   "segundos": 352,
+   "url": "https://youtu.be/5au0dBCEB8o?t=352",
+   "bruto": "5au0dBCEB8o@05:52"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-029",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou dirigente?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: profissão",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "5au0dBCEB8o",
+   "segundos": 390,
+   "url": "https://youtu.be/5au0dBCEB8o?t=390",
+   "bruto": "5au0dBCEB8o@06:30"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-030",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou brasileiro?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: nacionalidade",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "5au0dBCEB8o",
+   "segundos": 394,
+   "url": "https://youtu.be/5au0dBCEB8o?t=394",
+   "bruto": "5au0dBCEB8o@06:34"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-031",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu tenho medalha olímpica?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: feitos",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "5au0dBCEB8o",
+   "segundos": 422,
+   "url": "https://youtu.be/5au0dBCEB8o?t=422",
+   "bruto": "5au0dBCEB8o@07:02"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Resposta \"não\"",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-032",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou muito famoso ou não?",
+  "resposta": null,
+  "unidade": "pergunta de escolha: fama",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "5au0dBCEB8o",
+   "segundos": 489,
+   "url": "https://youtu.be/5au0dBCEB8o?t=489",
+   "bruto": "5au0dBCEB8o@08:09"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-033",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou músico?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: profissão",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "5au0dBCEB8o",
+   "segundos": 591,
+   "url": "https://youtu.be/5au0dBCEB8o?t=591",
+   "bruto": "5au0dBCEB8o@09:51"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Resposta \"não\"",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-034",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu faço filme? Eu faço série?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: profissão",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "5au0dBCEB8o",
+   "segundos": 1250,
+   "url": "https://youtu.be/5au0dBCEB8o?t=1250",
+   "bruto": "5au0dBCEB8o@20:50"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-035",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Palpite: Globo Linha",
+  "resposta": null,
+  "unidade": "palpite errado",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "5au0dBCEB8o",
+   "segundos": 369,
+   "url": "https://youtu.be/5au0dBCEB8o?t=369",
+   "bruto": "5au0dBCEB8o@06:09"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Resposta \"não\"",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-036",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou um homem?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: gênero",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "So27pjCDljs",
+   "segundos": 196,
+   "url": "https://youtu.be/So27pjCDljs?t=196",
+   "bruto": "So27pjCDljs@03:16"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Primeira pergunta de vários jogadores neste episódio",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-037",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou sul-americano?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: origem",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "So27pjCDljs",
+   "segundos": 606,
+   "url": "https://youtu.be/So27pjCDljs?t=606",
+   "bruto": "So27pjCDljs@10:06"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-038",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou um personagem?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: existência",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "So27pjCDljs",
+   "segundos": 609,
+   "url": "https://youtu.be/So27pjCDljs?t=609",
+   "bruto": "So27pjCDljs@10:09"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-039",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Palpite: William (sobrenome não captado)",
+  "resposta": null,
+  "unidade": "palpite",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "So27pjCDljs",
+   "segundos": 1276,
+   "url": "https://youtu.be/So27pjCDljs?t=1276",
+   "bruto": "So27pjCDljs@21:16"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-040",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou homem?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: gênero",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "YSaZztgCU6k",
+   "segundos": 114,
+   "url": "https://youtu.be/YSaZztgCU6k?t=114",
+   "bruto": "YSaZztgCU6k@01:54"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-041",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou mulher?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: gênero",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "YSaZztgCU6k",
+   "segundos": 126,
+   "url": "https://youtu.be/YSaZztgCU6k?t=126",
+   "bruto": "YSaZztgCU6k@02:06"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-042",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu sou jogador de futebol?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: profissão",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "YSaZztgCU6k",
+   "segundos": 132,
+   "url": "https://youtu.be/YSaZztgCU6k?t=132",
+   "bruto": "YSaZztgCU6k@02:12"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-043",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Eu jogo na Europa?",
+  "resposta": null,
+  "unidade": "pergunta sim/não: onde atua",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "YSaZztgCU6k",
+   "segundos": 248,
+   "url": "https://youtu.be/YSaZztgCU6k?t=248",
+   "bruto": "YSaZztgCU6k@04:08"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Resposta \"não\"",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-044",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Palpite: Lautaro Dias",
+  "resposta": null,
+  "unidade": "palpite errado",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "YSaZztgCU6k",
+   "segundos": 712,
+   "url": "https://youtu.be/YSaZztgCU6k?t=712",
+   "bruto": "YSaZztgCU6k@11:52"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Resposta \"não\"",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-045",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Palpite: Rebeca (Andrade)",
+  "resposta": null,
+  "unidade": "palpite",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "YSaZztgCU6k",
+   "segundos": 980,
+   "url": "https://youtu.be/YSaZztgCU6k?t=980",
+   "bruto": "YSaZztgCU6k@16:20"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Dito \"Rebeca, na verdade\"; sobrenome não captado",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "quem_sou_eu-046",
+  "jogo": "quem_sou_eu",
+  "tipo": "regra",
+  "enunciado": "Palpite: Beto Cachaça",
+  "resposta": null,
+  "unidade": "palpite",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "YSaZztgCU6k",
+   "segundos": 997,
+   "url": "https://youtu.be/YSaZztgCU6k?t=997",
+   "bruto": "YSaZztgCU6k@16:37"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "\"Eu jurava que era o Beto Cachaça\"",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-015",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Benfica (palavra do episódio anterior; o Donan não acertou)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "Ufpw83TEPOY",
+   "segundos": 34,
+   "url": "https://youtu.be/Ufpw83TEPOY?t=34",
+   "bruto": "Ufpw83TEPOY@00:34"
+  },
+  "confianca": "alta",
+  "confiancaNota": "alta",
+  "contexto": "Contexto de abertura: a mímica anterior falhou (\"águia, falcão, pelicano\")",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-016",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Invisível",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "Ufpw83TEPOY",
+   "segundos": 1616,
+   "url": "https://youtu.be/Ufpw83TEPOY?t=1616",
+   "bruto": "Ufpw83TEPOY@26:56"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Palavra citada logo após o tempo acabar",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-017",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Falcão (1ª palavra da rodada; pistas: águia, ave, pássaro)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "Ufpw83TEPOY",
+   "segundos": 1702,
+   "url": "https://youtu.be/Ufpw83TEPOY?t=1702",
+   "bruto": "Ufpw83TEPOY@28:22"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Dica de mímica de animal",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-018",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Bocejar (2ª palavra; também chutado: \"acordar\")",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "Ufpw83TEPOY",
+   "segundos": 1794,
+   "url": "https://youtu.be/Ufpw83TEPOY?t=1794",
+   "bruto": "Ufpw83TEPOY@29:54"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Pista de duas palavras",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-019",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Bicho-preguiça (3ª palavra)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "Ufpw83TEPOY",
+   "segundos": 1887,
+   "url": "https://youtu.be/Ufpw83TEPOY?t=1887",
+   "bruto": "Ufpw83TEPOY@31:27"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Contexto: comparação de dificuldade com \"pudim\"",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-020",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Projeção",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "yqYucaKJiXQ",
+   "segundos": 1815,
+   "url": "https://youtu.be/yqYucaKJiXQ?t=1815",
+   "bruto": "yqYucaKJiXQ@30:15"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Considerada muito difícil de mimicar",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-021",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Homem (segunda palavra de uma pista de duas palavras)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "yqYucaKJiXQ",
+   "segundos": 2146,
+   "url": "https://youtu.be/yqYucaKJiXQ?t=2146",
+   "bruto": "yqYucaKJiXQ@35:46"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Discussão: \"homem mal\"?",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-022",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Scooby-Doo (palpite; 3ª palavra era do \"universo do filme\", pista: cachorro)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "t9w8aAGNkhQ",
+   "segundos": 312,
+   "url": "https://youtu.be/t9w8aAGNkhQ?t=312",
+   "bruto": "t9w8aAGNkhQ@05:12"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Palpite",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-023",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "3ª palavra é um animal (categoria dita em voz alta)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "vj6CkIz73bM",
+   "segundos": 1475,
+   "url": "https://youtu.be/vj6CkIz73bM?t=1475",
+   "bruto": "vj6CkIz73bM@24:35"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Pista de categoria; falaram \"provocação\" na dúvida",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-024",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Árbitro de campo (palpite; \"alguma coisa de campo\")",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "vj6CkIz73bM",
+   "segundos": 2348,
+   "url": "https://youtu.be/vj6CkIz73bM?t=2348",
+   "bruto": "vj6CkIz73bM@39:08"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Palpite",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-025",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Garrincha (2ª palavra)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "Jd9qgnaEPMU",
+   "segundos": 1178,
+   "url": "https://youtu.be/Jd9qgnaEPMU?t=1178",
+   "bruto": "Jd9qgnaEPMU@19:38"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Reclamação: não ficou claro que era a segunda palavra",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-026",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Estádio Brinco de Ouro (1ª palavra: \"um estádio\")",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "Jd9qgnaEPMU",
+   "segundos": 1448,
+   "url": "https://youtu.be/Jd9qgnaEPMU?t=1448",
+   "bruto": "Jd9qgnaEPMU@24:08"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Pista falada pelo jogador",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-027",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Comemorar / comemoração (palpite; pistas: Pelé, Rei, 10)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "uOSqZ-XM0tk",
+   "segundos": 534,
+   "url": "https://youtu.be/uOSqZ-XM0tk?t=534",
+   "bruto": "uOSqZ-XM0tk@08:54"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Palpite durante a mímica de Pelé",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mimica-028",
+  "jogo": "mimica",
+  "tipo": "regra",
+  "enunciado": "Bola (2ª palavra, confirmada pelo juiz)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "uOSqZ-XM0tk",
+   "segundos": 674,
+   "url": "https://youtu.be/uOSqZ-XM0tk?t=674",
+   "bruto": "uOSqZ-XM0tk@11:14"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": null,
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mega_resenha-005",
+  "jogo": "mega_resenha",
+  "tipo": "regra",
+  "enunciado": "Palavra: Arquibancada (dicas: escanteio, torcida)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "7hSI_3uDmgg",
+   "segundos": 606,
+   "url": "https://youtu.be/7hSI_3uDmgg?t=606",
+   "bruto": "7hSI_3uDmgg@10:06"
+  },
+  "confianca": "media",
+  "confiancaNota": "média",
+  "contexto": "Acerto confirmado (\"acertou arquibancada\")",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mega_resenha-006",
+  "jogo": "mega_resenha",
+  "tipo": "regra",
+  "enunciado": "Dicas: avião, pássaro, aço → conexão com \"transporte aéreo\"",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "7hSI_3uDmgg",
+   "segundos": 906,
+   "url": "https://youtu.be/7hSI_3uDmgg?t=906",
+   "bruto": "7hSI_3uDmgg@15:06"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Dicas de conexão difícil; juiz diz que o acerto foi mérito do jogador",
+  "origem": "programa",
+  "aConferir": true
+ },
+ {
+  "id": "mega_resenha-007",
+  "jogo": "mega_resenha",
+  "tipo": "regra",
+  "enunciado": "Dica \"arroz\" como recurso de dica segura (referência à dica do Casemiro)",
+  "resposta": null,
+  "unidade": "—",
+  "dificuldade": null,
+  "fonte": {
+   "videoId": "A2ZMg1Z0CQE",
+   "segundos": 918,
+   "url": "https://youtu.be/A2ZMg1Z0CQE?t=918",
+   "bruto": "A2ZMg1Z0CQE@15:18"
+  },
+  "confianca": "baixa",
+  "confiancaNota": "baixa",
+  "contexto": "Jogador sugere falar uma palavra-curinga; depois \"pera, a próxima palavra\" (pulou)",
+  "origem": "programa",
+  "aConferir": true
+ }
+]
