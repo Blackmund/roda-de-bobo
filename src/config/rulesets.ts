@@ -53,7 +53,7 @@ const SHOW_PRESETS: Partial<Record<GameId, RulesetPreset>> = {
   proibido: {
     timer: 60,
     config: { proibidoCardsCount: 5, proibidoForbiddenCount: 5 },
-    notes: ['5 palavras por rodada, cada uma com 5 proibidas', '1 minuto por rodada', 'Radical e juiz (contestar): ainda não automatizados']
+    notes: ['5 palavras por rodada, cada uma com 5 proibidas', '1 minuto por rodada', 'Proibido falar radical, a própria palavra e tradução em inglês; o juiz pode contestar a falta (botão Contestar falta). A checagem de radical é manual']
   },
   nota: {
     config: { notaScaleMin: 1, notaScaleMax: 10, notaAllowCloseVote: false },

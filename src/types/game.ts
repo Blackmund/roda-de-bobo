@@ -164,6 +164,8 @@ export interface ProibidoGameState {
   antiSpoilerMode: 'guesser-back-to-tv' | 'guesser-looking-tv';
   tvWordsHidden?: boolean;
   is2PlayerMode?: boolean;
+  /** Ultima carta anulada por falta (permite contestar: o juiz devolve a carta). */
+  lastFoulIndex?: number;
 }
 
 // 4. JOGO DA NOTA
