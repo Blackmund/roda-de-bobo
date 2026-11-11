@@ -506,7 +506,7 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
 
       {/* Dynamic 1-line Action Guidance Banner ("O que eu faço agora?") */}
       <div className="relative z-10 shrink-0 px-3 py-0.5 bg-black/60 border border-white/10 flex items-center justify-between text-[11px] font-mono-code">
-        <div className="flex items-center gap-2 truncate">
+        <div className="flex items-start sm:items-center gap-2 sm:truncate">
           <span className="w-1.5 h-1.5 rounded-full bg-[#17B8B8] animate-pulse shrink-0" />
           <span className="text-slate-300">
             {proibido.phase === 'READY' ? (
