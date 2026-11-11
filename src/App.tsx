@@ -150,6 +150,15 @@ export default function App() {
   useEffect(() => {
     fetchAndCacheLanOrigin();
   }, []);
+
+  // DAD-01: bancos extras (1.435 itens) carregados em segundo plano, fora do pacote principal.
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      import('./data/extraBanks').then((m) => m.loadExtraBanks()).catch(() => undefined);
+    }, 1500);
+    return () => window.clearTimeout(t);
+  }, []);
+
   const isPlayRoute =
     window.location.pathname.startsWith('/play') ||
     Boolean(parsedQuery.joinCode) ||
