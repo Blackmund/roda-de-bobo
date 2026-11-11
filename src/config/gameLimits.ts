@@ -26,6 +26,7 @@ export const GAME_LIMITS: Record<GameId, GameLimits> = {
   mimica: { min: 2, max: 8, recommended: 4, teamsRequired: true },
   'quem-sou-eu': { min: 3, max: 8, recommended: 4, teamsRequired: false },
   'mega-resenha': { min: 2, max: 8, recommended: 4, teamsRequired: true },
+  repetente: { min: 2, max: 8, recommended: 4, teamsRequired: true },
   'tem-ou-nao-tem': { min: 2, max: 8, recommended: 4, teamsRequired: true },
   'perguntas-e-verdades': {
     min: 2,

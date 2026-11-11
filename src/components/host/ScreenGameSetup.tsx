@@ -232,6 +232,8 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
         return 'QUEM SOU EU';
       case 'mega-resenha':
         return 'MEGA RESENHA';
+      case 'repetente':
+        return 'REPETENTE';
       default:
         return 'RODA DE BOBO';
     }

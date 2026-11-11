@@ -3886,6 +3886,17 @@ export async function generateRoundContent(
   difficulty?: string,
   explicitSubAngle?: SubAngleDefinition
 ): Promise<GenerateRoundResponse<unknown>> {
+  // NOV-05: o Repetente sorteia o tema no proprio App (precisa das equipes); aqui so um marcador.
+  if (gameId === 'repetente') {
+    return {
+      source: 'curated',
+      data: {},
+      themeUsed: 'Repetente',
+      subthemeUsed: 'Combine a palavra com o parceiro',
+      signature: `rep-round-${Date.now()}`
+    };
+  }
+
   // NOV-03: a Mega Resenha sorteia 5 palavras do banco proprio (sem IA); as ja usadas voltam em `excludeSignatures`.
   if (gameId === 'mega-resenha') {
     const used = new Set<string>();

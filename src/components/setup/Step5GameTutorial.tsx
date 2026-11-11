@@ -455,6 +455,54 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
       'Cada palavra acertada vale 1 ponto para a equipe da vez (regra da casa; o programa não confirmou a pontuação).',
       'Palavras puladas ou não acertadas até o fim do tempo não pontuam.'
     ]
+  },
+  repetente: {
+    gameId: 'repetente',
+    icon: '🖍️',
+    name: 'REPETENTE',
+    welcomeTitle: 'Como Jogar o Repetente',
+    welcomeSubtitle:
+      'Pense igual ao seu parceiro! Cada um escreve em segredo UMA palavra para o tema, e a dupla só pontua se as palavras forem a mesma.',
+    steps: [
+      {
+        stepNumber: 1,
+        icon: '🎯',
+        headline: 'Um Tema para Todos',
+        description:
+          'O jogo sorteia um tema ("um time do Rio", "algo que se leva à praia"). Cada jogador escreve UMA palavra em segredo, no celular ou na TV.',
+        accentTag: 'Uma Palavra Só'
+      },
+      {
+        stepNumber: 2,
+        icon: '🤝',
+        headline: 'Combine com o Parceiro',
+        description:
+          'Sem conversar: tente escrever a mesma palavra do seu parceiro. As palavras só aparecem quando todos terminarem (ou o tempo acabar).',
+        accentTag: 'Papo Reto'
+      },
+      {
+        stepNumber: 3,
+        icon: '🏆',
+        headline: 'Combinou, Pontuou',
+        description:
+          'Dupla que combina ganha 1 ponto. Se só uma dupla combinar, ela leva 2. Em dúvida ("gato" x "gatos"), o juiz decide se vale.',
+        accentTag: 'Só Uma Combina = 2'
+      }
+    ],
+    proibido: [
+      'COMBINAR A PALAVRA COM O PARCEIRO ANTES DE REVELAR',
+      'ESPIAR A PALAVRA DE QUEM ESTÁ ESCREVENDO',
+      'ESCREVER MAIS DE UMA PALAVRA'
+    ],
+    permitido: [
+      'ESCREVER O PRIMEIRO QUE VIER À CABEÇA',
+      'PENSAR NA RESPOSTA MAIS ÓBVIA PARA O SEU PARCEIRO',
+      'PEDIR AO JUIZ PARA ACEITAR PALAVRAS QUASE IGUAIS'
+    ],
+    scoringSummary: [
+      'Dupla que combina as palavras: +1 ponto. Se só uma das duplas combina, ela leva +2 (leitura da regra do programa, a confirmar).',
+      'Times com 3 ou mais jogadores só combinam se todos escreverem a mesma palavra.'
+    ]
   }
 };
 

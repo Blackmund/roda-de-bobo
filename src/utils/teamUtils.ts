@@ -87,7 +87,7 @@ export const TEAM_META: Record<TeamId, TeamVisualMeta> = {
 };
 
 export function isTeamBasedGame(gameId: GameId | null | undefined): boolean {
-  return gameId === 'tem-ou-nao-tem' || gameId === 'proibido' || gameId === 'duvido' || gameId === 'mimica' || gameId === 'mega-resenha';
+  return gameId === 'tem-ou-nao-tem' || gameId === 'proibido' || gameId === 'duvido' || gameId === 'mimica' || gameId === 'mega-resenha' || gameId === 'repetente';
 }
 
 export function getTeamCount(
