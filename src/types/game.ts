@@ -658,6 +658,8 @@ export interface GameRoom {
   timerConfig: number;
   customConfig?: GameCustomConfig;
   usedRoundSignatures?: string[];
+  /** DAD-05: de onde veio o conteudo da rodada atual (IA do Gemini ou banco pronto). */
+  roundSource?: 'ai' | 'curated';
   players: Player[];
   teams: {
     A: Team;
