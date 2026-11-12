@@ -396,6 +396,8 @@
   transform: translateX(-50%) scale(0.6);
   opacity: 0;
   transition: opacity 0.2s ease-out, transform 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+  /* a animacao roda sempre (invisivel em repouso): o hover so muda opacidade, nunca reinicia nada */
+  animation: rdbv-spin 40s linear infinite;
 }
 .rdbv-burst path {
   opacity: 0.22;
@@ -404,11 +406,6 @@
 .rdb-card:focus-visible .rdbv-burst {
   opacity: 1;
   transform: translateX(-50%) scale(1);
-  animation: rdbv-spin 40s linear infinite;
-}
-.rdb-card:hover .rdbv-char,
-.rdb-card:focus-visible .rdbv-char {
-  animation: rdbv-hop 0.9s cubic-bezier(0.3, 1.5, 0.5, 1) infinite;
 }
 @keyframes rdbv-breathe {
   0%, 100% { transform: translateY(0) scaleY(1); }
@@ -582,13 +579,7 @@
   50% { transform: translateY(-8px); }
 }
 
-/* Em repouso o movimento e calmo; so o card em foco anima em velocidade cheia. */
-.rdb-card:not(:hover):not(:focus-visible) .rdbv--vignette * {
-  animation-duration: 9s;
-}
-.rdb-card:not(:hover):not(:focus-visible) .rdbv-route {
-  animation-duration: 3.5s;
-}
+/* Hover e foco nao mexem em animation-*: trocar duracao ou animacao reiniciaria a vinheta. */
 
 @media (prefers-reduced-motion: reduce) {
   .rdbv *, .rdbv-char, .rdbv-burst {
