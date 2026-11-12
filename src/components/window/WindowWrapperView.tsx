@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowLeft, RotateCcw, X, ChevronDown, Volume2, VolumeX, QrCode, History, Trophy, Settings, Copy, Check, Sparkles, Tv, Smartphone, KeyRound } from '../rdb/rdbIcons';
+import { ArrowLeft, RotateCcw, X, ChevronDown, Volume2, VolumeX, QrCode, History, Trophy, Settings, Copy, Check, Sparkles, Tv, Smartphone, KeyRound, Users, Menu } from '../rdb/rdbIcons';
 import { RdbLogo } from '../rdb/RdbLogo';
 import { isCazeFamily, nextTheme as nextThemeOf, themeBadge, cazeArtSrc } from '../../utils/themeUtils';
 import { GameRoom, VisualTheme, TeamId } from '../../types/game';
@@ -130,292 +130,149 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
         </div>
       )}
 
-      {/* UNIFIED SINGLE TOP BAR (h-12 / 48px) */}
-      <div className="relative z-30 h-12 min-h-[48px] max-h-[48px] bg-[#07080d] border-b border-white/10 px-3 flex items-center justify-between gap-2 select-none shrink-0">
-        {/* Left Side: Back button, Logo RODA DE BOBO, Clickable Room/QR Badge, Clickable Players Badge, VAR & Saved Match */}
-        <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+      {/* Barra de janela, como a do programa: marca, sala e jogadores a esquerda; som, menu e os 3 botoes de janela a direita */}
+      <div className="rdb-bar">
+        <div className="rdb-bar-group">
           {showBackButton && onBack ? (
             <button
               type="button"
               data-testid="window-back-btn"
               onClick={handleRequestBack}
-              className="w-7 h-7 flex items-center justify-center border border-[#17B8B8] bg-[#17B8B8]/10 text-[#17B8B8] hover:bg-[#17B8B8] hover:text-black font-mono-code text-xs font-bold uppercase transition-colors cursor-pointer shrink-0"
+              className="rdb-btn rdb-btn--icon cursor-pointer"
               title="Voltar"
               aria-label="Voltar"
             >
-              <ArrowLeft size={14} />
+              <ArrowLeft />
             </button>
           ) : null}
 
-          <div className="flex items-center gap-1.5 min-w-0">
-            <div className="bg-white/[0.03] px-1.5 py-0.5 flex items-center shrink-0">
-              <RdbLogo variant="inline" className="h-5 w-auto" />
+          <RdbLogo variant="inline" className="rdb-bar-logo" />
+
+          {room?.activeGame && room.screen !== 'lobby' && room.screen !== 'mode-select' && (
+            <span className="rdb-bar-title rdb-hide-md">{title.replace(/^RODA DE BOBO\s*[—-]\s*/i, '')}</span>
+          )}
+
+          {/* No catalogo: entrar numa sala pelo codigo. Em jogo: conectar celulares (QR) */}
+          {room?.screen === 'lobby' || room?.screen === 'mode-select' ? (
+            <button
+              type="button"
+              data-testid="dock-qr-btn"
+              onClick={() => {
+                sounds.playTick();
+                if (onOpenJoinRoomModal) {
+                  onOpenJoinRoomModal();
+                } else {
+                  window.dispatchEvent(new CustomEvent('rb:open-lobby-modal', { detail: 'qr' }));
+                }
+              }}
+              className="rdb-btn cursor-pointer"
+              title="Entrar em uma sala existente digitando o código de 6 dígitos"
+              aria-label="Entrar em uma sala (código)"
+            >
+              <KeyRound />
+              <span className="rdb-hide-md">Entrar na sala</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              data-testid="dock-qr-btn"
+              aria-pressed={activeDockModal === 'qr'}
+              onClick={() => {
+                sounds.playTick();
+                setActiveDockModal((prev) => (prev === 'qr' ? null : 'qr'));
+              }}
+              className="rdb-btn cursor-pointer"
+              title="Conectar celulares pelo QR Code"
+              aria-label="Conectar celulares"
+            >
+              <QrCode />
+              <span className="rdb-hide-md">
+                {room?.connectionMode && room.connectionMode !== 'local'
+                  ? `Sala ${room.roomId} · ${room.players.filter((p) => p.connected !== false).length || 0} on`
+                  : 'Celulares'}
+              </span>
+            </button>
+          )}
+
+          {room && (
+            <button
+              type="button"
+              data-testid="header-players-badge-btn"
+              aria-pressed={activeDockModal === 'players'}
+              onClick={() => {
+                sounds.playTick();
+                setActiveDockModal((prev) => (prev === 'players' ? null : 'players'));
+              }}
+              className="rdb-btn rdb-btn--cream cursor-pointer"
+              title="Gerenciar jogadores da sala"
+              aria-label={`Jogadores: ${room.players.length}`}
+            >
+              <Users />
+              <span>{room.players.length}</span>
+              <span className="rdb-hide-md">{room.players.length === 1 ? 'jogador' : 'jogadores'}</span>
+            </button>
+          )}
+
+          {onUndoVar && (
+            <button
+              type="button"
+              data-testid="var-undo-btn"
+              disabled={!canUndoVar}
+              onClick={onUndoVar}
+              className="rdb-btn rdb-btn--amber cursor-pointer"
+              title="VAR: desfazer a última ação"
+              aria-label="VAR: desfazer a última ação"
+            >
+              <RotateCcw />
+              <span className="rdb-hide-md">VAR</span>
+            </button>
+          )}
+
+          {resumableRoom && onResumeGame && (
+            <div className="relative shrink-0" onMouseEnter={openResumeOverlay} onMouseLeave={scheduleCloseResumeOverlay}>
+              <button
+                type="button"
+                data-testid="resume-game-menu-item"
+                aria-expanded={isResumeHoverOpen}
+                onClick={openResumeOverlay}
+                onFocus={openResumeOverlay}
+                className="rdb-btn rdb-btn--amber cursor-pointer"
+                title="Ver a partida salva e retomar"
+              >
+                <RotateCcw />
+                <span className="rdb-hide-lg">Partida salva</span>
+                <ChevronDown className={`transition-transform duration-200 ${isResumeHoverOpen ? 'rotate-180' : ''}`} />
+              </button>
             </div>
-
-            {visualTheme === 'original' && room?.activeGame && (<img src={cazeArtSrc(room.activeGame)} alt="" draggable={false} onError={(e) => { e.currentTarget.style.display = 'none'; }} className="h-8 w-8 object-contain pointer-events-none select-none shrink-0" />)}
-            <span className="font-anton tracking-wider text-sm text-[#F5F2EB] uppercase hidden 2xl:inline truncate max-w-[220px]">
-              {title}
-            </span>
-
-            {/* On Lobby / Mode Select: [ 🔑 ENTRAR EM UMA SALA (CÓDIGO) ]. Inside game: [ 🔴 LIVE / CONECTAR CELULARES ] */}
-            {room?.screen === 'lobby' || room?.screen === 'mode-select' ? (
-              <button
-                type="button"
-                data-testid="dock-qr-btn"
-                onClick={() => {
-                  sounds.playTick();
-                  if (onOpenJoinRoomModal) {
-                    onOpenJoinRoomModal();
-                  } else {
-                    window.dispatchEvent(new CustomEvent('rb:open-lobby-modal', { detail: 'qr' }));
-                  }
-                }}
-                className="px-2.5 py-1 border border-cyan-400/80 bg-cyan-500/15 hover:bg-cyan-400 hover:text-black text-cyan-200 font-mono-code text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-[0_0_12px_rgba(0,229,255,0.2)]"
-                title="Entrar em uma sala existente digitando o código de 6 dígitos"
-                aria-label="ENTRAR EM UMA SALA (CÓDIGO)"
-              >
-                <KeyRound size={13} className="shrink-0 text-cyan-300" />
-                <span className="md:hidden">ENTRAR</span>
-                <span className="hidden md:inline">ENTRAR NA SALA</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                data-testid="dock-qr-btn"
-                onClick={() => {
-                  sounds.playTick();
-                  setActiveDockModal((prev) => (prev === 'qr' ? null : 'qr'));
-                }}
-                className={`px-2 sm:px-2.5 py-1 border font-mono-code text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
-                  activeDockModal === 'qr'
-                    ? 'border-[#17B8B8] bg-[#17B8B8] text-black shadow-neon-cyan'
-                    : 'border-[#E6194B] bg-gradient-to-r from-[#E6194B]/25 via-purple-950/60 to-[#17B8B8]/25 text-white hover:border-[#17B8B8] hover:bg-[#17B8B8] hover:text-black shadow-[0_0_15px_rgba(230,25,75,0.3)]'
-                }`}
-                title="Abrir Portal Live Together / Conectar Celulares via QR Code"
-                aria-label="LIVE / CONECTAR CELULARES"
-              >
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping shrink-0" />
-                <QrCode size={13} className="shrink-0 text-cyan-300" />
-                <span className="md:hidden">🔴 LIVE</span>
-                <span className="hidden md:inline">🔴 LIVE / CONECTAR CELULARES</span>
-                {room?.connectionMode && room.connectionMode !== 'local' && (
-                  <span className="hidden lg:inline px-1.5 py-0.5 rounded bg-black/50 border border-cyan-400/40 text-cyan-300 text-[10px]">
-                    #{room.roomId} • {room.players.filter((p) => p.connected !== false).length || 0} ON
-                  </span>
-                )}
-              </button>
-            )}
-
-            {/* Clickable Badge: [ 👥 Jogadores: X ] */}
-            {room && (
-              <button
-                type="button"
-                data-testid="header-players-badge-btn"
-                onClick={() => {
-                  sounds.playTick();
-                  setActiveDockModal((prev) => (prev === 'players' ? null : 'players'));
-                }}
-                className="px-2 py-1 border border-[#E6194B]/60 bg-[#E6194B]/15 hover:bg-[#E6194B] hover:text-white text-rose-300 font-mono-code text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer shrink-0"
-                title="Gerenciar Jogadores da Sala"
-              >
-                <span className="sm:hidden">👥 {room.players.length}</span>
-                <span className="hidden sm:inline">👥 Jogadores: {room.players.length}</span>
-              </button>
-            )}
-
-            {/* VAR (Desfazer) Button */}
-            {onUndoVar && (
-              <button
-                type="button"
-                data-testid="var-undo-btn"
-                disabled={!canUndoVar}
-                onClick={onUndoVar}
-                className={`px-2 py-1 border font-mono-code text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 transition-all shrink-0 ${
-                  canUndoVar
-                    ? 'border-amber-400/80 bg-amber-500/15 hover:bg-amber-400 hover:text-black text-amber-300 cursor-pointer'
-                    : 'border-white/10 bg-white/[0.02] text-slate-600 cursor-not-allowed'
-                }`}
-                title="Revisão do VAR: Desfazer última ação"
-              >
-                <RotateCcw size={11} className="shrink-0" />
-                <span className="hidden sm:inline">📺 VAR (Desfazer)</span>
-              </button>
-            )}
-
-            {/* Menu Item: Saved Game State in localStorage */}
-            {resumableRoom && onResumeGame && (
-              <div
-                className="relative shrink-0"
-                onMouseEnter={openResumeOverlay}
-                onMouseLeave={scheduleCloseResumeOverlay}
-              >
-                <button
-                  type="button"
-                  data-testid="resume-game-menu-item"
-                  aria-expanded={isResumeHoverOpen}
-                  onClick={openResumeOverlay}
-                  onFocus={openResumeOverlay}
-                  className={`px-2 py-1 border font-mono-code text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer ${
-                    isResumeHoverOpen
-                      ? 'border-amber-300 bg-amber-400 text-black'
-                      : 'border-amber-400/70 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300'
-                  }`}
-                  title="Passe o mouse para ver a partida salva e retomar"
-                >
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-                      isResumeHoverOpen ? 'bg-black' : 'bg-amber-400'
-                    }`}
-                  />
-                  <RotateCcw size={12} className="shrink-0" />
-                  <span className="hidden md:inline">PARTIDA SALVA</span>
-                  <ChevronDown
-                    size={12}
-                    className={`shrink-0 transition-transform duration-200 ${
-                      isResumeHoverOpen ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-              </div>
-            )}
-          </div>
+          )}
         </div>
 
-        {/* Right Side: Sound, Rules, History, Config, TV/Mobile Toggle & Decorative Retro OS Controls */}
-        <div className="flex items-center gap-1.5 shrink-0">
-
-          {/* Global Sound Mute / Unmute Toggle */}
+        <div className="rdb-bar-group shrink-0">
           <button
             type="button"
             data-testid="window-mute-btn"
             onClick={handleToggleMute}
-            className={`px-2 py-1 border font-mono-code text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer shrink-0 ${
-              muted
-                ? 'border-[#E6194B]/60 bg-[#E6194B]/15 text-rose-300 hover:bg-[#E6194B]/25'
-                : 'border-[#17B8B8]/50 bg-[#17B8B8]/10 text-[#17B8B8] hover:bg-[#17B8B8]/20'
-            }`}
+            className={`rdb-btn rdb-btn--icon cursor-pointer ${muted ? 'rdb-btn--crimson' : ''}`}
             title={muted ? 'Ativar efeitos sonoros' : 'Silenciar efeitos sonoros'}
             aria-label={muted ? 'Ativar som' : 'Silenciar som'}
           >
-            {muted ? <VolumeX size={12} /> : <Volume2 size={12} />}
-            <span className="hidden xl:inline">{muted ? 'MUDO' : 'SOM'}</span>
+            {muted ? <VolumeX /> : <Volume2 />}
           </button>
 
-          {/* Global Header Utility Dock */}
-          <div
-            data-testid="header-utility-dock"
-            className="flex items-center gap-1 bg-white/[0.03] px-1 py-0.5 border border-white/10"
-          >
-            <button
-              type="button"
-              data-testid="dock-history-btn"
-              onClick={() => {
-                sounds.playTick();
-                setActiveDockModal((prev) => (prev === 'history' ? null : 'history'));
-              }}
-              className={`px-2 py-1 text-[11px] font-mono-code font-bold uppercase flex items-center gap-1 transition-colors cursor-pointer ${
-                activeDockModal === 'history'
-                  ? 'bg-[#17B8B8] text-black'
-                  : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
-              }`}
-              title="Histórico de Partidas"
-              aria-label="Histórico de Partidas"
-            >
-              <History size={13} />
-              <span className="hidden xl:inline">Histórico</span>
-            </button>
-
-            <button
-              type="button"
-              data-testid="dock-ranking-btn"
-              onClick={() => {
-                sounds.playTick();
-                setActiveDockModal((prev) => (prev === 'ranking' ? null : 'ranking'));
-              }}
-              className={`px-2 py-1 text-[11px] font-mono-code font-bold uppercase flex items-center gap-1 transition-colors cursor-pointer ${
-                activeDockModal === 'ranking'
-                  ? 'bg-amber-400 text-black shadow-[0_0_12px_rgba(251,191,36,0.5)]'
-                  : 'text-amber-300 hover:text-white hover:bg-white/[0.06]'
-              }`}
-              title="Ranking e Tabela de Classificação"
-              aria-label="Ranking e Tabela de Classificação"
-            >
-              <Trophy size={13} className="text-amber-400" />
-              <span className="hidden xl:inline">Ranking</span>
-            </button>
-
-            {onSetVisualTheme && (
-              <button
-                type="button"
-                data-testid="dock-quick-theme-btn"
-                onClick={() => {
-                  sounds.playTick();
-                  onSetVisualTheme(nextThemeOf(visualTheme));
-                }}
-                className={`px-2 py-1 text-[11px] font-mono-code font-bold uppercase flex items-center gap-1 transition-all cursor-pointer ${
-                  isCazeFamily(visualTheme)
-                    ? 'border border-[#E6194B] bg-[#E6194B]/20 text-rose-300 shadow-[0_0_12px_rgba(230,25,75,0.4)]'
-                    : visualTheme === 'neon'
-                    ? 'border border-[#17B8B8]/80 bg-[#17B8B8]/20 text-cyan-300 shadow-neon-cyan'
-                    : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
-                }`}
-                title="Alternar entre temas: Neon, Clean, Modo 2 e Modo 3 (Original)"
-                aria-label="Alternar Tema Visual"
-              >
-                <Sparkles
-                  size={12}
-                  className={
-                    isCazeFamily(visualTheme)
-                      ? 'text-rose-400 animate-pulse'
-                      : visualTheme === 'neon'
-                      ? 'text-[#17B8B8] animate-pulse'
-                      : 'text-slate-400'
-                  }
-                />
-                <span className="hidden 2xl:inline">
-                  {themeBadge(visualTheme)}
-                </span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              data-testid="dock-config-btn"
-              onClick={() => {
-                sounds.playTick();
-                setActiveDockModal((prev) => (prev === 'config' ? null : 'config'));
-              }}
-              className={`px-2 py-1 text-[11px] font-mono-code font-bold uppercase flex items-center gap-1 transition-colors cursor-pointer ${
-                activeDockModal === 'config'
-                  ? 'bg-[#17B8B8] text-black'
-                  : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
-              }`}
-              title="Configurações de Tema, IA e Áudio"
-              aria-label="Configurações de Tema, IA e Áudio"
-            >
-              <Settings size={13} />
-              <span className="hidden xl:inline">Config</span>
-            </button>
-          </div>
-
-          {/* Toggle [ 📺 Modo TV / 📱 Celular ] */}
           {onToggleTvMode && (
             <button
               type="button"
               data-testid="toggle-tv-mode-btn"
+              aria-pressed={isTvMode}
               onClick={() => {
                 sounds.playTick();
                 onToggleTvMode();
               }}
-              className={`px-2 py-1 border font-mono-code text-[11px] font-bold uppercase flex items-center gap-1 transition-colors cursor-pointer shrink-0 ${
-                isTvMode
-                  ? 'border-amber-300 bg-[#FFE600] text-black'
-                  : 'border-slate-700 bg-black text-slate-300 hover:border-cyan-400'
-              }`}
-              title="Alternar Modo TV"
+              className="rdb-btn rdb-btn--icon rdb-hide-sm cursor-pointer"
+              title="Modo TV (texto maior para ler de longe)"
+              aria-label="Modo TV"
             >
-              <Tv size={12} />
-              <span className="hidden 2xl:inline">TV</span>
+              <Tv />
             </button>
           )}
 
@@ -426,53 +283,43 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
                 sounds.playTick();
                 onSwitchToControllerMode();
               }}
-              className="px-2 py-1 border border-cyan-400/70 bg-cyan-950/80 hover:bg-cyan-900 text-cyan-200 font-mono-code text-[11px] font-bold uppercase flex items-center gap-1 transition-colors cursor-pointer shrink-0"
-              title="Alternar para Visão de Controle Mobile"
+              className="rdb-btn rdb-btn--icon rdb-hide-sm cursor-pointer"
+              title="Ver como controle no celular"
+              aria-label="Ver como controle no celular"
             >
-              <Smartphone size={12} />
-              <span className="hidden 2xl:inline">Celular</span>
+              <Smartphone />
             </button>
           )}
 
-          {/* Retro OS Window Controls (_ □ Decorative, X interactive when inside a screen) */}
-          <div
-            data-testid="window-decorative-controls"
-            className="flex items-center border border-[#E6194B]/60 bg-black shrink-0 select-none"
+          {/* Um menu so: jogadores, historico, ranking, tema e configuracoes moram nas abas dele */}
+          <button
+            type="button"
+            data-testid="dock-config-btn"
+            aria-pressed={activeDockModal === 'config' || activeDockModal === 'history' || activeDockModal === 'ranking'}
+            onClick={() => {
+              sounds.playTick();
+              setActiveDockModal((prev) => (prev === 'config' ? null : 'config'));
+            }}
+            className="rdb-btn rdb-btn--cream cursor-pointer"
+            title="Menu: histórico, ranking, tema e configurações"
+            aria-label="Menu"
           >
-            <span
-              data-testid="window-minimize-btn"
-              aria-hidden="true"
-              className="hidden sm:flex w-7 h-6 items-center justify-center border-r border-[#E6194B]/30 text-[#E6194B] pointer-events-none select-none"
-            >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                <rect x="2" y="5.25" width="8" height="1.75" fill="currentColor" rx="0.5" />
+            <Menu />
+            <span className="rdb-hide-md">Menu</span>
+          </button>
+
+          <div data-testid="window-decorative-controls" className="rdb-winctl">
+            <span data-testid="window-minimize-btn" aria-hidden="true" className="rdb-hide-sm">
+              <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <rect x="1" y="8" width="10" height="2.4" fill="currentColor" />
               </svg>
             </span>
-
-            <span
-              data-testid="window-recenter-btn"
-              aria-hidden="true"
-              className="hidden sm:flex w-7 h-6 items-center justify-center border-r border-[#E6194B]/30 text-[#E6194B] pointer-events-none select-none"
-            >
-              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                <path
-                  d="M4.5 2.25H11.75V9.5"
-                  stroke="currentColor"
-                  strokeWidth="1.35"
-                  strokeLinecap="square"
-                />
-                <rect
-                  x="2.25"
-                  y="4.5"
-                  width="7.25"
-                  height="7.25"
-                  stroke="currentColor"
-                  strokeWidth="1.35"
-                />
-                <circle cx="5.875" cy="8.125" r="1" fill="currentColor" />
+            <span data-testid="window-recenter-btn" aria-hidden="true" className="rdb-hide-sm">
+              <svg viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M5 2.5H11.5V9" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
+                <rect x="2.5" y="5" width="6.5" height="6.5" stroke="currentColor" strokeWidth="2" />
               </svg>
             </span>
-
             {canCloseScreen ? (
               <button
                 type="button"
@@ -480,17 +327,13 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
                 onClick={handleRequestClose}
                 title="Fechar tela atual"
                 aria-label="Fechar tela atual"
-                className="w-7 h-6 flex items-center justify-center bg-[#E6194B] hover:bg-rose-500 text-white transition-colors cursor-pointer"
+                className="rdb-winctl-close cursor-pointer"
               >
-                <X size={14} strokeWidth={2.5} />
+                <X strokeWidth={4} />
               </button>
             ) : (
-              <span
-                data-testid="window-close-btn"
-                aria-hidden="true"
-                className="hidden sm:flex w-7 h-6 items-center justify-center bg-[#E6194B] text-white pointer-events-none select-none"
-              >
-                <X size={14} strokeWidth={2.5} />
+              <span data-testid="window-close-btn" aria-hidden="true" className="rdb-winctl-close rdb-hide-sm">
+                <X strokeWidth={4} />
               </span>
             )}
           </div>

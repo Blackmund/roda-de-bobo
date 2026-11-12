@@ -72,6 +72,8 @@ import {
 } from '../../utils/retroAvatars';
 import { LobbyExtrasPanel } from './lobby/LobbyExtrasPanel';
 import { LobbyGameCard } from './lobby/LobbyGameCard';
+import { SurpriseArt } from '../art/GameCardArt';
+import { Dice, ChevronLeft, ChevronRight } from '../rdb/rdbIcons';
 
 interface ScreenLobbyProps {
   room: GameRoom;
@@ -373,6 +375,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
   const gamePageCount = Math.max(1, Math.ceil(GAMES.length / GAMES_PER_PAGE));
   const currentGamePage = Math.min(gamePage, gamePageCount - 1);
   const pageGames = GAMES.slice(currentGamePage * GAMES_PER_PAGE, (currentGamePage + 1) * GAMES_PER_PAGE);
+  const isLastGamePage = currentGamePage >= gamePageCount - 1;
   const [guestName, setGuestName] = useState('');
   const [guestTeam, setGuestTeam] = useState<TeamId>('A');
   const activeTeamIds = getActiveTeamIds(room);
@@ -561,45 +564,18 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
         {/* Games Container: Primary Full-Width Element of the Screen (12 cols) */}
         <div
           data-testid="lobby-games-container"
-          className={`xl:col-span-12 flex-1 min-h-0 flex flex-col justify-start lg:justify-center py-1 gap-2.5 overflow-y-auto lg:overflow-hidden transition-all ${
+          className={`xl:col-span-12 flex-1 min-h-0 flex flex-col gap-3 lg:gap-4 overflow-y-auto lg:overflow-hidden ${
             activeSpotlightStep === 1
               ? 'ring-2 ring-pink-500 shadow-[0_0_25px_rgba(236,72,153,0.5)] rounded-xl p-1'
               : ''
           }`}
         >
-          {/* Compact 1-Line Section Header with [ 🔑 ENTRAR EM UMA SALA (CÓDIGO) ] & Sortear Jogo Surpresa */}
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-1.5 shrink-0">
-            <div className="flex items-center gap-2 min-w-0 flex-wrap">
-              <Sparkles size={14} className="text-[#17B8B8] shrink-0" />
-              <h2
-                className={`font-anton text-sm md:text-base tracking-wider text-white uppercase truncate ${
-                  visualTheme === 'neon' ? 'neon-text-cyan' : ''
-                }`}
-              >
-                FLIPERAMA
-              </h2>
-              <span
-                className={`hidden sm:inline text-[11px] font-mono-code text-[#17B8B8] font-semibold shrink-0 ${
-                  visualTheme === 'neon' ? 'text-cyan-300' : ''
-                }`}
-              >
-                · ESCOLHA UM DOS {GAMES.length} JOGOS
-              </span>
-
-              <span
-                data-testid="lobby-mode-badge"
-                className="px-2 py-0.5 border border-cyan-500/40 bg-black/80 text-cyan-300 font-mono-code text-[10px] font-bold uppercase hidden md:inline-flex items-center gap-1"
-              >
-                {room.connectionMode === 'local'
-                  ? '🖥️ LOCAL'
-                  : room.connectionMode === 'host'
-                  ? `📺 TV+CEL #${room.roomId}`
-                  : `📱 MOBILE #${room.roomId}`}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 min-w-0 max-w-full flex-wrap">
-              {onGoToModeSelect && (
+          {/* Barra do catalogo: etiqueta, modo da sala, sorteio e paginas (tudo numa linha, para a grade ficar com a altura) */}
+          <div className="rdb-toolbar">
+            <div className="flex items-center gap-3 min-w-0">
+              <h2 className="rdb-tag">Fliperama</h2>
+              <span className="rdb-toolbar-note rdb-hide-sm">{GAMES.length} jogos</span>
+              {onGoToModeSelect ? (
                 <button
                   type="button"
                   data-testid="lobby-change-mode-btn"
@@ -607,104 +583,112 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                     sounds.playTick();
                     onGoToModeSelect();
                   }}
-                  className="px-2.5 py-1 border border-slate-700 hover:border-cyan-400 bg-black/70 hover:bg-cyan-950/40 text-slate-300 hover:text-cyan-200 font-mono-code text-[11px] font-bold uppercase flex items-center gap-1 cursor-pointer transition-colors shrink-0"
-                  title="Alterar modo de conexão ou jogadores da sala"
+                  className="rdb-btn rdb-btn--cream cursor-pointer"
+                  title="Trocar o modo de conexão ou os jogadores da sala"
                 >
-                  <Settings size={12} className="text-cyan-400" />
-                  <span>Modo / Jogadores ({room.players.length})</span>
+                  <span data-testid="lobby-mode-badge">
+                    {room.connectionMode === 'local'
+                      ? 'Modo local'
+                      : room.connectionMode === 'host'
+                      ? `TV + celulares · ${room.roomId}`
+                      : `Só celulares · ${room.roomId}`}
+                  </span>
                 </button>
+              ) : (
+                <span data-testid="lobby-mode-badge" className="rdb-toolbar-note">
+                  {room.connectionMode === 'local' ? 'Modo local' : `Sala ${room.roomId}`}
+                </span>
               )}
+            </div>
 
-              {onOpenJoinRoomModal && (
+            <div className="flex items-center gap-3">
+              {!isLastGamePage && (
                 <button
                   type="button"
-                  data-testid="lobby-join-room-code-btn"
-                  onClick={() => {
-                    sounds.playTick();
-                    onOpenJoinRoomModal();
-                  }}
-                  className="px-3 py-1 border-2 border-cyan-400 bg-cyan-500/20 hover:bg-cyan-400 hover:text-black text-cyan-200 font-anton text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-[0_0_15px_rgba(0,229,255,0.25)]"
-                  title="Entrar em uma sala existente digitando o código de 6 dígitos"
+                  data-testid="lobby-surprise-roulette-btn"
+                  onClick={handleSurpriseRoulette}
+                  className="rdb-btn rdb-btn--amber cursor-pointer"
+                  title="Sortear um jogo surpresa"
                 >
-                  <KeyRound size={13} />
-                  <span>ENTRAR NA SALA</span>
+                  <Dice />
+                  <span className="rdb-hide-sm">Sortear jogo</span>
                 </button>
               )}
+              {gamePageCount > 1 && (
+                <nav data-testid="lobby-pagination" aria-label="Páginas de jogos" className="rdb-pager">
+                  <button
+                    type="button"
+                    data-testid="lobby-page-prev"
+                    disabled={currentGamePage === 0}
+                    onClick={() => {
+                      sounds.playTick();
+                      setGamePage(Math.max(0, currentGamePage - 1));
+                    }}
+                    className="rdb-btn rdb-btn--icon cursor-pointer"
+                    aria-label="Página anterior"
+                  >
+                    <ChevronLeft />
+                  </button>
+                  <div className="rdb-pager" role="tablist">
+                    {Array.from({ length: gamePageCount }, (_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        role="tab"
+                        aria-selected={i === currentGamePage}
+                        aria-pressed={i === currentGamePage}
+                        aria-label={`Página ${i + 1} de ${gamePageCount}`}
+                        data-testid={`lobby-page-dot-${i}`}
+                        onClick={() => {
+                          sounds.playTick();
+                          setGamePage(i);
+                        }}
+                        className="rdb-btn rdb-btn--icon cursor-pointer"
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    data-testid="lobby-page-next"
+                    disabled={isLastGamePage}
+                    onClick={() => {
+                      sounds.playTick();
+                      setGamePage(Math.min(gamePageCount - 1, currentGamePage + 1));
+                    }}
+                    className="rdb-btn rdb-btn--icon cursor-pointer"
+                    aria-label="Próxima página"
+                  >
+                    <ChevronRight />
+                  </button>
+                </nav>
+              )}
+            </div>
+          </div>
 
+          {/* Grade 3x2: seis jogos por pagina; na ultima, a casa que sobra vira o sorteio */}
+          <div className={`rdb-grid ${pageGames.length + (isLastGamePage ? 1 : 0) <= 3 ? "rdb-grid--row" : ""}`}>
+            {pageGames.map((game) => <LobbyGameCard key={game.id} game={game} handleGameClick={handleGameClick} setHoveredGame={setHoveredGame} visualTheme={visualTheme} />)}
+            {isLastGamePage && pageGames.length < GAMES_PER_PAGE && (
               <button
                 type="button"
                 data-testid="lobby-surprise-roulette-btn"
                 onClick={handleSurpriseRoulette}
-                className="px-2.5 py-1 border border-amber-400 bg-amber-500/20 hover:bg-amber-400 hover:text-black text-amber-300 font-anton text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
-                title="Sortear Jogo Surpresa (Modo Roleta)"
+                className="rdb-card rdb-card--surprise group cursor-pointer"
               >
-                <Sparkles size={12} className="text-amber-300" />
-                <span>🎲 Sortear Jogo Surpresa</span>
+                <span className="rdb-card-art">
+                  <SurpriseArt />
+                </span>
+                <span className="rdb-card-foot">
+                  <span className="min-w-0">
+                    <span className="rdb-card-name block">Sortear jogo surpresa</span>
+                    <span className="rdb-card-tagline block">Deixa o dado escolher um dos {GAMES.length}</span>
+                  </span>
+                </span>
               </button>
-            </div>
+            )}
           </div>
-
-          {/* 6 Games Adaptive Grid: Protected Height (flex-1 min-h-0) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-rows-3 lg:grid-cols-3 lg:grid-rows-2 gap-3 md:gap-4 flex-1 min-h-0 max-sm:overflow-y-auto max-sm:auto-rows-[minmax(170px,1fr)] max-sm:pr-0.5">
-            {pageGames.map((game) => <LobbyGameCard key={game.id} game={game} handleGameClick={handleGameClick} setHoveredGame={setHoveredGame} visualTheme={visualTheme} />)}
-          </div>
-
-          {gamePageCount > 1 && (
-            <nav
-              data-testid="lobby-pagination"
-              aria-label="Páginas de jogos"
-              className="shrink-0 flex items-center justify-center gap-3 pt-1"
-            >
-              <button
-                type="button"
-                data-testid="lobby-page-prev"
-                disabled={currentGamePage === 0}
-                onClick={() => {
-                  sounds.playTick();
-                  setGamePage(Math.max(0, currentGamePage - 1));
-                }}
-                className="px-3 py-1 border border-cyan-500/50 bg-black/70 text-cyan-200 font-anton text-xs uppercase tracking-wider disabled:opacity-30 enabled:hover:bg-cyan-400 enabled:hover:text-black cursor-pointer"
-                aria-label="Página anterior"
-              >
-                ◀ ANTERIOR
-              </button>
-              <div className="flex items-center gap-1.5" role="tablist">
-                {Array.from({ length: gamePageCount }, (_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    role="tab"
-                    aria-selected={i === currentGamePage}
-                    data-testid={`lobby-page-dot-${i}`}
-                    onClick={() => {
-                      sounds.playTick();
-                      setGamePage(i);
-                    }}
-                    className={`w-7 h-7 border font-anton text-xs cursor-pointer ${
-                      i === currentGamePage
-                        ? 'border-cyan-300 bg-cyan-400 text-black'
-                        : 'border-white/20 bg-black/60 text-slate-300 hover:border-cyan-400'
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                data-testid="lobby-page-next"
-                disabled={currentGamePage >= gamePageCount - 1}
-                onClick={() => {
-                  sounds.playTick();
-                  setGamePage(Math.min(gamePageCount - 1, currentGamePage + 1));
-                }}
-                className="px-3 py-1 border border-cyan-500/50 bg-black/70 text-cyan-200 font-anton text-xs uppercase tracking-wider disabled:opacity-30 enabled:hover:bg-cyan-400 enabled:hover:text-black cursor-pointer"
-                aria-label="Próxima página"
-              >
-                PRÓXIMA ▶
-              </button>
-            </nav>
-          )}
         </div>
 
         {/* Clean Lobby: Sidebar removed from main screen so the 6 Game Cards have 100% spotlight */}

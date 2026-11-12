@@ -171,6 +171,44 @@ export const Swords: React.FC<RdbIconProps> = (p) => (
   </Base>
 );
 
+export const Users: React.FC<RdbIconProps> = (p) => (
+  <Base {...p}>
+    <path d="M9 4H13V8H9Z" />
+    <path d="M5 20V14H17V20" />
+    <A d="M17 6H20V9H17Z" />
+    <A d="M20 20V15" />
+  </Base>
+);
+
+export const Menu: React.FC<RdbIconProps> = (p) => (
+  <Base {...p}>
+    <path d="M4 6H20" />
+    <A d="M4 12H20" />
+    <path d="M4 18H20" />
+  </Base>
+);
+
+export const ChevronLeft: React.FC<RdbIconProps> = (p) => (
+  <Base {...p}>
+    <path d="M15 5L8 12L15 19" />
+  </Base>
+);
+
+export const ChevronRight: React.FC<RdbIconProps> = (p) => (
+  <Base {...p}>
+    <path d="M9 5L16 12L9 19" />
+  </Base>
+);
+
+export const Dice: React.FC<RdbIconProps> = (p) => (
+  <Base {...p}>
+    <path d="M4 4H20V20H4Z" />
+    <A d="M8 8H9V9H8Z" />
+    <A d="M15 15H16V16H15Z" />
+    <A d="M11.5 11.5H12.5V12.5H11.5Z" />
+  </Base>
+);
+
 /** Todos os icones do kit, por nome (para a pagina de prova e para `<RdbIcon name=...>`). */
 export const RDB_ICONS = {
   'arrow-left': ArrowLeft,
@@ -189,7 +227,12 @@ export const RDB_ICONS = {
   tv: Tv,
   smartphone: Smartphone,
   'key-round': KeyRound,
-  swords: Swords
+  swords: Swords,
+  users: Users,
+  menu: Menu,
+  'chevron-left': ChevronLeft,
+  'chevron-right': ChevronRight,
+  dice: Dice
 } as const;
 
 export type RdbIconName = keyof typeof RDB_ICONS;
