@@ -7,6 +7,21 @@ import { updateFixedPlayersAfterMatch } from '../utils/fixedPlayers';
 import { buildMatchMVPSnapshot } from '../utils/sessionPersistence';
 import { applyPVMatchResult } from '../utils/perguntasEVerdadesEngine';
 import { PhaseStinger } from '../components/art/PhaseStinger';
+import { ActiveTurnBanner } from '../components/ActiveTurnBanner';
+
+/** Jogos que ainda nao desenham a propria faixa "Vez de": ela entra aqui, acima do jogo. */
+const TURN_BAR_GAMES: GameId[] = [
+  'limite',
+  'mimica',
+  'quem-sou-eu',
+  'onde-estou',
+  'mega-resenha',
+  'repetente',
+  'respostas-sem-perguntas',
+  'estadios',
+  'como-eu-pinto',
+  'perguntas-e-verdades'
+];
 
 interface PlayingScreenProps {
   room: GameRoom;
@@ -28,7 +43,7 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.985 }}
               transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full h-full flex-1 min-h-0"
+              className="relative w-full h-full flex-1 min-h-0 flex flex-col gap-1.5"
             >
               <PhaseStinger room={room} />
               {room.roundSource && room.activeGame !== 'com-terra' && (
@@ -40,6 +55,12 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
                   {room.roundSource === 'ai' ? '🤖 IA' : '📚 Banco pronto'}
                 </div>
               )}
+              {room.activeGame && TURN_BAR_GAMES.includes(room.activeGame) && (
+                <div className="shrink-0" data-testid="playing-turn-bar">
+                  <ActiveTurnBanner room={room} />
+                </div>
+              )}
+              <div className="flex-1 min-h-0 relative">
               <Suspense
                 fallback={
                   <div className="py-24 text-center font-anton text-2xl text-cyan-300 uppercase tracking-wider animate-pulse">
@@ -331,6 +352,7 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
                 />
               )}
               </Suspense>
+              </div>
             </motion.div>
           );
 };
