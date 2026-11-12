@@ -451,3 +451,33 @@ export const ModeArt: React.FC<{ mode: 'local' | 'host' | 'multi' }> = ({ mode }
     {mode === 'local' ? <ModeLocal /> : mode === 'host' ? <ModeHost /> : <ModeMulti />}
   </div>
 );
+
+/** Tela de vitoria: taca com raios girando e estrelas estourando (aqui ha o que comemorar). */
+export const WinnerArt: React.FC = () => (
+  <svg className="rdbv-svg" viewBox="0 0 320 200" role="img" aria-label="Troféu" preserveAspectRatio="xMidYMid meet">
+    <g className="rdbv-win-rays" style={{ transformOrigin: '160px 96px' }}>
+      {Array.from({ length: 12 }, (_, i) => (
+        <path key={i} d="M160 96 L152 -40 L168 -40 Z" fill={i % 2 ? TEAL : CRIMSON} opacity="0.55" transform={`rotate(${i * 30} 160 96)`} />
+      ))}
+    </g>
+    <circle cx="160" cy="96" r="62" fill={NAVY} />
+    <g className="rdbv-win-cup" style={{ transformOrigin: '160px 180px' }}>
+      <path d="M118 44 H202 V86 a42 42 0 0 1 -84 0 Z" fill="#FFC93C" stroke={NAVY} strokeWidth="5" strokeLinejoin="round" />
+      <path d="M118 56 H98 V70 a22 22 0 0 0 24 22 M202 56 H222 V70 a22 22 0 0 1 -24 22" fill="none" stroke={NAVY} strokeWidth="11" strokeLinecap="round" />
+      <path d="M118 56 H98 V70 a22 22 0 0 0 24 22 M202 56 H222 V70 a22 22 0 0 1 -24 22" fill="none" stroke="#FFC93C" strokeWidth="5" strokeLinecap="round" />
+      <rect x="150" y="124" width="20" height="26" fill="#FFC93C" stroke={NAVY} strokeWidth="5" />
+      <rect x="124" y="148" width="72" height="20" rx="3" fill={CREAM} stroke={NAVY} strokeWidth="5" />
+      <path d="M160 58 L166 74 L183 75 L170 86 L174 103 L160 94 L146 103 L150 86 L137 75 L154 74 Z" fill={CRIMSON} />
+    </g>
+    {[
+      [58, 44, TEAL, 0],
+      [262, 52, CRIMSON, 0.5],
+      [44, 140, CRIMSON, 1],
+      [276, 146, TEAL, 1.5]
+    ].map(([x, y, c, d], i) => (
+      <g key={i} transform={`translate(${x} ${y})`}>
+        <path className="rdbv-dot" style={{ animationDelay: `${d}s` }} d="M0 -14 L4 -4 L14 0 L4 4 L0 14 L-4 4 L-14 0 L-4 -4 Z" fill={c as string} />
+      </g>
+    ))}
+  </svg>
+);

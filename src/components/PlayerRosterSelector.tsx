@@ -423,6 +423,8 @@ export const PlayerRosterSelector: React.FC<PlayerRosterSelectorProps> = ({
                   key={fp.id}
                   type="button"
                   data-testid={`pregame-fixed-player-${fp.id}`}
+                  aria-pressed={isSelected}
+                  title={isSelected ? `Tirar ${fp.name} da sala` : `Colocar ${fp.name} na sala`}
                   onClick={() => handleToggleFixedPlayer(fp)}
                   className={`px-2.5 py-1 text-xs font-mono-code font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                     isSelected
@@ -433,7 +435,7 @@ export const PlayerRosterSelector: React.FC<PlayerRosterSelectorProps> = ({
                   <span>{displayAvatar}</span>
                   <span>{fp.name}</span>
                   {isSelected ? (
-                    <Check size={12} className="text-[#17B8B8]" />
+                    <Check size={14} strokeWidth={4} />
                   ) : (
                     <span className="text-amber-400">+</span>
                   )}
