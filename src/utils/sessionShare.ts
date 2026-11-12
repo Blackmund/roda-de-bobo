@@ -24,7 +24,9 @@ export function formatMatchResultsShareText(room: GameRoom, mvp: MVPStats): stri
     `👑 MVP: ${mvp.name} (${mvp.teamName}) — ${mvp.score} PTS`,
     `📊 Performance: Accuracy ${mvp.accuracy}% | Rounds Played: ${mvp.roundsPlayed}`
   ].join('\n');
-}/**
+}
+
+/**
  * Shares or copies the match results summary using the Web Share API (`navigator.share`)
  * with automatic clipboard write (`navigator.clipboard.writeText`) so the summary text
  * is always copied/shared across mobile and desktop browsers.

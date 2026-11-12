@@ -11,11 +11,15 @@ export interface RadarComparisonAxis {
   mvpRawLabel: string;
   runnerUpRawLabel: string;
   fullMark: number;
-}export interface MatchPlayerComparison {
+}
+
+export interface MatchPlayerComparison {
   mvp: MVPStats;
   runnerUp: MVPStats;
   axes: RadarComparisonAxis[];
-}/**
+}
+
+/**
  * Computes the side-by-side comparison payload between the current match MVP
  * and the second-highest scoring player (runner-up) from the match, including
  * normalized 0-100 radar chart axes for Recharts/D3 visualization.

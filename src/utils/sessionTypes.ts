@@ -13,7 +13,9 @@ export interface MVPHistoryItem {
   score: number;
   roundsPlayed: number;
   accuracy: number;
-}export interface MVPStats {
+}
+
+export interface MVPStats {
   playerId: string;
   name: string;
   avatar: string;

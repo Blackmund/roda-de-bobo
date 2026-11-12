@@ -1,5 +1,6 @@
 import type { GameRoom, Player, TeamId, PlayerScoreSnapshot } from '../types/game';
 import { MVPStats } from './sessionTypes';
+import { computeRoundTeamPoints } from './roundPoints';
 
 /**
  * Accumulates individual player scores and individual performance metrics
@@ -64,6 +65,23 @@ export function accumulateRoundPlayerScores(room: GameRoom): Player[] {
         deltas[p.id] = (deltas[p.id] || 0) + teamScore;
       }
     });
+  } else if (
+    room.activeGame === 'mimica' ||
+    room.activeGame === 'mega-resenha' ||
+    room.activeGame === 'repetente' ||
+    room.activeGame === 'como-eu-pinto'
+  ) {
+    // Jogos de equipe: cada jogador soma os pontos que a propria equipe fez na rodada.
+    const teamPts = computeRoundTeamPoints(room);
+    room.players.forEach((p) => {
+      const pts = teamPts[p.team] || 0;
+      if (pts > 0) deltas[p.id] = (deltas[p.id] || 0) + pts;
+    });
+  } else if (room.activeGame === 'perguntas-e-verdades' && room.perguntasEVerdades) {
+    const winnerId = room.perguntasEVerdades.winnerPlayerId;
+    if (winnerId && room.players.some((p) => p.id === winnerId)) {
+      deltas[winnerId] = (deltas[winnerId] || 0) + 100;
+    }
   }
 
   return room.players.map((p) => {
@@ -82,7 +100,9 @@ export function accumulateRoundPlayerScores(room: GameRoom): Player[] {
       accuracy
     };
   });
-}/**
+}
+
+/**
  * UX-15: MVP da PARTIDA ATUAL. Usa apenas os jogadores da sala (placar e métricas são zerados a cada
  * início de partida), sem olhar o histórico da sessão. Evita mostrar, no fim de um jogo, o MVP (e os
  * pontos) de uma partida anterior. Sem jogadores, cai no cálculo da sessão.
@@ -119,7 +139,9 @@ export function computeMatchMVP(room: GameRoom): MVPStats {
     matchesWon: sessionVictories?.[`victories${top.team}`] || 0,
     highlightReason: 'Maior pontuação individual da partida'
   };
-}/**
+}
+
+/**
  * Computes the 'Most Valuable Player' (MVP) highlight based on the highest individual score
  * in the session history and current room players, including individual performance metrics.
  */

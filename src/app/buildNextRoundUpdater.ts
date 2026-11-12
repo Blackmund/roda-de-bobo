@@ -1,3 +1,4 @@
+import { computeRoundTeamPoints } from '../utils/roundPoints';
 import { GAME_NAMES } from './gameNames';
 import type { GameRoom } from '../types/game';
 import React from 'react';
@@ -21,94 +22,8 @@ export const buildNextRoundUpdater = ({
   duvidoEndsEarly
 }: buildNextRoundUpdaterDeps): ((prev: GameRoom) => GameRoom) =>
 (prev) => {
-      // Accumulate round points from active game across up to 4 teams
-      const roundPts: Record<TeamId, number> = { A: 0, B: 0, C: 0, D: 0 };
-
-      if (prev.activeGame === 'proibido' && prev.proibido) {
-        if (prev.proibido.is2PlayerMode || prev.players.length === 2) {
-          // In 2-player cooperative mode, both players score together!
-          roundPts.A += prev.proibido.roundScore || 0;
-          roundPts.B += prev.proibido.roundScore || 0;
-        } else {
-          const spkTeam = prev.proibido.speakerTeam;
-          roundPts[spkTeam] = (roundPts[spkTeam] || 0) + prev.proibido.roundScore;
-        }
-      } else if (prev.activeGame === 'como-eu-pinto' && prev.comoEuPinto) {
-        const r = pintoRoundPoints(prev.comoEuPinto);
-        if (prev.players.length === 2) {
-          // cooperativo: os dois formam a dupla e somam juntos
-          roundPts.A += r.draw;
-          roundPts.B += r.draw;
-        } else {
-          roundPts[prev.comoEuPinto.drawTeam] = (roundPts[prev.comoEuPinto.drawTeam] || 0) + r.draw;
-          if (prev.comoEuPinto.rivalTeam) {
-            roundPts[prev.comoEuPinto.rivalTeam] = (roundPts[prev.comoEuPinto.rivalTeam] || 0) + r.rival;
-          }
-        }
-      } else if (prev.activeGame === 'estadios' && prev.estadios) {
-        Object.entries(prev.estadios.pointsAwarded || {}).forEach(([pid, pts]) => {
-          const p = prev.players.find((pl) => pl.id === pid);
-          if (p?.team) roundPts[p.team] = (roundPts[p.team] || 0) + pts;
-        });
-      } else if (prev.activeGame === 'respostas-sem-perguntas' && prev.respostasSemPerguntas) {
-        Object.entries(prev.respostasSemPerguntas.pointsAwarded || {}).forEach(([pid, pts]) => {
-          const p = prev.players.find((pl) => pl.id === pid);
-          if (p?.team) roundPts[p.team] = (roundPts[p.team] || 0) + pts;
-        });
-      } else if (prev.activeGame === 'repetente' && prev.repetente) {
-        const pts = prev.repetente.result?.pointsByTeam;
-        if (pts) {
-          roundPts.A += pts.A || 0;
-          roundPts.B += pts.B || 0;
-          roundPts.C += pts.C || 0;
-          roundPts.D += pts.D || 0;
-        }
-      } else if (prev.activeGame === 'mega-resenha' && prev.megaResenha) {
-        // Pontos da rodada para a equipe que jogou; com 2 jogadores (cooperativo) as duas equipes somam.
-        if (prev.players.length === 2) {
-          roundPts.A += prev.megaResenha.roundScore || 0;
-          roundPts.B += prev.megaResenha.roundScore || 0;
-        } else {
-          roundPts[prev.megaResenha.team] = (roundPts[prev.megaResenha.team] || 0) + (prev.megaResenha.roundScore || 0);
-        }
-      } else if ((prev.activeGame === 'quem-sou-eu' || prev.activeGame === 'onde-estou') && prev.quemSouEu) {
-        Object.entries(prev.quemSouEu.pointsAwarded || {}).forEach(([pid, pts]) => {
-          const p = prev.players.find((pl) => pl.id === pid);
-          if (p?.team) roundPts[p.team] = (roundPts[p.team] || 0) + pts;
-        });
-      } else if (prev.activeGame === 'mimica' && prev.mimica) {
-        // Pontos da rodada para a equipe do mimico; com 2 jogadores (cooperativo) as duas equipes somam.
-        if (prev.players.length === 2) {
-          roundPts.A += prev.mimica.roundScore || 0;
-          roundPts.B += prev.mimica.roundScore || 0;
-        } else {
-          roundPts[prev.mimica.mimeTeam] = (roundPts[prev.mimica.mimeTeam] || 0) + (prev.mimica.roundScore || 0);
-        }
-      } else if (prev.activeGame === 'duvido' && prev.duvido) {
-        const winTeam = prev.duvido.resultWinnerTeam;
-        if (winTeam) {
-          roundPts[winTeam] = (roundPts[winTeam] || 0) + 1;
-        }
-      } else if (prev.activeGame === 'tem-ou-nao-tem' && prev.temOuNaoTem) {
-        roundPts.A += prev.temOuNaoTem.roundScore.A || 0;
-        roundPts.B += prev.temOuNaoTem.roundScore.B || 0;
-        roundPts.C += prev.temOuNaoTem.roundScore.C || 0;
-        roundPts.D += prev.temOuNaoTem.roundScore.D || 0;
-      } else if (prev.activeGame === 'limite' && prev.limite) {
-        Object.entries(prev.limite.pointsAwarded || {}).forEach(([pid, pts]) => {
-          const p = prev.players.find((pl) => pl.id === pid);
-          if (p?.team) roundPts[p.team] = (roundPts[p.team] || 0) + pts;
-        });
-      } else if (prev.activeGame === 'nota' && prev.nota) {
-        Object.entries(prev.nota.pointsAwarded || {}).forEach(([pid, pts]) => {
-          const p = prev.players.find((pl) => pl.id === pid);
-          if (p?.team) roundPts[p.team] = (roundPts[p.team] || 0) + pts;
-        });
-      } else if (prev.activeGame === 'perguntas-e-verdades' && prev.perguntasEVerdades) {
-        const winId = prev.perguntasEVerdades.winnerPlayerId;
-        const winPlayer = prev.players.find((pl) => pl.id === winId);
-        if (winPlayer?.team) roundPts[winPlayer.team] = (roundPts[winPlayer.team] || 0) + 100;
-      }
+      // Pontos da rodada por equipe (regra de cada jogo em utils/roundPoints.ts)
+      const roundPts = computeRoundTeamPoints(prev);
 
       const roundPointsA = roundPts.A;
       const roundPointsB = roundPts.B;

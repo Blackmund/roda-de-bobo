@@ -15,7 +15,9 @@ const DEFAULT_GAME_NAMES: Record<GameId, string> = {
   estadios: 'ESTÁDIOS',
   'como-eu-pinto': 'COMO EU PINTO',
   'onde-estou': 'ONDE ESTOU'
-};/**
+};
+
+/**
  * Builds a single RoundActivityEvent when a round finishes.
  */
 export function buildRoundActivityEvent(
@@ -69,7 +71,9 @@ export function buildRoundActivityEvent(
     topPlayerName,
     timestamp: Date.now()
   };
-}/**
+}
+
+/**
  * Retrieves the chronological Round Activity Log for the current/completed match.
  * Falls back to the latest GameHistoryEntry.roundLog or deterministically synthesizes
  * round events if a match state reached game-over without explicit roundLog entries.

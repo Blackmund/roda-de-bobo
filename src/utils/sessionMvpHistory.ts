@@ -97,7 +97,9 @@ export function resolveMatchMVPFromHistoryEntry(
     roundsPlayed: defaultRounds,
     accuracy: score > 0 ? 100 : 0
   };
-}/**
+}
+
+/**
  * Builds a reverse-chronological list of previous match MVPs from SessionStats.history.
  */
 export function getSessionMVPHistory(
@@ -110,7 +112,9 @@ export function getSessionMVPHistory(
     .slice()
     .reverse()
     .map((entry) => resolveMatchMVPFromHistoryEntry(entry, teamAName, teamBName));
-}/**
+}
+
+/**
  * Creates a MatchMVPSnapshot for storing directly inside a new GameHistoryEntry.
  */
 export function buildMatchMVPSnapshot(
@@ -171,7 +175,9 @@ export function buildMatchMVPSnapshot(
     roundsWon: score > 0 ? rp : 0,
     accuracy: score > 0 ? 100 : 0
   };
-}/**
+}
+
+/**
  * Builds a collective Dupla/Equipe highlight snapshot for team-scored games
  * ('tem-ou-nao-tem', 'proibido', 'duvido') where teammates play and score together
  * and no single individual MVP should be counted.
