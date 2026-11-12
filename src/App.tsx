@@ -179,6 +179,11 @@ export default function App() {
   const [isJoinRoomOpen, setIsJoinRoomOpen] = useState<boolean>(false);
   const [joinCodePreFill, setJoinCodePreFill] = useState<string>(() => parsedQuery.joinCode || '');
   const [isTvMode, setIsTvMode] = useState(true);
+  // UX-11: no modo TV (tela grande) a fonte base sobe para ler a ~3 m; ver `html.rb-tv` em index.css.
+  useEffect(() => {
+    document.documentElement.classList.toggle('rb-tv', isTvMode && viewMode === 'host');
+    return () => document.documentElement.classList.remove('rb-tv');
+  }, [isTvMode, viewMode]);
   const [visualTheme, setVisualTheme] = useState<VisualTheme>(() => {
     const saved = localStorage.getItem('rb_visual_theme') || localStorage.getItem('roda-de-bobo-visual-theme');
     if (isVisualTheme(saved)) return saved as VisualTheme;

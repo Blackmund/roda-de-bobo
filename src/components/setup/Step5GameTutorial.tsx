@@ -8,6 +8,7 @@ export { GAME_TUTORIALS } from './gameTutorials';
 export { TutorialStepIllustration } from './TutorialStepIllustration';
 import { GAME_TUTORIALS } from './gameTutorials';
 import { TutorialStepIllustration } from './TutorialStepIllustration';
+import { TUTORIAL_EXAMPLES, exampleSourceUrl } from './tutorialExamples';
 
 export interface Step5GameTutorialProps {
   gameId: GameId;
@@ -23,6 +24,7 @@ export const Step5GameTutorial: React.FC<Step5GameTutorialProps> = React.memo(({
   onStartGameNow
 }) => {
   const tutorial = GAME_TUTORIALS[gameId] || GAME_TUTORIALS.limite;
+  const example = TUTORIAL_EXAMPLES[gameId];
 
   const handleSkipOrStart = () => {
     sounds.playPowerup();
@@ -108,6 +110,34 @@ export const Step5GameTutorial: React.FC<Step5GameTutorialProps> = React.memo(({
             </div>
           ))}
         </div>
+
+        {/* UX-12: um exemplo real do programa (ou do banco do jogo), com o video-fonte quando existe */}
+        {example && (
+          <div
+            data-testid="tutorial-example"
+            className="px-3 py-1.5 rounded-lg bg-emerald-950/30 border border-emerald-400/25 text-xs shrink-0"
+          >
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              <span className="font-anton text-[11px] text-emerald-300 uppercase tracking-wider">
+                {example.fonte ? '🎬 Exemplo do programa' : '📚 Exemplo'}
+              </span>
+              <strong className="text-white font-sans">{example.texto}</strong>
+              {example.fonte && (
+                <a
+                  href={exampleSourceUrl(example.fonte)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-testid="tutorial-example-source"
+                  className="font-mono-code text-[10px] text-cyan-300 underline hover:text-white"
+                  title={`Ver no vídeo (confiança ${example.fonte.confianca})`}
+                >
+                  ver no vídeo ↗
+                </a>
+              )}
+            </div>
+            <p className="text-[11px] text-slate-300 leading-snug font-sans">{example.detalhe}</p>
+          </div>
+        )}
 
         {/* Resumo Rápido de Pontuação (Faixa compacta) */}
         <div className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-300 shrink-0">

@@ -809,3 +809,10 @@ button[data-testid*="start-direct"]:hover,
 @media (prefers-reduced-motion: reduce) {
   .rdb-caze-svg *, .rdb-caze-svg { animation: none !important; transition: none !important; }
 }
+
+/* UX-11: modo TV legivel a distancia. So em telas grandes (full HD); notebooks e celulares ficam como antes. */
+@media (min-width: 1800px) and (min-height: 900px) {
+  html.rb-tv {
+    font-size: 112.5%;
+  }
+}

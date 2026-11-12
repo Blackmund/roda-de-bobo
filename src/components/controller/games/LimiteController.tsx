@@ -1,4 +1,5 @@
 import React from 'react';
+import { ConfirmSendButton } from '../ConfirmSendButton';
 import { GameRoom, Player, LimitePowerCardType } from '../../../types/game';
 import { sounds } from '../../../utils/soundEffects';
 import { Lock } from 'lucide-react';
@@ -280,13 +281,13 @@ export const LimiteController: React.FC<LimiteControllerProps> = ({
                 placeholder="Ex: 485"
                 className="w-full bg-black border-2 border-cyan-400 p-3 text-white font-anton text-3xl text-center focus:outline-none"
               />
-              <button
-                onClick={handleSendGuess}
+              <ConfirmSendButton
+                onConfirm={handleSendGuess}
                 disabled={!limiteGuess}
+                label="🔒 ENVIAR PALPITE SECRETO"
+                confirmLabel={`⚠️ ENVIAR ${limiteGuess} ${limite.roundData.unidade}? TOQUE DE NOVO`}
                 className="w-full py-3 border-2 border-cyan-300 bg-cyan-400 disabled:opacity-50 text-black font-anton text-base uppercase tracking-wider cursor-pointer"
-              >
-                🔒 ENVIAR PALPITE SECRETO
-              </button>
+              />
               {isEditingLimiteGuess && (
                 <button
                   type="button"
