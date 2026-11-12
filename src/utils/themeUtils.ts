@@ -28,4 +28,4 @@ export const themeBadge = (theme?: VisualTheme | string | null): string =>
   THEME_LABELS[(theme as VisualTheme) || 'neon'] || THEME_LABELS.neon;
 
 /** Caminho da ilustração gerada no estilo CazéTV (Modo 3) em PNG transparente. */
-export const cazeArtSrc = (gameId: string): string => `/assets/cazetv/${gameId}.png`;
+export const cazeArtSrc = (gameId: string): string => `/assets/cazetv/${gameId}.webp`;

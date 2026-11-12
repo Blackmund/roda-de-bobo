@@ -1,5 +1,5 @@
 import React from 'react';
-import { RotateCcw, Volume2, VolumeX, Check, Sparkles } from 'lucide-react';
+import { RotateCcw, Volume2, VolumeX, Check, Sparkles } from '../rdb/rdbIcons';
 import { VisualTheme } from '../../types/game';
 import { sounds } from '../../utils/soundEffects';
 import { clearUsedRoundSignatures } from '../../utils/aiGameGenerator';

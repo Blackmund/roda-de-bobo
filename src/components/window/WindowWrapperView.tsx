@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowLeft, RotateCcw, X, ChevronDown, Volume2, VolumeX, QrCode, History, Trophy, Settings, Copy, Check, Sparkles, Tv, Smartphone, KeyRound } from 'lucide-react';
-import { RodaDeBoboOfficialBadge } from '../RodaIcons';
+import { ArrowLeft, RotateCcw, X, ChevronDown, Volume2, VolumeX, QrCode, History, Trophy, Settings, Copy, Check, Sparkles, Tv, Smartphone, KeyRound } from '../rdb/rdbIcons';
+import { RdbLogo } from '../rdb/RdbLogo';
 import { isCazeFamily, nextTheme as nextThemeOf, themeBadge, cazeArtSrc } from '../../utils/themeUtils';
 import { GameRoom, VisualTheme, TeamId } from '../../types/game';
 import { sounds } from '../../utils/soundEffects';
@@ -149,7 +149,7 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
 
           <div className="flex items-center gap-1.5 min-w-0">
             <div className="bg-white/[0.03] px-1.5 py-0.5 flex items-center shrink-0">
-              <RodaDeBoboOfficialBadge size="sm" />
+              <RdbLogo variant="inline" className="h-5 w-auto" />
             </div>
 
             {visualTheme === 'original' && room?.activeGame && (<img src={cazeArtSrc(room.activeGame)} alt="" draggable={false} onError={(e) => { e.currentTarget.style.display = 'none'; }} className="h-8 w-8 object-contain pointer-events-none select-none shrink-0" />)}

@@ -1,0 +1,25 @@
+/**
+ * ART-08: gera .webp a partir dos PNG mestres de public/assets/cazetv (o PNG continua sendo o mestre; o site usa o WebP).
+ * Uso:  node scripts/make-webp.mjs
+ * Requer o pacote `sharp` (nao e dependencia do projeto: instale so quando for regenerar, ex.: npm i --no-save sharp).
+ * As artes animadas (.svg) e os .jpg nao sao tocados.
+ */
+import { readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+
+const { default: sharp } = await import('sharp');
+const dir = process.argv[2] || new URL('../public/assets/cazetv/', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
+const pngs = readdirSync(dir).filter((f) => f.endsWith('.png'));
+let before = 0;
+let after = 0;
+for (const f of pngs) {
+  const src = join(dir, f);
+  const out = join(dir, f.replace(/\.png$/, '.webp'));
+  await sharp(src).resize({ width: 640, withoutEnlargement: true }).webp({ quality: 82, effort: 5 }).toFile(out);
+  const a = statSync(src).size;
+  const b = statSync(out).size;
+  before += a;
+  after += b;
+  console.log(`${f}: ${Math.round(a / 1024)} KB -> ${Math.round(b / 1024)} KB`);
+}
+console.log(`total: ${Math.round(before / 1024)} KB -> ${Math.round(after / 1024)} KB`);

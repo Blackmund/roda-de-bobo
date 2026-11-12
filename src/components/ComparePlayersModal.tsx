@@ -10,15 +10,9 @@ import {
   ResponsiveContainer,
   Tooltip
 } from 'recharts';
-import {
-  X,
-  Crown,
-  Medal,
-  Swords,
-  Target,
-  Sparkles,
-  Award
-} from 'lucide-react';
+import { Crown, Medal, Target, Award } from 'lucide-react';
+import { X, Swords, Sparkles } from './rdb/rdbIcons';
+import { RetroWindow } from './rdb/RetroWindow';
 import type { MatchPlayerComparison } from '../utils/sessionPersistence';
 
 interface ComparePlayersModalProps {
@@ -81,48 +75,18 @@ export const ComparePlayersModal: React.FC<ComparePlayersModalProps> = ({
           onClick={onClose}
           className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
         >
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="compare-players-modal-title"
+          <RetroWindow
             data-testid="compare-players-modal"
-            onClick={(e) => e.stopPropagation()}
-            initial={{ opacity: 0, scale: 0.95, y: 16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 16 }}
-            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-4xl max-h-[85dvh] overflow-y-auto bg-slate-950 border-2 border-cyan-400 rounded-none shadow-2xl relative my-auto"
+            titleId="compare-players-modal-title"
+            title="COMPARAR JOGADORES · MVP VS 2º COLOCADO"
+            subtitle="Análise Tática Lado a Lado · Radar de Performance"
+            icon={<Swords size={16} />}
+            onClose={onClose}
+            closeTestId="close-compare-players-modal"
+            tone="cyan"
+            className="w-full max-w-4xl max-h-[85dvh] my-auto"
           >
-            {/* Top Broadcast Title Bar */}
-            <div className="px-4 py-3 bg-gradient-to-r from-amber-500 via-amber-400 to-cyan-400 text-black border-b-2 border-black flex items-center justify-between gap-3 sticky top-0 z-20">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-7 h-7 bg-black text-amber-400 flex items-center justify-center shrink-0">
-                  <Swords size={16} />
-                </div>
-                <div className="min-w-0">
-                  <h2
-                    id="compare-players-modal-title"
-                    className="font-anton text-base sm:text-lg tracking-wider uppercase leading-none text-black truncate"
-                  >
-                    COMPARAR JOGADORES · MVP VS 2º COLOCADO
-                  </h2>
-                  <p className="text-[10px] font-mono-code font-bold uppercase tracking-wider text-black/80 truncate mt-0.5">
-                    Análise Tática Lado a Lado · Radar de Performance
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                data-testid="close-compare-players-modal"
-                aria-label="Fechar Modal"
-                onClick={onClose}
-                className="min-w-[44px] min-h-[44px] px-3.5 py-1.5 bg-[#E6194B] hover:bg-rose-500 border border-black text-white font-mono-code text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-md"
-              >
-                <X size={16} />
-                <span>[ X FECHAR ]</span>
-              </button>
-            </div>
+            
 
             <div className="p-4 sm:p-5 space-y-4">
               {/* Top Contenders Side-by-Side Header Cards */}
@@ -522,7 +486,7 @@ export const ComparePlayersModal: React.FC<ComparePlayersModalProps> = ({
                 </div>
               </div>
             </div>
-          </motion.div>
+          </RetroWindow>
         </div>
       )}
     </AnimatePresence>,
