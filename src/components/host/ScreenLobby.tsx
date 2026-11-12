@@ -121,7 +121,8 @@ const GAME_TITLES: Record<GameId, string> = {
   'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS',
   estadios: 'ESTÁDIOS',
   'como-eu-pinto': 'COMO EU PINTO',
-  'onde-estou': 'ONDE ESTOU'
+  'onde-estou': 'ONDE ESTOU',
+  'com-terra': 'COM TERRA'
 };
 
 /** Maximo de cards por pagina do catalogo (o grid e 3x2 no desktop e 2x3 no tablet). */
@@ -344,6 +345,14 @@ const GAMES: Array<{
         }
       />
     )
+  },
+  {
+    id: 'com-terra',
+    name: 'COM TERRA',
+    tagline: 'ENCAIXE PEÇAS, PASSE ÁRVORES PELO FURO E SABOTE O MAPA',
+    badge: 'INDIVIDUAL',
+    color: '#17B8B8',
+    renderArt: () => null
   }
 ];
 
@@ -476,7 +485,8 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
       'respostas-sem-perguntas',
       'estadios',
       'como-eu-pinto',
-      'onde-estou'
+      'onde-estou',
+      'com-terra'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     // o jogo ja esta sorteado; a roleta mostra o caminho ate ele e so entao abre o jogo

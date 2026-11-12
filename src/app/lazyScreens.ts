@@ -11,6 +11,9 @@ export const ScreenDuvido = lazy(() =>
 export const ScreenComoEuPinto = lazy(() =>
   import('../components/host/ScreenComoEuPinto').then((m) => ({ default: m.ScreenComoEuPinto }))
 );
+export const ScreenComTerra = lazy(() =>
+  import('../components/host/ScreenComTerra').then((m) => ({ default: m.ScreenComTerra }))
+);
 export const ScreenEstadios = lazy(() =>
   import('../components/host/ScreenEstadios').then((m) => ({ default: m.ScreenEstadios }))
 );

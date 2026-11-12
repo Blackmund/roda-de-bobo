@@ -327,6 +327,31 @@ const PerguntasEVerdades = () => (
   </Svg>
 );
 
+const ComTerra = () => (
+  <Svg label="Com Terra">
+    <g stroke={NAVY} strokeWidth="2">
+      {[0, 1, 2, 3, 4, 5].map((cx) =>
+        [0, 1, 2, 3].map((cy) => (
+          <rect key={cx + '-' + cy} x={70 + cx * 30} y={40 + cy * 30} width="30" height="30" fill={CREAM} opacity={(cx + cy) % 2 ? 0.16 : 0.1} />
+        ))
+      )}
+    </g>
+    {/* peca encaixada: L com furo, e a arvore passando por dentro */}
+    <path d="M70 100 H130 V130 H160 V160 H70 Z" fill="#0c6f72" transform="translate(0 6)" />
+    <path d="M70 100 H130 V130 H160 V160 H70 Z M85 145 a15 15 0 1 0 30 0 a15 15 0 1 0 -30 0 Z" fill={TEAL} fillRule="evenodd" stroke={NAVY} strokeWidth="4" strokeLinejoin="round" />
+    <circle cx="100" cy="143" r="10" fill={CREAM} stroke={NAVY} strokeWidth="4" />
+    {/* peca na mao, descendo para o encaixe */}
+    <g className="rdbv-q1">
+      <path d="M160 40 H250 V70 H220 V100 H190 V70 H160 Z" fill="#8f0f2f" transform="translate(0 7)" />
+      <path d="M160 40 H250 V70 H220 V100 H190 V70 H160 Z M195 55 a10 10 0 1 0 20 0 a10 10 0 1 0 -20 0 Z" fill={CRIMSON} fillRule="evenodd" stroke={NAVY} strokeWidth="4" strokeLinejoin="round" />
+    </g>
+    <g className="rdbv-chip">
+      <circle cx="235" cy="145" r="13" fill={CREAM} stroke={NAVY} strokeWidth="4" />
+      <text x="235" y="151" textAnchor="middle" fontFamily={HEAVY} fontWeight={900} fontSize="15" fill={NAVY}>+2</text>
+    </g>
+  </Svg>
+);
+
 const VIGNETTES: Partial<Record<GameId, React.FC>> = {
   limite: Limite,
   duvido: Duvido,
@@ -341,7 +366,8 @@ const VIGNETTES: Partial<Record<GameId, React.FC>> = {
   'onde-estou': OndeEstou,
   mimica: Mimica,
   repetente: Repetente,
-  'respostas-sem-perguntas': Respostas
+  'respostas-sem-perguntas': Respostas,
+  'com-terra': ComTerra
 };
 
 /** Dado do "Sortear jogo surpresa". */

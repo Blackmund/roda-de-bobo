@@ -30,6 +30,11 @@ export function computeRoundTeamPoints(room: GameRoom): Record<TeamId, number> {
         roundPts[room.comoEuPinto.rivalTeam] = (roundPts[room.comoEuPinto.rivalTeam] || 0) + r.rival;
       }
     }
+  } else if (room.activeGame === 'com-terra' && room.comTerra) {
+    Object.entries(room.comTerra.pointsAwarded || {}).forEach(([pid, pts]) => {
+      const p = room.players.find((pl) => pl.id === pid);
+      if (p?.team) roundPts[p.team] = (roundPts[p.team] || 0) + pts;
+    });
   } else if (room.activeGame === 'estadios' && room.estadios) {
     Object.entries(room.estadios.pointsAwarded || {}).forEach(([pid, pts]) => {
       const p = room.players.find((pl) => pl.id === pid);

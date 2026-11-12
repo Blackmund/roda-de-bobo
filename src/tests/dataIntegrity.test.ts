@@ -160,7 +160,7 @@ test('bancos dourados (originais + importados): formato e coerencia por jogo', a
   check('bancos dourados', issues);
 });
 
-test('registro: todos os 14 jogos estao em nomes, regras, limites, tutoriais e conteudo local', async () => {
+test('registro: todos os 15 jogos estao em nomes, regras, limites, tutoriais e conteudo local', async () => {
   const { GAME_FRIENDLY_NAMES } = await import(U + 'fixedPlayers.ts');
   const { GAME_TUTORIALS } = await import('../components/setup/gameTutorials.ts');
   const { GAME_NAMES } = await import('../app/gameNames.ts');
@@ -169,7 +169,7 @@ test('registro: todos os 14 jogos estao em nomes, regras, limites, tutoriais e c
   const rules: any = await import('../config/rulesets.ts');
   const ids = Object.keys(GAME_FRIENDLY_NAMES) as GameId[];
   const issues: string[] = [];
-  if (ids.length !== 14) issues.push(`esperava 14 jogos em GAME_FRIENDLY_NAMES, achou ${ids.length}`);
+  if (ids.length !== 15) issues.push(`esperava 15 jogos em GAME_FRIENDLY_NAMES, achou ${ids.length}`);
   for (const id of ids) {
     if (!GAME_NAMES[id]) issues.push(`${id}: sem GAME_NAMES`);
     const t = GAME_TUTORIALS[id];

@@ -79,6 +79,7 @@ export const buildNextRoundUpdater = ({
         prev.activeGame === 'onde-estou' ||
         prev.activeGame === 'respostas-sem-perguntas' ||
         prev.activeGame === 'estadios' ||
+        prev.activeGame === 'com-terra' ||
         prev.activeGame === 'perguntas-e-verdades';
 
       const sortedPlayers = [...updatedPlayers].sort((a, b) => (b.score || 0) - (a.score || 0));

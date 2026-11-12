@@ -65,6 +65,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                 room.activeGame === 'onde-estou' ||
                 room.activeGame === 'respostas-sem-perguntas' ||
                 room.activeGame === 'estadios' ||
+                room.activeGame === 'com-terra' ||
                 room.activeGame === 'perguntas-e-verdades';
 
               const sortedIndividualPlayers = [...room.players].sort(

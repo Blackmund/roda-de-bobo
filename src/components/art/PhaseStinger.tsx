@@ -17,6 +17,14 @@ export function stingerLabel(room: GameRoom): string | null {
     if (nota.phase === 'VOTING') return 'Palpites';
     if (nota.phase === 'REVEAL') return nota.revealSubState === 'SPINNING' ? 'A nota era...' : 'Revelação';
   }
+  if (room.activeGame === 'com-terra') {
+    const ct = room.comTerra;
+    if (!ct) return null;
+    if (ct.phase === 'SUMMARY') return 'Resultado';
+    if (ct.phase === 'SABOTAGE') return 'Sabotagem';
+    if (ct.phase === 'PLACE') return 'Colocação';
+    return `Rodada ${ct.round}`;
+  }
   const state: any =
     room.limite || room.duvido || room.proibido || room.temOuNaoTem || room.mimica || room.megaResenha ||
     room.repetente || room.respostasSemPerguntas || room.estadios || room.comoEuPinto || room.quemSouEu;
@@ -28,7 +36,7 @@ export function stingerLabel(room: GameRoom): string | null {
 
 export const PhaseStinger: React.FC<{ room: GameRoom }> = ({ room }) => {
   const label = stingerLabel(room);
-  const key = label ? `${room.activeGame}|${room.roundNumber}|${label}` : null;
+  const key = label ? `${room.activeGame}|${room.roundNumber}|${room.comTerra?.round || 0}|${label}` : null;
   const [shown, setShown] = useState<{ key: string; label: string } | null>(null);
   const last = useRef<string | null>(null);
 

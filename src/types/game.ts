@@ -17,7 +17,8 @@ export type GameId =
   | 'respostas-sem-perguntas'
   | 'estadios'
   | 'como-eu-pinto'
-  | 'onde-estou';
+  | 'onde-estou'
+  | 'com-terra';
 
 export type TeamId = 'A' | 'B' | 'C' | 'D';
 
@@ -336,6 +337,69 @@ export interface DrawStroke {
   width: number;
 }
 
+// COM TERRA (poliminos com furo vazado; 3 modos: arquiteto, diabo, fronteiras). Motor em utils/comTerraEngine.ts
+export type CTMode = 'arquiteto' | 'diabo' | 'fronteiras';
+export type CTPendingKind = 'tree' | 'tok';
+
+export interface CTPiece {
+  uid: string;
+  /** 0 = vazio, 1 = bloco solido, 2 = bloco com furo vazado */
+  shape: number[][];
+  /** numero da peca (1 a 7): quantos blocos ela tem; define pontos e ordem de iniciativa */
+  size: number;
+  pts: number;
+}
+
+export interface CTCell {
+  /** terreno: 0 = fora do mapa, 1 = terra, 2 = agua */
+  t: 0 | 1 | 2;
+  /** zona (Fronteiras): id do jogador dono da base ou 'ilha' */
+  z?: string;
+  tree?: boolean;
+  /** ficha de bueiro: +1, +2 ou -1 */
+  tok?: number;
+  /** icone de acao: cobrir com bloco solido da a acao */
+  act?: CTPendingKind;
+  /** peca que cobre a casa: dono, tipo do bloco (1 solido, 2 furo) e id da peca */
+  o?: string;
+  k?: 1 | 2;
+  p?: string;
+}
+
+export interface CTBoard {
+  id: string;
+  w: number;
+  h: number;
+  /** dono do tabuleiro (Arquiteto) ou null quando e de todos */
+  owner: string | null;
+  cells: CTCell[];
+}
+
+export interface ComTerraState {
+  mode: CTMode;
+  /** TURN = turnos em rodizio (Arquiteto, Fronteiras); PICK/SABOTAGE/PLACE = as 3 fases do Plano do Diabo */
+  phase: 'TURN' | 'PICK' | 'SABOTAGE' | 'PLACE' | 'SUMMARY';
+  round: number;
+  totalRounds: number;
+  order: string[];
+  queue: string[];
+  turnIdx: number;
+  shop: CTPiece[];
+  bag: CTPiece[];
+  bagNo: number;
+  shopSize: number;
+  /** peca comprada e ainda nao colocada, por jogador */
+  hand: Record<string, CTPiece>;
+  pickSeq: Record<string, number>;
+  sabotaged: string[];
+  pending: Array<{ playerId: string; kind: CTPendingKind }>;
+  boards: CTBoard[];
+  pointsAwarded: Record<string, number>;
+  log: Array<{ id: number; playerId: string; text: string; delta: number }>;
+  seq: number;
+  seed: number;
+}
+
 export interface ComoEuPintoState {
   /** STEAL = acabou o tempo e a dupla rival tenta as palavras que faltam */
   phase: 'READY' | 'PLAYING' | 'STEAL' | 'SUMMARY';
@@ -524,6 +588,8 @@ export interface GameCustomConfig {
   limiteEnablePowerCards: boolean; // default true
   limiteCallTimeoutSeconds: number; // default 30 (15, 30, 45, 60)
   limiteExactBonus: number; // default 2 (1, 2, 3)
+  // Com Terra
+  ctMode?: CTMode; // default 'arquiteto'
   // Perguntas e Verdades (O Jogo do Diabo)
   pvDeckMode: PVDeckMode; // 'assisted' (default) | 'physical'
   pvDeckStyle?: PVDeckStyle; // 'padrao' (CazéTV Ilustrado) | 'compacto' | 'holografico'
@@ -684,6 +750,7 @@ export interface GameRoom {
   respostasSemPerguntas?: RespostasSemPerguntasState;
   estadios?: EstadiosGameState;
   comoEuPinto?: ComoEuPintoState;
+  comTerra?: ComTerraState;
   nota?: NotaGameState;
   temOuNaoTem?: TemOuNaoTemGameState;
   perguntasEVerdades?: PerguntasEVerdadesGameState;

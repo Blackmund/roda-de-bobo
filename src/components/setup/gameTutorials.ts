@@ -673,5 +673,53 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
       'O primeiro a acertar leva tantos pontos quanto jogadores na sala; cada acerto seguinte vale 1 ponto a menos (mínimo 1).',
       'Quem esgotar as perguntas ou não descobrir antes do fim da rodada não pontua. (A pontuação do programa ainda não foi confirmada.)'
     ]
+  },
+  'com-terra': {
+    gameId: 'com-terra',
+    icon: '🧩',
+    name: 'COM TERRA',
+    welcomeTitle: 'Como Jogar Com Terra',
+    welcomeSubtitle:
+      'Compre peças na loja e encaixe no tabuleiro. Árvore só passa pelo furo da peça, e não dá para testar antes de comprar.',
+    steps: [
+      {
+        stepNumber: 1,
+        icon: '🛒',
+        headline: 'Escolha no Olhômetro',
+        description:
+          'Na loja você vê o formato e os furos de cada peça, mas não pode testá-la no mapa. Fora da sua vez, deixe uma peça pré-escolhida.',
+        accentTag: 'Compra sem teste'
+      },
+      {
+        stepNumber: 2,
+        icon: '🔄',
+        headline: 'Gire, Espelhe e Posicione',
+        description:
+          'Depois de pegar a peça, mova pelo grid, gire e espelhe. Contorno verde vale; vermelho não. Confirme em dois passos.',
+        accentTag: 'Dupla confirmação'
+      },
+      {
+        stepNumber: 3,
+        icon: '🌳',
+        headline: 'Árvore no Furo, Ficha no Sólido',
+        description:
+          'Furo sobre árvore dá +2. Bloco sólido sobre ficha recolhe o valor (+1, +2 ou -1). Peça que não cabe é descartada e custa 3 pontos.',
+        accentTag: 'Descartar custa 3'
+      }
+    ],
+    proibido: [
+      'TESTAR A PEÇA NO MAPA ANTES DE COMPRAR',
+      'COBRIR ÁRVORE COM BLOCO SÓLIDO',
+      'PLANTAR ÁRVORE EM CIMA DE FICHA'
+    ],
+    permitido: [
+      'PRÉ-ESCOLHER UMA PEÇA FORA DA SUA VEZ',
+      'USAR O FURO PARA PULAR UMA FICHA -1',
+      'PLANTAR ÁRVORE PARA TRAVAR O ESPAÇO DO RIVAL'
+    ],
+    scoringSummary: [
+      'Cada peça vale pelo número dela: 1, 2, 3, 5, 7, 9 ou 12 pontos. Árvore no furo +2; ficha coberta por bloco sólido soma o valor dela.',
+      'No Arquiteto, linha ou coluna cheia vale +2. No Plano do Diabo, quem pega a menor peça joga primeiro. Descartar custa 3 pontos.'
+    ]
   }
 };

@@ -1,6 +1,6 @@
 import type { GenerateRoundResponse } from '../utils/aiGameGenerator';
 import type { GameRoom } from '../types/game';
-import { GameId, GameCustomConfig, DEFAULT_GAME_CUSTOM_CONFIG, LimiteGameState, DuvidoGameState, ProibidoGameState, MimicaGameState, QuemSouEuGameState, MegaResenhaGameState, RepetenteGameState, RespostasSemPerguntasState, EstadiosGameState, ComoEuPintoState, NotaGameState, TemOuNaoTemGameState, PerguntasEVerdadesGameState, TeamId, Player } from '../types/game';
+import { GameId, GameCustomConfig, DEFAULT_GAME_CUSTOM_CONFIG, LimiteGameState, DuvidoGameState, ProibidoGameState, MimicaGameState, QuemSouEuGameState, MegaResenhaGameState, RepetenteGameState, RespostasSemPerguntasState, EstadiosGameState, ComTerraState, ComoEuPintoState, NotaGameState, TemOuNaoTemGameState, PerguntasEVerdadesGameState, TeamId, Player } from '../types/game';
 import { getActiveTeamIds, getTeamCount, getNextTeamId, normalizePlayersToTeamCount } from '../utils/teamUtils';
 import { normalizeTemVotesTo100 } from '../utils/aiGameGenerator';
 import { buildMimicaState, pickMimicaPair } from '../utils/mimicaEngine';
@@ -10,6 +10,7 @@ import { buildMegaResenhaState } from '../utils/megaResenhaEngine';
 import { buildRepetenteGroups, buildRepetenteState } from '../utils/repetenteEngine';
 import { buildRespostasState } from '../utils/respostasEngine';
 import { buildEstadiosState } from '../utils/estadiosEngine';
+import { buildComTerraState } from '../utils/comTerraEngine';
 import { buildComoEuPintoState, pickPintoPair } from '../utils/comoEuPintoEngine';
 import { drawEstadio, normalizeEstadioKey } from '../data/estadiosBank';
 import { drawRespostaQuestion, normalizeRespostaKey } from '../data/respostasSemPerguntas';
@@ -60,6 +61,7 @@ export const buildStartedRoundUpdater = ({
         let repetenteState: RepetenteGameState | undefined = undefined;
         let respostasState: RespostasSemPerguntasState | undefined = undefined;
         let estadiosState: EstadiosGameState | undefined = undefined;
+        let comTerraState: ComTerraState | undefined = undefined;
         let pintoState: ComoEuPintoState | undefined = undefined;
         let extraSignature = '';
         let notaState: NotaGameState | undefined = undefined;
@@ -386,6 +388,11 @@ export const buildStartedRoundUpdater = ({
           });
         }
 
+        if (gameId === 'com-terra') {
+          // A partida inteira corre dentro do estado do jogo; "Rodadas" do setup vira o numero de rodadas internas.
+          comTerraState = buildComTerraState(mergedCustomConfig.ctMode || 'arquiteto', nextMatchPlayers, effectiveMaxRounds);
+        }
+
         if (gameId === 'estadios') {
           // NOV-06: um estadio por rodada (sem repetir na sessao); quem comeca roda a cada rodada.
           const usedStadiums = new Set<string>();
@@ -498,6 +505,7 @@ export const buildStartedRoundUpdater = ({
           repetente: repetenteState,
           respostasSemPerguntas: respostasState,
           estadios: estadiosState,
+          comTerra: comTerraState,
           comoEuPinto: pintoState,
           nota: notaState,
           temOuNaoTem: temOuNaoTemState,
