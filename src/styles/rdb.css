@@ -679,38 +679,6 @@
   letter-spacing: 0.02em;
 }
 
-/* ---------- Tutorial: ilustracao grande, contorno do programa e movimento leve ---------- */
-[data-testid^='tutorial-step-card'] {
-  border: var(--rdb-line) solid var(--rdb-teal) !important;
-  background: var(--rdb-navy) !important;
-  box-shadow: none !important;
-}
-.rdb-tut-art svg {
-  max-height: 100% !important;
-  height: 100%;
-  width: 100%;
-  animation: rdbv-float 3.6s ease-in-out infinite;
-}
-[data-testid='tutorial-step-card-2'] .rdb-tut-art svg {
-  animation-delay: 1.2s;
-}
-[data-testid='tutorial-step-card-3'] .rdb-tut-art svg {
-  animation-delay: 2.4s;
-}
-[data-testid^='tutorial-step-card'] h3 {
-  font-size: 1.2rem;
-}
-[data-testid^='tutorial-step-card'] p {
-  font-size: 0.875rem;
-  line-height: 1.35;
-  color: var(--rdb-ink-2);
-}
-@media (prefers-reduced-motion: reduce) {
-  .rdb-tut-art svg {
-    animation: none;
-  }
-}
-
 /* ---------- Vinhetas dos 6 jogos classicos ---------- */
 /* Limite: o ponteiro sobe ate quase a zona de estouro, hesita e volta */
 .rdbv-needle {
@@ -931,32 +899,6 @@
   to { transform: scale(1); }
 }
 
-/* ---------- Tutorial em tela estreita: os passos empilham com altura propria e a tela rola ---------- */
-@media (max-width: 767px) {
-  [data-testid='step5-game-tutorial'] {
-    overflow-y: auto !important;
-    height: 100% !important;
-    justify-content: flex-start !important;
-  }
-  [data-testid='step5-game-tutorial'] main {
-    overflow: visible !important;
-    flex: none !important;
-  }
-  [data-testid='tutorial-3cards-container'] {
-    flex: none !important;
-    grid-auto-rows: auto;
-  }
-  [data-testid^='tutorial-step-card'] {
-    min-height: 0;
-    display: block !important;
-  }
-  .rdb-tut-art {
-    height: 9rem;
-    flex: none !important;
-    margin: 0.4rem 0;
-  }
-}
-
 /* ---------- Roleta do "Sortear jogo" ---------- */
 .rdb-roulette {
   position: absolute;
@@ -1160,7 +1102,7 @@
   border-bottom: var(--rdb-line) solid var(--rdb-teal);
 }
 .rdb-setup-poster-text {
-  padding: 0.9rem 1rem 1rem;
+  padding: 1.25rem 1.4rem 1.4rem;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -1211,7 +1153,7 @@
   grid-template-columns: 11rem minmax(0, 1fr);
   align-items: center;
   gap: 1rem;
-  padding: 0.7rem 0;
+  padding: 0.7rem 0.9rem;
   border-bottom: 1px solid rgba(245, 242, 235, 0.16);
 }
 .rdb-opt:first-child {
@@ -1242,8 +1184,12 @@
   max-width: 100%;
 }
 .rdb-seg {
-  min-width: 4.2rem;
-  padding: 0.5rem 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.4rem;
+  min-height: 2.5rem;
+  padding: 0 1.2rem;
   border: var(--rdb-line) solid rgba(245, 242, 235, 0.3);
   background: transparent;
   color: var(--rdb-cream);
@@ -1280,7 +1226,7 @@
 }
 .rdb-setup-more {
   align-self: flex-start;
-  margin-top: 0.8rem;
+  margin: 0.9rem 0 0 0.9rem;
   padding: 0.2rem 0;
   background: none;
   border: 0;
@@ -1436,3 +1382,199 @@
 .rdb-mark--teal { background: var(--rdb-teal); }
 .rdb-mark--amber { background: var(--rdb-amber); }
 .rdb-mark--crimson { background: var(--rdb-crimson); color: #fff; }
+
+/* Caixa-alta centralizada pela altura da letra (e nao pela linha), para o texto nao ficar "subido" no box */
+@supports (text-box: trim-both cap alphabetic) {
+  .rdb-btn,
+  .rdb-seg,
+  .rdb-tag,
+  .rdb-mark > span,
+  .rdb-tut-num,
+  .rdb-tut-stage-cap > span {
+    text-box: trim-both cap alphabetic;
+  }
+}
+
+/* =====================================================================================================
+   Tutorial: um palco com a ilustracao do passo em destaque e, ao lado, os 3 passos em lista.
+   Nada se sobrepoe: cada bloco tem o seu espaco e o texto nunca passa por cima do desenho.
+   ===================================================================================================== */
+.rdb-tut {
+  margin-inline: auto;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  color: var(--rdb-cream);
+  user-select: none;
+}
+.rdb-tut-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 1.5rem;
+}
+.rdb-tut-stage {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: var(--rdb-line) solid var(--rdb-teal);
+  background: var(--rdb-navy);
+  overflow: hidden;
+}
+.rdb-tut-stage-art {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.rdb-tut-stage-cap {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.8rem 1.2rem;
+  border-top: var(--rdb-line) solid var(--rdb-teal);
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.rdb-tut-num {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  background: var(--rdb-cream);
+  color: var(--rdb-navy);
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-size: 1rem;
+  line-height: 1;
+}
+.rdb-tut-text {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
+  gap: 0.5rem;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.rdb-tut-title {
+  margin: 0;
+  font-family: var(--rdb-display, 'Anton', sans-serif);
+  font-size: clamp(1.6rem, 2.6vw, 2.8rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.rdb-tut-sub {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: rgba(245, 242, 235, 0.8);
+}
+.rdb-tut-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.rdb-tut-step {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 0.5rem 0.9rem;
+  border-top: 1px solid rgba(245, 242, 235, 0.16);
+}
+.rdb-tut-step:last-child {
+  border-bottom: 1px solid rgba(245, 242, 235, 0.16);
+}
+.rdb-tut-step .rdb-tut-num {
+  background: var(--rdb-teal);
+}
+.rdb-tut-step-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.rdb-tut-step-text strong {
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 1.05rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.rdb-tut-step-text span {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: rgba(245, 242, 235, 0.78);
+}
+.rdb-tut-score {
+  padding-inline: 0.9rem;
+}
+.rdb-tut-score p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin: 0.15rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: rgba(245, 242, 235, 0.86);
+}
+.rdb-tut-score a {
+  color: var(--rdb-teal);
+  text-decoration: underline;
+  white-space: nowrap;
+}
+.rdb-tut-label {
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rdb-amber);
+}
+.rdb-tut-ready {
+  font-size: 0.85rem;
+  color: rgba(245, 242, 235, 0.65);
+  max-width: 26rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 899px) {
+  .rdb-tut {
+    overflow-y: auto;
+  }
+  .rdb-tut-body {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    gap: 1rem;
+  }
+  .rdb-tut-stage {
+    flex-shrink: 0;
+  }
+  .rdb-tut-stage-art {
+    flex: none;
+    height: 11rem;
+  }
+  .rdb-tut-text {
+    overflow: visible;
+  }
+  .rdb-tut-ready {
+    display: none;
+  }
+}
