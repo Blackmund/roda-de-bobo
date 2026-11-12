@@ -231,7 +231,7 @@ export const LimitePlayerGuessCard: React.FC<LimitePlayerGuessCardProps> = ({
                           data-testid={`limite-tv-expired-badge-${p.id}`}
                           className="font-mono-code text-[10px] text-rose-400 text-center py-1 font-bold uppercase"
                         >
-                          ⏰ Tempo esgotado
+                          🔒 Palpites encerrados
                         </div>
                       ) : (
                         <div className="flex items-center gap-1">
@@ -265,7 +265,7 @@ export const LimitePlayerGuessCard: React.FC<LimitePlayerGuessCardProps> = ({
                       )
                     ) : (
                       <div className="font-mono-code text-[10px] text-slate-400 text-center py-1">
-                        {isTimeExpired ? '⏰ Tempo esgotado' : '⏳ No celular...'}
+                        {isTimeExpired ? '🔒 Palpites encerrados' : '⏳ No celular...'}
                       </div>
                     )}
                   </div>
