@@ -248,6 +248,8 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
         return 'COMO EU PINTO';
       case 'onde-estou':
         return 'ONDE ESTOU';
+      case 'com-terra':
+        return 'COM TERRA';
       default:
         return 'RODA DE BOBO';
     }
@@ -260,6 +262,7 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
     room.activeGame === 'onde-estou' ||
     room.activeGame === 'respostas-sem-perguntas' ||
     room.activeGame === 'estadios' ||
+    room.activeGame === 'com-terra' ||
     room.activeGame === 'perguntas-e-verdades';
 
   const effectiveTeamCount = getTeamCount(room, customConfig.teamCount);

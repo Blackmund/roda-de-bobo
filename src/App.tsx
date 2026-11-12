@@ -454,9 +454,11 @@ export default function App() {
         )
       );
 
-    broadcastState(buildNextRoundUpdater({ shouldStartNextRound, nextMaxRoundsTarget, setSuddenDeathBanner, duvidoEndsEarly }));
+    // Com Terra: a partida inteira e uma rodada do hub (as rodadas do jogo correm dentro do proprio estado).
+    const endsNow = duvidoEndsEarly || room.activeGame === 'com-terra';
+    broadcastState(buildNextRoundUpdater({ shouldStartNextRound, nextMaxRoundsTarget, setSuddenDeathBanner, duvidoEndsEarly: endsNow }));
 
-    if (room.activeGame && !duvidoEndsEarly && (room.roundNumber < room.maxRounds || shouldStartNextRound)) {
+    if (room.activeGame && !endsNow && (room.roundNumber < room.maxRounds || shouldStartNextRound)) {
       prepareAndStartRound(
         room.activeGame,
         room.theme,
@@ -499,6 +501,7 @@ export default function App() {
       respostasSemPerguntas: undefined,
       estadios: undefined,
       comoEuPinto: undefined,
+      comTerra: undefined,
       roundSource: undefined,
       teams: {
         A: { ...prev.teams.A, score: 0 },
@@ -647,7 +650,8 @@ export default function App() {
       'respostas-sem-perguntas',
       'estadios',
       'como-eu-pinto',
-      'onde-estou'
+      'onde-estou',
+      'com-terra'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     selectGame(randomChoice);

@@ -78,6 +78,10 @@ export const TUTORIAL_EXAMPLES: Record<GameId, TutorialExample> = {
   'onde-estou': {
     texto: 'O cabelo "Cascão" de Ronaldo na Copa (2002)',
     detalhe: 'Cada um recebe um grande momento colado na testa (todos veem menos você) e descobre qual é com perguntas de sim ou não.'
+  },
+  'com-terra': {
+    texto: 'Peça 5 com furo: encaixe o furo sobre uma árvore e ganhe 7 + 2 pontos',
+    detalhe: 'Bloco sólido não pode ficar em cima de árvore. Bloco sólido sobre uma ficha recolhe o valor dela; furo sobre a ficha deixa a ficha lá.'
   }
 };
 

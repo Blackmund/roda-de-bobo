@@ -48,7 +48,8 @@ const GAME_TITLES: Record<GameId, string> = {
   'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS',
   estadios: 'ESTÁDIOS',
   'como-eu-pinto': 'COMO EU PINTO',
-  'onde-estou': 'ONDE ESTOU'
+  'onde-estou': 'ONDE ESTOU',
+  'com-terra': 'COM TERRA'
 };
 
 interface WindowWrapperProps {

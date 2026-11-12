@@ -2058,6 +2058,17 @@ async function generateRoundContentCore(
     };
   }
 
+  // Com Terra: o mapa e as pecas sao gerados no proprio App; aqui so um marcador.
+  if (gameId === 'com-terra') {
+    return {
+      source: 'curated',
+      data: {},
+      themeUsed: 'Com Terra',
+      subthemeUsed: 'Poliminós e sabotagem',
+      signature: `ct-round-${Date.now()}`
+    };
+  }
+
   // NOV-06: o Estadios sorteia o estadio no proprio App; aqui so um marcador.
   if (gameId === 'estadios') {
     return {

@@ -88,6 +88,7 @@ import { MegaResenhaController } from './games/MegaResenhaController';
 import { RepetenteController } from './games/RepetenteController';
 import { RespostasSemPerguntasController } from './games/RespostasSemPerguntasController';
 import { EstadiosController } from './games/EstadiosController';
+import { ComTerraController } from './games/ComTerraController';
 import { ComoEuPintoController } from './games/ComoEuPintoController';
 import { PerguntasEVerdadesController } from './games/PerguntasEVerdadesController';
 import { TemOuNaoTemController } from './games/TemOuNaoTemController';
@@ -584,6 +585,11 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
   // NOV-07: Como eu pinto no celular. Quem desenha ve a palavra e desenha aqui; os outros veem o desenho.
   if (room.activeGame === 'como-eu-pinto' && room.comoEuPinto) {
     return <ComoEuPintoController room={room} player={player} onUpdateRoom={onUpdateRoom} wrapIfMultiMode={wrapIfMultiMode} pintoColor={pintoColor} setPintoColor={setPintoColor} />;
+  }
+
+  // Com Terra no celular: loja, pre-escolha, posicionamento e confirmacao em dois passos.
+  if (room.activeGame === 'com-terra' && room.comTerra) {
+    return <ComTerraController room={room} player={player} onUpdateRoom={onUpdateRoom} onNextRound={onNextRound} />;
   }
 
   // NOV-06: Estadios no celular (somente leitura): pistas liberadas e de quem e a vez; o diretor julga na TV.

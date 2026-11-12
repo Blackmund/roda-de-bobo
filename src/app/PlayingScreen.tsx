@@ -2,7 +2,7 @@ import React from 'react';
 import { Suspense } from 'react';
 import { motion } from 'motion/react';
 import { GameId, GameRoom, GameHistoryEntry } from '../types/game';
-import { ScreenLimite, ScreenDuvido, ScreenComoEuPinto, ScreenEstadios, ScreenRespostasSemPerguntas, ScreenRepetente, ScreenMegaResenha, ScreenQuemSouEu, ScreenMimica, ScreenProibido, ScreenNota, ScreenTemOuNaoTem, ScreenPerguntasEVerdades } from './lazyScreens';
+import { ScreenLimite, ScreenDuvido, ScreenComoEuPinto, ScreenEstadios, ScreenComTerra, ScreenRespostasSemPerguntas, ScreenRepetente, ScreenMegaResenha, ScreenQuemSouEu, ScreenMimica, ScreenProibido, ScreenNota, ScreenTemOuNaoTem, ScreenPerguntasEVerdades } from './lazyScreens';
 import { updateFixedPlayersAfterMatch } from '../utils/fixedPlayers';
 import { buildMatchMVPSnapshot } from '../utils/sessionPersistence';
 import { applyPVMatchResult } from '../utils/perguntasEVerdadesEngine';
@@ -31,7 +31,7 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
               className="relative w-full h-full flex-1 min-h-0"
             >
               <PhaseStinger room={room} />
-              {room.roundSource && (
+              {room.roundSource && room.activeGame !== 'com-terra' && (
                 <div
                   data-testid="round-source-badge"
                   title={room.roundSource === 'ai' ? 'Conteúdo desta rodada gerado pela IA (Gemini)' : 'Conteúdo desta rodada vem do banco pronto do jogo'}
@@ -94,6 +94,19 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
                     broadcastState((prev) => ({
                       ...prev,
                       comoEuPinto: prev.comoEuPinto ? updater(prev.comoEuPinto) : undefined
+                    }))
+                  }
+                  onNextRound={handleNextRound}
+                />
+              )}
+              {room.activeGame === 'com-terra' && (
+                <ScreenComTerra
+                  room={room}
+                  isTvMode={isTvMode}
+                  onUpdateComTerraState={(updater) =>
+                    broadcastState((prev) => ({
+                      ...prev,
+                      comTerra: prev.comTerra ? updater(prev.comTerra) : undefined
                     }))
                   }
                   onNextRound={handleNextRound}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
+import { CTMode,
   GameId,
   GameCustomConfig,
   GameDifficulty
@@ -36,6 +36,7 @@ import {
 import { ThemeSection } from './step2/ThemeSection';
 import { POPULAR_THEMES } from './step2/popularThemes';
 import { GameCardArt } from '../art/GameCardArt';
+import { CT_MODE_LABEL } from '../../utils/comTerraEngine';
 import { usesLocalContent } from '../../config/localGames';
 
 export interface Step2ConfigureGameProps {
@@ -88,6 +89,25 @@ const PV_ROUND_OPTIONS: Array<{ value: number; label: string; desc: string }> = 
   { value: 9, label: 'MD9', desc: 'Primeiro a 5' }
 ];
 
+const CT_MODES: CTMode[] = ['arquiteto', 'diabo', 'fronteiras'];
+const CT_MODE_NOTES: Record<CTMode, string[]> = {
+  arquiteto: [
+    'Cada jogador monta o próprio tabuleiro 8x8; na TV aparecem todos',
+    'Turnos em rodízio: pegue uma peça da loja e encaixe',
+    'Linha ou coluna cheia vale +2'
+  ],
+  diabo: [
+    'Um mapa só para todos, diferente a cada partida',
+    'Rodada em 3 fases: escolher a peça, sabotar o mapa e colocar',
+    'Quem pega a menor peça joga primeiro; a maior vale mais e joga por último'
+  ],
+  fronteiras: [
+    'Cada um começa na própria base 5x5, ligada a uma ilha central',
+    'As peças crescem em trilha contínua até a ilha',
+    'A ilha tem as fichas de maior valor (e as armadilhas)'
+  ]
+};
+
 const DIFFICULTY_LIST: GameDifficulty[] = ['facil', 'medio', 'dificil', 'impossivel'];
 
 /** Jogos que tem ajustes exclusivos (abrem na janela "Mais ajustes deste jogo"). */
@@ -125,7 +145,10 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
   gameTitle
 }) => {
   const isPV = activeGame === 'perguntas-e-verdades';
+  const isCT = activeGame === 'com-terra';
+  const ctMode: CTMode = customConfig.ctMode || 'arquiteto';
   const isIndividualMode =
+    isCT ||
     activeGame === 'limite' ||
     activeGame === 'nota' ||
     activeGame === 'quem-sou-eu' ||
@@ -212,6 +235,12 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
                   <li key={n}>{n}</li>
                 ))}
               </ul>
+            ) : isCT ? (
+              <ul data-testid="ct-mode-notes" className="rdb-setup-notes">
+                {CT_MODE_NOTES[ctMode].map((n) => (
+                  <li key={n}>{n}</li>
+                ))}
+              </ul>
             ) : (
               <p className="rdb-setup-notes">Regras da casa: ajuste o ritmo ao lado do jeito que a roda preferir.</p>
             )}
@@ -233,7 +262,25 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
           )}
 
-          {!isPV && (
+          {isCT && (
+            <div className="rdb-opt" data-testid="ct-mode-selector">
+              <span className="rdb-opt-label">Modo</span>
+              <div className="rdb-opt-choices">
+                {CT_MODES.map((m) => (
+                  <Seg
+                    key={m}
+                    testid={'ct-mode-btn-' + m}
+                    on={ctMode === m}
+                    onClick={() => onChangeCustomConfig((prev) => ({ ...prev, ctMode: m }))}
+                  >
+                    {CT_MODE_LABEL[m]}
+                  </Seg>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!isPV && !isCT && (
             <div className="rdb-opt" data-testid="setup-theme-row">
               <span className="rdb-opt-label">Tema</span>
               <div className="rdb-opt-choices">
@@ -255,7 +302,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
           )}
 
-          {!isPV && (
+          {!isPV && !isCT && (
             <div className="rdb-opt">
               <span className="rdb-opt-label">Dificuldade</span>
               <div className="rdb-opt-choices">
@@ -274,16 +321,18 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
           )}
 
-          <div className="rdb-opt">
-            <span className="rdb-opt-label">Tempo por rodada</span>
-            <div className="rdb-opt-choices">
-              {TIMER_OPTIONS.map((opt) => (
-                <Seg key={opt.value} testid={`timer-btn-${opt.value}`} on={timer === opt.value} onClick={() => onChangeTimer(opt.value)} title={opt.desc}>
-                  {opt.label}
-                </Seg>
-              ))}
+          {!isCT && (
+            <div className="rdb-opt">
+              <span className="rdb-opt-label">Tempo por rodada</span>
+              <div className="rdb-opt-choices">
+                {TIMER_OPTIONS.map((opt) => (
+                  <Seg key={opt.value} testid={`timer-btn-${opt.value}`} on={timer === opt.value} onClick={() => onChangeTimer(opt.value)} title={opt.desc}>
+                    {opt.label}
+                  </Seg>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="rdb-opt">
             <span className="rdb-opt-label">{isPV ? 'Série de jogos' : 'Rodadas'}</span>

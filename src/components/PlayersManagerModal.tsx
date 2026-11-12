@@ -56,7 +56,8 @@ const ALL_GAME_IDS: { id: GameId; label: string; color: string }[] = [
   { id: 'respostas-sem-perguntas', label: 'Respostas sem Perguntas', color: '#F43F5E' },
   { id: 'estadios', label: 'Estádios', color: '#0EA5E9' },
   { id: 'como-eu-pinto', label: 'Como Eu Pinto', color: '#A855F7' },
-  { id: 'onde-estou', label: 'Onde Estou', color: '#22C55E' }
+  { id: 'onde-estou', label: 'Onde Estou', color: '#22C55E' },
+  { id: 'com-terra', label: 'Com Terra', color: '#17B8B8' }
 ];
 
 export const PlayersManagerModal: React.FC<PlayersManagerModalProps> = ({
