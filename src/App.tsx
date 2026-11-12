@@ -479,6 +479,14 @@ export default function App() {
       proibido: undefined,
       nota: undefined,
       perguntasEVerdades: undefined,
+      mimica: undefined,
+      quemSouEu: undefined,
+      megaResenha: undefined,
+      repetente: undefined,
+      respostasSemPerguntas: undefined,
+      estadios: undefined,
+      comoEuPinto: undefined,
+      roundSource: undefined,
       teams: {
         A: { ...prev.teams.A, score: 0 },
         B: { ...prev.teams.B, score: 0 }

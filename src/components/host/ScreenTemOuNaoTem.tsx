@@ -884,6 +884,7 @@ export const ScreenTemOuNaoTem: React.FC<ScreenTemOuNaoTemProps> = ({
           aria-label="Palpite falado pela equipe"
           type="text"
           autoComplete="off"
+          disabled={tem.phase === 'ROUND_END'}
           value={manualGuessText}
           onChange={(e) => setManualGuessText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleProcessGuess(manualGuessText, tem.activeTeam)}
@@ -892,16 +893,18 @@ export const ScreenTemOuNaoTem: React.FC<ScreenTemOuNaoTemProps> = ({
         />
         <button
           type="button"
+          disabled={tem.phase === 'ROUND_END'}
           onClick={() => handleProcessGuess(manualGuessText, tem.activeTeam)}
-          className="px-3.5 py-1.5 border border-[#17B8B8] bg-[#17B8B8] hover:bg-cyan-300 text-black font-anton text-xs uppercase cursor-pointer transition-colors"
+          className="disabled:opacity-40 disabled:cursor-not-allowed px-3.5 py-1.5 border border-[#17B8B8] bg-[#17B8B8] hover:bg-cyan-300 text-black font-anton text-xs uppercase cursor-pointer transition-colors"
         >
           VALIDAR PALPITE (EQUIPE {tem.activeTeam})
         </button>
 
         <button
           type="button"
+          disabled={tem.phase === 'ROUND_END'}
           onClick={handleRevealAllRemaining}
-          className="px-3 py-1.5 border border-white/20 bg-[#07080d] hover:bg-white/10 text-slate-300 font-anton text-xs uppercase cursor-pointer transition-colors"
+          className="disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1.5 border border-white/20 bg-[#07080d] hover:bg-white/10 text-slate-300 font-anton text-xs uppercase cursor-pointer transition-colors"
         >
           REVELAR TUDO
         </button>

@@ -27,8 +27,17 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.985 }}
               transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full h-full flex-1 min-h-0"
+              className="relative w-full h-full flex-1 min-h-0"
             >
+              {room.roundSource && (
+                <div
+                  data-testid="round-source-badge"
+                  title={room.roundSource === 'ai' ? 'Conteúdo desta rodada gerado pela IA (Gemini)' : 'Conteúdo desta rodada vem do banco pronto do jogo'}
+                  className="pointer-events-none absolute right-1.5 top-0.5 z-10 rounded border border-white/15 bg-black/50 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-300"
+                >
+                  {room.roundSource === 'ai' ? '🤖 IA' : '📚 Banco pronto'}
+                </div>
+              )}
               <Suspense
                 fallback={
                   <div className="py-24 text-center font-anton text-2xl text-cyan-300 uppercase tracking-wider animate-pulse">

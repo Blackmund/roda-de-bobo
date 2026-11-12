@@ -479,6 +479,7 @@ export const buildStartedRoundUpdater = ({
           theme: customTheme || prev.theme,
           activeSubtheme: generated.subthemeUsed || prev.activeSubtheme || '',
           usedRoundSignatures: extraSignature ? [...updatedSignatures, extraSignature] : updatedSignatures,
+          roundSource: generated.source,
           customConfig: {
             ...mergedCustomConfig,
             teamCount: effectiveTeamCount
