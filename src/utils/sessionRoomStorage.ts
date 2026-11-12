@@ -1,18 +1,30 @@
 import type { GameRoom, GameId } from '../types/game';
 
-export const ROOM_STORAGE_PREFIX = 'rb_room_state_';export const GLOBAL_ROOM_STORAGE_KEY = 'roda_de_bobo_room_state';export const ACTIVE_STATE_STORAGE_KEY = 'RODA_DE_BOBO_ACTIVE_STATE';/** INF-05: versão do formato salvo. Estados de versão maior (ou com forma inválida) são descartados; sem versão = legado, aceito e regravado. */
-export const ROOM_SCHEMA_VERSION = 2;function hasValidRoomShape(parsed: any): boolean {
+export const ROOM_STORAGE_PREFIX = 'rb_room_state_';
+
+export const GLOBAL_ROOM_STORAGE_KEY = 'roda_de_bobo_room_state';
+
+export const ACTIVE_STATE_STORAGE_KEY = 'RODA_DE_BOBO_ACTIVE_STATE';
+
+/** INF-05: versão do formato salvo. Estados de versão maior (ou com forma inválida) são descartados; sem versão = legado, aceito e regravado. */
+export const ROOM_SCHEMA_VERSION = 2;
+
+function hasValidRoomShape(parsed: any): boolean {
   if (typeof parsed.schemaVersion === 'number' && parsed.schemaVersion > ROOM_SCHEMA_VERSION) return false;
   if (parsed.players !== undefined && !Array.isArray(parsed.players)) return false;
   if (parsed.teams !== undefined && (parsed.teams === null || typeof parsed.teams !== 'object')) return false;
   return true;
-}/**
+}
+
+/**
  * Returns true for games where the team/dupla plays and scores together as a collective unit
  * (so MVP must NOT be counted individually).
  */
 export function isTeamCollectiveGame(gameId?: GameId | null): boolean {
   return gameId === 'tem-ou-nao-tem' || gameId === 'proibido' || gameId === 'duvido' || gameId === 'mimica' || gameId === 'mega-resenha' || gameId === 'repetente' || gameId === 'como-eu-pinto';
-}/**
+}
+
+/**
  * Computes the number of session trophies (🏆) earned by each player in the current session.
  */
 export function computePlayerSessionTrophies(room: GameRoom | null | undefined): Record<string, number> {
@@ -40,7 +52,9 @@ export function computePlayerSessionTrophies(room: GameRoom | null | undefined):
   });
 
   return trophies;
-}/**
+}
+
+/**
  * Determines whether a room state has meaningful progress worth persisting in localStorage.
  */
 export function isRoomWorthSaving(room: GameRoom | null | undefined): boolean {
@@ -54,7 +68,9 @@ export function isRoomWorthSaving(room: GameRoom | null | undefined): boolean {
     (room.sessionStats?.totalMatches || 0) > 0 ||
     (room.players?.length || 0) > 0
   );
-}/**
+}
+
+/**
  * Determines whether a saved room state represents an active or resumable session
  * that should trigger the 'Resume Game' prompt in the Lobby after a browser refresh.
  */
@@ -65,7 +81,9 @@ export function isResumableGame(room: GameRoom | null | undefined): boolean {
     room.activeGame !== null ||
     room.roundNumber > 1
   );
-}/**
+}
+
+/**
  * Computes the accurate match score for a resumable room without double-counting
  * round scores that have already been accumulated into team totals at round end / game over.
  */
@@ -95,7 +113,9 @@ export function getResumableMatchScore(room: GameRoom): { scoreA: number; scoreB
     scoreA: baseA + liveRoundA,
     scoreB: baseB + liveRoundB
   };
-}/**
+}
+
+/**
  * Persists the current GameRoom state into localStorage.
  */
 export function saveRoomStateToStorage(
@@ -118,7 +138,9 @@ export function saveRoomStateToStorage(
   } catch {
     return false;
   }
-}/**
+}
+
+/**
  * Loads a previously saved GameRoom state from localStorage for the given roomId.
  */
 export function loadRoomStateFromStorage(
@@ -148,7 +170,9 @@ export function loadRoomStateFromStorage(
   } catch {
     return null;
   }
-}/**
+}
+
+/**
  * Clears the persisted GameRoom state from localStorage for the given roomId.
  */
 export function clearRoomStateFromStorage(

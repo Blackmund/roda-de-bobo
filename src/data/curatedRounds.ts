@@ -722,7 +722,7 @@ export const CURATED_DUVIDO: DuvidoRoundData[] = [
     exemplos_validos: [
       "Maracanã", "Morumbi", "Mineirão", "Castelão", "Arena Castelão", "Mané Garrincha",
       "Arena Corinthians / Neo Química", "Allianz Parque", "Beira-Rio", "Arena do Grêmio",
-      "Fonte Nova", "Arena Pernambuco", "Mangueirão", "Arruda", "Castelão", "Serra Dourada"
+      "Fonte Nova", "Arena Pernambuco", "Mangueirão", "Arruda", "Serra Dourada"
     ]
   },
   {

@@ -1,7 +1,9 @@
 import type { Player, TeamId, SessionStats } from '../types/game';
 import { resolveMatchMVPFromHistoryEntry } from './sessionMvpHistory';
 
-export type MedalCategory = 'most-wins' | 'best-accuracy' | 'mvp-streaks' | 'top-scorer';export interface TrophyMedal {
+export type MedalCategory = 'most-wins' | 'best-accuracy' | 'mvp-streaks' | 'top-scorer';
+
+export interface TrophyMedal {
   id: MedalCategory;
   title: string;
   subtitle: string;
@@ -15,7 +17,9 @@ export type MedalCategory = 'most-wins' | 'best-accuracy' | 'mvp-streaks' | 'top
   metricValue: string;
   secondaryMetric: string;
   unlocked: boolean;
-}interface CareerPlayerRecord {
+}
+
+interface CareerPlayerRecord {
   id: string;
   name: string;
   avatar: string;
@@ -29,7 +33,9 @@ export type MedalCategory = 'most-wins' | 'best-accuracy' | 'mvp-streaks' | 'top
   totalMvps: number;
   currentMvpStreak: number;
   maxMvpStreak: number;
-}/**
+}
+
+/**
  * Computes virtual medals for the 'Trophy Room' tab in GlobalStats based on career achievements
  * ('Most Wins', 'Best Accuracy', 'MVP Streaks', and 'Most Points').
  */

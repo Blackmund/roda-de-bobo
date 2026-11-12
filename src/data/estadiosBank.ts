@@ -247,7 +247,7 @@ export const ESTADIOS: EstadioItem[] = [
     nome: 'Anfield',
     cidade: 'Liverpool',
     pais: 'Inglaterra',
-    aceitas: [],
+    aceitas: ['Anfield Road', 'Estadio do Liverpool', 'Anfiel'],
     pistas: [
       'Fica na Europa, no Reino Unido.',
       'Fica numa cidade portuária, terra dos Beatles.',
