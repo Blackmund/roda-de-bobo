@@ -14,6 +14,7 @@ import {
 } from '../../utils/retroAvatars';
 import { RetroAvatarModal } from '../RetroAvatarPicker';
 import { sounds } from '../../utils/soundEffects';
+import { RdbLogo } from '../rdb/RdbLogo';
 
 export interface ScreenMobileJoinProps {
   room: GameRoom;
@@ -156,8 +157,8 @@ export const ScreenMobileJoin: React.FC<ScreenMobileJoinProps> = ({
       <div className="space-y-2.5">
         <header className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-2xl px-4 py-3 flex items-center justify-between gap-2 shadow-lg">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="font-anton text-sm sm:text-base tracking-wider uppercase text-cyan-300 drop-shadow-[0_0_10px_rgba(6,182,212,0.5)] truncate">
-              ((•)) RODA DE BOBO <span className="text-rose-400">// LIVE! TOGETHER</span>
+            <span className="flex items-center gap-2 min-w-0 font-anton text-sm sm:text-base tracking-wider uppercase text-cyan-300 drop-shadow-[0_0_10px_rgba(6,182,212,0.5)]">
+              <RdbLogo variant="inline" className="h-5 w-24 shrink-0" />
             </span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
