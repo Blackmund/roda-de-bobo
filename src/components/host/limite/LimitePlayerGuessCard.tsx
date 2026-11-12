@@ -1,6 +1,7 @@
 import React from 'react';
 import { LimiteGameState, LimitePowerCardType, Player } from '../../../types/game';
 import { Trophy, Lock } from 'lucide-react';
+import { PlayerMark } from '../../rdb/PlayerMark';
 
 interface LimitePlayerGuessCardProps {
   p: Player;
@@ -90,7 +91,7 @@ export const LimitePlayerGuessCard: React.FC<LimitePlayerGuessCardProps> = ({
 
                     <div className="flex items-center justify-between gap-1 min-w-0">
                       <div className="flex items-center gap-1 min-w-0">
-                        <span className="text-xs sm:text-sm shrink-0">{p.avatar}</span>
+                        <span className="text-xs sm:text-sm shrink-0"><PlayerMark p={p} /></span>
                         <span className="font-bold text-[11px] sm:text-xs text-white truncate">
                           {p.name}
                         </span>

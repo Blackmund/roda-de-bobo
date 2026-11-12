@@ -4,6 +4,7 @@ import { GameRoom, Player } from '../../types/game';
 import { ControllerView } from '../controller/ControllerView';
 import { sounds } from '../../utils/soundEffects';
 import { Smartphone, Trash2, UserPlus, X } from 'lucide-react';
+import { PlayerMark } from '../rdb/PlayerMark';
 
 interface DevControlsDrawerProps {
   room: GameRoom;
@@ -388,7 +389,7 @@ export const DevControlsDrawer: React.FC<DevControlsDrawerProps> = ({
                         onClick={() => setActivePlayerId(dp.id)}
                         className="px-2.5 py-1 text-xs font-mono-code flex items-center gap-1.5 cursor-pointer"
                       >
-                        <span>{dp.avatar}</span>
+                        <span><PlayerMark p={dp} /></span>
                         <span>{dp.name}</span>
                         <span className="text-[10px] text-slate-500">({dp.team})</span>
                       </button>

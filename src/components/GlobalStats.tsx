@@ -21,6 +21,7 @@ import {
   Users
 } from 'lucide-react';
 import { sounds } from '../utils/soundEffects';
+import { PlayerMark } from './rdb/PlayerMark';
 
 interface GlobalStatsProps {
   stats: SessionStats;
@@ -395,7 +396,7 @@ export const GlobalStats: React.FC<GlobalStatsProps> = ({
                               </span>
                               {entry.mvp ? (
                                 <div className="flex items-center gap-2">
-                                  <span className="text-lg">{entry.mvp.avatar}</span>
+                                  <span className="text-lg"><PlayerMark p={entry.mvp} /></span>
                                   <div>
                                     <div className="font-anton text-sm text-white uppercase">
                                       {entry.mvp.name}
@@ -437,7 +438,7 @@ export const GlobalStats: React.FC<GlobalStatsProps> = ({
                                     className="p-2 bg-white/[0.03] border border-white/10 flex items-center justify-between text-xs font-mono-code"
                                   >
                                     <div className="flex items-center gap-1.5 truncate">
-                                      <span>{ps.avatar}</span>
+                                      <span><PlayerMark p={ps} /></span>
                                       <span className="truncate text-white font-bold">{ps.name}</span>
                                     </div>
                                     <span className="text-amber-300 font-anton text-sm shrink-0">

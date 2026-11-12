@@ -29,6 +29,7 @@ import {
   Coins,
   ArrowRightLeft
 } from 'lucide-react';
+import { PlayerMark } from './rdb/PlayerMark';
 
 interface PlayerRosterSelectorProps {
   players: Player[];
@@ -133,7 +134,7 @@ export const PlayerRosterSelector: React.FC<PlayerRosterSelectorProps> = ({
     if (isIndividualMode) {
       const randomPlayer = players[Math.floor(Math.random() * players.length)];
       setStarterDrawBanner(
-        `🪙 SORTEIO DE QUEM COMEÇA: ${randomPlayer.avatar} ${randomPlayer.name.toUpperCase()} INICIA A PARTIDA!`
+        `🪙 SORTEIO DE QUEM COMEÇA: $<PlayerMark p={randomPlayer} /> ${randomPlayer.name.toUpperCase()} INICIA A PARTIDA!`
       );
     } else {
       const pickedTeamId = activeTeamIds[Math.floor(Math.random() * activeTeamIds.length)];
@@ -581,7 +582,7 @@ export const PlayerRosterSelector: React.FC<PlayerRosterSelectorProps> = ({
                       className="text-base shrink-0 hover:scale-110 transition-transform cursor-pointer px-0.5 bg-white/[0.03] hover:bg-[#17B8B8]/20 border border-transparent hover:border-[#17B8B8]/50"
                       title={`Trocar avatar de ${player.name}`}
                     >
-                      {player.avatar}
+                      <PlayerMark p={player} />
                     </button>
                     <span className="font-bold text-white truncate">{player.name}</span>
                     {(sessionTrophies[player.id] || 0) > 0 && (
@@ -683,7 +684,7 @@ export const PlayerRosterSelector: React.FC<PlayerRosterSelectorProps> = ({
                                     className="text-base shrink-0 hover:scale-110 transition-transform cursor-pointer px-0.5 bg-white/[0.03] hover:bg-[#17B8B8]/20 border border-transparent hover:border-[#17B8B8]/50"
                                     title={`Trocar avatar de ${player.name}`}
                                   >
-                                    {player.avatar}
+                                    <PlayerMark p={player} />
                                   </button>
                                   <span className="font-bold text-white truncate">
                                     {player.name}

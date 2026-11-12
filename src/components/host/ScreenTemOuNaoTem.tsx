@@ -18,6 +18,7 @@ import {
   getNextTeamId
 } from '../../utils/teamUtils';
 import { checkAnswerFuzzyMatch } from '../../utils/fuzzyMatch';
+import { PlayerMark } from '../rdb/PlayerMark';
 
 interface ScreenTemOuNaoTemProps {
   room: GameRoom;
@@ -460,7 +461,7 @@ export const ScreenTemOuNaoTem: React.FC<ScreenTemOuNaoTemProps> = ({
                       key={player.id}
                       className="px-2.5 py-1.5 border border-white/10 bg-white/[0.03] font-mono-code text-xs text-slate-200 font-semibold flex items-center gap-2 truncate"
                     >
-                      <span className="text-base shrink-0">{player.avatar || '👤'}</span>
+                      <span className="text-base shrink-0"><PlayerMark p={player} /></span>
                       <span className="truncate">{player.name}</span>
                     </div>
                   ))
@@ -801,7 +802,7 @@ export const ScreenTemOuNaoTem: React.FC<ScreenTemOuNaoTemProps> = ({
                       key={player.id}
                       className="px-2.5 py-1.5 border border-white/10 bg-white/[0.03] font-mono-code text-xs text-slate-200 font-semibold flex items-center gap-2 truncate"
                     >
-                      <span className="text-base shrink-0">{player.avatar || '👤'}</span>
+                      <span className="text-base shrink-0"><PlayerMark p={player} /></span>
                       <span className="truncate">{player.name}</span>
                     </div>
                   ))

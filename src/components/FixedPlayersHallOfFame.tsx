@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { FIXED_PLAYERS, loadFixedPlayersStats, FixedPlayerDefinition } from '../utils/fixedPlayers';
 import { Trophy, Star, ShieldCheck, Flame, Users } from 'lucide-react';
 import { Player } from '../types/game';
+import { PlayerMark } from './rdb/PlayerMark';
 
 interface FixedPlayersHallOfFameProps {
   currentMatchPlayers?: Player[];
@@ -85,7 +86,7 @@ export const FixedPlayersHallOfFame: React.FC<FixedPlayersHallOfFameProps> = ({
                   className="w-10 h-10 border flex items-center justify-center text-xl shrink-0 shadow-inner relative"
                   style={{ borderColor: fp.color, backgroundColor: `${fp.color}20` }}
                 >
-                  <span>{fp.avatar}</span>
+                  <span><PlayerMark p={fp} /></span>
                   {activeInMatch && (
                     <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 border border-black rounded-full animate-pulse" />
                   )}

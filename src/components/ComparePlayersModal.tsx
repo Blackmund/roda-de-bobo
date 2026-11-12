@@ -14,6 +14,7 @@ import { Crown, Medal, Target, Award } from 'lucide-react';
 import { X, Swords, Sparkles } from './rdb/rdbIcons';
 import { RetroWindow } from './rdb/RetroWindow';
 import type { MatchPlayerComparison } from '../utils/sessionPersistence';
+import { PlayerMark } from './rdb/PlayerMark';
 
 interface ComparePlayersModalProps {
   isOpen: boolean;
@@ -98,7 +99,7 @@ export const ComparePlayersModal: React.FC<ComparePlayersModalProps> = ({
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-12 h-12 border-2 border-amber-300 bg-amber-500/20 flex items-center justify-center text-2xl relative shrink-0">
-                      <span>{mvp.avatar}</span>
+                      <span><PlayerMark p={mvp} /></span>
                       <span className="absolute -top-2 -right-2 bg-amber-400 text-black p-0.5 border border-black">
                         <Crown size={11} className="fill-black" />
                       </span>
@@ -145,7 +146,7 @@ export const ComparePlayersModal: React.FC<ComparePlayersModalProps> = ({
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-12 h-12 border-2 border-cyan-300 bg-cyan-500/20 flex items-center justify-center text-2xl relative shrink-0">
-                      <span>{runnerUp.avatar}</span>
+                      <span><PlayerMark p={runnerUp} /></span>
                       <span className="absolute -top-2 -right-2 bg-cyan-400 text-black p-0.5 border border-black">
                         <Medal size={11} />
                       </span>

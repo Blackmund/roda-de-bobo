@@ -1123,3 +1123,316 @@
 @media (prefers-reduced-motion: reduce) {
   .rdbv-win-rays, .rdbv-win-cup, .rdb-win-name { animation: none; }
 }
+
+/* =====================================================================================================
+   Configuracao do jogo: cartaz a esquerda, uma linha por escolha a direita, um botao forte no rodape.
+   ===================================================================================================== */
+.rdb-setup {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  color: var(--rdb-cream);
+  user-select: none;
+}
+.rdb-setup-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr);
+  gap: 1rem;
+}
+.rdb-setup-poster {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: var(--rdb-line) solid var(--rdb-teal);
+  background: var(--rdb-navy);
+  overflow: hidden;
+}
+.rdb-setup-poster-art {
+  position: relative;
+  flex: 1;
+  min-height: 6rem;
+  overflow: hidden;
+  border-bottom: var(--rdb-line) solid var(--rdb-teal);
+}
+.rdb-setup-poster-text {
+  padding: 0.9rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+.rdb-setup-title {
+  font-family: var(--rdb-display, 'Anton', sans-serif);
+  font-size: clamp(1.5rem, 2.4vw, 2.6rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+.rdb-setup-notes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: rgba(245, 242, 235, 0.78);
+}
+.rdb-setup-notes li {
+  padding-left: 0.9rem;
+  position: relative;
+}
+.rdb-setup-notes li + li {
+  margin-top: 0.25rem;
+}
+.rdb-setup-notes li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 0.4rem;
+  height: 0.4rem;
+  background: var(--rdb-amber);
+}
+.rdb-setup-rows {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.rdb-opt {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid rgba(245, 242, 235, 0.16);
+}
+.rdb-opt:first-child {
+  border-top: 1px solid rgba(245, 242, 235, 0.16);
+}
+.rdb-opt-label {
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(245, 242, 235, 0.7);
+}
+.rdb-opt-choices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+.rdb-opt-value {
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 1.05rem;
+  margin-right: 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.rdb-seg {
+  min-width: 4.2rem;
+  padding: 0.5rem 0.95rem;
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.3);
+  background: transparent;
+  color: var(--rdb-cream);
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 0.95rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background-color 0.12s, border-color 0.12s, color 0.12s;
+}
+.rdb-seg:hover {
+  border-color: var(--rdb-teal);
+}
+.rdb-seg[aria-pressed='true'] {
+  background: var(--rdb-teal);
+  border-color: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-seg:focus-visible,
+.rdb-setup-more:focus-visible {
+  outline: 3px solid var(--rdb-cream);
+  outline-offset: 2px;
+}
+.rdb-seg--action {
+  border-color: var(--rdb-amber);
+  color: var(--rdb-amber);
+}
+.rdb-seg--action:hover {
+  background: var(--rdb-amber);
+  border-color: var(--rdb-amber);
+  color: var(--rdb-navy);
+}
+.rdb-setup-more {
+  align-self: flex-start;
+  margin-top: 0.8rem;
+  padding: 0.2rem 0;
+  background: none;
+  border: 0;
+  border-bottom: var(--rdb-line) solid var(--rdb-amber);
+  color: var(--rdb-amber);
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+.rdb-setup-more:hover {
+  color: var(--rdb-cream);
+  border-color: var(--rdb-cream);
+}
+.rdb-setup-foot {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(245, 242, 235, 0.16);
+}
+.rdb-setup-foot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+.rdb-btn.rdb-setup-start {
+  background: var(--rdb-crimson);
+  border-color: var(--rdb-crimson);
+  color: #fff;
+  font-size: 1.15em;
+  padding-inline: 1.6em;
+}
+.rdb-btn.rdb-setup-start:hover:not(:disabled) {
+  background: var(--rdb-cream);
+  border-color: var(--rdb-cream);
+  color: var(--rdb-navy);
+}
+
+/* Janela (tema e ajustes do jogo) */
+.rdb-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(5, 6, 18, 0.86);
+}
+.rdb-sheet {
+  width: min(100%, 62rem);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--rdb-navy);
+  border: var(--rdb-line) solid var(--rdb-teal);
+  color: var(--rdb-cream);
+}
+.rdb-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 1rem;
+  border-bottom: var(--rdb-line) solid var(--rdb-teal);
+}
+.rdb-sheet-head h3 {
+  margin: 0;
+  font-family: var(--rdb-display, 'Anton', sans-serif);
+  font-size: 1.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.rdb-sheet-body {
+  padding: 1rem;
+  overflow-y: auto;
+}
+.rdb-sheet-body > section {
+  border: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+}
+
+/* Celular e janelas estreitas: empilha, o cartaz vira uma faixa e a tela rola */
+@media (max-width: 899px) {
+  .rdb-setup {
+    overflow-y: auto;
+  }
+  .rdb-setup-body {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+  }
+  .rdb-setup-poster {
+    flex-direction: row;
+    flex-shrink: 0;
+  }
+  .rdb-setup-poster-art {
+    flex: 0 0 34%;
+    min-height: 0;
+    border-bottom: 0;
+    border-right: var(--rdb-line) solid var(--rdb-teal);
+  }
+  .rdb-setup-rows {
+    overflow: visible;
+  }
+  .rdb-opt {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.4rem;
+  }
+  .rdb-seg {
+    flex: 1 1 auto;
+  }
+  .rdb-setup-foot-actions {
+    width: 100%;
+  }
+  .rdb-setup-foot-actions .rdb-btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* =====================================================================================================
+   Marca do jogador: bloco chapado com as iniciais (substitui o emoji de avatar em todas as telas).
+   O tamanho vem da fonte de quem envolve; a cor sai do nome.
+   ===================================================================================================== */
+.rdb-mark {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1.7em;
+  height: 1.7em;
+  vertical-align: middle;
+  background: var(--rdb-cream);
+  color: var(--rdb-navy);
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-style: normal;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: uppercase;
+  animation: none !important;
+  transform: none;
+}
+.rdb-mark > span {
+  font-size: 0.62em;
+}
+.rdb-mark--teal { background: var(--rdb-teal); }
+.rdb-mark--amber { background: var(--rdb-amber); }
+.rdb-mark--crimson { background: var(--rdb-crimson); color: #fff; }

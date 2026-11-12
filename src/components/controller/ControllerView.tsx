@@ -96,6 +96,7 @@ import { ProibidoController } from './games/ProibidoController';
 import { DuvidoController } from './games/DuvidoController';
 import { LimiteController } from './games/LimiteController';
 import { MasterRemoteController } from './games/MasterRemoteController';
+import { PlayerMark } from '../rdb/PlayerMark';
 
 interface ControllerViewProps {
   room: GameRoom;
@@ -299,7 +300,7 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
       >
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-9 h-9 bg-black border border-white/25 flex items-center justify-center text-xl shrink-0">
-            {spotlight.activePlayer?.avatar || '🎯'}
+            <PlayerMark p={spotlight.activePlayer} />
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-1.5">

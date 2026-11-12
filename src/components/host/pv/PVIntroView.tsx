@@ -4,6 +4,7 @@ import React from 'react';
 import { GameRoom, PerguntasEVerdadesGameState } from '../../../types/game';
 import { sounds } from '../../../utils/soundEffects';
 import { Clock, Lock } from 'lucide-react';
+import { PlayerMark } from '../../rdb/PlayerMark';
 
 interface PVIntroViewProps {
   tvWrapperClass: "h-full flex flex-col justify-between min-h-0 overflow-hidden gap-1.5 text-xs select-none";
@@ -118,7 +119,7 @@ export const PVIntroView: React.FC<PVIntroViewProps> = ({
                     APOSTA SECRETA ({bettingIdx + 1} DE {activePlayers.length}):
                   </div>
                   <h2 data-testid="pv-giant-turn-indicator" className="font-anton text-2xl md:text-3xl text-white uppercase">
-                    <span className="text-amber-300">{currentBiddingPlayer?.avatar} {currentBiddingPlayer?.name}</span>
+                    <span className="text-amber-300"><PlayerMark p={currentBiddingPlayer} /> {currentBiddingPlayer?.name}</span>
                   </h2>
                 </div>
                 <div className="text-right">

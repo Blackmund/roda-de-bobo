@@ -30,6 +30,7 @@ import {
   Smartphone,
   Layers
 } from 'lucide-react';
+import { PlayerMark } from './rdb/PlayerMark';
 
 export interface ScreenJoinRoomProps {
   isOpen: boolean;
@@ -433,7 +434,7 @@ export const ScreenJoinRoom: React.FC<ScreenJoinRoomProps> = ({
                             : 'bg-black border-slate-700 hover:border-cyan-400 text-slate-200'
                         }`}
                       >
-                        <span>{seat.avatar}</span>
+                        <span><PlayerMark p={seat} /></span>
                         <span>{seat.name}</span>
                       </button>
                     );

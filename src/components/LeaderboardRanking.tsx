@@ -3,6 +3,7 @@ import { Player, SessionStats } from '../types/game';
 import { computePlayerRanking, PlayerRankingEntry } from '../utils/rankingEngine';
 import { Trophy, Search, Sparkles } from 'lucide-react';
 import { sounds } from '../utils/soundEffects';
+import { PlayerMark } from './rdb/PlayerMark';
 
 interface LeaderboardRankingProps {
   stats?: SessionStats;
@@ -115,7 +116,7 @@ export const LeaderboardRanking: React.FC<LeaderboardRankingProps> = ({
                       className="w-7 h-7 sm:w-10 sm:h-10 shrink-0 border-2 border-red-600 bg-slate-900/90 flex items-center justify-center text-sm sm:text-xl shadow-md overflow-hidden"
                       style={{ borderColor: entry.color || '#E6194B' }}
                     >
-                      {entry.avatar}
+                      <PlayerMark p={entry} />
                     </div>
 
                     {/* Player Name and Fixed Tag */}

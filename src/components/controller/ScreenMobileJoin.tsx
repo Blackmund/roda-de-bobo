@@ -15,6 +15,7 @@ import {
 import { RetroAvatarModal } from '../RetroAvatarPicker';
 import { sounds } from '../../utils/soundEffects';
 import { RdbLogo } from '../rdb/RdbLogo';
+import { PlayerMark } from '../rdb/PlayerMark';
 
 export interface ScreenMobileJoinProps {
   room: GameRoom;
@@ -288,7 +289,7 @@ export const ScreenMobileJoin: React.FC<ScreenMobileJoinProps> = ({
                       : 'bg-slate-800/80 border-slate-700 hover:border-cyan-400 text-slate-200'
                   }`}
                 >
-                  <span className="text-sm leading-none">{seat.avatar}</span>
+                  <span className="text-sm leading-none"><PlayerMark p={seat} /></span>
                   <span>{seat.name}</span>
                   {seat.isAlreadyInRoomOnTv && !seat.isClaimedByAnotherPhone && (
                     <span className="px-1.5 py-0.2 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-mono-code uppercase">

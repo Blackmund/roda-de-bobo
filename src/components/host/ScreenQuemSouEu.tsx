@@ -10,6 +10,7 @@ import {
   recordQuestion,
   recordWrongGuess
 } from '../../utils/quemSouEuEngine';
+import { PlayerMark } from '../rdb/PlayerMark';
 
 interface ScreenQuemSouEuProps {
   room: GameRoom;
@@ -27,7 +28,7 @@ export const ScreenQuemSouEu: React.FC<ScreenQuemSouEuProps> = ({ room, onUpdate
   // NOV-06: o 'Onde estou' usa a mesma dinamica, com grandes momentos do esporte no lugar das identidades.
   const moment = room.activeGame === 'onde-estou';
   const nameOf = (id: string) => room.players.find((p) => p.id === id)?.name || '—';
-  const avatarOf = (id: string) => room.players.find((p) => p.id === id)?.avatar || '🙂';
+  const avatarOf = (id: string) => <PlayerMark p={room.players.find((p) => p.id === id)} />;
   const turn = qse.entries.find((e) => e.playerId === qse.turnPlayerId);
   const left = qse.entries.filter((e) => e.status === 'searching').length;
 

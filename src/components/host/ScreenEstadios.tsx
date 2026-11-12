@@ -5,6 +5,7 @@ import { EstadiosGameState, GameRoom } from '../../types/game';
 import { sounds } from '../../utils/soundEffects';
 import { isShowRuleset } from '../../config/rulesets';
 import { estadiosCluesShown, estadiosValue, giveUpEstadio, judgeEstadio } from '../../utils/estadiosEngine';
+import { PlayerMark } from '../rdb/PlayerMark';
 
 interface ScreenEstadiosProps {
   room: GameRoom;
@@ -21,7 +22,7 @@ export const ScreenEstadios: React.FC<ScreenEstadiosProps> = ({ room, onUpdateEs
   const isShow = isShowRuleset(room.customConfig);
   const playerIds = room.players.map((p) => p.id);
   const nameOf = (id: string) => room.players.find((p) => p.id === id)?.name || '—';
-  const avatarOf = (id: string) => room.players.find((p) => p.id === id)?.avatar || '🙂';
+  const avatarOf = (id: string) => <PlayerMark p={room.players.find((p) => p.id === id)} />;
   const shown = estadiosCluesShown(est);
   const value = estadiosValue(est);
   const done = est.phase === 'SUMMARY';

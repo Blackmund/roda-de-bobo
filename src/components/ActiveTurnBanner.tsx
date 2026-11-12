@@ -8,6 +8,7 @@ import {
 } from '../utils/teamUtils';
 import { sounds } from '../utils/soundEffects';
 import { RefreshCw, Sparkles, Users, ArrowRight } from 'lucide-react';
+import { PlayerMark } from './rdb/PlayerMark';
 
 interface ActiveTurnBannerProps {
   room: GameRoom;
@@ -72,7 +73,7 @@ export const ActiveTurnBanner: React.FC<ActiveTurnBannerProps> = ({
             compact ? 'w-9 h-9 text-xl' : 'w-11 h-11 text-2xl'
           } border-2 ${borderColorClass} bg-black flex items-center justify-center shrink-0 shadow-lg`}
         >
-          <span>{activePlayer?.avatar || '🎯'}</span>
+          <span><PlayerMark p={activePlayer} /></span>
           <span
             className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-[#FFE600] border border-black animate-ping"
             aria-hidden="true"
@@ -132,7 +133,7 @@ export const ActiveTurnBanner: React.FC<ActiveTurnBannerProps> = ({
             <Users size={11} className={textHighlightClass} />
             <span className="text-slate-400 uppercase">Parceiros:</span>
             <span className="font-bold text-white truncate max-w-[180px]">
-              {teammates.map((t) => `${t.avatar} ${t.name}`).join(', ')}
+              {teammates.map((t) => `$<PlayerMark p={t} /> ${t.name}`).join(', ')}
             </span>
           </div>
         )}
@@ -141,7 +142,7 @@ export const ActiveTurnBanner: React.FC<ActiveTurnBannerProps> = ({
           <div className="hidden md:flex items-center gap-1.5 px-2 py-1 border border-rose-500/40 bg-rose-950/40 text-[10px] font-mono-code text-rose-200">
             <span className="font-bold uppercase">{secondaryRoleLabel}:</span>
             <span className="text-white font-bold">
-              {secondaryPlayer.avatar} {secondaryPlayer.name}
+              <PlayerMark p={secondaryPlayer} /> {secondaryPlayer.name}
             </span>
           </div>
         )}

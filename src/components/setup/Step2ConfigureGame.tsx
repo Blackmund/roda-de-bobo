@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import { ThemeSection } from './step2/ThemeSection';
 import { POPULAR_THEMES } from './step2/popularThemes';
-import { ContentSourceSelector } from './step2/ContentSourceSelector';
+import { GameCardArt } from '../art/GameCardArt';
 import { usesLocalContent } from '../../config/localGames';
 
 export interface Step2ConfigureGameProps {
@@ -62,12 +62,14 @@ export interface Step2ConfigureGameProps {
   onToggleTeamsDrawer?: () => void;
   connectedPlayersCount?: number;
   connectionMode?: string;
+  /** Nome do jogo, mostrado no cartaz. */
+  gameTitle?: string;
 }
 
 const TIMER_OPTIONS: Array<{ value: number; label: string; desc: string }> = [
-  { value: 30, label: '30s', desc: 'Rápido' },
-  { value: 60, label: '60s', desc: 'Padrão Oficial' },
-  { value: 90, label: '90s', desc: 'Com calma' },
+  { value: 30, label: '30 s', desc: 'Rápido' },
+  { value: 60, label: '60 s', desc: 'Padrão Oficial' },
+  { value: 90, label: '90 s', desc: 'Com calma' },
   { value: 0, label: 'Livre', desc: 'Sem limite' }
 ];
 
@@ -87,6 +89,16 @@ const PV_ROUND_OPTIONS: Array<{ value: number; label: string; desc: string }> = 
 ];
 
 const DIFFICULTY_LIST: GameDifficulty[] = ['facil', 'medio', 'dificil', 'impossivel'];
+
+/** Jogos que tem ajustes exclusivos (abrem na janela "Mais ajustes deste jogo"). */
+const GAMES_WITH_SPECIFIC_RULES: GameId[] = ['limite', 'nota', 'tem-ou-nao-tem', 'proibido', 'duvido', 'perguntas-e-verdades'];
+
+/** DAD-05: de onde vem o conteudo das perguntas. */
+const CONTENT_SOURCES: Array<{ value: NonNullable<GameCustomConfig['contentSource']>; label: string; hint: string }> = [
+  { value: 'auto', label: 'Misto', hint: 'Banco pronto + IA, sem repetir' },
+  { value: 'bank', label: 'Só banco pronto', hint: 'Itens do programa e revisados; não chama a IA' },
+  { value: 'ai', label: 'Só IA', hint: 'Conteúdo novo gerado na hora' }
+];
 
 
 export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(({
@@ -109,7 +121,8 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
   onStartDirectly,
   onGoToRules,
   onBackToLobby,
-  connectedPlayersCount
+  connectedPlayersCount,
+  gameTitle
 }) => {
   const isPV = activeGame === 'perguntas-e-verdades';
   const isIndividualMode =
@@ -122,6 +135,22 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
     activeGame === 'perguntas-e-verdades';
 
   const [isAllThemesExpanded, setIsAllThemesExpanded] = useState(false);
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const hasSpecificRules = GAMES_WITH_SPECIFIC_RULES.includes(activeGame);
+
+  // Esc fecha a janela aberta
+  useEffect(() => {
+    if (!isThemeOpen && !isMoreOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsThemeOpen(false);
+        setIsMoreOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isThemeOpen, isMoreOpen]);
 
   // UX-09: modo de regras (casa x programa). O preset ajusta rodadas, tempo e parametros; o host ainda pode mexer depois.
   const ruleset = resolveRuleset(customConfig);
@@ -150,213 +179,186 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
 
   const isGeneralTheme = !theme || theme.trim().toLowerCase() === 'geral';
 
-  return (
-    <div
-      data-testid="step2-configure-game"
-      className="flex-1 min-h-0 flex flex-col justify-between gap-1.5 sm:gap-2 overflow-y-auto scrollbar-none p-1.5 sm:p-2 text-[#F5F2EB] select-none"
+  const Seg = (p: { testid: string; on: boolean; onClick: () => void; children: React.ReactNode; title?: string }) => (
+    <button
+      type="button"
+      data-testid={p.testid}
+      aria-pressed={p.on}
+      title={p.title}
+      onClick={() => {
+        sounds.playTick();
+        p.onClick();
+      }}
+      className="rdb-seg"
     >
-      <div className="rdb-setup-cols space-y-1.5 sm:space-y-2 flex-1 min-h-0 overflow-y-auto scrollbar-none pr-0.5">
+      {p.children}
+    </button>
+  );
 
-                {/* MODO DE REGRAS: casa x programa (so para jogos que existem no programa) */}
-        {!usesLocalContent(activeGame) && activeGame !== 'perguntas-e-verdades' && (
-          <ContentSourceSelector customConfig={customConfig} onChangeCustomConfig={onChangeCustomConfig} />
-        )}
-
-        {hasShowRuleset(activeGame) && (
-          <section
-            data-testid="ruleset-selector"
-            className="border-2 border-amber-400/40 bg-[#090b14] p-2 space-y-1.5 shadow-lg"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h4 className="font-anton text-xs sm:text-sm text-white uppercase tracking-wider leading-none">
-                📺 MODO DE REGRAS
-              </h4>
-              <div className="flex gap-1">
-                {(['home', 'show'] as const).map((rs) => (
-                  <button
-                    key={rs}
-                    type="button"
-                    data-testid={'ruleset-btn-' + rs}
-                    aria-pressed={ruleset === rs}
-                    onClick={() => handleSelectRuleset(rs)}
-                    className={
-                      'px-2.5 py-1 border font-anton text-xs uppercase tracking-wider cursor-pointer transition-all ' +
-                      (ruleset === rs
-                        ? 'border-amber-400 bg-amber-400 text-black font-black'
-                        : 'border-slate-800 bg-black/60 text-slate-300 hover:border-amber-400/50 hover:text-white')
-                    }
-                  >
-                    {RULESET_LABELS[rs]}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {ruleset === 'show' && showPreset && (
-              <ul
-                data-testid="ruleset-notes"
-                className="list-disc pl-4 text-[10px] sm:text-xs font-mono-code text-amber-200/90 space-y-0.5"
-              >
+  return (
+    <div data-testid="step2-configure-game" className="rdb-setup">
+      <div className="rdb-setup-body">
+        {/* CARTAZ DO JOGO: vinheta, nome e o resumo das regras do modo escolhido */}
+        <aside className="rdb-setup-poster" data-testid="setup-poster">
+          <div className="rdb-setup-poster-art">
+            <GameCardArt gameId={activeGame} />
+          </div>
+          <div className="rdb-setup-poster-text">
+            <span className="rdb-tag">{isIndividualMode ? 'Individual' : 'Em equipes'}</span>
+            <h2 className="rdb-setup-title">{gameTitle || 'Jogo'}</h2>
+            {ruleset === 'show' && showPreset ? (
+              <ul data-testid="ruleset-notes" className="rdb-setup-notes">
                 {showPreset.notes.map((n) => (
                   <li key={n}>{n}</li>
                 ))}
               </ul>
+            ) : (
+              <p className="rdb-setup-notes">Regras da casa: ajuste o ritmo ao lado do jeito que a roda preferir.</p>
             )}
-          </section>
-        )}
+          </div>
+        </aside>
 
-{/* =========================================================================
-            CARD 1: TEMA CENTRAL DA PARTIDA (Estruturado, sem sobreposições)
-           ========================================================================= */}
-        {!isPV && <ThemeSection isGeneralTheme={isGeneralTheme} theme={theme} onChangeTheme={onChangeTheme} onRollRandomTheme={onRollRandomTheme} isGeneratingThemes={isGeneratingThemes} onGenerateAiThemes={onGenerateAiThemes} setIsAllThemesExpanded={setIsAllThemesExpanded} isAllThemesExpanded={isAllThemesExpanded} dynamicThemes={dynamicThemes} />}
-
-        {/* =========================================================================
-            CARD 2: PARÂMETROS DA PARTIDA (Grid Perfeita: Dificuldade + Tempo + Rodadas)
-           ========================================================================= */}
-        <section className={`grid grid-cols-1 ${isPV ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-1.5 sm:gap-2`}>
-
-          {/* 1. NÍVEL DE DIFICULDADE (Omitido no Perguntas e Verdades) */}
-          {!isPV && (
-            <div className="border-2 border-rose-500/40 bg-[#090b14] p-2 space-y-1 flex flex-col justify-between shadow-lg">
-              <div className="flex items-center justify-between border-b border-white/10 pb-1">
-                <div className="flex items-center gap-1.5">
-                  <Flame size={14} className="text-[#E6194B]" />
-                  <h4 className="font-anton text-xs sm:text-sm text-white uppercase tracking-wider leading-none">
-                    DIFICULDADE
-                  </h4>
-                </div>
-                <span className="text-[9px] font-mono-code text-rose-300 font-bold uppercase">
-                  {DIFFICULTY_META[difficulty].badge}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-1 flex-1 content-center">
-                {DIFFICULTY_LIST.map((diffKey) => {
-                  const meta = DIFFICULTY_META[diffKey];
-                  const isSelected = difficulty === diffKey;
-                  return (
-                    <button
-                      key={diffKey}
-                      type="button"
-                      data-testid={`difficulty-btn-${diffKey}`}
-                      onClick={() => {
-                        sounds.playTick();
-                        onChangeDifficulty(diffKey);
-                      }}
-                      className={`px-2 py-1 border text-left transition-all cursor-pointer flex items-center justify-between ${
-                        isSelected
-                          ? 'border-[#E6194B] bg-[#E6194B] text-white font-black shadow-[0_0_12px_rgba(230,25,75,0.4)]'
-                          : 'border-slate-800 bg-black/60 text-slate-300 hover:border-rose-400/50 hover:text-white'
-                      }`}
-                    >
-                      <span className="font-anton text-xs uppercase tracking-wide truncate">
-                        {meta.label}
-                      </span>
-                      {isSelected && <Check size={12} className="text-white shrink-0 ml-1" />}
-                    </button>
-                  );
-                })}
+        {/* ESCOLHAS: uma linha por decisao, rotulo a esquerda e opcoes a direita */}
+        <div className="rdb-setup-rows">
+          {hasShowRuleset(activeGame) && (
+            <div className="rdb-opt" data-testid="ruleset-selector">
+              <span className="rdb-opt-label">Regras</span>
+              <div className="rdb-opt-choices">
+                {(['home', 'show'] as const).map((rs) => (
+                  <Seg key={rs} testid={'ruleset-btn-' + rs} on={ruleset === rs} onClick={() => handleSelectRuleset(rs)}>
+                    {RULESET_LABELS[rs]}
+                  </Seg>
+                ))}
               </div>
             </div>
           )}
 
-          {/* 2. TEMPO POR RODADA (CRONÔMETRO) */}
-          <div className="border-2 border-cyan-500/40 bg-[#090b14] p-2 space-y-1 flex flex-col justify-between shadow-lg">
-            <div className="flex items-center justify-between border-b border-white/10 pb-1">
-              <div className="flex items-center gap-1.5">
-                <Clock size={14} className="text-[#17B8B8]" />
-                <h4 className="font-anton text-xs sm:text-sm text-white uppercase tracking-wider leading-none">
-                  TEMPO POR RODADA
-                </h4>
+          {!isPV && (
+            <div className="rdb-opt" data-testid="setup-theme-row">
+              <span className="rdb-opt-label">Tema</span>
+              <div className="rdb-opt-choices">
+                <span className="rdb-opt-value" data-testid="setup-theme-current">
+                  {isGeneralTheme ? 'Geral (assuntos diversos)' : theme}
+                </span>
+                <button
+                  type="button"
+                  data-testid="setup-theme-open-btn"
+                  className="rdb-seg rdb-seg--action"
+                  onClick={() => {
+                    sounds.playTick();
+                    setIsThemeOpen(true);
+                  }}
+                >
+                  Trocar tema
+                </button>
               </div>
-              <span className="text-[9px] font-mono-code text-cyan-300 font-bold uppercase flex items-center gap-1">
-                {timer === 0 ? (
-                  <>
-                    <InfinityIcon className="w-3 h-3" />
-                    <span>LIVRE</span>
-                  </>
-                ) : (
-                  `${timer} SEGUNDOS`
-                )}
-              </span>
             </div>
+          )}
 
-            <div className="grid grid-cols-2 gap-1 flex-1 content-center">
-              {TIMER_OPTIONS.map((opt) => {
-                const isSelected = timer === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    data-testid={`timer-btn-${opt.value}`}
-                    onClick={() => {
-                      sounds.playTick();
-                      onChangeTimer(opt.value);
-                    }}
-                    className={`px-2 py-1 border font-anton transition-all cursor-pointer flex items-center justify-between ${
-                      isSelected
-                        ? 'border-[#17B8B8] bg-[#17B8B8] text-black font-black shadow-neon-cyan'
-                        : 'border-slate-800 bg-black/60 text-slate-300 hover:border-cyan-400/50 hover:text-white'
-                    }`}
+          {!isPV && (
+            <div className="rdb-opt">
+              <span className="rdb-opt-label">Dificuldade</span>
+              <div className="rdb-opt-choices">
+                {DIFFICULTY_LIST.map((diffKey) => (
+                  <Seg
+                    key={diffKey}
+                    testid={`difficulty-btn-${diffKey}`}
+                    on={difficulty === diffKey}
+                    onClick={() => onChangeDifficulty(diffKey)}
+                    title={DIFFICULTY_META[diffKey].description}
                   >
-                    <span className="text-xs uppercase tracking-wider truncate">
-                      {opt.value === 0 ? '∞ LIVRE' : opt.label}
-                    </span>
-                    {isSelected && <Check size={12} className="text-black shrink-0 ml-1" />}
-                  </button>
-                );
-              })}
+                    {DIFFICULTY_META[diffKey].shortLabel || DIFFICULTY_META[diffKey].label}
+                  </Seg>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="rdb-opt">
+            <span className="rdb-opt-label">Tempo por rodada</span>
+            <div className="rdb-opt-choices">
+              {TIMER_OPTIONS.map((opt) => (
+                <Seg key={opt.value} testid={`timer-btn-${opt.value}`} on={timer === opt.value} onClick={() => onChangeTimer(opt.value)} title={opt.desc}>
+                  {opt.label}
+                </Seg>
+              ))}
             </div>
           </div>
 
-          {/* 3. DURAÇÃO DA PARTIDA (RODADAS) */}
-          <div className="border-2 border-amber-400/40 bg-[#090b14] p-2 space-y-1 flex flex-col justify-between shadow-lg">
-            <div className="flex items-center justify-between border-b border-white/10 pb-1">
-              <div className="flex items-center gap-1.5">
-                <Target size={14} className="text-amber-400" />
-                <h4 className="font-anton text-xs sm:text-sm text-white uppercase tracking-wider leading-none">
-                  {isPV ? 'SÉRIE DE JOGOS' : 'TOTAL DE RODADAS'}
-                </h4>
-              </div>
-              <span className="text-[9px] font-mono-code text-amber-300 font-bold uppercase">
-                {isPV
-                  ? rounds === 1
-                    ? '1 JOGO'
-                    : `MD${rounds}`
-                  : `${rounds} RODADAS`}
-              </span>
-            </div>
-
-            <div className={`grid ${isPV ? 'grid-cols-5' : 'grid-cols-2 sm:grid-cols-4'} gap-1 flex-1 content-center`}>
-              {(isPV ? PV_ROUND_OPTIONS : roundOptions).map((opt) => {
-                const isSelected = rounds === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    data-testid={`rounds-btn-${opt.value}`}
-                    onClick={() => {
-                      sounds.playTick();
-                      onChangeRounds(opt.value);
-                    }}
-                    className={`px-1.5 py-1 border text-center flex items-center justify-center transition-all cursor-pointer ${
-                      isSelected
-                        ? 'border-amber-400 bg-amber-400 text-black font-black shadow-[0_0_10px_rgba(251,191,36,0.5)]'
-                        : 'border-slate-800 bg-black/60 text-slate-300 hover:border-amber-400/50 hover:text-white'
-                    }`}
-                  >
-                    <span className="font-anton text-xs uppercase tracking-wide">
-                      {isPV ? opt.label : `${opt.value}R`}
-                    </span>
-                  </button>
-                );
-              })}
+          <div className="rdb-opt">
+            <span className="rdb-opt-label">{isPV ? 'Série de jogos' : 'Rodadas'}</span>
+            <div className="rdb-opt-choices">
+              {(isPV ? PV_ROUND_OPTIONS : roundOptions).map((opt) => (
+                <Seg key={opt.value} testid={`rounds-btn-${opt.value}`} on={rounds === opt.value} onClick={() => onChangeRounds(opt.value)} title={opt.desc}>
+                  {isPV ? opt.label : opt.value}
+                </Seg>
+              ))}
             </div>
           </div>
-        </section>
 
-        {/* =========================================================================
-            CARD 3: REGRAS ESPECÍFICAS DA MODALIDADE (Modular & Bem Espaçado)
-           ========================================================================= */}
+          {!usesLocalContent(activeGame) && !isPV && (
+            <div className="rdb-opt" data-testid="content-source-selector">
+              <span className="rdb-opt-label">Perguntas</span>
+              <div className="rdb-opt-choices">
+                {CONTENT_SOURCES.map((o) => (
+                  <Seg
+                    key={o.value}
+                    testid={'content-source-btn-' + o.value}
+                    on={(customConfig.contentSource ?? 'auto') === o.value}
+                    onClick={() => onChangeCustomConfig((prev) => ({ ...prev, contentSource: o.value }))}
+                    title={o.hint}
+                  >
+                    {o.label}
+                  </Seg>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {hasSpecificRules && (
+            <button
+              type="button"
+              data-testid="setup-more-settings-btn"
+              className="rdb-setup-more"
+              onClick={() => {
+                sounds.playTick();
+                setIsMoreOpen(true);
+              }}
+            >
+              Mais ajustes deste jogo
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* JANELA: escolha do tema (busca, sortear, sugerir com IA e todas as categorias) */}
+      {isThemeOpen && !isPV && (
+        <div className="rdb-sheet-backdrop" data-testid="setup-theme-sheet" onClick={() => setIsThemeOpen(false)}>
+          <div className="rdb-sheet" role="dialog" aria-modal="true" aria-label="Escolher tema" onClick={(e) => e.stopPropagation()}>
+            <div className="rdb-sheet-head">
+              <h3>Escolher tema</h3>
+              <button type="button" className="rdb-seg rdb-seg--action" data-testid="setup-theme-close-btn" onClick={() => setIsThemeOpen(false)}>
+                Pronto
+              </button>
+            </div>
+            <div className="rdb-sheet-body">
+              <ThemeSection isGeneralTheme={isGeneralTheme} theme={theme} onChangeTheme={onChangeTheme} onRollRandomTheme={onRollRandomTheme} isGeneratingThemes={isGeneratingThemes} onGenerateAiThemes={onGenerateAiThemes} setIsAllThemesExpanded={setIsAllThemesExpanded} isAllThemesExpanded={isAllThemesExpanded} dynamicThemes={dynamicThemes} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* JANELA: ajustes exclusivos do jogo */}
+      {isMoreOpen && hasSpecificRules && (
+        <div className="rdb-sheet-backdrop" data-testid="setup-more-sheet" onClick={() => setIsMoreOpen(false)}>
+          <div className="rdb-sheet" role="dialog" aria-modal="true" aria-label="Mais ajustes deste jogo" onClick={(e) => e.stopPropagation()}>
+            <div className="rdb-sheet-head">
+              <h3>Mais ajustes deste jogo</h3>
+              <button type="button" className="rdb-seg rdb-seg--action" data-testid="setup-more-close-btn" onClick={() => setIsMoreOpen(false)}>
+                Pronto
+              </button>
+            </div>
+            <div className="rdb-sheet-body">
         <section className="border-2 border-white/15 bg-[#090b14] p-2 sm:p-2.5 space-y-1.5 shadow-lg">
           <div className="flex items-center justify-between border-b border-white/10 pb-1">
             <div className="flex items-center gap-1.5">
@@ -772,82 +774,66 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
           )}
         </section>
-
-      </div>
-
-      {/* =========================================================================
-          BARRA DE AÇÕES INFERIOR (Hierarquia Limpa e Ações Evidentes)
-         ========================================================================= */}
-      <div className="pt-1.5 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 shrink-0">
-        <div>
-          {onBackToLobby && (
-            <button
-              type="button"
-              data-testid="setup-back-btn"
-              onClick={() => {
-                sounds.playFlip();
-                onBackToLobby();
-              }}
-              className="px-3 py-1.5 border border-slate-700 bg-black/60 hover:border-slate-500 text-slate-300 font-anton text-xs uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <span>⬅ VOLTAR AO CATÁLOGO</span>
-            </button>
-          )}
+            </div>
+          </div>
         </div>
+      )}
 
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Botão de Avanço para Jogadores ou Equipes */}
+      <div className="rdb-setup-foot">
+        {onBackToLobby ? (
+          <button
+            type="button"
+            data-testid="setup-back-btn"
+            className="rdb-btn"
+            onClick={() => {
+              sounds.playFlip();
+              onBackToLobby();
+            }}
+          >
+            Voltar ao catálogo
+          </button>
+        ) : (
+          <span />
+        )}
+        <div className="rdb-setup-foot-actions">
           {onProceedToTeams && (
             <button
               type="button"
               data-testid="step2-proceed-to-teams-btn"
+              className="rdb-btn"
               onClick={() => {
                 sounds.playTick();
                 onProceedToTeams();
               }}
-              className="px-3 py-1.5 border border-cyan-400/80 bg-cyan-950/60 hover:bg-cyan-900/60 text-cyan-200 font-anton text-xs uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              {isIndividualMode ? <User size={13} /> : <Users size={13} />}
-              <span>
-                {isIndividualMode
-                  ? `JOGADORES (${connectedPlayersCount ?? '—'})`
-                  : `DEFINIR EQUIPES (${connectedPlayersCount ?? '—'} JOGADORES)`}
-              </span>
-              <ArrowRight size={13} />
+              {isIndividualMode ? `Jogadores (${connectedPlayersCount ?? '—'})` : `Equipes (${connectedPlayersCount ?? '—'} jogadores)`}
             </button>
           )}
-
-          {/* Botão de Regras & Tutorial */}
           {onGoToRules && (
             <button
               type="button"
               data-testid="step2-continue-to-mode-btn"
+              className="rdb-btn"
               onClick={() => {
                 sounds.playTick();
                 onGoToRules();
               }}
-              className="px-3 py-1.5 border border-slate-700 bg-black/60 hover:border-slate-500 text-slate-300 font-anton text-xs uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <BookOpen size={13} />
-              <span>REGRAS & TUTORIAL</span>
+              Como jogar
             </button>
           )}
-
-          {/* Botão Primário: Iniciar Jogo Agora */}
           {onStartDirectly && (
             <button
               type="button"
               data-testid="setup-start-direct-btn"
+              className="rdb-btn rdb-setup-start"
               onClick={() => {
                 sounds.playPowerup();
                 onStartDirectly();
               }}
-              style={{ backgroundColor: '#E6194B', color: '#FFFFFF' }}
-              className="px-5 py-1.5 bg-[#E6194B] hover:bg-rose-500 active:bg-rose-700 text-white font-anton font-black text-xs md:text-sm uppercase tracking-wider shadow-[0_0_15px_rgba(230,25,75,0.5)] border border-rose-400/80 flex items-center gap-2 transition-all cursor-pointer hover:scale-[1.02] active:scale-95"
             >
-              <Play size={14} className="fill-white text-white" />
-              <span className="text-white font-black">INICIAR JOGO AGORA</span>
-              <ArrowRight size={14} className="text-white" />
+              Iniciar jogo
+              <ArrowRight />
             </button>
           )}
         </div>

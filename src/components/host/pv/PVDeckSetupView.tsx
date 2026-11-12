@@ -8,6 +8,7 @@ import { SUIT_META, SUIT_ORDER, PVCard } from '../../../utils/perguntasEVerdades
 import { sounds } from '../../../utils/soundEffects';
 import { CheckCircle2, Shuffle, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { PlayerMark } from '../../rdb/PlayerMark';
 
 interface PVDeckSetupViewProps {
   tvWrapperClass: "h-full flex flex-col justify-between min-h-0 overflow-hidden gap-1.5 text-xs select-none";
@@ -76,7 +77,7 @@ export const PVDeckSetupView: React.FC<PVDeckSetupViewProps> = ({
                 FASE A: MONTAGEM DO BARALHO (R#{matchRoundNumber}{totalMatchRounds > 1 ? `/${totalMatchRounds}` : ''})
               </span>
               <h2 data-testid="pv-setup-current-player-banner" className="font-anton text-base md:text-lg text-white uppercase">
-                {currentSetupPlayer.avatar} {currentSetupPlayer.name} ({setupPlayerIndex + 1}/{activePlayers.length})
+                <PlayerMark p={currentSetupPlayer} /> {currentSetupPlayer.name} ({setupPlayerIndex + 1}/{activePlayers.length})
               </h2>
             </div>
 

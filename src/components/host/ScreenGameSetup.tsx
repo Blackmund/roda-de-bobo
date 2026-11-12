@@ -505,11 +505,14 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
       {/* SUB-HEADER COMPACTO DO JOGO COM BADGES DE STATUS */}
       <div className="py-1.5 px-3 flex flex-wrap items-center justify-between border-b border-rose-500/40 gap-2 shrink-0 bg-[#07080d]">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-anton text-lg md:text-2xl text-[#F5F2EB] tracking-wider uppercase leading-none">
-            {getGameTitle(room.activeGame)}
-          </span>
+          {setupStage === 'teams' && (
+            <span className="font-anton text-lg md:text-2xl text-[#F5F2EB] tracking-wider uppercase leading-none">
+              {getGameTitle(room.activeGame)}
+            </span>
+          )}
           <span
             data-testid="setup-mode-badge"
+            hidden={setupStage !== 'teams'}
             className={`px-2 py-0.5 border font-mono-code text-[10px] font-bold uppercase ${
               isIndividualMode
                 ? 'border-amber-400 bg-amber-950/80 text-amber-300'
@@ -517,18 +520,18 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
             }`}
           >
             {isIndividualMode
-              ? '👤 MODALIDADE INDIVIDUAL (CADA UM POR SI)'
-              : '👥 MODALIDADE EM EQUIPES'}
+              ? 'INDIVIDUAL'
+              : 'EM EQUIPES'}
           </span>
           <span
             data-testid="setup-connection-badge"
             className="px-2 py-0.5 border border-slate-700 bg-black/80 text-slate-300 font-mono-code text-[10px] font-bold uppercase"
           >
             {connectionMode === 'local'
-              ? '🖥️ MODO LOCAL'
+              ? 'MODO LOCAL'
               : connectionMode === 'host'
-              ? `📺 TV + CELULARES #${room.roomId}`
-              : `📱 100% MOBILE #${room.roomId}`}
+              ? `TV + CELULARES #${room.roomId}`
+              : `SÓ CELULARES #${room.roomId}`}
           </span>
         </div>
 
@@ -700,6 +703,7 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
           onBackToLobby={onBack}
           connectedPlayersCount={room.players.length}
           connectionMode={connectionMode}
+          gameTitle={getGameTitle(room.activeGame)}
         />
       )}
 
