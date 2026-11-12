@@ -258,6 +258,8 @@ export interface TurnSpotlightDescriptor {
   teammates: Player[];
   nextInQueueLabel: string | null;
   canRotatePlayer: boolean;
+  /** Texto do bloco colorido da faixa (padrao: "Vez de"). */
+  flagLabel?: string;
 }
 
 /**
@@ -343,6 +345,9 @@ export function resolveCurrentTurnSpotlight(room: GameRoom): TurnSpotlightDescri
       null;
     const teammates = teamMembers.filter((p) => p.id !== activePlayer?.id);
     const refereePlayer = refMembers[0] || null;
+    const partnerNames =
+      teammates.map((t) => t.name).join(', ') ||
+      (players.length === 2 ? players.find((p) => p.id !== activePlayer?.id)?.name || '' : '');
 
     return {
       gameId,
@@ -359,14 +364,10 @@ export function resolveCurrentTurnSpotlight(room: GameRoom): TurnSpotlightDescri
         : `VEZ DA ${getTeamDisplayName(room, tid).toUpperCase()}`,
       actionInstruction:
         proibido.phase === 'READY'
-          ? `${activePlayer?.name || 'O Orador'} vai dar dicas para ${
-              teammates.map((t) => t.name).join(', ') || 'sua equipe'
-            } adivinhar sem falar as palavras proibidas!`
+          ? `${activePlayer?.name || 'O Orador'} vai dar dicas para ${partnerNames || 'a equipe'} adivinhar, sem falar as palavras proibidas.`
           : proibido.phase === 'SUMMARY'
           ? 'Tempo encerrado! Revise as cartas acertadas e confirme os pontos.'
-          : `${activePlayer?.name || 'Orador'} descreve a palavra-alvo! ${
-              teammates.map((t) => t.name).join(', ') || 'Parceiro'
-            } adivinha!`,
+          : `${activePlayer?.name || 'Orador'} descreve a palavra-alvo e ${partnerNames || 'a equipe'} adivinha.`,
       teammates,
       nextInQueueLabel: refereePlayer
         ? `Fiscalizando faltas: ${refereePlayer.name} (${TEAM_META[refTid].equipeLabel})`
@@ -466,10 +467,177 @@ export function resolveCurrentTurnSpotlight(room: GameRoom): TurnSpotlightDescri
     };
   }
 
-  // 5. JOGO DO LIMITE
-  // No Jogo do Limite NÃO existe jogador da vez — todos os jogadores jogam simultaneamente
-  if (gameId === 'limite') {
-    return null;
+  const byId = (id?: string | null) => players.find((p) => p.id === id) || null;
+  const solo = (
+    activePlayer: Player | null,
+    roleBadge: string,
+    actionInstruction: string,
+    extra: Partial<TurnSpotlightDescriptor> = {}
+  ): TurnSpotlightDescriptor => ({
+    gameId,
+    isTeamGame: false,
+    activeTeamId: null,
+    activeTeamName: null,
+    activeTeamMeta: null,
+    activePlayer,
+    secondaryPlayer: null,
+    secondaryRoleLabel: null,
+    roleBadge,
+    headline: activePlayer ? `VEZ DE: ${activePlayer.name.toUpperCase()}` : roleBadge,
+    actionInstruction,
+    teammates: [],
+    nextInQueueLabel: null,
+    canRotatePlayer: false,
+    ...extra
+  });
+  const duo = (
+    tid: TeamId,
+    activePlayer: Player | null,
+    partner: Player | null,
+    partnerLabel: string,
+    roleBadge: string,
+    actionInstruction: string
+  ): TurnSpotlightDescriptor => {
+    const team = activeTeamIds.includes(tid) ? tid : activeTeamIds[0];
+    return {
+      gameId,
+      isTeamGame: true,
+      activeTeamId: team,
+      activeTeamName: getTeamDisplayName(room, team),
+      activeTeamMeta: TEAM_META[team],
+      activePlayer,
+      secondaryPlayer: partner,
+      secondaryRoleLabel: partner ? partnerLabel : null,
+      roleBadge,
+      headline: activePlayer ? `VEZ DE: ${activePlayer.name.toUpperCase()}` : roleBadge,
+      actionInstruction,
+      teammates: [],
+      nextInQueueLabel: null,
+      canRotatePlayer: false
+    };
+  };
+  const READY_TEXT = 'Tudo pronto. O diretor inicia a rodada.';
+  const DONE_TEXT = 'Rodada encerrada. Confira os pontos e avance.';
+
+  // 5. JOGO DO LIMITE: nao ha jogador da vez, todos dao o palpite ao mesmo tempo
+  if (gameId === 'limite' && room.limite) {
+    const l = room.limite;
+    const missing = players.length - (l.submittedPlayers || []).length;
+    return solo(
+      null,
+      'Palpite secreto',
+      l.phase === 'REVEAL' || l.phase === 'SCORING'
+        ? 'Palpites revelados. Vence quem chegou mais perto sem ultrapassar.'
+        : missing > 0 && (l.submittedPlayers || []).length > 0
+        ? `Faltam ${missing} palpite${missing > 1 ? 's' : ''}.`
+        : 'Cada um dá o seu palpite em segredo, sem estourar o número.',
+      { activeTeamName: 'Todos jogam', flagLabel: 'Agora' }
+    );
+  }
+
+  // MIMICA
+  if (gameId === 'mimica' && room.mimica) {
+    const m = room.mimica;
+    const mime = byId(m.mimePlayerId);
+    return duo(
+      m.mimeTeam,
+      mime,
+      byId(m.guesserPlayerId),
+      'Adivinha',
+      'Faz a mímica',
+      m.phase === 'READY' ? READY_TEXT : m.phase === 'SUMMARY' ? DONE_TEXT : `${mime?.name || 'O mímico'} faz a mímica sem falar e sem apontar objetos.`
+    );
+  }
+
+  // QUEM SOU EU / ONDE ESTOU
+  if ((gameId === 'quem-sou-eu' || gameId === 'onde-estou') && room.quemSouEu) {
+    const q = room.quemSouEu;
+    const p = byId(q.turnPlayerId);
+    return solo(
+      p,
+      'Pergunta ou chuta',
+      q.phase === 'READY'
+        ? READY_TEXT
+        : q.phase === 'SUMMARY'
+        ? DONE_TEXT
+        : `${p?.name || 'O jogador'} faz uma pergunta de sim ou não, ou arrisca a resposta.`
+    );
+  }
+
+  // MEGA RESENHA
+  if (gameId === 'mega-resenha' && room.megaResenha) {
+    const g = room.megaResenha;
+    const giver = byId(g.giverPlayerId);
+    return duo(
+      g.team,
+      giver,
+      byId(g.guesserPlayerId),
+      'Adivinha sem olhar',
+      'Dá as dicas',
+      g.phase === 'READY' ? READY_TEXT : g.phase === 'SUMMARY' ? DONE_TEXT : `${giver?.name || 'Quem dá as dicas'} fala uma palavra por dica.`
+    );
+  }
+
+  // REPETENTE: todos escrevem ao mesmo tempo
+  if (gameId === 'repetente' && room.repetente) {
+    const r = room.repetente;
+    return solo(
+      null,
+      'Palavra secreta',
+      r.phase === 'READY'
+        ? READY_TEXT
+        : r.phase === 'REVEAL'
+        ? 'Palavras reveladas. Quem combinou com o parceiro pontua.'
+        : 'Cada um escreve uma palavra em segredo, tentando bater com a do parceiro.',
+      { activeTeamName: 'Todos jogam', flagLabel: 'Agora' }
+    );
+  }
+
+  // RESPOSTAS SEM PERGUNTAS
+  if (gameId === 'respostas-sem-perguntas' && room.respostasSemPerguntas) {
+    const r = room.respostasSemPerguntas;
+    const p = byId(r.turnPlayerId);
+    return solo(
+      p,
+      'Revela e chuta',
+      r.phase === 'READY'
+        ? READY_TEXT
+        : r.phase === 'SUMMARY'
+        ? DONE_TEXT
+        : `${p?.name || 'O jogador'} escolhe uma palavra da pergunta para revelar e chuta a pergunta.`
+    );
+  }
+
+  // ESTADIOS
+  if (gameId === 'estadios' && room.estadios) {
+    const e = room.estadios;
+    const p = byId(e.turnPlayerId);
+    return solo(
+      p,
+      'Chuta o estádio',
+      e.phase === 'READY' ? READY_TEXT : e.phase === 'SUMMARY' ? DONE_TEXT : `${p?.name || 'O jogador'} diz o nome do estádio em voz alta.`
+    );
+  }
+
+  // COMO EU PINTO
+  if (gameId === 'como-eu-pinto' && room.comoEuPinto) {
+    const c = room.comoEuPinto;
+    if (c.phase === 'STEAL' && c.rivalTeam) {
+      const rivals = players.filter((p) => p.team === c.rivalTeam);
+      return {
+        ...duo(c.rivalTeam, rivals[0] || null, null, '', 'Tenta roubar', 'A dupla rival tenta adivinhar as palavras que faltaram.'),
+        activePlayer: rivals.length === 1 ? rivals[0] : null
+      };
+    }
+    const drawer = byId(c.drawerPlayerId);
+    return duo(
+      c.drawTeam,
+      drawer,
+      byId(c.guesserPlayerId),
+      'Adivinha',
+      'Desenha',
+      c.phase === 'READY' ? READY_TEXT : c.phase === 'SUMMARY' ? DONE_TEXT : `${drawer?.name || 'Quem desenha'} desenha sem letras e sem números.`
+    );
   }
 
   // 6. PERGUNTAS E VERDADES

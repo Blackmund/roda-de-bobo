@@ -51,8 +51,11 @@ export const ActiveTurnBanner: React.FC<ActiveTurnBannerProps> = ({
     roleBadge,
     actionInstruction,
     teammates,
-    canRotatePlayer
+    canRotatePlayer,
+    flagLabel
   } = spotlight;
+  // com 2 jogadores nao ha equipes de verdade: o nome da equipe so confunde
+  const showTeam = isTeamGame && !!activeTeamName && (room.players || []).length > 2;
 
   const activeTeamIds = getActiveTeamIds(room);
   const color = activeTeamMeta?.hex || '#17b8b8';
@@ -66,18 +69,20 @@ export const ActiveTurnBanner: React.FC<ActiveTurnBannerProps> = ({
       className={`rdb-turn ${className}`}
       style={{ ['--turn' as string]: color }}
     >
-      <span className="rdb-turn-flag">Vez de</span>
-      <span className="rdb-turn-mark">
-        <PlayerMark p={activePlayer} />
-      </span>
+      <span className="rdb-turn-flag">{flagLabel || 'Vez de'}</span>
+      {activePlayer && (
+        <span className="rdb-turn-mark">
+          <PlayerMark p={activePlayer} />
+        </span>
+      )}
       <div className="rdb-turn-who">
         <strong data-testid="active-turn-player-name" className="rdb-turn-name">
           {activePlayer ? activePlayer.name : activeTeamName || 'Mesa'}
         </strong>
-        <span className="rdb-turn-role" data-testid={isTeamGame && activeTeamId ? 'active-turn-team-pill' : undefined}>
+        <span className="rdb-turn-role" data-testid={showTeam ? 'active-turn-team-pill' : undefined}>
           {role}
-          {isTeamGame && activeTeamName ? ` · ${activeTeamName}` : ''}
-          {isTeamGame && teammates.length > 0 ? ` · com ${teammates.map((t) => t.name).join(', ')}` : ''}
+          {showTeam ? ` · ${activeTeamName}` : ''}
+          {showTeam && teammates.length > 0 ? ` · com ${teammates.map((t) => t.name).join(', ')}` : ''}
         </span>
       </div>
       <p className="rdb-turn-what">{clean(actionInstruction)}</p>
