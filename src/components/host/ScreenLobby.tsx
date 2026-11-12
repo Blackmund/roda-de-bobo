@@ -74,6 +74,7 @@ import { LobbyExtrasPanel } from './lobby/LobbyExtrasPanel';
 import { LobbyGameCard } from './lobby/LobbyGameCard';
 import { SurpriseArt } from '../art/GameCardArt';
 import { Dice, ChevronLeft, ChevronRight } from '../rdb/rdbIcons';
+import { GameRoulette } from '../art/GameRoulette';
 
 interface ScreenLobbyProps {
   room: GameRoom;
@@ -453,6 +454,8 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const [rouletteTarget, setRouletteTarget] = useState<GameId | null>(null);
+
   const handleGameClick = (gameId: GameId) => {
     sounds.playPowerup();
     onSelectGame(gameId);
@@ -476,7 +479,9 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
       'onde-estou'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
-    handleGameClick(randomChoice);
+    // o jogo ja esta sorteado; a roleta mostra o caminho ate ele e so entao abre o jogo
+    sounds.playTick();
+    setRouletteTarget(randomChoice);
   };
 
   const handleToggleSuggestedPlayer = (fp: FixedPlayerDefinition) => {
@@ -559,6 +564,17 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
 
   return (
     <div className="h-full flex-1 min-h-0 flex flex-col justify-between overflow-hidden relative">
+      {rouletteTarget && (
+        <GameRoulette
+          games={GAMES}
+          target={rouletteTarget}
+          onDone={() => {
+            const picked = rouletteTarget;
+            setRouletteTarget(null);
+            handleGameClick(picked);
+          }}
+        />
+      )}
       {/* Main Grid: Clean Full-Width 6 Game Cards Showcase */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 md:gap-4 flex-1 min-h-0 overflow-y-auto lg:overflow-hidden">
         {/* Games Container: Primary Full-Width Element of the Screen (12 cols) */}

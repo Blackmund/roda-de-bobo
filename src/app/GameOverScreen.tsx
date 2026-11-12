@@ -10,6 +10,7 @@ import { FixedPlayersHallOfFame } from '../components/FixedPlayersHallOfFame';
 import { computePartyAchievements } from '../utils/achievements';
 import { computeMatchMVP, computeMatchPlayerComparison, shareMatchResults, getMatchRoundActivityLog } from '../utils/sessionPersistence';
 import { Trophy, Home, Crown, Award, Share2, Check, Target, Layers, TrendingUp, CheckCircle2, Activity, Swords, Star, History, Medal, X } from 'lucide-react';
+import { WinnerArt } from '../components/art/GameCardArt';
 
 interface GameOverScreenProps {
   room: GameRoom;
@@ -160,23 +161,27 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                       data-testid="gameover-winner-centerpiece"
                       className="lg:col-span-6 border border-amber-400/50 bg-gradient-to-b from-amber-950/35 via-[#07080d] to-[#07080d] p-4 text-center relative overflow-hidden flex flex-col justify-between min-h-0"
                     >
-                      <div className="space-y-1 shrink-0">
-                        <div className="flex justify-center">
-                          <Trophy size={40} className="text-amber-400 animate-bounce" />
+                      <div className="rdb-win-head shrink-0">
+                        <div className="rdb-win-art">
+                          <WinnerArt />
                         </div>
-                        <div className="text-[10px] font-mono-code text-[#17B8B8] font-bold uppercase tracking-widest">
+                        <p className="rdb-win-kicker">
                           {isIndividualMatch
-                            ? 'FIM DA PARTIDA // MODALIDADE INDIVIDUAL (TODOS CONTRA TODOS)'
-                            : 'FIM DA PARTIDA // EQUIPE CAMPEÃ (PONTUAÇÃO EM CONJUNTO)'}
-                        </div>
-                        <h1 className="font-anton text-2xl sm:text-4xl text-white uppercase tracking-wide leading-tight">
+                            ? tiedIndividualWinners.length === 1
+                              ? 'Campeão da partida'
+                              : 'Fim da partida'
+                            : winningTeamKey !== 'EMPATE'
+                            ? 'Equipe campeã'
+                            : 'Fim da partida'}
+                        </p>
+                        <h1 data-testid="gameover-winner-name" className="rdb-win-name">
                           {isIndividualMatch
                             ? tiedIndividualWinners.length === 1 && tiedIndividualWinners[0]
-                              ? `🏆 CAMPEÃO INDIVIDUAL: ${tiedIndividualWinners[0].name}!`
-                              : '🤝 EMPATE INDIVIDUAL NO TOPO!'
+                              ? tiedIndividualWinners[0].name
+                              : 'Empate no topo'
                             : winningTeamKey !== 'EMPATE'
-                            ? `🏆 VITÓRIA DA ${winningTeamName}!`
-                            : '🤝 EMPATE ÉPICO NA MESA!'}
+                            ? winningTeamName
+                            : 'Empate na mesa'}
                         </h1>
                       </div>
 

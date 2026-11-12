@@ -6,6 +6,7 @@ import { ScreenLimite, ScreenDuvido, ScreenComoEuPinto, ScreenEstadios, ScreenRe
 import { updateFixedPlayersAfterMatch } from '../utils/fixedPlayers';
 import { buildMatchMVPSnapshot } from '../utils/sessionPersistence';
 import { applyPVMatchResult } from '../utils/perguntasEVerdadesEngine';
+import { PhaseStinger } from '../components/art/PhaseStinger';
 
 interface PlayingScreenProps {
   room: GameRoom;
@@ -29,6 +30,7 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
               transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
               className="relative w-full h-full flex-1 min-h-0"
             >
+              <PhaseStinger room={room} />
               {room.roundSource && (
                 <div
                   data-testid="round-source-badge"
