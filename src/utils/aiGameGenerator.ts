@@ -2174,7 +2174,29 @@ async function generateRoundContentCore(
 
   // 0. INTERCALAR banco proprio e IA: parte das rodadas sai do banco (so itens que o jogador nunca viu) e o resto da IA.
   // So para temas que tem banco proprio (tema livre/"custom" vai direto para a IA); sem item novo no banco, segue para a IA.
-  if (detectThemeCategory(theme) !== 'custom' && Math.random() < BANK_SHARE) {
+  // DAD-05: 'bank' = so banco pronto (sem IA); 'ai' = so IA (sem o sorteio do banco na frente); 'auto' = mistura.
+  const contentSource = customConfig?.contentSource ?? 'auto';
+  if (contentSource === 'bank') {
+    const bankAngle = explicitSubAngle || SessionMemoryManager.drawRandomSubAngle(theme);
+    const fromBankOnly = drawFallbackRound(
+      gameId,
+      theme,
+      bankAngle.label || pickNextRandomSubtheme(theme),
+      customConfig,
+      Array.from(allExcludedSet),
+      effectiveDifficulty,
+      false
+    );
+    SessionMemoryManager.recordRoundData(gameId, fromBankOnly.data, theme, bankAngle);
+    return {
+      source: 'curated',
+      data: fromBankOnly.data,
+      themeUsed: theme,
+      subthemeUsed: fromBankOnly.subthemeUsed || bankAngle.label,
+      signature: fromBankOnly.signature
+    };
+  }
+  if (contentSource === 'auto' && detectThemeCategory(theme) !== 'custom' && Math.random() < BANK_SHARE) {
     try {
       const bankAngle = explicitSubAngle || SessionMemoryManager.drawRandomSubAngle(theme);
       const fromBank = drawFallbackRound(

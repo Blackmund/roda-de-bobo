@@ -477,6 +477,7 @@ export const buildStartedRoundUpdater = ({
           activeGame: gameId,
           players: nextMatchPlayers,
           theme: customTheme || prev.theme,
+          themeByGame: customTheme ? { ...(prev.themeByGame || {}), [gameId]: customTheme } : prev.themeByGame,
           activeSubtheme: generated.subthemeUsed || prev.activeSubtheme || '',
           usedRoundSignatures: extraSignature ? [...updatedSignatures, extraSignature] : updatedSignatures,
           roundSource: generated.source,

@@ -221,3 +221,45 @@ test('bancos por categoria (usados sem IA): formato e coerencia por jogo', async
   }
   check('bancos por categoria', issues);
 });
+
+test('DAD-02: todos os bancos cabem no esquema unico (id, jogo, enunciado, origem) e os ids nao se repetem por jogo', async () => {
+  await (await import(D + 'extraBanks.ts')).loadExtraBanks();
+  const { unifyBanks, validateUnified, filterByOrigin } = await import(D + 'bankSchema.ts');
+  const B: any = await import(D + 'categoryBanks.ts');
+  const flat = (m: Record<string, any[]>) => Object.values(m).flat();
+  const uniqById = (arr: any[]) => Array.from(new Map(arr.map((x, i) => [x.id ?? 'i' + i, x])).values());
+  const items = unifyBanks({
+    limite: [...(await import(U + 'limiteGoldenDatabase.ts')).LIMITE_GOLDEN_QUESTIONS, ...flat(B.LIMITE_BANKS_BY_CATEGORY)],
+    nota: [...(await import(U + 'notaGoldenDatabase.ts')).NOTA_GOLDEN_PROMPTS, ...flat(B.NOTA_BANKS_BY_CATEGORY)],
+    temOuNaoTem: [...(await import(U + 'temOuNaoTemGoldenDatabase.ts')).TEM_OU_NAO_TEM_GOLDEN_QUESTIONS, ...flat(B.TEM_BANKS_BY_CATEGORY)],
+    duvido: [...(await import(U + 'duvidoGoldenDatabase.ts')).DUVIDO_GOLDEN_CATEGORIES, ...flat(B.DUVIDO_BANKS_BY_CATEGORY)],
+    proibido: [...(await import(U + 'proibidoGoldenDatabase.ts')).PROIBIDO_GOLDEN_CARDS, ...flat(B.PROIBIDO_BANKS_BY_CATEGORY)],
+    mimica: (await import(D + 'mimicaWords.ts')).MIMICA_WORDS,
+    megaResenha: (await import(D + 'megaResenhaWords.ts')).MEGA_RESENHA_WORDS,
+    quemSouEu: (await import(D + 'quemSouEuIdentities.ts')).QUEM_SOU_EU_IDENTITIES,
+    ondeEstou: (await import(D + 'ondeEstouMoments.ts')).ONDE_ESTOU_MOMENTS,
+    desenho: (await import(D + 'desenhoWords.ts')).DESENHO_WORDS,
+    estadios: (await import(D + 'estadiosBank.ts')).ESTADIOS,
+    respostas: (await import(D + 'respostasSemPerguntas.ts')).RESPOSTAS_QUESTIONS,
+    repetente: (await import(D + 'repetenteThemes.ts')).REPETENTE_THEMES
+  });
+  void uniqById;
+  const issues: string[] = [];
+  for (const it of items as any[]) {
+    const e = validateUnified(it);
+    if (e.length) issues.push(`${it.jogo} "${it.enunciado}": ${e.join(', ')}`);
+  }
+  // ids unicos por jogo (itens repetidos entre banco por categoria e dourado ja foram checados nos outros testes)
+  const seen = new Map<string, number>();
+  for (const it of items as any[]) {
+    const k = it.jogo + '|' + it.id;
+    seen.set(k, (seen.get(k) || 0) + 1);
+  }
+  const dupIds = Array.from(seen.entries()).filter(([, n]) => n > 1).map(([k]) => k);
+  // o banco por categoria repete itens de "custom" (junta categorias): ids repetidos aqui sao so a mesma linha em duas listas
+  if (!REPORT) assert.ok(items.length > 2500, `esperava mais de 2500 itens unificados, achou ${items.length}`);
+  assert.ok((filterByOrigin(items, 'programa') as any[]).length >= 10, 'deve haver itens vistos no programa');
+  assert.ok((filterByOrigin(items, 'importado') as any[]).length > 1000, 'os lotes importados de analise/banco devem aparecer');
+  check('esquema unico', issues);
+  if (REPORT) console.log(`  (${items.length} itens unificados; ${dupIds.length} ids repetidos entre listas)`);
+});

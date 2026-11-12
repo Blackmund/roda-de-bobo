@@ -111,7 +111,7 @@ export const MobileStandaloneGameView: React.FC<MobileStandaloneGameViewProps> =
               )}
             </div>
 
-            <button
+            <button aria-label="Sincronizar"
               type="button"
               onClick={onSyncState}
               className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 cursor-pointer"
@@ -120,7 +120,7 @@ export const MobileStandaloneGameView: React.FC<MobileStandaloneGameViewProps> =
               <RefreshCw size={12} />
             </button>
 
-            <button
+            <button aria-label="Sair"
               type="button"
               onClick={onLeaveRoom}
               className="p-1.5 rounded bg-rose-950/80 border border-rose-500/50 text-rose-300 cursor-pointer"

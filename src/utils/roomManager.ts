@@ -45,7 +45,8 @@ import {
   syncTeamsRecordFromPlayers,
   normalizePlayersToTeamCount
 } from './teamUtils';
-import { isRoomApiAvailable, markApiUnavailable, postToApi } from './apiAvailability';
+import { isRoomApiAvailable, markApiUnavailable, postToApi } from './apiAvailability';
+import { applyRuleset, getRulesetPreset } from '../config/rulesets';
 
 const AVATARS = RETRO_AVATARS;
 const COLORS = [
@@ -747,9 +748,11 @@ export function useGameRoom(roomId: string, currentUserId: string, isHost: boole
       activeGame: gameId,
       screen: 'game-setup',
       // UX-04: o tema é por jogo; não herda o tema do jogo anterior (ex.: o tema fixo de Perguntas e Verdades).
-      theme: 'Geral',
-      // o modo de regras (casa x programa) também é por jogo: volta ao padrão ao escolher outro jogo
-      customConfig: prev.customConfig ? { ...prev.customConfig, ruleset: 'home' } : prev.customConfig,
+      theme: prev.themeByGame?.[gameId] || 'Geral',
+      // o modo de regras também é por jogo: ao escolher um jogo vale o padrão (programa, estilo CazéTV) com o preset dele
+      customConfig: applyRuleset(gameId, { ...DEFAULT_GAME_CUSTOM_CONFIG, ...(prev.customConfig || {}) }, 'show'),
+      timerConfig: getRulesetPreset(gameId, 'show')?.timer ?? prev.timerConfig,
+      maxRounds: getRulesetPreset(gameId, 'show')?.rounds ?? prev.maxRounds,
       roundNumber: 1,
       roundLog: [],
       teams: syncTeamsRecordFromPlayers(prev.teams, prev.players, true)
