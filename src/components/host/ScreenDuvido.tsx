@@ -28,6 +28,23 @@ interface ScreenDuvidoProps {
   onRerollTheme?: () => void;
 }
 
+/**
+ * UX-10: contestar. No programa o diretor arbitra polemicas (ex.: um item aceito ou recusado por engano). Se o juiz aceita a
+ * contestacao depois que a equipe desafiada perdeu, a rodada volta para a execucao (sem tempo correndo) com a contagem de
+ * itens preservada, e o juiz segue a partir dali. Nao faz nada se a equipe desafiada ganhou ou fora do resultado.
+ */
+export function contestDuvidoResult(prev: DuvidoGameState): DuvidoGameState {
+  if (prev.phase !== 'RESULT') return prev;
+  if (!prev.challengedTeam || prev.resultWinnerTeam === prev.challengedTeam) return prev;
+  return {
+    ...prev,
+    phase: 'EXECUTION',
+    timerActive: false,
+    resultWinnerTeam: null,
+    resultReason: ''
+  };
+}
+
 export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
   room,
   isTvMode = false,
@@ -215,6 +232,11 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
         resultReason: reasonText
       };
     });
+  };
+
+  const handleContestResult = () => {
+    sounds.playFlip();
+    onUpdateDuvidoState((prev) => contestDuvidoResult(prev));
   };
 
   const handleHostBid = (amount: number) => {
@@ -772,6 +794,20 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
                 );
               })}
             </div>
+
+            {duvido.challengedTeam && duvido.resultWinnerTeam !== duvido.challengedTeam && (
+              <div className="flex justify-center shrink-0">
+                <button
+                  type="button"
+                  data-testid="duvido-contest-btn"
+                  onClick={handleContestResult}
+                  title="O juiz aceita a contestação: a equipe desafiada volta a tentar, com a contagem preservada"
+                  className="px-4 py-1.5 border border-amber-400 bg-amber-400/10 hover:bg-amber-400 hover:text-black text-amber-300 font-anton text-xs uppercase tracking-wider cursor-pointer"
+                >
+                  ⚖️ Contestar: devolver a vez à equipe desafiada
+                </button>
+              </div>
+            )}
 
             <div className="flex justify-center pt-1 shrink-0">
               <button

@@ -1,4 +1,5 @@
 import React from 'react';
+import { ConfirmSendButton } from '../ConfirmSendButton';
 import { GameRoom, Player } from '../../../types/game';
 import { sounds } from '../../../utils/soundEffects';
 import { getActiveTeamIds, getNextTeamId } from '../../../utils/teamUtils';
@@ -167,13 +168,13 @@ export const TemOuNaoTemController: React.FC<TemOuNaoTemControllerProps> = ({
               placeholder="Digite o palpite da sua equipe..."
               className="w-full bg-black border border-cyan-400 p-3 text-white text-sm focus:outline-none"
             />
-            <button
-              onClick={handleSendTemGuess}
+            <ConfirmSendButton
+              onConfirm={handleSendTemGuess}
               disabled={!isMyTeamTurn || !temGuess.trim()}
+              label="ENVIAR PALPITE"
+              confirmLabel={`⚠️ ENVIAR "${temGuess.trim()}"? TOQUE DE NOVO`}
               className="w-full py-3 border-2 border-cyan-300 bg-cyan-400 disabled:opacity-40 text-black font-anton text-sm uppercase cursor-pointer"
-            >
-              ENVIAR PALPITE
-            </button>
+            />
           </div>
         </div>
       </div>
