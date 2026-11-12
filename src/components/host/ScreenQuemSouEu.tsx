@@ -160,10 +160,6 @@ export const ScreenQuemSouEu: React.FC<ScreenQuemSouEuProps> = ({ room, onUpdate
       {qse.phase === 'PLAYING' && turn && (
         <div className="flex-1 min-h-0 flex flex-col gap-2 border border-cyan-400/40 bg-[#07080d] p-3">
           <div className="text-center">
-            <div className="font-mono-code text-[10px] text-cyan-300 uppercase font-bold">Vez de</div>
-            <div data-testid="qse-turn-name" className="font-anton text-3xl text-white uppercase">
-              {avatarOf(turn.playerId)} {nameOf(turn.playerId)}
-            </div>
             {qse.lastEvent && (
               <div data-testid="qse-last-event" className="font-mono-code text-[11px] text-amber-200 mt-1">
                 {qse.lastEvent}

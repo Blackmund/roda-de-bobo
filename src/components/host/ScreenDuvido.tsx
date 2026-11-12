@@ -372,25 +372,6 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
         />
       </div>
 
-      {/* Dynamic 1-line Action Guidance Banner ("O que eu faço agora?") */}
-      <div className="shrink-0 px-3 py-1 bg-black/60 border border-white/10 flex items-center justify-between text-xs font-mono-code">
-        <div className="flex items-start sm:items-center gap-2 sm:truncate">
-          <span className="w-2 h-2 rounded-full bg-[#17B8B8] animate-pulse shrink-0" />
-          <span className="text-slate-300">
-            {duvido.phase === 'BLINDFOLD' || duvido.phase === 'SECRET_CATEGORY' ? (
-              <>🙈 <strong className="text-white">PREPARAÇÃO:</strong> Jogadores vendados • O árbitro confirma e inicia o leilão.</>
-            ) : duvido.phase === 'AUCTION' ? (
-              <>🚨 🎤 <strong className="text-white">VEZ DE APOSTAR: EQUIPE {duvido.activeTurnTeam}</strong> • Aumente o lance ou grite DUVIDO!</>
-            ) : duvido.phase === 'EXECUTION' ? (
-              <>⚡ 🎤 <strong className="text-white">BERLINDA: EQUIPE {duvido.challengedTeam}</strong> deve citar {duvido.currentBid} itens antes do cronômetro zerar!</>
-            ) : (
-              <>🏆 <strong className="text-white">FIM DA RODADA:</strong> Selecione a equipe vencedora (+1 ponto) e confirme os pontos.</>
-            )}
-          </span>
-        </div>
-        
-      </div>
-
       {/* PERMANENT TOP THEME BANNER (shrink-0, Visible in AUCTION, BLINDFOLD & EXECUTION) */}
       {duvido.phase !== 'RESULT' && (
         <div

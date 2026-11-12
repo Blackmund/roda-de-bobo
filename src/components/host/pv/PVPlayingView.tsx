@@ -135,9 +135,6 @@ export const PVPlayingView: React.FC<PVPlayingViewProps> = ({
           <span className="px-2 py-0.5 bg-cyan-950 border border-cyan-400 text-cyan-200 font-anton text-[11px] uppercase">
             TURNO #{pv.auctionRound}
           </span>
-          <span data-testid="pv-game-status-indicator" className="text-[11px] font-mono-code text-cyan-300 font-bold uppercase">
-            👑 VEZ DE: {activeTurnPlayer?.name}
-          </span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -182,21 +179,6 @@ export const PVPlayingView: React.FC<PVPlayingViewProps> = ({
 
       {/* Intelligent Player Roster Strip (Active in Cyan vs Inactive Compact Pill) */}
       {renderPlayerRosterStrip()}
-
-      {/* Dynamic 1-line Action Guidance Banner ("O que eu faço agora?") */}
-      <div className="shrink-0 px-3 py-1 bg-black/60 border border-white/10 flex items-center justify-between text-xs font-mono-code mb-1">
-        <div className="flex items-start sm:items-center gap-2 sm:truncate">
-          <span className="w-2 h-2 rounded-full bg-[#17B8B8] animate-pulse shrink-0" />
-          <span className="text-slate-300">
-            {pv.phase === 'VICTORY' ? (
-              <>🏆 <strong className="text-white">FIM DO CONFRONTO:</strong> Confirme e avance para a próxima rodada da série</>
-            ) : (
-              <>🎤 <strong className="text-white">VEZ DE {activeTurnPlayer?.name}:</strong> Responda à pergunta sorteada ou arrisque a declaração da verdade!</>
-            )}
-          </span>
-        </div>
-        
-      </div>
 
       {/* Mode Switcher Tabs */}
       <div className="flex items-center justify-between border-b border-rose-500/30 pb-1 shrink-0">

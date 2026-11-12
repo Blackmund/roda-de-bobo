@@ -424,6 +424,8 @@ export function resolveCurrentTurnSpotlight(room: GameRoom): TurnSpotlightDescri
         ? `Aumente o lance para ${duvido.currentBid + 1}+ itens ou grite 🚨 DUVIDO contra a ${
             duvido.currentBidTeam ? TEAM_META[duvido.currentBidTeam].equipeLabel : 'rival'
           }!`
+        : duvido.phase === 'BLINDFOLD' || duvido.phase === 'SECRET_CATEGORY'
+        ? 'Jogadores vendados. O árbitro confirma e inicia o leilão.'
         : 'Faça o lance inicial de quantos itens sua equipe consegue citar!',
       teammates,
       nextInQueueLabel:
@@ -526,8 +528,10 @@ export function resolveCurrentTurnSpotlight(room: GameRoom): TurnSpotlightDescri
     return solo(
       null,
       'Palpite secreto',
-      l.phase === 'REVEAL' || l.phase === 'SCORING'
-        ? 'Palpites revelados. Vence quem chegou mais perto sem ultrapassar.'
+      l.phase === 'CALL_TIMEOUT'
+        ? 'Poder de ligação: 30 segundos de ajuda de fora.'
+        : l.phase === 'REVEAL' || l.phase === 'SCORING'
+        ? 'Palpites revelados. Clique em um jogador para ajustar os pontos e confirme.'
         : missing > 0 && (l.submittedPlayers || []).length > 0
         ? `Faltam ${missing} palpite${missing > 1 ? 's' : ''}.`
         : 'Cada um dá o seu palpite em segredo, sem estourar o número.',
@@ -669,7 +673,9 @@ export function resolveCurrentTurnSpotlight(room: GameRoom): TurnSpotlightDescri
         ? `VEZ DE AGIR: ${activePlayer.name.toUpperCase()}`
         : 'PERGUNTAS E VERDADES',
       actionInstruction:
-        pv.phase === 'DECK_SETUP'
+        pv.phase === 'VICTORY' || pv.phase === 'FINISHED'
+          ? 'Fim do confronto. Confirme e avance para a próxima rodada da série.'
+          : pv.phase === 'DECK_SETUP'
           ? 'Cada jogador registra suas 8 cartas secretas em ordem crescente por naipe.'
           : pv.phase === 'TOKEN_AUCTION'
           ? 'Apostem seus tokens em segredo para conquistar o direito de perguntar!'

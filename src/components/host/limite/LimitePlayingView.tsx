@@ -200,25 +200,6 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
           </div>
         </div>
 
-        {/* Dynamic 1-Line Action Guidance Banner ("O que eu faço agora?") */}
-        <div className="py-1 px-4 bg-black/70 border-b border-white/10 flex items-center justify-between text-xs font-mono-code font-bold uppercase tracking-wider shrink-0">
-          <div className="flex items-start sm:items-center gap-2 text-cyan-300 sm:truncate">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shrink-0" />
-            <span className="sm:truncate">
-              {limite.phase === 'SCORING'
-                ? '🌟 REVELAÇÃO: CLIQUE NOS JOGADORES PARA AJUSTAR PONTOS (TOGGLE) E CONFIRME ABAIXO'
-                : limite.phase === 'CALL_TIMEOUT'
-                ? '📞 PODER DE LIGAÇÃO ATIVADO: 30 SEGUNDOS DE AJUDA EXTERNA!'
-                : isTimeExpired
-                ? '⏱️ TEMPO ESGOTADO! REVELANDO A RESPOSTA EM INSTANTES...'
-                : '🤫 DIGITE SEU PALPITE SECRETO NO CELULAR • MAIOR PALPITE SEM ESTOURAR VENCE!'}
-            </span>
-          </div>
-          <div className="text-[10px] text-slate-400 font-mono-code hidden sm:block shrink-0">
-            {limite.phase === 'SCORING' ? 'ETAPA 3/3 · REVELAÇÃO' : 'ETAPA 1/3 · PALPITES'}
-          </div>
-        </div>
-
         {/* Central Monitor (flex-1 min-h-0 overflow-y-auto scrollbar-none flex flex-col justify-between p-2 sm:p-2.5 md:p-3) */}
         <div className="relative bg-[#07080d]/90 p-2 sm:p-2.5 md:p-3 overflow-y-auto scrollbar-none arcade-screen-lines flex-1 min-h-0 flex flex-col justify-between gap-1 sm:gap-1.5">
           {/* Question Box - Compact in SCORING phase, prominent during guessing */}

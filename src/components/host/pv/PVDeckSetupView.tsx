@@ -92,17 +92,6 @@ export const PVDeckSetupView: React.FC<PVDeckSetupViewProps> = ({
             </button>
           </div>
 
-          {/* Dynamic 1-line Action Guidance Banner ("O que eu faço agora?") */}
-          <div className="shrink-0 px-3 py-1 bg-black/60 border border-white/10 flex items-center justify-between text-xs font-mono-code">
-            <div className="flex items-start sm:items-center gap-2 sm:truncate">
-              <span className="w-2 h-2 rounded-full bg-[#17B8B8] animate-pulse shrink-0" />
-              <span className="text-slate-300">
-                🃏 🎤 <strong className="text-white">MONTAGEM DO BARALHO:</strong> Organize as 8 cartas de {currentSetupPlayer.name} em ordem crescente por naipe
-              </span>
-            </div>
-            
-          </div>
-
           {/* Rule Error Banner */}
           <AnimatePresence>
             {setupRuleError && (
