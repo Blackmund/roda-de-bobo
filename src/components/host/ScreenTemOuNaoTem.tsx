@@ -1,4 +1,5 @@
 import { themeBadge } from '../../utils/themeUtils';
+import { ActiveTurnBanner } from '../ActiveTurnBanner';
 import React, { useState } from 'react';
 import { GameRoom, TemOuNaoTemGameState, TeamId } from '../../types/game';
 import { sounds } from '../../utils/soundEffects';
@@ -366,42 +367,11 @@ export const ScreenTemOuNaoTem: React.FC<ScreenTemOuNaoTemProps> = ({
           <RodaDeBoboOfficialBadge size="sm" />
         </div>
 
-        {/* Accumulated Round Score Box */}
-        <div className="border border-[#17B8B8]/60 bg-white/[0.03] px-3 py-0.5 flex items-center gap-2.5">
-          <div>
-            <div className="text-[9px] font-mono-code text-[#17B8B8] font-bold uppercase tracking-wider">
-              PONTOS NA RODADA
-            </div>
-            <div className="font-anton text-lg md:text-xl text-cyan-200 text-center leading-none">
-              {totalRoundPoints}
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* Dynamic 1-line Action Guidance Banner ("O que eu faço agora?") */}
-      <div className="shrink-0 px-3 py-1 bg-black/60 border border-white/10 flex items-center justify-between text-xs font-mono-code mb-1">
-        <div className="flex items-start sm:items-center gap-2 sm:truncate">
-          <span className="w-2 h-2 rounded-full bg-[#17B8B8] animate-pulse shrink-0" />
-          <span className="text-slate-300">
-            {tem.phase === 'GUESSING' ? (
-              <>
-                🎯 🎤{' '}
-                <strong className="text-white">
-                  {tem.activeTeam === 'A' && isIndividualA
-                    ? `VEZ DE ${playerAName.toUpperCase()}:`
-                    : tem.activeTeam === 'B' && isIndividualB
-                    ? `VEZ DE ${playerBName.toUpperCase()}:`
-                    : `VEZ DA EQUIPE ${tem.activeTeam}:`}
-                </strong>{' '}
-                Digite o palpite falado ou clique na posição 1-{tem.items.length} para revelar
-              </>
-            ) : (
-              <>🏆 <strong className="text-white">FIM DA RODADA:</strong> Revise os pontos acumulados e confirme o avanço da partida</>
-            )}
-          </span>
-        </div>
-        
+      {/* Quem responde agora */}
+      <div className="shrink-0 mb-1">
+        <ActiveTurnBanner room={room} />
       </div>
 
       {/* Main Arena Content: Responsive Stacked (< xl) vs Arena Widescreen (xl:grid xl:grid-cols-12) */}

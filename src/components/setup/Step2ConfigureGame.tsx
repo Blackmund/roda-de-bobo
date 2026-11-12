@@ -8,13 +8,8 @@ import { DIFFICULTY_META } from '../../utils/multiplayerRoomEngine';
 import { getTemTotalRespondents } from '../../utils/aiGameGenerator';
 import { sounds } from '../../utils/soundEffects';
 import {
-  RULESET_LABELS,
-  applyRuleset,
   getRulesetPreset,
-  hasShowRuleset,
-  limiteExactBonusFor,
-  resolveRuleset,
-  type GameRuleset
+  limiteExactBonusFor
 } from '../../config/rulesets';
 import {
   Sparkles,
@@ -175,17 +170,8 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
     return () => window.removeEventListener('keydown', onKey);
   }, [isThemeOpen, isMoreOpen]);
 
-  // UX-09: modo de regras (casa x programa). O preset ajusta rodadas, tempo e parametros; o host ainda pode mexer depois.
-  const ruleset = resolveRuleset(customConfig);
+  // As regras do programa sao o padrao de cada jogo; o host ajusta o que quiser nas linhas ao lado.
   const showPreset = getRulesetPreset(activeGame, 'show');
-  const handleSelectRuleset = (next: GameRuleset) => {
-    sounds.playTick();
-    onChangeCustomConfig((prev) => applyRuleset(activeGame, prev, next));
-    if (next === 'show') {
-      if (showPreset?.rounds !== undefined) onChangeRounds(showPreset.rounds);
-      if (showPreset?.timer !== undefined) onChangeTimer(showPreset.timer);
-    }
-  };
   // Garante que o numero de rodadas vindo do preset (ex.: 9 no Duvido) apareca como opcao.
   const roundOptions = ROUND_OPTIONS.some((o) => o.value === rounds)
     ? ROUND_OPTIONS
@@ -229,7 +215,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
           <div className="rdb-setup-poster-text">
             <span className="rdb-tag">{isIndividualMode ? 'Individual' : 'Em equipes'}</span>
             <h2 className="rdb-setup-title">{gameTitle || 'Jogo'}</h2>
-            {ruleset === 'show' && showPreset ? (
+            {showPreset ? (
               <ul data-testid="ruleset-notes" className="rdb-setup-notes">
                 {showPreset.notes.map((n) => (
                   <li key={n}>{n}</li>
@@ -242,26 +228,13 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
                 ))}
               </ul>
             ) : (
-              <p className="rdb-setup-notes">Regras da casa: ajuste o ritmo ao lado do jeito que a roda preferir.</p>
+              <p className="rdb-setup-notes">Ajuste o ritmo ao lado do jeito que a roda preferir.</p>
             )}
           </div>
         </aside>
 
         {/* ESCOLHAS: uma linha por decisao, rotulo a esquerda e opcoes a direita */}
         <div className="rdb-setup-rows">
-          {hasShowRuleset(activeGame) && (
-            <div className="rdb-opt" data-testid="ruleset-selector">
-              <span className="rdb-opt-label">Regras</span>
-              <div className="rdb-opt-choices">
-                {(['home', 'show'] as const).map((rs) => (
-                  <Seg key={rs} testid={'ruleset-btn-' + rs} on={ruleset === rs} onClick={() => handleSelectRuleset(rs)}>
-                    {RULESET_LABELS[rs]}
-                  </Seg>
-                ))}
-              </div>
-            </div>
-          )}
-
           {isCT && (
             <div className="rdb-opt" data-testid="ct-mode-selector">
               <span className="rdb-opt-label">Modo</span>
@@ -285,7 +258,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
               <span className="rdb-opt-label">Tema</span>
               <div className="rdb-opt-choices">
                 <span className="rdb-opt-value" data-testid="setup-theme-current">
-                  {isGeneralTheme ? 'Geral (assuntos diversos)' : theme}
+                  {isGeneralTheme ? 'Assuntos diversos' : theme}
                 </span>
                 <button
                   type="button"
@@ -452,21 +425,31 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
                 </button>
               </div>
 
-              {ruleset === 'home' && (
-                <div className="p-2 bg-black/70 border border-slate-800 flex items-center justify-between gap-2">
-                  <div>
-                    <div className="font-anton text-xs text-amber-300 uppercase">
-                      Bônus por Palpite Exato
-                    </div>
-                    <div className="text-[9px] font-mono-code text-slate-400">
-                      Quem cravar exatamente o valor oficial leva {limiteExactBonusFor(customConfig)} pontos em vez de 1
-                    </div>
+              <div className="p-2 bg-black/70 border border-slate-800 flex items-center justify-between gap-2" data-testid="limite-exact-bonus">
+                <div>
+                  <div className="font-anton text-xs text-amber-300 uppercase">Bônus por palpite exato</div>
+                  <div className="text-[9px] font-mono-code text-slate-400">
+                    Quanto vale cravar o número. No programa não há bônus.
                   </div>
-                  <span className="px-2 py-0.5 bg-amber-400 text-black font-anton text-[11px] uppercase font-bold shrink-0">
-                    🎯 {limiteExactBonusFor(customConfig)} PONTOS
-                  </span>
                 </div>
-              )}
+                <div className="flex gap-1 shrink-0">
+                  {[0, 2, 3].map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      data-testid={'limite-exact-bonus-' + v}
+                      aria-pressed={limiteExactBonusFor(customConfig) === v}
+                      onClick={() => {
+                        sounds.playTick();
+                        onChangeCustomConfig((prev) => ({ ...prev, limiteExactBonus: v }));
+                      }}
+                      className="rdb-seg"
+                    >
+                      {v === 0 ? 'Sem bônus' : v + ' pontos'}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

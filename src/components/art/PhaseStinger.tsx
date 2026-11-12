@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { GameRoom } from '../../types/game';
 
 /**
@@ -45,16 +46,23 @@ export const PhaseStinger: React.FC<{ room: GameRoom }> = ({ room }) => {
     last.current = key;
     if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
     setShown({ key, label });
-    const t = setTimeout(() => setShown((s) => (s?.key === key ? null : s)), 1250);
+    const t = setTimeout(() => setShown((s) => (s?.key === key ? null : s)), 1700);
     return () => clearTimeout(t);
   }, [key, label]);
 
   if (!shown) return null;
-  return (
+  // Portal no body: a cortina atravessa a janela inteira, nao so a area do jogo.
+  return createPortal(
     <div key={shown.key} data-testid="phase-stinger" className="rdb-stinger" aria-hidden="true">
       <span className="rdb-stinger-bar rdb-stinger-bar--a" />
       <span className="rdb-stinger-bar rdb-stinger-bar--b" />
-      <span className="rdb-stinger-label">{shown.label}</span>
-    </div>
+      <span className="rdb-stinger-bar rdb-stinger-bar--c" />
+      <span className="rdb-stinger-text">
+        <span className="rdb-stinger-kicker">Roda de Bobo</span>
+        <span className="rdb-stinger-label">{shown.label}</span>
+        <span className="rdb-stinger-rule" />
+      </span>
+    </div>,
+    document.body
   );
 };
