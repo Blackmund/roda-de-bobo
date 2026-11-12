@@ -375,3 +375,79 @@ export const GameCardArt: React.FC<{ gameId: GameId }> = ({ gameId }) => {
     </div>
   );
 };
+
+/* ---- Modos de conexao da sala (mesma linguagem das vinhetas dos jogos) ---- */
+
+const Phone: React.FC<{ x: number; y: number; color: string; delay: number; h?: number }> = ({ x, y, color, delay, h = 74 }) => (
+  <g>
+    <rect x={x} y={y} width="42" height={h} rx="7" fill={CREAM} stroke={NAVY} strokeWidth="5" />
+    <rect className="rdbv-screen" style={{ animationDelay: `${delay}s` }} x={x + 7} y={y + 10} width="28" height={h - 26} rx="2" fill={color} />
+    <circle cx={x + 21} cy={y + h - 8} r="3" fill={NAVY} />
+  </g>
+);
+
+const ModeLocal = () => (
+  <Svg label="Uma tela só">
+    <rect x="62" y="10" width="196" height="118" rx="8" fill={CREAM} stroke={NAVY} strokeWidth="5" />
+    <rect x="74" y="22" width="172" height="94" rx="3" fill={TEAL} />
+    <path className="rdbv-dot" d="M146 48 L186 69 L146 90 Z" fill={CREAM} stroke={NAVY} strokeWidth="5" strokeLinejoin="round" />
+    <rect x="150" y="128" width="20" height="12" fill={CREAM} stroke={NAVY} strokeWidth="5" />
+    {[92, 160, 228].map((cx, i) => (
+      <g key={cx} className="rdbv-q1" style={{ animationDelay: `${i * 0.5}s` }}>
+        <path d={`M${cx - 30} 204 V190 a30 26 0 0 1 60 0 V204 Z`} fill={i === 1 ? CRIMSON : TEAL} stroke={NAVY} strokeWidth="5" />
+        <circle cx={cx} cy="162" r="18" fill={CREAM} stroke={NAVY} strokeWidth="5" />
+      </g>
+    ))}
+  </Svg>
+);
+
+const ModeHost = () => (
+  <Svg label="TV + celulares">
+    <rect x="16" y="26" width="168" height="108" rx="8" fill={CREAM} stroke={NAVY} strokeWidth="5" />
+    <rect x="28" y="38" width="144" height="84" rx="3" fill={NAVY} />
+    {/* QR na TV */}
+    <g fill={CREAM}>
+      <rect x="72" y="52" width="20" height="20" />
+      <rect x="108" y="52" width="20" height="20" />
+      <rect x="72" y="88" width="20" height="20" />
+      <rect x="98" y="78" width="8" height="8" />
+      <rect x="112" y="92" width="8" height="8" />
+      <rect x="120" y="80" width="8" height="8" />
+    </g>
+    <g fill={NAVY}>
+      <rect x="78" y="58" width="8" height="8" />
+      <rect x="114" y="58" width="8" height="8" />
+      <rect x="78" y="94" width="8" height="8" />
+    </g>
+    <rect x="90" y="134" width="20" height="14" fill={CREAM} stroke={NAVY} strokeWidth="5" />
+    <path d="M62 150 H138" stroke={CREAM} strokeWidth="7" strokeLinecap="round" />
+    <g fill="none" stroke={TEAL} strokeWidth="5" strokeLinecap="round" strokeDasharray="2 13">
+      <path className="rdbv-route" d="M218 66 H190" />
+      <path className="rdbv-route" d="M270 150 C240 150 220 110 190 100" />
+    </g>
+    <Phone x={222} y={22} color={TEAL} delay={0} />
+    <Phone x={268} y={112} color={CRIMSON} delay={0.5} />
+  </Svg>
+);
+
+const ModeMulti = () => (
+  <Svg label="Só celulares">
+    <g fill="none" stroke={TEAL} strokeWidth="5" strokeLinecap="round" strokeDasharray="2 13">
+      <path className="rdbv-route" d="M72 100 H112" />
+      <path className="rdbv-route" d="M148 100 H188" />
+      <path className="rdbv-route" d="M224 100 H264" />
+    </g>
+    <Phone x={18} y={58} color={TEAL} delay={0} h={86} />
+    <Phone x={102} y={58} color={CRIMSON} delay={0.4} h={86} />
+    <Phone x={186} y={58} color={TEAL} delay={0.8} h={86} />
+    <Phone x={270} y={58} color={CRIMSON} delay={1.2} h={86} />
+    {/* coroa do anfitriao no primeiro celular */}
+    <path className="rdbv-q1" d="M22 46 L26 24 L36 36 L44 20 L52 36 L62 24 L66 46 Z" fill="#FFC93C" stroke={NAVY} strokeWidth="4" strokeLinejoin="round" transform="translate(-5 0)" />
+  </Svg>
+);
+
+export const ModeArt: React.FC<{ mode: 'local' | 'host' | 'multi' }> = ({ mode }) => (
+  <div className={`rdbv rdbv--vignette rdbv--mode-${mode}`}>
+    {mode === 'local' ? <ModeLocal /> : mode === 'host' ? <ModeHost /> : <ModeMulti />}
+  </div>
+);
