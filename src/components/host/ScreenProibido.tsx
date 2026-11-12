@@ -18,6 +18,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { PlayerMark } from '../rdb/PlayerMark';
+import { ActiveTurnBanner } from '../ActiveTurnBanner';
 
 interface ScreenProibidoProps {
   room: GameRoom;
@@ -467,89 +468,23 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
         </div>
       </div>
 
-      {/* 2. Ultra-Clear Role Demonstration Strip */}
-      <div
-        data-testid="proibido-role-demonstration-strip"
-        className="relative z-10 shrink-0 border border-white/10 bg-[#07080d]/95 p-1 sm:p-1.5 flex flex-wrap items-center justify-between gap-1.5 shadow-md"
-      >
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
-          {/* ORADOR / QUEM FALA */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-cyan-950/70 border-2 border-cyan-400 shadow-[0_0_10px_rgba(23,184,184,0.2)]">
-            <span className="text-base sm:text-lg shrink-0"><PlayerMark p={speakerPlayer} /></span>
-            <div className="min-w-0">
-              <div className="text-[8px] sm:text-[9px] font-mono-code font-black uppercase text-cyan-300 leading-none">
-                🗣️ QUEM FALA (ORADOR):
-              </div>
-              <div className="font-anton text-xs sm:text-sm text-white uppercase leading-tight truncate">
-                {speakerPlayer?.name}
-              </div>
-              <div className="text-[8px] font-mono-code text-cyan-200/90 leading-none hidden sm:block">
-                Vê a tela e dá as dicas
-              </div>
-            </div>
-          </div>
-
-          {/* ADIVINHADOR / DE OLHO FECHADO */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-950/70 border-2 border-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.2)]">
-            <span className="text-base sm:text-lg shrink-0"><PlayerMark p={guesserPlayer} /></span>
-            <div className="min-w-0">
-              <div className="text-[8px] sm:text-[9px] font-mono-code font-black uppercase text-amber-300 leading-none">
-                🙈 DE OLHO FECHADO (ADIVINHA):
-              </div>
-              <div className="font-anton text-xs sm:text-sm text-white uppercase leading-tight truncate">
-                {guesserPlayer?.name}
-              </div>
-              <div className="text-[8px] font-mono-code text-amber-200/90 leading-none hidden sm:block">
-                Não olha para a tela
-              </div>
-            </div>
-          </div>
-
-          {/* FISCAL / ÁRBITRO (se 3+ jogadores) */}
-          {!is2Player && refereePlayer && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-950/70 border-2 border-rose-500 shadow-[0_0_10px_rgba(230,25,75,0.2)]">
-              <span className="text-base sm:text-lg shrink-0"><PlayerMark p={refereePlayer} /></span>
-              <div className="min-w-0">
-                <div className="text-[8px] sm:text-[9px] font-mono-code font-black uppercase text-rose-300 leading-none">
-                  🚨 FISCAL (ÁRBITRO):
-                </div>
-                <div className="font-anton text-xs sm:text-sm text-white uppercase leading-tight truncate">
-                  {refereePlayer?.name} ({room.teams[proibido.refereeTeam]?.name || `Equipe ${proibido.refereeTeam}`})
-                </div>
-                <div className="text-[8px] font-mono-code text-rose-200/90 leading-none hidden sm:block">
-                  Apita falta se falar proibida
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Quick Invert Roles Button */}
-        <button
-          type="button"
-          onClick={handleRotateSpeaker}
-          className="px-2 py-1 border border-slate-700 bg-slate-900 hover:border-cyan-400 text-[10px] font-mono-code text-slate-300 hover:text-white cursor-pointer shrink-0 transition-colors"
-          title="Inverter quem fala e quem adivinha"
-        >
-          🔄 Inverter Papéis
-        </button>
-      </div>
-
-      {/* Dynamic 1-line Action Guidance Banner ("O que eu faço agora?") */}
-      <div className="relative z-10 shrink-0 px-3 py-0.5 bg-black/60 border border-white/10 flex items-center justify-between text-[11px] font-mono-code">
-        <div className="flex items-start sm:items-center gap-2 sm:truncate">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#17B8B8] animate-pulse shrink-0" />
-          <span className="text-slate-300">
-            {proibido.phase === 'READY' ? (
-              <>🎯 🎤 <strong className="text-white">VEZ DE FALAR: {speakerPlayer?.name}</strong> • Resposta de <strong className="text-amber-300">{guesserPlayer?.name}</strong> (de olho fechado) • Clique em Iniciar!</>
-            ) : proibido.phase === 'PLAYING' ? (
-              <>🎤 <strong className="text-white">{speakerPlayer?.name}</strong> explica para <strong className="text-amber-300">{guesserPlayer?.name}</strong> • Atenção às 5 palavras proibidas!</>
-            ) : (
-              <>🏁 <strong className="text-white">FIM DO TEMPO:</strong> Revise as cartas e confirme a pontuação da rodada.</>
-            )}
-          </span>
-        </div>
-        
+      {/* Quem fala agora, quem adivinha e quem fiscaliza: uma faixa so */}
+      <div className="relative z-10 shrink-0" data-testid="proibido-role-demonstration-strip">
+        <ActiveTurnBanner
+          room={room}
+          hideSecondary={is2Player}
+          extra={
+            <>
+              <span className="rdb-turn-other">
+                <span>Adivinha sem olhar</span>
+                <PlayerMark p={guesserPlayer} /> {guesserPlayer?.name}
+              </span>
+              <button type="button" className="rdb-seg" onClick={handleRotateSpeaker} title="Inverter quem fala e quem adivinha">
+                Inverter papéis
+              </button>
+            </>
+          }
+        />
       </div>
 
       {/* Main Game Card Display */}
@@ -600,7 +535,7 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
             </p>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none flex items-center">
+          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none flex items-start">
             <div className="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] sm:grid-cols-[repeat(auto-fit,minmax(210px,1fr))] gap-2.5 max-w-5xl mx-auto w-full py-1">
               {proibido.cards.map((card, idx) => {
                 const outcome = proibido.cardOutcomes[idx];
@@ -712,7 +647,7 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
         </div>
       ) : (
         /* Active Card Display (Expanded Stage, Zero Vertical Scroll) */
-        <div className="relative z-10 flex-1 min-h-0 max-w-3xl w-full mx-auto flex flex-col justify-between gap-1 sm:gap-1.5 overflow-hidden">
+        <div className="relative z-10 flex-1 min-h-0 w-full flex flex-col justify-between gap-1 sm:gap-1.5 overflow-hidden">
           {/* Progress indicators (5 cards + status summary) */}
           <div className="flex flex-wrap items-center justify-between gap-2 bg-white/[0.03] border border-white/10 px-3 py-1 shrink-0">
             <div className="flex items-center gap-1.5">
@@ -758,12 +693,8 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
             /* Anti-spoiler masked screen on TV when guesser has no blindfold */
             <div
               data-testid="proibido-tv-masked-screen"
-              className="flex-1 min-h-0 flex flex-col items-center justify-center border-2 border-amber-400/70 bg-[#07080d]/95 p-6 text-center space-y-4 shadow-2xl overflow-y-auto scrollbar-none"
+              className="flex-1 min-h-0 flex flex-col items-center justify-center border-2 border-amber-400/70 bg-[#07080d]/95 p-4 text-center gap-3 shadow-2xl overflow-hidden"
             >
-              <div className="w-16 h-16 rounded-full bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center text-3xl">
-                🙈
-              </div>
-
               <div className="space-y-1 max-w-lg">
                 <div className="font-anton text-2xl md:text-3xl text-amber-300 uppercase">
                   PALAVRAS OCULTAS NA TV (MODO SEM VENDA)
@@ -807,8 +738,9 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
                 </button>
               </div>
 
+              <div className="rdb-proibido-card">
               {/* Top Red Ticket Banner with Perforated CazéTV Edges */}
-              <div className="relative bg-[#E6194B] text-[#F5F2EB] py-2 sm:py-2.5 md:py-3 px-8 text-center shadow-lg mb-1.5 sm:mb-2 mx-1 select-none shrink-0 overflow-hidden border-y border-rose-300/30">
+              <div className="rdb-proibido-target relative bg-[#E6194B] text-[#F5F2EB] px-8 text-center select-none overflow-hidden">
                 {/* Left perforated ticket notch */}
                 <div className="absolute left-0 top-0 bottom-0 w-3 bg-[#0c1020] flex flex-col justify-around py-0.5">
                   <span className="w-1.5 h-1.5 bg-[#E6194B] rounded-full" />
@@ -821,13 +753,13 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
                   <span className="w-1.5 h-1.5 bg-[#E6194B] rounded-full" />
                   <span className="w-1.5 h-1.5 bg-[#E6194B] rounded-full" />
                 </div>
-                <div className="font-anton text-2xl sm:text-3xl md:text-4xl lg:text-5xl tracking-wider uppercase leading-none drop-shadow-md">
+                <div className="rdb-proibido-target-word font-anton tracking-wider uppercase">
                   {currentCard?.palavra_alvo}
                 </div>
               </div>
 
               {/* Frame with Vertical Rotated "PROIBIDAS" Labels and Cream Words */}
-              <div className="relative flex-1 min-h-0 flex flex-col justify-evenly border border-white/10 bg-[#07080d]/95 px-6 py-2 md:py-3.5">
+              <div className="rdb-proibido-forbidden relative flex flex-col justify-evenly border border-white/10 bg-[#07080d]/95 px-6 py-2">
                 <div className="absolute -left-5 top-1/2 -translate-y-1/2 -rotate-90 bg-[#E6194B] text-white font-anton text-[9px] tracking-widest uppercase px-2 py-0.5 select-none shadow">
                   PROIBIDAS
                 </div>
@@ -850,7 +782,7 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
                       {safeWords.map((word, wIdx) => (
                         <div
                           key={wIdx}
-                          className="font-anton text-lg sm:text-xl md:text-2xl lg:text-3xl text-[#F5F2EB] tracking-wide uppercase text-center leading-tight select-none drop-shadow-sm"
+                          className="rdb-proibido-word font-anton text-[#F5F2EB] tracking-wide uppercase text-center select-none"
                         >
                           {word}
                         </div>
@@ -858,6 +790,7 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
                     </div>
                   );
                 })()}
+              </div>
               </div>
             </div>
           )}

@@ -962,53 +962,243 @@
 
 /* ---------- Vinheta de transicao da partida ---------- */
 .rdb-stinger {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: 2000;
   overflow: hidden;
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
 }
+/* tres cortinas inclinadas cruzam a tela inteira, uma atras da outra */
 .rdb-stinger-bar {
   position: absolute;
-  left: -20%;
-  width: 140%;
-  height: 34%;
-  transform: translateX(-110%) skewX(-14deg);
-  animation: rdb-stinger-bar 1.2s cubic-bezier(0.7, 0, 0.2, 1) forwards;
+  top: -10%;
+  left: -30%;
+  width: 160%;
+  height: 120%;
+  transform: translateX(-112%) skewX(-14deg);
+  animation: rdb-stinger-bar 1.6s cubic-bezier(0.76, 0, 0.18, 1) forwards;
 }
 .rdb-stinger-bar--a {
-  top: 22%;
   background: var(--rdb-crimson);
 }
 .rdb-stinger-bar--b {
-  top: 44%;
   background: var(--rdb-teal);
-  animation-delay: 0.07s;
+  animation-delay: 0.09s;
+}
+.rdb-stinger-bar--c {
+  background: var(--rdb-navy);
+  animation-delay: 0.18s;
 }
 @keyframes rdb-stinger-bar {
-  0% { transform: translateX(-110%) skewX(-14deg); }
-  28%, 68% { transform: translateX(0) skewX(-14deg); }
-  100% { transform: translateX(110%) skewX(-14deg); }
+  0% { transform: translateX(-112%) skewX(-14deg); }
+  30%, 62% { transform: translateX(0) skewX(-14deg); }
+  100% { transform: translateX(112%) skewX(-14deg); }
+}
+.rdb-stinger-text {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  opacity: 0;
+  animation: rdb-stinger-label 1.6s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+.rdb-stinger-kicker {
+  padding: 0.25em 0.7em;
+  background: var(--rdb-crimson);
+  color: #fff;
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-size: clamp(0.8rem, 1.4vw, 1.5rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 .rdb-stinger-label {
-  position: relative;
   font-family: 'Anton', 'Impact', sans-serif;
-  font-size: clamp(2.4rem, 7vw, 8rem);
-  letter-spacing: 0.03em;
+  font-size: clamp(3rem, 11vw, 12rem);
+  line-height: 0.95;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
+  text-align: center;
   color: var(--rdb-cream);
-  -webkit-text-stroke: 0.06em var(--rdb-navy);
-  paint-order: stroke fill;
-  opacity: 0;
-  animation: rdb-stinger-label 1.2s cubic-bezier(0.3, 1.4, 0.5, 1) forwards;
+}
+.rdb-stinger-rule {
+  width: 100%;
+  height: clamp(4px, 0.6vw, 10px);
+  background: var(--rdb-teal);
+  transform-origin: left;
+  animation: rdb-stinger-rule 1.6s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
 }
 @keyframes rdb-stinger-label {
-  0%, 16% { opacity: 0; transform: scale(0.7); }
-  30%, 66% { opacity: 1; transform: scale(1); }
-  82%, 100% { opacity: 0; transform: scale(1.08); }
+  0%, 26% { opacity: 0; transform: translateX(-6vw); }
+  38%, 60% { opacity: 1; transform: translateX(0); }
+  72%, 100% { opacity: 0; transform: translateX(6vw); }
+}
+@keyframes rdb-stinger-rule {
+  0%, 30% { transform: scaleX(0); }
+  48%, 100% { transform: scaleX(1); }
+}
+
+/* ---------- Vez de: quem joga agora (igual em todos os jogos) ---------- */
+.rdb-turn {
+  --turn: var(--rdb-teal);
+  display: flex;
+  align-items: stretch;
+  gap: 0.9rem;
+  min-height: 3.6rem;
+  border: var(--rdb-line) solid var(--turn);
+  background: var(--rdb-navy);
+  color: var(--rdb-cream);
+  font-family: var(--rdb-heavy);
+}
+.rdb-turn-flag {
+  display: grid;
+  place-items: center;
+  padding: 0 1rem;
+  background: var(--turn);
+  color: var(--rdb-navy);
+  font-weight: 900;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.rdb-turn-mark {
+  align-self: center;
+  font-size: 1.5rem;
+}
+.rdb-turn-who {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 0.35rem 0;
+}
+.rdb-turn-name {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-weight: 400;
+  font-size: 1.9rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rdb-turn-role {
+  color: var(--rdb-ink-2);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rdb-turn-what {
+  flex: 1;
+  align-self: center;
+  min-width: 0;
+  margin: 0;
+  padding-left: 0.9rem;
+  border-left: 1px solid rgba(245, 242, 235, 0.2);
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.rdb-turn-side {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-right: 0.6rem;
+  flex-shrink: 0;
+}
+.rdb-turn-other {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 800;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+.rdb-turn-other > span:first-child {
+  color: var(--rdb-ink-2);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.rdb-turn-teams {
+  display: flex;
+  gap: 0.25rem;
+}
+.rdb-turn .rdb-seg {
+  min-width: 0;
+  min-height: 2.2rem;
+  padding: 0 0.7rem;
+  font-size: 0.78rem;
+}
+@media (max-width: 899px) {
+  .rdb-turn {
+    flex-wrap: wrap;
+    gap: 0.5rem 0.7rem;
+  }
+  .rdb-turn-flag {
+    padding: 0.3rem 0.7rem;
+  }
+  .rdb-turn-name {
+    font-size: 1.4rem;
+  }
+  .rdb-turn-what {
+    flex-basis: 100%;
+    padding: 0 0.7rem;
+    border-left: 0;
+  }
+  .rdb-turn-side {
+    flex-wrap: wrap;
+    padding: 0 0.7rem 0.5rem;
+  }
+}
+
+/* ---------- Proibido: a carta usa a tela inteira ---------- */
+.rdb-proibido-card {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 0.8rem;
+}
+.rdb-proibido-target {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+.rdb-proibido-target-word {
+  font-size: clamp(2.2rem, 6.2vw, 7rem);
+  line-height: 0.95;
+  overflow-wrap: anywhere;
+}
+.rdb-proibido-forbidden {
+  min-height: 0;
+}
+.rdb-proibido-word {
+  font-size: clamp(1.2rem, min(5vh, 3vw), 3.2rem);
+  line-height: 1.05;
+}
+@media (max-width: 899px) {
+  .rdb-proibido-card {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .rdb-proibido-target {
+    padding-block: 0.8rem;
+  }
 }
 
 /* ---------- Tela de vitoria ---------- */
