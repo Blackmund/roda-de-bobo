@@ -17,6 +17,7 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
+import { PlayerMark } from '../rdb/PlayerMark';
 
 interface ScreenProibidoProps {
   room: GameRoom;
@@ -474,7 +475,7 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
           {/* ORADOR / QUEM FALA */}
           <div className="flex items-center gap-1.5 px-2.5 py-1 bg-cyan-950/70 border-2 border-cyan-400 shadow-[0_0_10px_rgba(23,184,184,0.2)]">
-            <span className="text-base sm:text-lg shrink-0">{speakerPlayer?.avatar || '🗣️'}</span>
+            <span className="text-base sm:text-lg shrink-0"><PlayerMark p={speakerPlayer} /></span>
             <div className="min-w-0">
               <div className="text-[8px] sm:text-[9px] font-mono-code font-black uppercase text-cyan-300 leading-none">
                 🗣️ QUEM FALA (ORADOR):
@@ -490,7 +491,7 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
 
           {/* ADIVINHADOR / DE OLHO FECHADO */}
           <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-950/70 border-2 border-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.2)]">
-            <span className="text-base sm:text-lg shrink-0">{guesserPlayer?.avatar || '🙈'}</span>
+            <span className="text-base sm:text-lg shrink-0"><PlayerMark p={guesserPlayer} /></span>
             <div className="min-w-0">
               <div className="text-[8px] sm:text-[9px] font-mono-code font-black uppercase text-amber-300 leading-none">
                 🙈 DE OLHO FECHADO (ADIVINHA):
@@ -507,7 +508,7 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
           {/* FISCAL / ÁRBITRO (se 3+ jogadores) */}
           {!is2Player && refereePlayer && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-950/70 border-2 border-rose-500 shadow-[0_0_10px_rgba(230,25,75,0.2)]">
-              <span className="text-base sm:text-lg shrink-0">{refereePlayer?.avatar || '🚨'}</span>
+              <span className="text-base sm:text-lg shrink-0"><PlayerMark p={refereePlayer} /></span>
               <div className="min-w-0">
                 <div className="text-[8px] sm:text-[9px] font-mono-code font-black uppercase text-rose-300 leading-none">
                   🚨 FISCAL (ÁRBITRO):

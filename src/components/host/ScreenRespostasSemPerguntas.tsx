@@ -5,6 +5,7 @@ import { GameRoom, RespostasSemPerguntasState } from '../../types/game';
 import { sounds } from '../../utils/soundEffects';
 import { isShowRuleset } from '../../config/rulesets';
 import { currentValue, giveUpRound, judgeGuess, pickPosition } from '../../utils/respostasEngine';
+import { PlayerMark } from '../rdb/PlayerMark';
 
 interface ScreenRespostasProps {
   room: GameRoom;
@@ -25,7 +26,7 @@ export const ScreenRespostasSemPerguntas: React.FC<ScreenRespostasProps> = ({
   const isShow = isShowRuleset(room.customConfig);
   const playerIds = room.players.map((p) => p.id);
   const nameOf = (id: string) => room.players.find((p) => p.id === id)?.name || '—';
-  const avatarOf = (id: string) => room.players.find((p) => p.id === id)?.avatar || '🙂';
+  const avatarOf = (id: string) => <PlayerMark p={room.players.find((p) => p.id === id)} />;
   const value = currentValue(rsp);
   const done = rsp.phase === 'SUMMARY';
 

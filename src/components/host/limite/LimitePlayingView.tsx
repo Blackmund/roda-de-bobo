@@ -11,6 +11,7 @@ import { sounds } from '../../../utils/soundEffects';
 import { sanitizeCleanGameText } from '../../../utils/aiGameGenerator';
 import { PhoneCall, ArrowRight, RotateCcw, Trophy, Zap, X, Clock, Infinity as InfinityIcon, Lock } from 'lucide-react';
 import { LimitePlayerGuessCard } from './LimitePlayerGuessCard';
+import { PlayerMark } from '../../rdb/PlayerMark';
 
 interface LimitePlayingViewProps {
   limite: LimiteGameState;
@@ -504,7 +505,7 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
                         }`}
                       >
                         <span className="flex items-center gap-1.5 truncate">
-                          <span>{p.avatar}</span>
+                          <span><PlayerMark p={p} /></span>
                           <span className="truncate">{p.name}</span>
                         </span>
                         <span

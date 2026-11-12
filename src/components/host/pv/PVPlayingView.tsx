@@ -9,6 +9,7 @@ import { OFFICIAL_11_QUESTIONS, SUIT_META, SUIT_ORDER, PVSuit, PVCard, PVCardVal
 import { sounds } from '../../../utils/soundEffects';
 import { Clock, Pause, Play, Trophy, Eye, Coins, Send, History, AlertCircle, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { PlayerMark } from '../../rdb/PlayerMark';
 
 interface PVPlayingViewProps {
   tvWrapperClass: "h-full flex flex-col justify-between min-h-0 overflow-hidden gap-1.5 text-xs select-none";
@@ -755,7 +756,7 @@ export const PVPlayingView: React.FC<PVPlayingViewProps> = ({
                   }}
                   className="p-2.5 border border-amber-400/80 bg-amber-950/40 hover:bg-amber-400 hover:text-black text-white font-anton text-xs uppercase flex items-center gap-2 cursor-pointer"
                 >
-                  <span>{p.avatar}</span>
+                  <span><PlayerMark p={p} /></span>
                   <span>🏆 {p.name}</span>
                 </button>
               ))}

@@ -13,6 +13,7 @@ import {
   RefreshCw,
   LogOut
 } from 'lucide-react';
+import { PlayerMark } from '../rdb/PlayerMark';
 
 export interface MobileStandaloneGameViewProps {
   room: GameRoom;
@@ -163,7 +164,7 @@ export const MobileStandaloneGameView: React.FC<MobileStandaloneGameViewProps> =
                       : 'border-slate-800 bg-slate-950 text-slate-300'
                   }`}
                 >
-                  <span>{p.avatar}</span>
+                  <span><PlayerMark p={p} /></span>
                   <span className="font-bold truncate max-w-[75px]">{p.name}</span>
                   {(idx === 0 || p.isVip) && (
                     <Crown size={10} className="text-amber-400 fill-amber-400 shrink-0" />

@@ -32,6 +32,7 @@ import {
   Star,
   AlertCircle
 } from 'lucide-react';
+import { PlayerMark } from '../rdb/PlayerMark';
 
 export interface Step4PlayerLobbyProps {
   room: GameRoom;
@@ -277,7 +278,7 @@ export const Step4PlayerLobby: React.FC<Step4PlayerLobbyProps> = React.memo(({
             <span>
               🪙 SORTEADO PARA COMEÇAR A PARTIDA:{' '}
               <strong className="text-white uppercase">
-                {startingPlayer.avatar} {startingPlayer.name}
+                <PlayerMark p={startingPlayer} /> {startingPlayer.name}
               </strong>
             </span>
           </div>
@@ -488,7 +489,7 @@ export const Step4PlayerLobby: React.FC<Step4PlayerLobbyProps> = React.memo(({
                           : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-cyan-400'
                       }`}
                     >
-                      <span>{fp.avatar}</span>
+                      <span><PlayerMark p={fp} /></span>
                       <span>{fp.name}</span>
                       {inRoom ? <Check size={11} className="text-cyan-300" /> : <span>+</span>}
                     </button>
@@ -543,7 +544,7 @@ export const Step4PlayerLobby: React.FC<Step4PlayerLobbyProps> = React.memo(({
                     className={`p-2.5 border-l-4 bg-white/[0.04] border border-white/10 flex items-center justify-between gap-2 ${tMeta.borderClass}`}
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-xl shrink-0">{p.avatar}</span>
+                      <span className="text-xl shrink-0"><PlayerMark p={p} /></span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className="font-bold text-xs text-white truncate">{p.name}</span>

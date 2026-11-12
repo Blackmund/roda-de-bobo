@@ -36,6 +36,7 @@ export interface ScreenMobileControllerProps {
 }
 
 import { PRESET_THEMES } from '../../utils/aiGameGenerator';
+import { PlayerMark } from '../rdb/PlayerMark';
 
 const GAME_OPTIONS: Array<{ id: GameId; name: string; badge: string }> = [
   { id: 'limite', name: '🎯 JOGO DO LIMITE', badge: 'Individual' },
@@ -177,7 +178,7 @@ export const ScreenMobileController: React.FC<ScreenMobileControllerProps> = ({
               className="w-9 h-9 rounded-lg bg-slate-950 border border-slate-700 hover:border-cyan-400 flex items-center justify-center text-lg shrink-0 cursor-pointer"
               title="Trocar Avatar"
             >
-              {player.avatar}
+              <PlayerMark p={player} />
             </button>
 
             <div className="min-w-0 flex-1">
@@ -303,7 +304,7 @@ export const ScreenMobileController: React.FC<ScreenMobileControllerProps> = ({
                     onClick={() => setShowAvatarModal(true)}
                     className="w-14 h-14 rounded-2xl bg-slate-900 border-2 border-cyan-400/60 flex items-center justify-center text-3xl cursor-pointer relative shrink-0"
                   >
-                    <span>{player.avatar}</span>
+                    <span><PlayerMark p={player} /></span>
                     <span className="absolute -bottom-1 -right-1 px-1.5 py-0.2 rounded bg-cyan-400 text-slate-950 font-mono-code text-[8px] font-black">
                       AVATAR
                     </span>

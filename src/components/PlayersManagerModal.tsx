@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { TEAM_META } from '../utils/teamUtils';
 import { sounds } from '../utils/soundEffects';
+import { PlayerMark } from './rdb/PlayerMark';
 
 interface PlayersManagerModalProps {
   room?: GameRoom;
@@ -338,7 +339,7 @@ export const PlayersManagerModal: React.FC<PlayersManagerModalProps> = ({
                           title={fixedDef ? 'Clique para abrir o histórico detalhado deste jogador' : undefined}
                         >
                           <span className="text-2xl shrink-0 group-hover:scale-110 transition-transform">
-                            {p.avatar || '🕹️'}
+                            <PlayerMark p={p} />
                           </span>
                           <div className="min-w-0">
                             <div className="font-anton text-sm text-white uppercase truncate flex items-center gap-1.5">
@@ -431,7 +432,7 @@ export const PlayersManagerModal: React.FC<PlayersManagerModalProps> = ({
                           className="flex items-center gap-1.5 truncate cursor-pointer flex-1"
                           title="Ver histórico e estatísticas deste jogador"
                         >
-                          <span className="text-lg">{fp.avatar}</span>
+                          <span className="text-lg"><PlayerMark p={fp} /></span>
                           <span className="font-anton uppercase truncate text-white">{fp.name}</span>
                         </div>
 
@@ -530,7 +531,7 @@ export const PlayersManagerModal: React.FC<PlayersManagerModalProps> = ({
                     : 'bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/[0.08]'
                 }`}
               >
-                <span>{fp.avatar}</span>
+                <span><PlayerMark p={fp} /></span>
                 <span className="font-anton uppercase">{fp.name}</span>
               </button>
             ))}
@@ -543,7 +544,7 @@ export const PlayersManagerModal: React.FC<PlayersManagerModalProps> = ({
                 className="w-16 h-16 border-2 flex items-center justify-center text-4xl shadow-xl bg-black/80 shrink-0"
                 style={{ borderColor: selectedStats.color || '#E6194B' }}
               >
-                {selectedStats.avatar}
+                <PlayerMark p={selectedStats} />
               </div>
               <div>
                 <div className="flex items-center gap-2">
@@ -782,7 +783,7 @@ export const PlayersManagerModal: React.FC<PlayersManagerModalProps> = ({
                   className="p-3 bg-[#0d101a] border border-white/10 flex items-center justify-between gap-2.5 rounded hover:border-cyan-400/50 transition-colors"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="text-2xl shrink-0">{g.avatar}</span>
+                    <span className="text-2xl shrink-0"><PlayerMark p={g} /></span>
                     <div className="min-w-0">
                       <div className="font-anton text-sm text-white uppercase truncate">
                         {g.name}

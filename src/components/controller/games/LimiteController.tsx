@@ -5,6 +5,7 @@ import { sounds } from '../../../utils/soundEffects';
 import { Lock } from 'lucide-react';
 import { LIMITE_POWER_CARD_META } from '../../host/ScreenLimite';
 import { resolveSwapPair } from '../../../utils/limiteSwap';
+import { PlayerMark } from '../../rdb/PlayerMark';
 
 interface LimiteControllerProps {
   room: GameRoom;
@@ -351,7 +352,7 @@ export const LimiteController: React.FC<LimiteControllerProps> = ({
                       >
                         {[...otherPlayers, player].map((op) => (
                           <option key={op.id} value={op.id}>
-                            {op.avatar} {op.name}
+                            <PlayerMark p={op} /> {op.name}
                             {op.id === player.id ? ' (você)' : ''}
                           </option>
                         ))}

@@ -42,6 +42,7 @@ import {
   Star
 } from 'lucide-react';
 import { ModeArt } from '../art/GameCardArt';
+import { PlayerMark } from '../rdb/PlayerMark';
 
 export interface ScreenModeSelectProps {
   room: GameRoom;
@@ -497,7 +498,7 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
                           className="p-2 border border-white/15 bg-black/80 flex items-center justify-between gap-2 shadow-sm"
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-xl shrink-0">{p.avatar || '👾'}</span>
+                            <span className="text-xl shrink-0"><PlayerMark p={p} /></span>
                             <div className="min-w-0">
                               <div className="font-anton text-sm text-white uppercase truncate flex items-center gap-1">
                                 <span>{p.name}</span>
@@ -552,7 +553,7 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
                             : 'border-slate-800 bg-black text-slate-400 hover:border-slate-600'
                         }`}
                       >
-                        <span>{fp.avatar}</span>
+                        <span><PlayerMark p={fp} /></span>
                         <span>{fp.name}</span>
                         <span>{isConnected ? '✓' : '+'}</span>
                       </button>

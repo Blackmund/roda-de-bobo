@@ -5,6 +5,7 @@ import { sounds } from '../../../utils/soundEffects';
 import { drawRandomStartingPlayer } from '../../../utils/multiplayerRoomEngine';
 import { FIXED_PLAYERS } from '../../../utils/fixedPlayers';
 import { Shuffle, Coins, Crown, GripVertical, UserPlus, QrCode, X, Smartphone } from 'lucide-react';
+import { PlayerMark } from '../../rdb/PlayerMark';
 
 interface SetupPlayersStageViewProps {
   effectiveTeamCount: 2 | 3 | 4;
@@ -131,7 +132,7 @@ export const SetupPlayersStageView: React.FC<SetupPlayersStageViewProps> = ({
                     <span className="text-amber-300 font-bold flex items-center gap-1">
                       <Coins size={12} />
                       1º Turno:{' '}
-                      {room.players.find((p) => p.id === room.startingPlayerId)?.avatar}{' '}
+                      <PlayerMark p={room.players.find((p) => p.id === room.startingPlayerId)} />{' '}
                       {room.players.find((p) => p.id === room.startingPlayerId)?.name}
                     </span>
                   )}
@@ -232,7 +233,7 @@ export const SetupPlayersStageView: React.FC<SetupPlayersStageViewProps> = ({
                         }
                       >
                         <GripVertical size={11} className="text-slate-500 shrink-0" />
-                        <span className="text-sm shrink-0">{fp.avatar}</span>
+                        <span className="text-sm shrink-0"><PlayerMark p={fp} /></span>
                         <span className="font-anton text-xs text-white uppercase truncate">{fp.name}</span>
                         {isAssigned ? (
                           <span
@@ -402,7 +403,7 @@ export const SetupPlayersStageView: React.FC<SetupPlayersStageViewProps> = ({
                               >
                                 <div className="flex items-center gap-2 min-w-0">
                                   <GripVertical size={13} className="text-slate-500 shrink-0 hover:text-cyan-300" />
-                                  <span className="text-xl shrink-0">{player.avatar || '🕹️'}</span>
+                                  <span className="text-xl shrink-0"><PlayerMark p={player} /></span>
                                   <div className="min-w-0">
                                     <div className="font-anton text-sm text-white uppercase truncate flex items-center gap-1">
                                       <span>{player.name}</span>

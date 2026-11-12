@@ -3,6 +3,7 @@ import { GameRoom } from '../types/game';
 import { DynamicQRCode } from './DynamicQRCode';
 import { sounds } from '../utils/soundEffects';
 import { Copy, Check, RefreshCw, Smartphone, Tv, Crown, Vibrate } from 'lucide-react';
+import { PlayerMark } from './rdb/PlayerMark';
 
 export interface QRCodeModalProps {
   room: GameRoom;
@@ -169,7 +170,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
               className="px-3 py-2 rounded-xl bg-amber-500/20 border border-amber-400 text-amber-200 font-mono-code text-xs font-bold flex items-center justify-between animate-pulse"
             >
               <span>
-                ⚡ {room.lastBuzzEvent.avatar} {room.lastBuzzEvent.playerName} está pronto no celular!
+                ⚡ <PlayerMark p={room.lastBuzzEvent} /> {room.lastBuzzEvent.playerName} está pronto no celular!
               </span>
               <span className="text-[10px] uppercase">AO VIVO</span>
             </div>
@@ -211,7 +212,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center text-xl shrink-0">
-                        {player.avatar}
+                        <PlayerMark p={player} />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">

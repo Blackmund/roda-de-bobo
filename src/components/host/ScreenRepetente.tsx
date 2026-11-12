@@ -12,6 +12,7 @@ import {
   tickRepetenteTimer,
   toggleRepetenteOverride
 } from '../../utils/repetenteEngine';
+import { PlayerMark } from '../rdb/PlayerMark';
 
 interface ScreenRepetenteProps {
   room: GameRoom;
@@ -53,7 +54,7 @@ export const ScreenRepetente: React.FC<ScreenRepetenteProps> = ({ room, onUpdate
   const isShow = isShowRuleset(room.customConfig);
   const free = room.timerConfig === 0;
   const nameOf = (id: string) => room.players.find((p) => p.id === id)?.name || '—';
-  const avatarOf = (id: string) => room.players.find((p) => p.id === id)?.avatar || '🙂';
+  const avatarOf = (id: string) => <PlayerMark p={room.players.find((p) => p.id === id)} />;
   const done = allRepetenteSubmitted(rep);
 
   const start = () => {

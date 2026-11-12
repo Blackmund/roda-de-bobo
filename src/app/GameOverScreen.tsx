@@ -11,6 +11,7 @@ import { computePartyAchievements } from '../utils/achievements';
 import { computeMatchMVP, computeMatchPlayerComparison, shareMatchResults, getMatchRoundActivityLog } from '../utils/sessionPersistence';
 import { Trophy, Home, Crown, Award, Share2, Check, Target, Layers, TrendingUp, CheckCircle2, Activity, Swords, Star, History, Medal, X } from 'lucide-react';
 import { WinnerArt } from '../components/art/GameCardArt';
+import { PlayerMark } from '../components/rdb/PlayerMark';
 
 interface GameOverScreenProps {
   room: GameRoom;
@@ -103,7 +104,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                 winningTeamKey !== 'EMPATE' ? winningTeamName : 'Empate entre Equipes';
               const collectiveMembersLabel =
                 winningTeamPlayers.length > 0
-                  ? winningTeamPlayers.map((p) => `${p.avatar} ${p.name}`).join(' & ')
+                  ? winningTeamPlayers.map((p) => `$<PlayerMark p={p} /> ${p.name}`).join(' & ')
                   : 'Equipe em Conjunto';
               const displayHighlightScore = isIndividualMatch ? mvp.score : maxTeamScore;
               const avgPointsPerRoundDisplay =
@@ -211,7 +212,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                                       : 'border-white/10 bg-white/[0.03] text-slate-200'
                                   }`}
                                 >
-                                  <span className="text-xl shrink-0">{wp.avatar}</span>
+                                  <span className="text-xl shrink-0"><PlayerMark p={wp} /></span>
                                   <div className="text-left min-w-0">
                                     <div className="font-anton text-sm uppercase leading-none flex items-center gap-1 truncate">
                                       {isIndividualMatch && (

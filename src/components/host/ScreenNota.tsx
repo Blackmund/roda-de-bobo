@@ -23,6 +23,7 @@ import {
   MessageSquare,
   Trophy
 } from 'lucide-react';
+import { PlayerMark } from '../rdb/PlayerMark';
 
 interface ScreenNotaProps {
   room: GameRoom;
@@ -280,7 +281,7 @@ export const ScreenNota: React.FC<ScreenNotaProps> = ({
       <div className="border-b border-white/10 bg-white/[0.03] px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 shrink-0">
         <div className="flex flex-wrap items-center gap-2">
           <div className="px-2.5 py-0.5 border border-amber-400/70 bg-amber-950/60 flex items-center gap-2">
-            <span className="text-base leading-none">{speaker?.avatar || '🎤'}</span>
+            <span className="text-base leading-none"><PlayerMark p={speaker} /></span>
             <span
               data-testid="nota-narrator-banner"
               className="font-anton text-xs md:text-sm text-amber-300 uppercase tracking-wider"
@@ -409,7 +410,7 @@ export const ScreenNota: React.FC<ScreenNotaProps> = ({
               }`}
             >
               <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-sm shrink-0">{p.avatar}</span>
+                <span className="text-sm shrink-0"><PlayerMark p={p} /></span>
                 <div className="min-w-0">
                   <div className="font-bold text-xs text-white truncate">{p.name}</div>
                   <div className="text-[9px] font-mono-code uppercase truncate">
@@ -455,7 +456,7 @@ export const ScreenNota: React.FC<ScreenNotaProps> = ({
                 <h2 className="font-anton text-2xl sm:text-3xl md:text-4xl text-white uppercase tracking-wide pt-1">
                   NARRADOR DA RODADA:{' '}
                   <span className="text-amber-300">
-                    {speaker?.avatar} {speaker?.name}
+                    <PlayerMark p={speaker} /> {speaker?.name}
                   </span>
                 </h2>
               </div>
@@ -612,7 +613,7 @@ export const ScreenNota: React.FC<ScreenNotaProps> = ({
               ETAPA 3 DE 4 // {isShow ? '2ª PERGUNTA (ALEATÓRIA DO AQUÁRIO)' : '2ª PISTA AO VIVO NA RODA'}
             </span>
             <span className="text-xs font-mono-code text-rose-300 font-bold uppercase">
-              NARRADOR: {speaker?.avatar} {speaker?.name}
+              NARRADOR: <PlayerMark p={speaker} /> {speaker?.name}
             </span>
           </div>
 
@@ -786,7 +787,7 @@ export const ScreenNota: React.FC<ScreenNotaProps> = ({
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-10 h-10 border border-[#17B8B8]/50 bg-black flex items-center justify-center text-xl shrink-0">
-                      {speaker?.avatar || '🎤'}
+                      <PlayerMark p={speaker} />
                     </div>
                     <div className="min-w-0">
                       <div className="text-[10px] font-mono-code text-[#17B8B8] font-bold uppercase">
@@ -851,7 +852,7 @@ export const ScreenNota: React.FC<ScreenNotaProps> = ({
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-lg shrink-0">{player.avatar}</span>
+                          <span className="text-lg shrink-0"><PlayerMark p={player} /></span>
                           <div className="min-w-0">
                             <div className="font-anton text-sm uppercase truncate">
                               {player.name}

@@ -5,6 +5,7 @@ import { drawRandomStartingPlayer } from '../../../utils/multiplayerRoomEngine';
 import { FIXED_PLAYERS } from '../../../utils/fixedPlayers';
 import { resolvePlayerAvatar } from '../../../utils/retroAvatars';
 import { User, Coins, Crown, UserPlus, QrCode, Trash2 } from 'lucide-react';
+import { PlayerMark } from '../../rdb/PlayerMark';
 
 interface SetupTeamsStageViewProps {
   room: GameRoom;
@@ -114,7 +115,7 @@ export const SetupTeamsStageView: React.FC<SetupTeamsStageViewProps> = ({
                     <span className="text-amber-300 font-bold flex items-center gap-1">
                       <Coins size={12} />
                       1º a Jogar:{' '}
-                      {room.players.find((p) => p.id === room.startingPlayerId)?.avatar}{' '}
+                      <PlayerMark p={room.players.find((p) => p.id === room.startingPlayerId)} />{' '}
                       {room.players.find((p) => p.id === room.startingPlayerId)?.name}
                     </span>
                   )}
@@ -171,7 +172,7 @@ export const SetupTeamsStageView: React.FC<SetupTeamsStageViewProps> = ({
                         }`}
                         title={isAssigned ? `Clique para remover ${fp.name}` : `Clique para adicionar ${fp.name}`}
                       >
-                        <span className="text-sm shrink-0">{fp.avatar}</span>
+                        <span className="text-sm shrink-0"><PlayerMark p={fp} /></span>
                         <span className="font-anton text-xs uppercase text-white truncate">{fp.name}</span>
                         <span
                           className={`text-[9px] font-bold px-1 py-0.5 rounded ${
@@ -216,7 +217,7 @@ export const SetupTeamsStageView: React.FC<SetupTeamsStageViewProps> = ({
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             <div className="w-9 h-9 rounded-md bg-black/80 border border-white/15 flex items-center justify-center text-xl shrink-0 shadow-inner">
-                              {player.avatar || '👤'}
+                              <PlayerMark p={player} />
                             </div>
                             <div className="min-w-0">
                               <div className="font-anton text-xs sm:text-sm text-white uppercase truncate flex items-center gap-1">

@@ -63,6 +63,7 @@ interface ScreenPerguntasEVerdadesProps {
 }
 
 import { ALL_CARD_VALUES, FULL_52_DECK } from './pv/pvConstants';
+import { PlayerMark } from '../rdb/PlayerMark';
 
 export function getSavedTruthSlotsForTarget(
   pv: PerguntasEVerdadesGameState,
@@ -947,7 +948,7 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
                   : 'border-slate-800 bg-black/60 text-slate-300 opacity-60 hover:opacity-100 scale-95'
               }`}
             >
-              <span className="text-base shrink-0">{player.avatar}</span>
+              <span className="text-base shrink-0"><PlayerMark p={player} /></span>
               <div className="flex items-center gap-1.5 min-w-0">
                 <span className="font-anton text-xs uppercase truncate max-w-[90px]">
                   {player.name}
