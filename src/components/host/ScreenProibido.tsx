@@ -548,9 +548,7 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
             )}
           </span>
         </div>
-        <span className="text-[10px] text-slate-500 uppercase tracking-widest hidden sm:inline">
-          {themeBadge(room.visualTheme)}
-        </span>
+        
       </div>
 
       {/* Main Game Card Display */}

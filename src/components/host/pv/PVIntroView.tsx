@@ -79,9 +79,7 @@ export const PVIntroView: React.FC<PVIntroViewProps> = ({
               🪙 🎤 <strong className="text-white">LEILÃO DE FICHAS:</strong> Aposte de 0 a {maxTokensForBiddingPlayer} fichas para disputar o direito de responder ou passar a pergunta
             </span>
           </div>
-          <span className="text-[10px] text-slate-500 uppercase tracking-widest hidden sm:inline">
-            {themeBadge(room.visualTheme)}
-          </span>
+          
         </div>
 
         {/* Tie Alert Banner */}

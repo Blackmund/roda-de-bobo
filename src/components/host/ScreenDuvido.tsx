@@ -388,9 +388,7 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
             )}
           </span>
         </div>
-        <span className="text-[10px] text-slate-500 uppercase tracking-widest hidden sm:inline">
-          {themeBadge(room.visualTheme)}
-        </span>
+        
       </div>
 
       {/* PERMANENT TOP THEME BANNER (shrink-0, Visible in AUCTION, BLINDFOLD & EXECUTION) */}

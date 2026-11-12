@@ -602,3 +602,120 @@
     opacity: 0;
   }
 }
+
+/* =====================================================================================================
+   Modo TV: a interface inteira escala com a largura da tela. Em 1280x720 fica como foi desenhada; em Full HD
+   tudo cresce 1,5x e em 4K 3x, mantendo a mesma composicao (sem barra de rolagem e legivel do sofa).
+   O Tailwind usa rem, entao basta escalar a fonte raiz; os tamanhos fixos em px sao convertidos abaixo.
+   ===================================================================================================== */
+@media (min-width: 1280px) and (min-aspect-ratio: 3/2) {
+  html.rb-tv {
+    font-size: clamp(16px, 1.25vw, 48px);
+  }
+}
+.retro-window-container [class*='text-[8px]'],
+.retro-window-container [class*='text-[9px]'] {
+  font-size: 0.66rem;
+}
+.retro-window-container [class*='text-[10px]'] {
+  font-size: 0.7rem;
+}
+.retro-window-container [class*='text-[11px]'] {
+  font-size: 0.75rem;
+}
+
+/* ---------- Configuracao do jogo: duas colunas em tela larga, para caber em 16:9 sem rolar ---------- */
+.rdb-wide {
+  max-width: min(97vw, 112rem);
+}
+@media (min-width: 1100px) {
+  .rdb-setup-cols {
+    column-count: 2;
+    column-gap: 0.75rem;
+  }
+  .rdb-setup-cols > * {
+    break-inside: avoid;
+    margin-top: 0 !important;
+    margin-bottom: 0.6rem;
+  }
+}
+/* Um contorno so para todas as secoes (antes cada uma tinha uma cor) e nada de sombra */
+[data-testid='step2-configure-game'] section,
+[data-testid='step2-configure-game'] section > div[class*='border'] {
+  border-color: rgba(245, 242, 235, 0.2) !important;
+  box-shadow: none !important;
+}
+[data-testid='step2-configure-game'] h4 {
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+@media (min-width: 1100px) {
+  /* Dificuldade, tempo e rodadas: uma linha cada (nas 3 colunas apertadas os titulos quebravam) */
+  .rdb-setup-cols > section.grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .rdb-setup-cols > section.grid .grid-cols-2 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  /* Categorias em 4 por linha: os nomes cabem inteiros */
+  .rdb-setup-cols [class*='md:grid-cols-8'] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* =====================================================================================================
+   Telas de jogo na identidade do programa: tudo chapado. Sem brilho em volta, sem degrade e sem ponto
+   pulsando em loop (o estado ja aparece na cor e no texto).
+   ===================================================================================================== */
+.theme-original .retro-window-container [class*='shadow-[0_0'] {
+  box-shadow: none !important;
+}
+.theme-original .retro-window-container [class*='bg-gradient-to'] {
+  background-image: none !important;
+  background-color: var(--rdb-navy-2);
+}
+.theme-original .retro-window-container .animate-ping {
+  display: none;
+}
+/* Faixa "jogador da vez": o nome e a noticia, entao e o maior texto da faixa */
+[data-testid='active-turn-spotlight-banner'] {
+  background: var(--rdb-navy-2) !important;
+  box-shadow: none !important;
+}
+[data-testid='active-turn-player-name'] {
+  font-size: 1.75rem;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Tutorial: ilustracao grande, contorno do programa e movimento leve ---------- */
+[data-testid^='tutorial-step-card'] {
+  border: var(--rdb-line) solid var(--rdb-teal) !important;
+  background: var(--rdb-navy) !important;
+  box-shadow: none !important;
+}
+.rdb-tut-art svg {
+  max-height: 100% !important;
+  height: 100%;
+  width: 100%;
+  animation: rdbv-float 3.6s ease-in-out infinite;
+}
+[data-testid='tutorial-step-card-2'] .rdb-tut-art svg {
+  animation-delay: 1.2s;
+}
+[data-testid='tutorial-step-card-3'] .rdb-tut-art svg {
+  animation-delay: 2.4s;
+}
+[data-testid^='tutorial-step-card'] h3 {
+  font-size: 1.2rem;
+}
+[data-testid^='tutorial-step-card'] p {
+  font-size: 0.875rem;
+  line-height: 1.35;
+  color: var(--rdb-ink-2);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rdb-tut-art svg {
+    animation: none;
+  }
+}

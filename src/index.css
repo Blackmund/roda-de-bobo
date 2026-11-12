@@ -800,11 +800,7 @@ button[data-testid*="start-direct"]:hover,
 }
 
 /* UX-11: modo TV legivel a distancia. So em telas grandes (full HD); notebooks e celulares ficam como antes. */
-@media (min-width: 1800px) and (min-height: 900px) {
-  html.rb-tv {
-    font-size: 112.5%;
-  }
-}
+/* (a escala do modo TV mora em styles/rdb.css) */
 
 /* ART-06: rolagem lateral do RetroWindow (trilho escuro, polegar crimson, cantos retos) */
 .rb-retro-scroll {
