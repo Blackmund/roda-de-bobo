@@ -12,6 +12,7 @@ import {
   applyRuleset,
   getRulesetPreset,
   hasShowRuleset,
+  limiteExactBonusFor,
   resolveRuleset,
   type GameRuleset
 } from '../../config/rulesets';
@@ -33,7 +34,7 @@ import {
   Users
 } from 'lucide-react';
 import { ThemeSection } from './step2/ThemeSection';
-import { POPULAR_THEMES } from './step2/popularThemes';
+import { POPULAR_THEMES } from './step2/popularThemes';
 import { ContentSourceSelector } from './step2/ContentSourceSelector';
 import { usesLocalContent } from '../../config/localGames';
 
@@ -400,19 +401,21 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
                 </button>
               </div>
 
-              <div className="p-2 bg-black/70 border border-slate-800 flex items-center justify-between gap-2">
-                <div>
-                  <div className="font-anton text-xs text-amber-300 uppercase">
-                    Bônus por Palpite Exato
+              {ruleset === 'home' && (
+                <div className="p-2 bg-black/70 border border-slate-800 flex items-center justify-between gap-2">
+                  <div>
+                    <div className="font-anton text-xs text-amber-300 uppercase">
+                      Bônus por Palpite Exato
+                    </div>
+                    <div className="text-[9px] font-mono-code text-slate-400">
+                      Quem cravar exatamente o valor oficial leva {limiteExactBonusFor(customConfig)} pontos em vez de 1
+                    </div>
                   </div>
-                  <div className="text-[9px] font-mono-code text-slate-400">
-                    Quem cravar exatamente o valor oficial leva 2 pontos em vez de 1
-                  </div>
+                  <span className="px-2 py-0.5 bg-amber-400 text-black font-anton text-[11px] uppercase font-bold shrink-0">
+                    🎯 {limiteExactBonusFor(customConfig)} PONTOS
+                  </span>
                 </div>
-                <span className="px-2 py-0.5 bg-amber-400 text-black font-anton text-[11px] uppercase font-bold shrink-0">
-                  🎯 2 PONTOS
-                </span>
-              </div>
+              )}
             </div>
           )}
 
