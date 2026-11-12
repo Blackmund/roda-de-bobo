@@ -1,13 +1,11 @@
 import React from 'react';
 import type { GameId } from '../../types/game';
-import { cazeArtSrc } from '../../utils/themeUtils';
 
 /**
  * Arte dos cards do catalogo, na identidade do programa (navy, creme, teal e crimson, tudo chapado).
- * - Os 6 jogos classicos usam os bonecos de 07/11 (WebP gerado dos PNG mestres em `_master/`), com um
- *   "estouro" de raios atras e movimento do boneco.
- * - Os 8 formatos novos ganham vinhetas em SVG: tipografia grossa e objetos, como as cartelas do programa
- *   (MEGA RESENHA, Gartic, GeoGuessr).
+ * Os 14 jogos tem vinhetas em SVG no mesmo estilo: tipografia grossa e objetos, como as cartelas do programa
+ * (MEGA RESENHA, Gartic, GeoGuessr). Os bonecos de 07/11, que ilustravam os 6 jogos classicos, estao guardados em
+ * `_master/cazetv/` (PNG) e `public/assets/cazetv/` (WebP), e o codigo que os usava esta na tag `cards-bonecos-0711`.
  * O movimento fica em `styles/rdb.css` (classes `rdbv-*`): calmo em repouso, mais vivo com o card em foco.
  */
 
@@ -17,30 +15,6 @@ const CRIMSON = '#E6194B';
 const NAVY = '#0a0b1e';
 const HEAVY = "'Inter', 'Arial Black', sans-serif";
 const ANTON = "'Anton', 'Impact', sans-serif";
-
-const CLASSIC: GameId[] = ['limite', 'duvido', 'proibido', 'nota', 'tem-ou-nao-tem', 'perguntas-e-verdades'];
-
-// Os 6 bonecos sao pre-carregados com o modulo: trocar de pagina nao mostra card vazio.
-if (typeof Image !== 'undefined') {
-  CLASSIC.forEach((id) => {
-    new Image().src = cazeArtSrc(id);
-  });
-}
-
-/** Raios atras do boneco: aparecem e giram devagar quando o card esta em foco. */
-const Burst: React.FC = () => (
-  <svg className="rdbv-burst" viewBox="0 0 200 200" aria-hidden="true">
-    {Array.from({ length: 12 }, (_, i) => (
-      <path
-        key={i}
-        d="M100 100 L92 4 L108 4 Z"
-        fill={i % 2 ? TEAL : CRIMSON}
-        transform={`rotate(${i * 30} 100 100)`}
-      />
-    ))}
-    <circle cx="100" cy="100" r="34" fill={NAVY} />
-  </svg>
-);
 
 const Svg: React.FC<{ children: React.ReactNode; label: string }> = ({ children, label }) => (
   <svg className="rdbv-svg" viewBox="0 0 320 200" role="img" aria-label={label} preserveAspectRatio="xMidYMid meet">
@@ -212,7 +186,154 @@ const Respostas = () => (
   </Svg>
 );
 
+/* ---- Os 6 jogos classicos, redesenhados como vinhetas (os bonecos de 07/11 ficam guardados em _master/) ---- */
+
+const Limite = () => (
+  <Svg label="Jogo do Limite">
+    <circle cx="160" cy="112" r="82" fill={CREAM} stroke={NAVY} strokeWidth="5" />
+    <circle cx="160" cy="112" r="82" fill="none" stroke={TEAL} strokeWidth="6" strokeDasharray="3 13.1" transform="rotate(-90 160 112)" />
+    {/* zona de estouro: passou daqui, perdeu */}
+    <path d="M160 112 L160 30 A82 82 0 0 1 231 71 Z" fill={CRIMSON} />
+    <path d="M160 30 V112" stroke={NAVY} strokeWidth="5" />
+    <text x="196" y="68" textAnchor="middle" fontFamily={ANTON} fontSize="22" fill={CREAM} transform="rotate(30 196 62)">X</text>
+    <g className="rdbv-needle" style={{ transformOrigin: '160px 112px' }}>
+      <path d="M160 112 L154 104 L160 44 L166 104 Z" fill={NAVY} />
+    </g>
+    <circle cx="160" cy="112" r="10" fill={NAVY} />
+    <circle cx="160" cy="112" r="4" fill={CREAM} />
+    <rect x="148" y="12" width="24" height="16" rx="3" fill={TEAL} stroke={NAVY} strokeWidth="4" />
+  </Svg>
+);
+
+const Duvido = () => (
+  <Svg label="Jogo do Duvido">
+    <path
+      d="M24 40 H150 a12 12 0 0 1 12 12 V112 a12 12 0 0 1 -12 12 H84 L58 150 V124 H24 a12 12 0 0 1 -12 -12 V52 a12 12 0 0 1 12 -12 Z"
+      fill={CREAM}
+      stroke={NAVY}
+      strokeWidth="5"
+      strokeLinejoin="round"
+    />
+    <g fontFamily={ANTON} fontSize="64" textAnchor="middle" fill={NAVY}>
+      <text className="rdbv-cyc-a" x="87" y="106">5</text>
+      <text className="rdbv-cyc-b" x="87" y="106">6</text>
+      <text className="rdbv-cyc-c" x="87" y="106">7!</text>
+    </g>
+    <g className="rdbv-shake" style={{ transformOrigin: '236px 120px' }}>
+      <path
+        d="M176 70 H296 a12 12 0 0 1 12 12 V150 a12 12 0 0 1 -12 12 H276 V188 L246 162 H176 a12 12 0 0 1 -12 -12 V82 a12 12 0 0 1 12 -12 Z"
+        fill={CRIMSON}
+        stroke={NAVY}
+        strokeWidth="5"
+        strokeLinejoin="round"
+      />
+      <text x="236" y="142" textAnchor="middle" fontFamily={ANTON} fontSize="66" fill={CREAM}>?!</text>
+    </g>
+  </Svg>
+);
+
+const Proibido = () => (
+  <Svg label="Jogo do Proibido">
+    <rect x="96" y="44" width="178" height="142" rx="8" fill={CREAM} stroke={NAVY} strokeWidth="5" />
+    <rect x="96" y="44" width="178" height="38" fill={TEAL} stroke={NAVY} strokeWidth="5" />
+    <rect x="116" y="56" width="92" height="14" rx="3" fill={NAVY} />
+    {[100, 128, 156].map((y, i) => (
+      <g key={y}>
+        <rect x="116" y={y} width={i === 1 ? 118 : 96} height="14" rx="3" fill={NAVY} opacity="0.85" />
+        <path className="rdbv-strike" style={{ animationDelay: `${i * 0.5}s` }} d={`M108 ${y + 7} H${i === 1 ? 242 : 220}`} stroke={CRIMSON} strokeWidth="6" strokeLinecap="round" pathLength={1} />
+      </g>
+    ))}
+    {/* sirene */}
+    <g>
+      <g className="rdbv-flash" stroke={CRIMSON} strokeWidth="6" strokeLinecap="round">
+        <path d="M58 28 V10 M26 44 L12 32 M90 44 L104 32" />
+      </g>
+      <path d="M30 96 V72 a28 28 0 0 1 56 0 V96 Z" fill={CRIMSON} stroke={NAVY} strokeWidth="5" strokeLinejoin="round" />
+      <rect x="20" y="94" width="76" height="18" rx="4" fill={CREAM} stroke={NAVY} strokeWidth="5" />
+      <path d="M46 78 a12 12 0 0 1 12 -12" fill="none" stroke={CREAM} strokeWidth="5" strokeLinecap="round" />
+    </g>
+  </Svg>
+);
+
+const Nota = () => (
+  <Svg label="Jogo da Nota">
+    <g className="rdbv-card" style={{ transformOrigin: '160px 190px' }}>
+      <rect x="150" y="128" width="20" height="72" rx="6" fill={CREAM} stroke={NAVY} strokeWidth="5" />
+      <circle cx="160" cy="84" r="66" fill={CREAM} stroke={NAVY} strokeWidth="5" />
+      <circle cx="160" cy="84" r="52" fill="none" stroke={CRIMSON} strokeWidth="7" />
+      <g fontFamily={ANTON} fontSize="76" textAnchor="middle" fill={NAVY}>
+        <text className="rdbv-cyc-a" x="160" y="112">8</text>
+        <text className="rdbv-cyc-b" x="160" y="112">3</text>
+        <text className="rdbv-cyc-c" x="160" y="112">10</text>
+      </g>
+    </g>
+    {[
+      [48, 52, TEAL, 0],
+      [70, 150, CRIMSON, 0.7],
+      [268, 138, TEAL, 1.4],
+      [250, 60, CRIMSON, 2.1]
+    ].map(([x, y, c, d], i) => (
+      <g key={i} transform={`translate(${x} ${y})`}>
+        <path
+          className="rdbv-dot"
+          style={{ animationDelay: `${d}s` }}
+          d="M0 -14 L4 -4 L14 0 L4 4 L0 14 L-4 4 L-14 0 L-4 -4 Z"
+          fill={c as string}
+        />
+      </g>
+    ))}
+  </Svg>
+);
+
+const TemOuNaoTem = () => (
+  <Svg label="Tem ou Não Tem">
+    <rect x="50" y="14" width="220" height="176" rx="8" fill={NAVY} stroke={CREAM} strokeWidth="5" />
+    {[0, 1, 2, 3, 4].map((i) => (
+      <g key={i}>
+        <rect x="64" y={28 + i * 31} width="192" height="23" rx="3" fill={CRIMSON} />
+        <g className="rdbv-reveal" style={{ animationDelay: `${i * 0.6}s` }}>
+          <rect x="64" y={28 + i * 31} width="192" height="23" rx="3" fill={i === 0 ? TEAL : CREAM} />
+          <rect x="96" y={35 + i * 31} width={110 - i * 14} height="9" rx="2" fill={NAVY} />
+          <text x="244" y={46 + i * 31} textAnchor="end" fontFamily={ANTON} fontSize="18" fill={NAVY}>{[38, 24, 17, 11, 7][i]}</text>
+        </g>
+        <text x="80" y={46 + i * 31} textAnchor="middle" fontFamily={ANTON} fontSize="18" fill={NAVY}>{i + 1}</text>
+      </g>
+    ))}
+  </Svg>
+);
+
+const PerguntasEVerdades = () => (
+  <Svg label="Perguntas e Verdades">
+    {[
+      [-24, TEAL, '?'],
+      [0, CRIMSON, '?'],
+      [24, TEAL, '?']
+    ].map(([ang, c, t], i) => (
+      <g key={i} className="rdbv-fan" style={{ transformOrigin: '160px 210px', ['--rdbv-a' as string]: `${ang}deg` }}>
+        <rect x="118" y="40" width="84" height="120" rx="8" fill={CREAM} stroke={NAVY} strokeWidth="5" />
+        <text x="130" y="66" fontFamily={ANTON} fontSize="20" fill={c as string}>{['3', 'K', '7'][i]}</text>
+        <text x="160" y="126" textAnchor="middle" fontFamily={ANTON} fontSize="62" fill={c as string}>{t}</text>
+      </g>
+    ))}
+    {/* fichas do leilao */}
+    {[0, 1, 2].map((i) => (
+      <g key={i} className="rdbv-chip" style={{ animationDelay: `${i * 0.25}s` }}>
+        <ellipse cx="268" cy={176 - i * 12} rx="26" ry="9" fill={i === 2 ? TEAL : CRIMSON} stroke={NAVY} strokeWidth="4" />
+      </g>
+    ))}
+    <g className="rdbv-chip" style={{ animationDelay: '0.4s' }}>
+      <ellipse cx="52" cy="176" rx="26" ry="9" fill={TEAL} stroke={NAVY} strokeWidth="4" />
+    </g>
+  </Svg>
+);
+
 const VIGNETTES: Partial<Record<GameId, React.FC>> = {
+  limite: Limite,
+  duvido: Duvido,
+  proibido: Proibido,
+  nota: Nota,
+  'tem-ou-nao-tem': TemOuNaoTem,
+  'perguntas-e-verdades': PerguntasEVerdades,
   'mega-resenha': MegaResenha,
   'como-eu-pinto': ComoEuPinto,
   estadios: Estadios,
@@ -246,14 +367,6 @@ export const SurpriseArt: React.FC = () => (
 );
 
 export const GameCardArt: React.FC<{ gameId: GameId }> = ({ gameId }) => {
-  if (CLASSIC.includes(gameId)) {
-    return (
-      <div className={`rdbv rdbv--classic rdbv--${gameId}`}>
-        <Burst />
-        <img className="rdbv-char" src={cazeArtSrc(gameId)} alt="" draggable={false} />
-      </div>
-    );
-  }
   const Vignette = VIGNETTES[gameId];
   if (!Vignette) return null;
   return (
