@@ -119,9 +119,6 @@ export const ScreenRespostasSemPerguntas: React.FC<ScreenRespostasProps> = ({
             <div className="font-mono-code text-[10px] text-cyan-300 uppercase font-bold">
               {rsp.step === 'pick' ? 'Escolha uma palavra para revelar' : 'Agora chute a resposta!'}
             </div>
-            <div data-testid="rsp-turn-name" className="font-anton text-3xl text-white uppercase">
-              {avatarOf(rsp.turnPlayerId)} {nameOf(rsp.turnPlayerId)}
-            </div>
             <div className="font-mono-code text-[11px] text-slate-400">
               {rsp.attempts.length > 0
                 ? `${rsp.attempts.length} tentativa(s) · ${rsp.attempts.filter((a) => !a.correct).length} erro(s)`

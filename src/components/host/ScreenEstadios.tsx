@@ -152,10 +152,6 @@ export const ScreenEstadios: React.FC<ScreenEstadiosProps> = ({ room, onUpdateEs
       {est.phase === 'PLAYING' && (
         <div className="flex-1 min-h-0 flex flex-col gap-2 border border-cyan-400/40 bg-[#07080d] p-3">
           <div className="text-center">
-            <div className="font-mono-code text-[10px] text-cyan-300 uppercase font-bold">Chute o estádio, na sua vez</div>
-            <div data-testid="est-turn-name" className="font-anton text-3xl text-white uppercase">
-              {avatarOf(est.turnPlayerId)} {nameOf(est.turnPlayerId)}
-            </div>
             <div className="font-mono-code text-[11px] text-slate-400">
               {est.attempts.length > 0 ? `${est.attempts.length} tentativa(s) errada(s)` : 'Primeira tentativa'}
             </div>

@@ -353,27 +353,6 @@ export const ScreenNota: React.FC<ScreenNotaProps> = ({
         />
       </div>
 
-      {/* Dynamic 1-line Action Guidance Banner ("O que eu faço agora?") */}
-      <div className="shrink-0 px-3 py-1 bg-black/60 border border-white/10 flex items-center justify-between text-xs font-mono-code">
-        <div className="flex items-start sm:items-center gap-2 sm:truncate">
-          <span className="w-2 h-2 rounded-full bg-[#17B8B8] animate-pulse shrink-0" />
-          <span className="text-slate-300">
-            {effectivePhase === 'STEP_1_DRAW' ? (
-              <>🎲 🎤 <strong className="text-white">NARRADOR ({speaker?.name}):</strong> Gire a roleta ou sorteie a nota secreta [{scaleMin}-{scaleMax}]</>
-            ) : effectivePhase === 'STEP_2_CLUE_1' ? (
-              <>🎤 <strong className="text-white">{isShow ? '1ª PERGUNTA (ESPORTE):' : '1ª PISTA:'}</strong> Narrador ({speaker?.name}) {isShow ? 'responde à pergunta de esporte (escolhida em consenso pelos outros) segundo a nota sorteada' : 'fala a dica inicial para a nota sorteada'}</>
-            ) : effectivePhase === 'STEP_3_CLUE_2' ? (
-              <>🎤 <strong className="text-white">{isShow ? '2ª PERGUNTA (ALEATÓRIA):' : '2ª PISTA:'}</strong> Narrador ({speaker?.name}) {isShow ? 'responde à pergunta tirada do aquário segundo a mesma nota' : 'fala a dica comparativa complementar'}</>
-            ) : revealSubState === 'SPINNING' || revealSubState === 'REVEALED_LOCKED' ? (
-              <>🎰 <strong className="text-white">REVELAÇÃO DO PIÃO:</strong> Acompanhe o sorteio no telão revelando a nota secreta</>
-            ) : (
-              <>🎯 <strong className="text-white">PONTUAÇÃO:</strong> Marque quem acertou a nota e confirme os pontos</>
-            )}
-          </span>
-        </div>
-        
-      </div>
-
       {/* INDIVIDUAL SCOREBOARD STRIP (Auto-Fit Grid for 2 to 8+ Players) */}
       <div
         data-testid="nota-individual-scoreboard"
