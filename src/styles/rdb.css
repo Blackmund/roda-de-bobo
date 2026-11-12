@@ -1,0 +1,721 @@
+/* =====================================================================================================
+   Identidade Roda de Bobo (CazeTV): navy, creme, teal e crimson, tudo chapado e de contorno reto.
+   Regua em .claude/skills/deslop/receitas.md. Tamanhos em clamp() com vw: a mesma tela serve de 1280x720
+   ate a TV Full HD/4K sem barra de rolagem e com texto legivel de longe.
+   ===================================================================================================== */
+:root {
+  --rdb-navy: #0a0b1e;
+  --rdb-navy-2: #10122b;
+  --rdb-cream: #f5f2eb;
+  --rdb-teal: #17b8b8;
+  --rdb-crimson: #e6194b;
+  --rdb-amber: #ffc93c;
+  --rdb-ink-2: #b9bdd4; /* texto secundario: 9,6:1 sobre o navy */
+  --rdb-line: 2px;
+  --rdb-heavy: 'Inter', 'Arial Black', system-ui, sans-serif;
+  --rdb-fs-bar: clamp(12px, 0.92vw, 19px);
+  --rdb-fs-card: clamp(15px, 1.5vw, 31px);
+  --rdb-fs-meta: clamp(12px, 0.9vw, 18px);
+  --rdb-bar-h: clamp(48px, 4.2vw, 84px);
+}
+
+/* ---------- Barra de janela (cabecalho) ---------- */
+.rdb-bar {
+  position: relative;
+  z-index: 30;
+  flex-shrink: 0;
+  height: var(--rdb-bar-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(8px, 0.8vw, 16px);
+  padding: 0 clamp(10px, 0.9vw, 20px);
+  background: var(--rdb-navy);
+  border-bottom: var(--rdb-line) solid var(--rdb-crimson);
+  user-select: none;
+}
+.rdb-bar-group {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 0.6vw, 12px);
+  min-width: 0;
+}
+.rdb-bar-logo {
+  flex-shrink: 0;
+  height: calc(var(--rdb-bar-h) * 0.46);
+  width: calc(var(--rdb-bar-h) * 0.46 * 4.64);
+}
+.rdb-bar-group:first-child {
+  flex: 1 1 0;
+  overflow: hidden;
+}
+.rdb-bar-title {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(15px, 1.25vw, 26px);
+  letter-spacing: 0.03em;
+  color: var(--rdb-cream);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rdb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  height: calc(var(--rdb-bar-h) * 0.66);
+  padding: 0 0.85em;
+  border: var(--rdb-line) solid var(--rdb-teal);
+  background: transparent;
+  color: var(--rdb-teal);
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: var(--rdb-fs-bar);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease-out, color 0.15s ease-out;
+}
+.rdb-btn svg {
+  width: 1.25em;
+  height: 1.25em;
+  flex-shrink: 0;
+  --rdb-accent: currentColor;
+}
+.rdb-btn:hover:not(:disabled),
+.rdb-btn[aria-pressed='true'],
+.rdb-btn[aria-expanded='true'] {
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-btn:focus-visible {
+  outline: 3px solid var(--rdb-cream);
+  outline-offset: 2px;
+}
+.rdb-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.rdb-btn--icon {
+  width: calc(var(--rdb-bar-h) * 0.66);
+  padding: 0;
+}
+.rdb-btn--cream {
+  border-color: var(--rdb-cream);
+  color: var(--rdb-cream);
+}
+.rdb-btn--cream:hover:not(:disabled),
+.rdb-btn--cream[aria-pressed='true'] {
+  background: var(--rdb-cream);
+  color: var(--rdb-navy);
+}
+.rdb-btn--crimson {
+  border-color: var(--rdb-crimson);
+  color: var(--rdb-cream);
+}
+.rdb-btn--crimson:hover:not(:disabled),
+.rdb-btn--crimson[aria-pressed='true'] {
+  background: var(--rdb-crimson);
+  color: #fff;
+}
+.rdb-btn--amber {
+  border-color: var(--rdb-amber);
+  color: var(--rdb-amber);
+}
+.rdb-btn--amber:hover:not(:disabled),
+.rdb-btn--amber[aria-expanded='true'] {
+  background: var(--rdb-amber);
+  color: var(--rdb-navy);
+}
+.rdb-btn--solid {
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-btn--solid:hover:not(:disabled) {
+  background: var(--rdb-cream);
+  border-color: var(--rdb-cream);
+}
+.rdb-live-dot {
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  background: var(--rdb-crimson);
+}
+/* Os 3 botoes de janela do programa: minimizar, restaurar e fechar (o ultimo cheio em crimson) */
+.rdb-winctl {
+  display: flex;
+  flex-shrink: 0;
+  border: var(--rdb-line) solid var(--rdb-crimson);
+  height: calc(var(--rdb-bar-h) * 0.66);
+}
+.rdb-winctl > * {
+  width: calc(var(--rdb-bar-h) * 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rdb-crimson);
+  border-left: var(--rdb-line) solid var(--rdb-crimson);
+}
+.rdb-winctl > *:first-child {
+  border-left: 0;
+}
+.rdb-winctl > .rdb-winctl-close {
+  background: var(--rdb-crimson);
+  color: var(--rdb-navy);
+}
+.rdb-winctl button.rdb-winctl-close:hover {
+  background: var(--rdb-cream);
+}
+.rdb-winctl svg {
+  width: 45%;
+  height: 45%;
+}
+@media (max-width: 640px) {
+  .rdb-hide-sm {
+    display: none !important;
+  }
+}
+@media (max-width: 1023px) {
+  .rdb-hide-md {
+    display: none !important;
+  }
+}
+@media (max-width: 1439px) {
+  .rdb-hide-lg {
+    display: none !important;
+  }
+}
+
+/* ---------- Catalogo ---------- */
+.rdb-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: clamp(8px, 0.8vw, 16px);
+  flex-shrink: 0;
+}
+/* Etiqueta cheia em teal, como o "DESAFIO" do programa */
+.rdb-tag {
+  display: inline-flex;
+  align-items: center;
+  height: calc(var(--rdb-bar-h) * 0.66);
+  padding: 0 0.7em;
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-size: clamp(15px, 1.25vw, 26px);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.rdb-toolbar-note {
+  font-family: var(--rdb-heavy);
+  font-weight: 600;
+  font-size: var(--rdb-fs-meta);
+  color: var(--rdb-ink-2);
+}
+.rdb-pager {
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, 0.4vw, 8px);
+}
+.rdb-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: clamp(10px, 1vw, 22px);
+  flex: 1 1 0;
+  min-height: 0;
+}
+/* Pagina com ate 3 cards: uma fileira so, na altura toda (nada de meia tela vazia) */
+.rdb-grid--row {
+  grid-template-rows: minmax(0, 1fr);
+}
+@media (max-width: 899px) {
+  .rdb-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: none;
+    grid-auto-rows: minmax(190px, 1fr);
+    overflow-y: auto;
+  }
+}
+@media (max-width: 519px) {
+  .rdb-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.rdb-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+  text-align: left;
+  background: var(--rdb-navy);
+  border: var(--rdb-line) solid var(--rdb-teal);
+  color: var(--rdb-teal);
+  overflow: hidden;
+  transition: border-color 0.15s ease-out;
+}
+.rdb-card:hover,
+.rdb-card:focus-visible {
+  border-color: var(--rdb-cream);
+  outline: none;
+}
+.rdb-card:focus-visible {
+  outline: 3px solid var(--rdb-cream);
+  outline-offset: 2px;
+}
+.rdb-card-art {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.rdb-card-mode {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  padding: 0.3em 0.7em;
+  background: var(--rdb-crimson);
+  color: #fff;
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: var(--rdb-fs-meta);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.rdb-card-foot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6em;
+  padding: 0.5em 0.8em;
+  border-top: var(--rdb-line) solid var(--rdb-teal);
+  transition: background-color 0.15s ease-out, color 0.15s ease-out, border-color 0.15s ease-out;
+}
+.rdb-card:hover .rdb-card-foot,
+.rdb-card:focus-visible .rdb-card-foot {
+  background: var(--rdb-teal);
+  border-color: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-card-name {
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-size: var(--rdb-fs-card);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rdb-card-tagline {
+  margin-top: 0.2em;
+  font-family: var(--rdb-heavy);
+  font-weight: 600;
+  font-size: var(--rdb-fs-meta);
+  line-height: 1.2;
+  color: var(--rdb-ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rdb-card:hover .rdb-card-tagline,
+.rdb-card:focus-visible .rdb-card-tagline {
+  color: var(--rdb-navy);
+}
+.rdb-card-players {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: var(--rdb-fs-meta);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.rdb-card-players svg {
+  width: 1.3em;
+  height: 1.3em;
+  --rdb-accent: currentColor;
+}
+.rdb-card--surprise {
+  border-style: dashed;
+  border-color: var(--rdb-cream);
+  color: var(--rdb-cream);
+}
+.rdb-card--surprise .rdb-card-foot {
+  border-top-style: dashed;
+  border-color: var(--rdb-cream);
+}
+
+/* ---------- Arte dos cards ---------- */
+.rdbv {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+.rdbv--vignette {
+  align-items: center;
+  padding: 4% 6%;
+}
+.rdbv-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.rdbv-char {
+  position: relative;
+  height: auto;
+  width: auto;
+  max-height: 94%;
+  max-width: 78%;
+  object-fit: contain;
+  object-position: bottom;
+  transform-origin: 50% 100%;
+  animation: rdbv-breathe 4.2s ease-in-out infinite;
+}
+.rdbv-burst {
+  position: absolute;
+  left: 50%;
+  bottom: -18%;
+  height: 150%;
+  aspect-ratio: 1;
+  transform: translateX(-50%) scale(0.6);
+  opacity: 0;
+  transition: opacity 0.2s ease-out, transform 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.rdbv-burst path {
+  opacity: 0.22;
+}
+.rdb-card:hover .rdbv-burst,
+.rdb-card:focus-visible .rdbv-burst {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+  animation: rdbv-spin 40s linear infinite;
+}
+.rdb-card:hover .rdbv-char,
+.rdb-card:focus-visible .rdbv-char {
+  animation: rdbv-hop 0.9s cubic-bezier(0.3, 1.5, 0.5, 1) infinite;
+}
+@keyframes rdbv-breathe {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(0) scaleY(1.018); }
+}
+@keyframes rdbv-hop {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1, 1); }
+  18% { transform: translateY(0) rotate(0deg) scale(1.03, 0.96); }
+  48% { transform: translateY(-5%) rotate(-2deg) scale(0.99, 1.03); }
+  78% { transform: translateY(0) rotate(1deg) scale(1.02, 0.98); }
+}
+@keyframes rdbv-spin {
+  to { rotate: 360deg; }
+}
+
+/* Mega Resenha: os pontos da senha acendem em sequencia */
+.rdbv-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rdbv-dot 2.2s ease-in-out infinite;
+}
+@keyframes rdbv-dot {
+  0%, 60%, 100% { transform: scale(1); opacity: 0.55; }
+  20% { transform: scale(1.45); opacity: 1; }
+}
+/* Como eu pinto: a bicicleta e desenhada traco a traco; a barra de tempo esvazia */
+.rdbv-draw > * {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: rdbv-draw 7s ease-in-out infinite;
+}
+.rdbv-draw > *:nth-child(2) { animation-delay: 0.5s; }
+.rdbv-draw > *:nth-child(3) { animation-delay: 1s; }
+.rdbv-draw > *:nth-child(4) { animation-delay: 1.5s; }
+.rdbv-draw > *:nth-child(5) { animation-delay: 2s; }
+@keyframes rdbv-draw {
+  0% { stroke-dashoffset: 1; }
+  22%, 86% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 1; }
+}
+.rdbv-bar {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: rdbv-bar 7s linear infinite;
+}
+@keyframes rdbv-bar {
+  0% { transform: scaleX(1); }
+  90%, 100% { transform: scaleX(0); }
+}
+/* Estadios e Onde estou: o alfinete cai e quica; a sombra acompanha */
+.rdbv-pin {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: rdbv-pin 2.8s cubic-bezier(0.3, 0, 0.3, 1) infinite;
+}
+@keyframes rdbv-pin {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  12% { transform: translateY(0) scale(1.08, 0.9); }
+  42% { transform: translateY(-26%) scale(0.96, 1.05); }
+  70% { transform: translateY(0) scale(1.06, 0.92); }
+  82% { transform: translateY(-6%) scale(1, 1); }
+}
+.rdbv-pin-shadow {
+  opacity: 0.35;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rdbv-pin-shadow 2.8s cubic-bezier(0.3, 0, 0.3, 1) infinite;
+}
+@keyframes rdbv-pin-shadow {
+  0%, 100%, 70% { transform: scale(1); opacity: 0.4; }
+  42% { transform: scale(0.55); opacity: 0.15; }
+}
+.rdbv-route {
+  animation: rdbv-route 1.6s linear infinite;
+}
+@keyframes rdbv-route {
+  to { stroke-dashoffset: -18; }
+}
+/* Quem sou eu: os olhos procuram a plaquinha na testa */
+.rdbv-eyes {
+  animation: rdbv-eyes 4.5s ease-in-out infinite;
+}
+@keyframes rdbv-eyes {
+  0%, 12%, 100% { transform: translate(0, 0); }
+  22%, 40% { transform: translate(-6px, -5px); }
+  52%, 70% { transform: translate(6px, -5px); }
+  82% { transform: translate(0, 4px); }
+}
+.rdbv-card {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: rdbv-wobble 4.5s ease-in-out infinite;
+}
+@keyframes rdbv-wobble {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+/* Mimica: o ziper fecha a boca do balao */
+.rdbv-zip {
+  animation: rdbv-zip 3.6s ease-in-out infinite;
+}
+.rdbv-zip-line {
+  stroke-dasharray: 1;
+  animation: rdbv-zip-line 3.6s ease-in-out infinite;
+}
+@keyframes rdbv-zip {
+  0%, 8% { transform: translateX(0); }
+  45%, 80% { transform: translateX(178px); }
+  100% { transform: translateX(0); }
+}
+@keyframes rdbv-zip-line {
+  0%, 8% { stroke-dashoffset: 1; }
+  45%, 80% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 1; }
+}
+.rdbv-shh {
+  animation: rdbv-blink 3.6s steps(1) infinite;
+}
+@keyframes rdbv-blink {
+  0%, 44% { opacity: 0; }
+  45%, 80% { opacity: 1; }
+  81%, 100% { opacity: 0; }
+}
+/* Repetente: as duas placas trocam de palavra ao mesmo tempo */
+.rdbv-word-a { animation: rdbv-word-a 4s steps(1) infinite; }
+.rdbv-word-b { animation: rdbv-word-b 4s steps(1) infinite; }
+@keyframes rdbv-word-a {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes rdbv-word-b {
+  0%, 49% { opacity: 0; }
+  50%, 100% { opacity: 1; }
+}
+.rdbv-equal {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rdbv-pop 4s ease-out infinite;
+}
+@keyframes rdbv-pop {
+  0%, 50% { transform: scale(0); }
+  8%, 58% { transform: scale(1.25); }
+  14%, 44%, 64%, 94% { transform: scale(1); }
+  49%, 99% { transform: scale(0); }
+}
+/* Respostas sem perguntas: as casas viram uma a uma */
+.rdbv-tile {
+  animation: rdbv-flip 5s ease-in-out infinite;
+}
+@keyframes rdbv-flip {
+  0%, 16%, 100% { transform: scaleX(1); }
+  8% { transform: scaleX(0.05); }
+}
+/* Sortear: o dado rola */
+.rdbv-dice {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rdbv-dice 3.2s cubic-bezier(0.4, 0, 0.3, 1) infinite;
+}
+@keyframes rdbv-dice {
+  0%, 55%, 100% { transform: rotate(-8deg); }
+  75% { transform: rotate(352deg) scale(1.06); }
+  76%, 99% { transform: rotate(-8deg); }
+}
+.rdbv-q1, .rdbv-q2 {
+  animation: rdbv-float 3.2s ease-in-out infinite;
+}
+.rdbv-q2 { animation-delay: 1.6s; }
+@keyframes rdbv-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Em repouso o movimento e calmo; so o card em foco anima em velocidade cheia. */
+.rdb-card:not(:hover):not(:focus-visible) .rdbv--vignette * {
+  animation-duration: 9s;
+}
+.rdb-card:not(:hover):not(:focus-visible) .rdbv-route {
+  animation-duration: 3.5s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rdbv *, .rdbv-char, .rdbv-burst {
+    animation: none !important;
+    transition: none !important;
+  }
+  .rdbv-draw > *, .rdbv-zip-line {
+    stroke-dashoffset: 0;
+  }
+  .rdbv-word-b {
+    opacity: 0;
+  }
+}
+
+/* =====================================================================================================
+   Modo TV: a interface inteira escala com a largura da tela. Em 1280x720 fica como foi desenhada; em Full HD
+   tudo cresce 1,5x e em 4K 3x, mantendo a mesma composicao (sem barra de rolagem e legivel do sofa).
+   O Tailwind usa rem, entao basta escalar a fonte raiz; os tamanhos fixos em px sao convertidos abaixo.
+   ===================================================================================================== */
+@media (min-width: 1280px) and (min-aspect-ratio: 3/2) {
+  html.rb-tv {
+    font-size: clamp(16px, 1.25vw, 48px);
+  }
+}
+.retro-window-container [class*='text-[8px]'],
+.retro-window-container [class*='text-[9px]'] {
+  font-size: 0.66rem;
+}
+.retro-window-container [class*='text-[10px]'] {
+  font-size: 0.7rem;
+}
+.retro-window-container [class*='text-[11px]'] {
+  font-size: 0.75rem;
+}
+
+/* ---------- Configuracao do jogo: duas colunas em tela larga, para caber em 16:9 sem rolar ---------- */
+.rdb-wide {
+  max-width: min(97vw, 112rem);
+}
+@media (min-width: 1100px) {
+  .rdb-setup-cols {
+    column-count: 2;
+    column-gap: 0.75rem;
+  }
+  .rdb-setup-cols > * {
+    break-inside: avoid;
+    margin-top: 0 !important;
+    margin-bottom: 0.6rem;
+  }
+}
+/* Um contorno so para todas as secoes (antes cada uma tinha uma cor) e nada de sombra */
+[data-testid='step2-configure-game'] section,
+[data-testid='step2-configure-game'] section > div[class*='border'] {
+  border-color: rgba(245, 242, 235, 0.2) !important;
+  box-shadow: none !important;
+}
+[data-testid='step2-configure-game'] h4 {
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+@media (min-width: 1100px) {
+  /* Dificuldade, tempo e rodadas: uma linha cada (nas 3 colunas apertadas os titulos quebravam) */
+  .rdb-setup-cols > section.grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .rdb-setup-cols > section.grid .grid-cols-2 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  /* Categorias em 4 por linha: os nomes cabem inteiros */
+  .rdb-setup-cols [class*='md:grid-cols-8'] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* =====================================================================================================
+   Telas de jogo na identidade do programa: tudo chapado. Sem brilho em volta, sem degrade e sem ponto
+   pulsando em loop (o estado ja aparece na cor e no texto).
+   ===================================================================================================== */
+.theme-original .retro-window-container [class*='shadow-[0_0'] {
+  box-shadow: none !important;
+}
+.theme-original .retro-window-container [class*='bg-gradient-to'] {
+  background-image: none !important;
+  background-color: var(--rdb-navy-2);
+}
+.theme-original .retro-window-container .animate-ping {
+  display: none;
+}
+/* Faixa "jogador da vez": o nome e a noticia, entao e o maior texto da faixa */
+[data-testid='active-turn-spotlight-banner'] {
+  background: var(--rdb-navy-2) !important;
+  box-shadow: none !important;
+}
+[data-testid='active-turn-player-name'] {
+  font-size: 1.75rem;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Tutorial: ilustracao grande, contorno do programa e movimento leve ---------- */
+[data-testid^='tutorial-step-card'] {
+  border: var(--rdb-line) solid var(--rdb-teal) !important;
+  background: var(--rdb-navy) !important;
+  box-shadow: none !important;
+}
+.rdb-tut-art svg {
+  max-height: 100% !important;
+  height: 100%;
+  width: 100%;
+  animation: rdbv-float 3.6s ease-in-out infinite;
+}
+[data-testid='tutorial-step-card-2'] .rdb-tut-art svg {
+  animation-delay: 1.2s;
+}
+[data-testid='tutorial-step-card-3'] .rdb-tut-art svg {
+  animation-delay: 2.4s;
+}
+[data-testid^='tutorial-step-card'] h3 {
+  font-size: 1.2rem;
+}
+[data-testid^='tutorial-step-card'] p {
+  font-size: 0.875rem;
+  line-height: 1.35;
+  color: var(--rdb-ink-2);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rdb-tut-art svg {
+    animation: none;
+  }
+}

@@ -154,7 +154,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
       data-testid="step2-configure-game"
       className="flex-1 min-h-0 flex flex-col justify-between gap-1.5 sm:gap-2 overflow-y-auto scrollbar-none p-1.5 sm:p-2 text-[#F5F2EB] select-none"
     >
-      <div className="space-y-1.5 sm:space-y-2 flex-1 min-h-0 overflow-y-auto scrollbar-none pr-0.5">
+      <div className="rdb-setup-cols space-y-1.5 sm:space-y-2 flex-1 min-h-0 overflow-y-auto scrollbar-none pr-0.5">
 
                 {/* MODO DE REGRAS: casa x programa (so para jogos que existem no programa) */}
         {!usesLocalContent(activeGame) && activeGame !== 'perguntas-e-verdades' && (

@@ -34,7 +34,7 @@ export const Step5GameTutorial: React.FC<Step5GameTutorialProps> = React.memo(({
   return (
     <div
       data-testid="step5-game-tutorial"
-      className="max-w-6xl mx-auto w-full relative h-full flex flex-col justify-between min-h-0 overflow-hidden select-none py-1 px-1 sm:px-2 gap-2"
+      className="rdb-wide mx-auto w-full relative h-full flex flex-col justify-between min-h-0 overflow-hidden select-none py-1 px-1 sm:px-2 gap-2"
     >
       {/* 1. CABEÇALHO SUPERIOR COMPACTO (SEM SCROLL, SEM BARRA DE PROGRESSO) */}
       <header className="bg-[#090b14] border border-white/10 px-3 sm:px-4 py-2 flex items-center justify-between gap-2 shrink-0">
@@ -94,12 +94,12 @@ export const Step5GameTutorial: React.FC<Step5GameTutorialProps> = React.memo(({
               </div>
 
               {/* Ilustração Vetorial Cartoon Vintage Estilo CazéTV / Roda de Bobô (Totalmente desobstruída) */}
-              <div className="h-28 sm:h-32 md:h-36 rounded-lg bg-[#060810] border border-white/5 flex items-center justify-center relative overflow-hidden p-1.5 shrink-0">
+              <div className="rdb-tut-art flex-[3] min-h-24 bg-[#060810] border border-white/5 flex items-center justify-center relative overflow-hidden p-1.5">
                 <TutorialStepIllustration gameId={gameId} stepNumber={card.stepNumber} />
               </div>
 
               {/* Textos explicativos diretos e sem enrolação */}
-              <div className="space-y-1 pt-1.5 flex-1 flex flex-col justify-start min-h-0">
+              <div className="space-y-1 pt-1.5 flex-[2] flex flex-col justify-start min-h-0">
                 <h3 className="font-anton text-sm sm:text-base text-white uppercase tracking-wide leading-tight">
                   {card.headline}
                 </h3>

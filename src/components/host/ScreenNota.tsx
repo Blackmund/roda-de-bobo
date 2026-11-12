@@ -370,9 +370,7 @@ export const ScreenNota: React.FC<ScreenNotaProps> = ({
             )}
           </span>
         </div>
-        <span className="text-[10px] text-slate-500 uppercase tracking-widest hidden sm:inline">
-          {themeBadge(room.visualTheme)}
-        </span>
+        
       </div>
 
       {/* INDIVIDUAL SCOREBOARD STRIP (Auto-Fit Grid for 2 to 8+ Players) */}

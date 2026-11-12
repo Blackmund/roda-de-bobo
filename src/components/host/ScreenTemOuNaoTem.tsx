@@ -400,9 +400,7 @@ export const ScreenTemOuNaoTem: React.FC<ScreenTemOuNaoTemProps> = ({
             )}
           </span>
         </div>
-        <span className="text-[10px] text-slate-500 uppercase tracking-widest hidden sm:inline">
-          {themeBadge(room.visualTheme)}
-        </span>
+        
       </div>
 
       {/* Main Arena Content: Responsive Stacked (< xl) vs Arena Widescreen (xl:grid xl:grid-cols-12) */}

@@ -99,9 +99,7 @@ export const PVDeckSetupView: React.FC<PVDeckSetupViewProps> = ({
                 🃏 🎤 <strong className="text-white">MONTAGEM DO BARALHO:</strong> Organize as 8 cartas de {currentSetupPlayer.name} em ordem crescente por naipe
               </span>
             </div>
-            <span className="text-[10px] text-slate-500 uppercase tracking-widest hidden sm:inline">
-              {themeBadge(room.visualTheme)}
-            </span>
+            
           </div>
 
           {/* Rule Error Banner */}

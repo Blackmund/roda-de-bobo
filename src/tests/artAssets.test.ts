@@ -33,7 +33,7 @@ test('ART-01: os mestres (PNG/JPG) ficam fora de public/ e a pasta publicada so 
   assert.ok(readdirSync(dir).every((f) => /\.(webp|svg)$/.test(f)), 'public/assets/cazetv so deve ter WebP e SVG');
 });
 
-test('ART-04: o kit de icones tem os 17 icones com nome unico', () => {
-  assert.equal(Object.keys(RDB_ICONS).length, 17);
+test('ART-04: o kit de icones tem os 22 icones com nome unico', () => {
+  assert.equal(Object.keys(RDB_ICONS).length, 22);
   for (const [name, Icon] of Object.entries(RDB_ICONS)) assert.equal(typeof Icon, 'function', name);
 });

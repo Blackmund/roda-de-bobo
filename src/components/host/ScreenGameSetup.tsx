@@ -501,7 +501,7 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
   ]);
 
   return (
-    <div className="max-w-6xl mx-auto w-full relative h-full flex flex-col justify-between min-h-0 gap-1.5 overflow-hidden py-0">
+    <div className="rdb-wide mx-auto w-full relative h-full flex flex-col justify-between min-h-0 gap-1.5 overflow-hidden py-0">
       {/* SUB-HEADER COMPACTO DO JOGO COM BADGES DE STATUS */}
       <div className="py-1.5 px-3 flex flex-wrap items-center justify-between border-b border-rose-500/40 gap-2 shrink-0 bg-[#07080d]">
         <div className="flex items-center gap-2 flex-wrap">

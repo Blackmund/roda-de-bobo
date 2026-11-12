@@ -194,9 +194,7 @@ export const PVPlayingView: React.FC<PVPlayingViewProps> = ({
             )}
           </span>
         </div>
-        <span className="text-[10px] text-slate-500 uppercase tracking-widest hidden sm:inline">
-          {themeBadge(room.visualTheme)}
-        </span>
+        
       </div>
 
       {/* Mode Switcher Tabs */}

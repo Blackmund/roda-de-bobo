@@ -185,9 +185,17 @@ export default function App() {
     return () => document.documentElement.classList.remove('rb-tv');
   }, [isTvMode, viewMode]);
   const [visualTheme, setVisualTheme] = useState<VisualTheme>(() => {
+    // A identidade do programa (tema 'original') e o padrao. Quem tinha um tema salvo de antes do redesenho
+    // passa uma vez para o novo padrao; depois disso a escolha feita no menu e respeitada.
+    const IDENTITY_KEY = 'rb_identity_v2';
+    if (!localStorage.getItem(IDENTITY_KEY)) {
+      localStorage.setItem(IDENTITY_KEY, '1');
+      localStorage.setItem('rb_visual_theme', 'original');
+      return 'original';
+    }
     const saved = localStorage.getItem('rb_visual_theme') || localStorage.getItem('roda-de-bobo-visual-theme');
     if (isVisualTheme(saved)) return saved as VisualTheme;
-    return 'cazetv';
+    return 'original';
   });
 
   const handleSetVisualTheme = (theme: VisualTheme) => {
