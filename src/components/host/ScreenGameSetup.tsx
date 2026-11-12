@@ -46,7 +46,8 @@ import {
   Smartphone
 } from 'lucide-react';
 import { SetupPlayersStageView } from './setup/SetupPlayersStageView';
-import { SetupTeamsStageView } from './setup/SetupTeamsStageView';
+import { SetupTeamsStageView } from './setup/SetupTeamsStageView';
+import { getRulesetPreset } from '../../config/rulesets';
 
 export interface SetupLaunchConfig {
   theme: string;
@@ -180,7 +181,9 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
     if (room.activeGame === 'perguntas-e-verdades') {
       return room.maxRounds && [1, 3, 5, 7, 9].includes(room.maxRounds) ? room.maxRounds : 3;
     }
-    return room.maxRounds && [3, 5, 7, 10].includes(room.maxRounds) ? room.maxRounds : 5;
+    // aceita tambem o numero de rodadas do preset do programa (ex.: 9 no Duvido)
+    const showRounds = getRulesetPreset(room.activeGame, 'show')?.rounds;
+    return room.maxRounds && ([3, 5, 7, 10].includes(room.maxRounds) || room.maxRounds === showRounds) ? room.maxRounds : 5;
   });
   const [customConfig, setCustomConfig] = useState<GameCustomConfig>({
     ...DEFAULT_GAME_CUSTOM_CONFIG,

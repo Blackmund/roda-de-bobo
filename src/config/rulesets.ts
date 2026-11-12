@@ -4,8 +4,8 @@ import { DEFAULT_GAME_CUSTOM_CONFIG } from '../types/game';
 /**
  * UX-09 / REG-01..03: conjuntos de regras por sala.
  *
- * - `home` (padrão): regras da casa, mais flexíveis (comportamento atual do site).
- * - `show`: regras fiéis ao programa Roda de Bobo (CazéTV), conforme `analise/01_relatorio_jogos.md`.
+ * - `show` (PADRÃO): regras fiéis ao programa Roda de Bobo (CazéTV), conforme `analise/01_relatorio_jogos.md`.
+ * - `home`: regras da casa, mais flexíveis (o comportamento antigo do site); o host escolhe no setup.
  *
  * O ruleset fica em `customConfig.ruleset`; cada jogo lê dali. Alternar no setup aplica o "preset"
  * (rodadas, tempo e parâmetros), que o host ainda pode ajustar depois.
@@ -157,7 +157,8 @@ export function hasShowRuleset(gameId: GameId | null | undefined): boolean {
 }
 
 export function resolveRuleset(config?: Partial<GameCustomConfig> | null): GameRuleset {
-  return config?.ruleset === 'show' ? 'show' : 'home';
+  // O modo do programa (estilo CazéTV) é o padrão; só vira "casa" se o host escolher.
+  return config?.ruleset === 'home' ? 'home' : 'show';
 }
 
 export function isShowRuleset(config?: Partial<GameCustomConfig> | null): boolean {

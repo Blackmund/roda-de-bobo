@@ -502,8 +502,10 @@ export interface PerguntasEVerdadesGameState {
 }
 
 export interface GameCustomConfig {
-  // Conjunto de regras da sala: 'home' (casa, padrão) ou 'show' (fiel ao programa)
+  // Conjunto de regras da sala: 'show' (fiel ao programa, estilo CazéTV: PADRÃO) ou 'home' (casa)
   ruleset?: 'home' | 'show';
+  // DAD-05: origem do conteudo das perguntas: 'auto' (mistura banco + IA, padrao), 'bank' (so banco pronto) ou 'ai' (so IA)
+  contentSource?: 'auto' | 'bank' | 'ai';
   // Tem ou Não Tem
   temItemsCount: number; // default 5 (range 3..10)
   temMaxStrikes: number; // default 2 (range 1..4)
@@ -540,7 +542,8 @@ export interface GameCustomConfig {
 }
 
 export const DEFAULT_GAME_CUSTOM_CONFIG: GameCustomConfig = {
-  ruleset: 'home',
+  ruleset: 'show',
+  contentSource: 'auto',
   temItemsCount: 5,
   temMaxStrikes: 2,
   proibidoCardsCount: 5,
@@ -660,6 +663,8 @@ export interface GameRoom {
   usedRoundSignatures?: string[];
   /** DAD-05: de onde veio o conteudo da rodada atual (IA do Gemini ou banco pronto). */
   roundSource?: 'ai' | 'curated';
+  /** UX-04: ultimo tema usado em cada jogo; ao voltar a um jogo o tema dele volta (e nao o do jogo anterior). */
+  themeByGame?: Partial<Record<GameId, string>>;
   players: Player[];
   teams: {
     A: Team;

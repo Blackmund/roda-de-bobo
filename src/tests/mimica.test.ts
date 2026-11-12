@@ -32,7 +32,9 @@ const playing = (words = ['a', 'b', 'c'], value = 1): MimicaGameState => ({
 test('NOV-01: valor da rodada cresce de 1 a 3 no programa e fica em 1 na casa', () => {
   const show = { ...DEFAULT_GAME_CUSTOM_CONFIG, ruleset: 'show' as const };
   assert.deepEqual([1, 2, 3, 4, 9].map((r) => mimicaRoundValue(r, show)), [1, 2, 3, 3, 3]);
-  assert.deepEqual([1, 2, 3].map((r) => mimicaRoundValue(r, DEFAULT_GAME_CUSTOM_CONFIG)), [1, 1, 1]);
+  const home = { ...DEFAULT_GAME_CUSTOM_CONFIG, ruleset: 'home' as const };
+  assert.deepEqual([1, 2, 3].map((r) => mimicaRoundValue(r, home)), [1, 1, 1]);
+  assert.deepEqual([1, 2, 3].map((r) => mimicaRoundValue(r, DEFAULT_GAME_CUSTOM_CONFIG)), [1, 2, 3], 'o padrao e o modo do programa');
 });
 
 test('NOV-01: acertar soma o valor da rodada e a rodada fecha quando todas foram acertadas', () => {

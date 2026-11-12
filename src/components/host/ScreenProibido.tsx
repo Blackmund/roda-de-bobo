@@ -6,6 +6,7 @@ import { RodaDeBoboOfficialBadge } from '../RodaIcons';
 import { getActiveTeamIds, getNextTeamId } from '../../utils/teamUtils';
 import { ensureStrictForbiddenWordsCount } from '../../utils/proibidoGoldenDatabase';
 import confetti from 'canvas-confetti';
+import { RadicalCheck } from './proibido/RadicalCheck';
 import {
   Clock,
   AlertTriangle,
@@ -906,6 +907,7 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
 
             {/* Destructive Control: Visually isolated on the right with crimson theme */}
             <div className="pl-3 border-l border-white/15 flex items-center gap-2">
+              {currentCard && <RadicalCheck cardWords={[currentCard.palavra_alvo, ...currentCard.palavras_proibidas]} />}
               {proibido.lastFoulIndex !== undefined && proibido.cardOutcomes[proibido.lastFoulIndex] === 'foul' && (
                 <button
                   type="button"

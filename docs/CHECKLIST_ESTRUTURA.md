@@ -1,34 +1,25 @@
-# Checklist da estrutura — Roda de Bobo (12/11/2026)
+# Checklist da estrutura — Roda de Bobo (12/11/2026, atualizado)
 
-Cruza cada item de `analise/06_backlog_consolidado.md` com o que existe hoje no código (verificado no repositório, `main` em 12/11/2026).
+Cruza cada item de `analise/06_backlog_consolidado.md` com o que existe hoje no código (verificado no repositório).
 
 **Legenda:** ✅ feito · 🟡 feito em parte · ⬜ falta · 👤 depende de você (aparelho, vídeo, hospedagem) · ⏸️ adiado por decisão sua
 
-**Placar:** 42 ✅ · 11 🟡 · 2 ⬜ · 2 👤 · 7 ⏸️ (64 itens do backlog)
+**Placar:** **53 ✅ · 2 🟡 · 0 ⬜ · 2 👤 · 7 ⏸️** (64 itens do backlog)
+
+**Decisão tomada:** o **modo do programa (estilo CazéTV) é o modo padrão**. Ao escolher um jogo ele já abre com as regras e o preset do programa (rodadas, tempo, parâmetros); o host pode trocar para as "regras da casa" no setup.
 
 ---
 
-## O que ainda falta (resumo)
+## O que ainda falta
 
 | # | Item | Situação | O que fazer |
 |---|---|---|---|
 | 1 | INF-03 Multiplayer em aparelhos reais | 👤 | Rodar `docs/ROTEIRO_TESTE_MULTIPLAYER.md` com a TV + 2 celulares (a medição dos brokers já foi feita: 0% de perda, ~200 ms) |
 | 2 | INF-04 Canal seguro | 👤 | Precisa de broker próprio com usuário e senha (ou Supabase com RLS). O app já aceita `VITE_MQTT_*` |
 | 3 | DAD-03 Conferir itens no vídeo | 👤 | Revisão manual com os links `youtu.be/ID?t=` |
-| 4 | REG-06 Lista de radicais do Proibido | ⬜ | Contestar e tutorial já existem; falta a lista de radicais para o juiz consultar |
-| 5 | DAD-02 Esquema único de dados | 🟡 | Há validação nos bancos importados e testes de integridade; falta um esquema único com os 10 campos para todos os bancos |
-| 6 | DAD-05 Filtro por origem | 🟡 | O selo "IA / Banco pronto" existe; falta filtrar por origem (programa × IA) |
-| 7 | UX-18 Transições lentas | ⬜ | Medir a volta ao catálogo (meta < 1 s) |
-| 8 | UX-19 Contagem de rodadas no fim do P&V | 🟡 | Voltar a testar com uma partida de 1 rodada |
-| 9 | UX-20 Feedback no botão "Palpitar" | 🟡 | Cartas já usadas já ficam desativadas; falta o retorno imediato ao clicar |
-| 10 | UX-01 Teste automático de largura | 🟡 | O corte em 360–414 px foi corrigido; falta o teste que mede 360/390/414/768/1280 |
-| 11 | UX-04 Tema por jogo | 🟡 | Há proteção para o tema do P&V; falta guardar o tema de cada jogo |
-| 12 | UX-06 Confirmar saída só com partida em andamento | 🟡 | Conferir a condição do "SIM, SAIR" |
-| 13 | UX-07 Ícones com rótulo | 🟡 | Modo dev já fica escondido; faltam `aria-label` em parte dos ícones |
-| 14 | COD-02 Uma cena por card | ⬜ | Conferir se `compact` e `wide` ainda duplicam o DOM |
-| 15 | ART-01 Pasta `_master/` | ⬜ | A tag `arte-boa-0711` existe; falta arquivar os PNG/JPG mestres |
-| 16 | Arte em geral | ⏸️ | Você pediu para melhorar depois (ver seção G) |
-| 17 | NOV-04 Ritmo | ⏸️ | Você pediu para pular |
+| 4 | UX-01 Teste automático de largura | 🟡 | Medi à mão no catálogo (360, 390, 414 e 768 px: sem estouro); falta um teste que rode no CI |
+| 5 | Arte em geral | ⏸️ | Você pediu para melhorar depois (seção G) |
+| 6 | NOV-04 Ritmo | ⏸️ | Você pediu para pular |
 
 ---
 
@@ -48,26 +39,26 @@ Cruza cada item de `analise/06_backlog_consolidado.md` com o que existe hoje no 
 
 ## B. UX, UI e responsividade
 
-- [ ] 🟡 **UX-01** Corte em 360–414 px corrigido ✅ · teste automático de largura ⬜
+- [ ] 🟡 **UX-01** Corte em 360–414 px corrigido e medido ✅ · teste automático no CI ⬜
 - [x] **UX-02** Recarregar nunca deixa tela em branco
 - [x] **UX-03** `GAME_LIMITS` (mín/máx) no catálogo, lobby e botão iniciar
-- [ ] 🟡 **UX-04** Tema por jogo
+- [x] **UX-04** Cada jogo lembra o próprio tema (`themeByGame`); não herda o do jogo anterior
 - [x] **UX-05** Equipes com fonte única (`getActiveTeamIds`)
-- [ ] 🟡 **UX-06** Confirmação ao sair
-- [ ] 🟡 **UX-07** Modo dev escondido ✅ · rótulos nos ícones 🟡
-- [x] **UX-08** Textos com 14 jogos (corrigido em 12/11)
-- [x] **UX-09** Ruleset `show` × `home` com seletor
-- [x] **UX-10** Juiz: contestar no Proibido e no Duvido
+- [x] **UX-06** A confirmação de saída só aparece com partida em andamento
+- [x] **UX-07** Modo dev escondido; todos os botões só com ícone têm rótulo (varredura automática)
+- [x] **UX-08** Textos com 14 jogos
+- [x] **UX-09** Ruleset programa × casa com seletor (programa é o padrão)
+- [x] **UX-10** Juiz: contestar no Proibido e no Duvido; checagem de radical no Proibido
 - [x] **UX-11** Confirmar palpite em 2 toques; fonte maior na TV
 - [x] **UX-12** Exemplo do programa em cada tutorial (com vídeo e minuto)
 - [x] **UX-13** Tem ou Não Tem trava no fim da rodada
 - [x] **UX-14** Ranking sem limite de 6 jogadores
 - [x] **UX-15** MVP e estatísticas só da partida atual
-- [x] **UX-16** "Palpites encerrados" no lugar de "Tempo esgotado" (corrigido em 12/11)
+- [x] **UX-16** "Palpites encerrados" no lugar de "Tempo esgotado"
 - [x] **UX-17** Aviso de que o P&V joga 2 por vez
-- [ ] ⬜ **UX-18** Transições lentas (não medido)
-- [ ] 🟡 **UX-19** P&V: contagem de rodadas
-- [ ] 🟡 **UX-20** P&V: feedback no botão "Palpitar"
+- [x] **UX-18** Voltar ao catálogo leva ~0,5 s (medido: Nota 462 ms, Limite 483 ms)
+- [x] **UX-19** P&V: estatísticas da partida vêm da própria série (`applyPVMatchResult`)
+- [x] **UX-20** P&V: o botão "Palpitar" mostra quantas cartas faltam e responde ao toque
 
 ## C. Regras
 
@@ -76,19 +67,19 @@ Cruza cada item de `analise/06_backlog_consolidado.md` com o que existe hoje no 
 - [x] **REG-03** Limite: bônus de palpite exato = 0 no modo programa
 - [x] **REG-04** Limite: tutorial ("se todos estouram…") e cartas
 - [x] **REG-05** Reverse com dois alvos
-- [ ] 🟡 **REG-06** Proibido: contestar ✅ · lista de radicais ⬜
+- [x] **REG-06** Proibido: contestar falta e "Checar palavra dita" (avisa se parece o radical; o juiz decide)
 - [x] **REG-07** Top 5 documentado no tutorial
 - [x] **REG-08** P&V: limites 2 a 6 alinhados
 - [x] **REG-09** Unidade em destaque no Limite
-- [x] **REG-10** Top 5 compara por aproximação ("praia" não revela "shopping")
+- [x] **REG-10** Top 5 compara por aproximação
 
 ## D. Dados e perguntas
 
 - [x] **DAD-01** Bancos do programa importados (1.435 itens) com origem
-- [ ] 🟡 **DAD-02** Esquema único
+- [x] **DAD-02** Esquema único (`data/bankSchema.ts`): todos os bancos cabem em id, jogo, enunciado e origem, validado em teste
 - [ ] 👤 **DAD-03** Conferir no vídeo
 - [x] **DAD-04** Mímica 226 · Mega Resenha 165 · Quem sou eu 159 (meta: 20)
-- [ ] 🟡 **DAD-05** Origem visível (selo) ✅ · filtro ⬜
+- [x] **DAD-05** Selo "IA / Banco pronto" + escolha da origem no setup: misto, só banco pronto ou só IA
 
 ## E. Novos jogos
 
@@ -104,11 +95,11 @@ Cruza cada item de `analise/06_backlog_consolidado.md` com o que existe hoje no 
 ## F. Código
 
 - [x] **COD-01** Arquivos divididos: nenhum arquivo de código passa de 44 KB (restam só os de dados)
-- [ ] ⬜ **COD-02** Cenas duplicadas
+- [x] **COD-02** Cada card renderiza uma cena só (compacta ou larga, escolhida pela proporção)
 
 ## G. Arte (adiada: "vamos melhorar depois")
 
-- [ ] 🟡 **ART-01** Tag `arte-boa-0711` ✅ · `_master/` ⬜
+- [x] **ART-01** Tag `arte-boa-0711` e mestres em `_master/` (a pasta `public/assets` caiu de 9 MB para 0,8 MB)
 - [ ] ⏸️ **ART-02** Voltar ao visual de 07/11
 - [ ] ⏸️ **ART-03** Animação por camadas (já existem cenas animadas do lobby)
 - [x] ⏸️ **ART-04** Kit de ícones (1ª versão feita; você quer refazer)
@@ -119,16 +110,16 @@ Cruza cada item de `analise/06_backlog_consolidado.md` com o que existe hoje no 
 
 ---
 
-## Decisões do dono (seção "Pontos que dependem de decisão")
+## Decisões do dono
 
 | # | Decisão | Situação |
 |---|---|---|
-| 1 | Onde hospedar | Resolvido: site e IA na Vercel; salas por MQTT/Supabase. Em aberto: broker próprio (INF-04) |
+| 1 | Onde hospedar | Resolvido: site e IA na Vercel; salas por MQTT/Supabase. Em aberto só o broker próprio (INF-04) |
 | 2 | Manter Perguntas e Verdades | Mantido no Fliperama |
 | 3 | Abordagem de animação | Adiada com a arte |
 | 4 | Ordem dos jogos novos | Feita (só Ritmo pulado) |
-| 5 | Modo "programa" como padrão | **Em aberto** — hoje o padrão é o modo casa; quer que o modo programa (4 jogadores, regras fiéis) seja o padrão? |
+| 5 | Modo "programa" como padrão | **Decidido:** o modo do programa (estilo CazéTV) é o padrão |
 
 ## Além do backlog (feito nesta jornada)
 
-Lobby com 6 jogos por página · 14 jogos · IA com status real e reserva sem IA (banco de 2.300 temas) · memória anti-repetição (30 mil itens) e mistura banco + IA · pontos por jogador nos jogos de equipe · auditoria dos bancos com testes de integridade · telas grandes divididas (App, ControllerView e outras) · 205 testes e CI.
+Lobby com 6 jogos por página · 14 jogos · IA com status real e reserva sem IA (banco de 2.300 temas) · memória anti-repetição (30 mil itens) e mistura banco + IA · pontos por jogador nos jogos de equipe · auditoria dos bancos com testes de integridade · telas grandes divididas · CI com testes.

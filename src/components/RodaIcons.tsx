@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { CazeScene, CAZE_SCENE_IDS } from './caze/CazeScenes';
 
 /**
@@ -424,6 +424,19 @@ export const CazeArt: React.FC<{
   mode?: 'card' | 'icon';
   fallback: React.ReactNode;
 }> = ({ gameId, className = '', mode = 'card', fallback }) => {
+  // COD-02: renderiza UMA composicao (compacta ou larga) conforme a proporcao do card, em vez de montar as duas no DOM.
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [wide, setWide] = useState(false);
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (height > 0) setWide(width / height >= 1.75);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   if (!CAZE_SCENE_IDS.includes(gameId)) {
     return <>{fallback}</>;
   }
@@ -431,9 +444,12 @@ export const CazeArt: React.FC<{
     return <CazeScene gameId={gameId} layout="icon" className={className} />;
   }
   return (
-    <div className={`rdb-art-box ${className}`}>
-      <CazeScene gameId={gameId} layout="compact" className="rdb-art-compact" />
-      <CazeScene gameId={gameId} layout="wide" className="rdb-art-wide" />
+    <div ref={boxRef} className={`rdb-art-box ${className}`}>
+      <CazeScene
+        gameId={gameId}
+        layout={wide ? 'wide' : 'compact'}
+        className={wide ? 'rdb-art-wide' : 'rdb-art-compact'}
+      />
     </div>
   );
 };

@@ -584,18 +584,7 @@ button[data-testid*="start-direct"]:hover,
   display: block;
 }
 
-.rdb-art-wide {
-  display: none;
-}
-
-@container (min-aspect-ratio: 1.75) {
-  .rdb-art-compact {
-    display: none;
-  }
-  .rdb-art-wide {
-    display: block;
-  }
-}
+/* COD-02: a composicao (compact ou wide) e escolhida em JS (CazeArt); so uma fica no DOM. */
 
 
 /* ---------------------------------------------------------------------------

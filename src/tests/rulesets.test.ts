@@ -12,9 +12,10 @@ import {
 import { DEFAULT_GAME_CUSTOM_CONFIG } from '../types/game.ts';
 import { computeLimiteWinnerPoints } from '../components/host/ScreenLimite.tsx';
 
-test('UX-09 rulesets: padrão é "casa"; só jogos do programa têm versão "show"', () => {
-  assert.equal(resolveRuleset(undefined), 'home');
-  assert.equal(resolveRuleset(DEFAULT_GAME_CUSTOM_CONFIG), 'home');
+test('UX-09 rulesets: o padrão é o modo do programa (estilo CazéTV); só jogos do programa têm versão "show"', () => {
+  assert.equal(resolveRuleset(undefined), 'show');
+  assert.equal(resolveRuleset(DEFAULT_GAME_CUSTOM_CONFIG), 'show');
+  assert.equal(resolveRuleset({ ruleset: 'home' }), 'home', 'o host ainda pode escolher as regras da casa');
   assert.equal(hasShowRuleset('duvido'), true);
   assert.equal(hasShowRuleset('perguntas-e-verdades'), false, 'P&V não existe no programa');
   assert.equal(getRulesetPreset('duvido', 'home'), null);
@@ -56,5 +57,5 @@ test('REG-01 Duvido: no modo programa a partida acaba quando uma equipe chega a 
   assert.equal(isDuvidoShowWon(show, 4), false);
   assert.equal(isDuvidoShowWon(show, 5), true);
   assert.equal(isDuvidoShowWon({ ruleset: 'home' }, 9), false, 'regras da casa seguem o nº de rodadas');
-  assert.equal(isDuvidoShowWon(undefined, 5), false);
+  assert.equal(isDuvidoShowWon(undefined, 5), true, 'sem escolha explicita vale o modo do programa (padrao)');
 });

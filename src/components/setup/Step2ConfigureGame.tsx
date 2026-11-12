@@ -33,7 +33,9 @@ import {
   Users
 } from 'lucide-react';
 import { ThemeSection } from './step2/ThemeSection';
-import { POPULAR_THEMES } from './step2/popularThemes';
+import { POPULAR_THEMES } from './step2/popularThemes';
+import { ContentSourceSelector } from './step2/ContentSourceSelector';
+import { usesLocalContent } from '../../config/localGames';
 
 export interface Step2ConfigureGameProps {
   activeGame: GameId;
@@ -155,6 +157,10 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
       <div className="space-y-1.5 sm:space-y-2 flex-1 min-h-0 overflow-y-auto scrollbar-none pr-0.5">
 
                 {/* MODO DE REGRAS: casa x programa (so para jogos que existem no programa) */}
+        {!usesLocalContent(activeGame) && activeGame !== 'perguntas-e-verdades' && (
+          <ContentSourceSelector customConfig={customConfig} onChangeCustomConfig={onChangeCustomConfig} />
+        )}
+
         {hasShowRuleset(activeGame) && (
           <section
             data-testid="ruleset-selector"

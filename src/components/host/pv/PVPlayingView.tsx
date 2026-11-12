@@ -623,7 +623,9 @@ export const PVPlayingView: React.FC<PVPlayingViewProps> = ({
               type="button"
               data-testid="pv-confirm-truth-declaration-btn"
               onClick={handleConfirmTruthAttempt}
-              className="px-5 py-1.5 border-2 border-rose-400 bg-rose-600 hover:bg-rose-500 text-white font-anton text-xs uppercase tracking-wider cursor-pointer shadow-neon-rose"
+              aria-disabled={truthFilledCount < 8}
+              title={truthFilledCount < 8 ? `Faltam ${8 - truthFilledCount} cartas para palpitar` : "Confirmar o palpite"}
+              className={`active:scale-95 transition-transform ${truthFilledCount < 8 ? "opacity-70 " : ""}px-5 py-1.5 border-2 border-rose-400 bg-rose-600 hover:bg-rose-500 text-white font-anton text-xs uppercase tracking-wider cursor-pointer shadow-neon-rose`}
             >
               🎯 PALPITAR ({truthFilledCount}/8)
             </button>
