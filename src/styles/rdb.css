@@ -668,14 +668,14 @@
    Telas de jogo na identidade do programa: tudo chapado. Sem brilho em volta, sem degrade e sem ponto
    pulsando em loop (o estado ja aparece na cor e no texto).
    ===================================================================================================== */
-.theme-original .retro-window-container [class*='shadow-[0_0'] {
+.theme-original [class*='shadow-[0_0'] {
   box-shadow: none !important;
 }
-.theme-original .retro-window-container [class*='bg-gradient-to'] {
+.theme-original [class*='bg-gradient-to'] {
   background-image: none !important;
   background-color: var(--rdb-navy-2);
 }
-.theme-original .retro-window-container .animate-ping {
+.theme-original .animate-ping {
   display: none;
 }
 /* Faixa "jogador da vez": o nome e a noticia, entao e o maior texto da faixa */
@@ -810,4 +810,113 @@
   .rdbv-cyc-b, .rdbv-cyc-c { opacity: 0; }
   .rdbv-needle { transform: rotate(-6deg); }
   .rdbv-fan { transform: rotate(var(--rdbv-a)); }
+}
+
+/* ---------- Escolha do modo da sala ---------- */
+.rdb-card--on {
+  border-color: var(--rdb-cream);
+}
+.rdb-card--on .rdb-card-foot {
+  background: var(--rdb-teal);
+  border-color: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-card--on .rdb-card-tagline {
+  color: var(--rdb-navy);
+}
+.rdb-card-tagline--wrap {
+  white-space: normal;
+}
+.rdb-btn--lg {
+  height: calc(var(--rdb-bar-h) * 0.9);
+  padding: 0 1.3em;
+  font-size: clamp(15px, 1.25vw, 26px);
+  font-weight: 900;
+}
+.rdb-toolbar-note[data-ok='false'] {
+  color: var(--rdb-amber);
+}
+/* tela do celular acende em sequencia */
+.rdbv-screen {
+  animation: rdbv-screen 2.4s steps(1) infinite;
+}
+@keyframes rdbv-screen {
+  0%, 59% { opacity: 1; }
+  60%, 100% { opacity: 0.35; }
+}
+.rdb-card-tagline--wrap {
+  min-height: 2.4em;
+}
+
+/* ---------- Jogadores da sala (seletor de elenco) na identidade ---------- */
+[data-testid='pregame-player-selector'] {
+  border: var(--rdb-line) solid var(--rdb-teal) !important;
+  background: var(--rdb-navy) !important;
+  box-shadow: none !important;
+  padding: 1rem !important;
+}
+[data-testid='pregame-player-selector'] h3,
+[data-testid='pregame-player-selector'] h4 {
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+}
+/* Elenco fixo: botoes grandes, faceis de acertar de longe com o mouse */
+[data-testid^='pregame-fixed-player-'] {
+  padding: 0.55em 0.95em !important;
+  border: var(--rdb-line) solid var(--rdb-teal) !important;
+  background: transparent !important;
+  color: var(--rdb-cream) !important;
+  font-family: var(--rdb-heavy) !important;
+  font-weight: 800 !important;
+  font-size: 0.95rem !important;
+  box-shadow: none !important;
+}
+[data-testid^='pregame-fixed-player-']:hover:not(:disabled) {
+  background: var(--rdb-teal) !important;
+  color: var(--rdb-navy) !important;
+}
+[data-testid^='pregame-fixed-player-']:disabled {
+  border-color: rgba(245, 242, 235, 0.25) !important;
+  opacity: 0.55;
+}
+[data-testid='pregame-guest-input'] {
+  font-size: 0.95rem !important;
+  padding: 0.55em 0.8em !important;
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.35) !important;
+}
+[data-testid='pregame-add-guest-btn'],
+[data-testid='pregame-add-all-fixed-btn'] {
+  font-family: var(--rdb-heavy) !important;
+  font-weight: 800 !important;
+  font-size: 0.85rem !important;
+  padding: 0.55em 0.95em !important;
+  box-shadow: none !important;
+}
+[data-testid^='roster-player-card-'] {
+  border: var(--rdb-line) solid var(--rdb-teal) !important;
+  background: var(--rdb-navy-2) !important;
+  box-shadow: none !important;
+}
+
+/* ---------- Modais (menu, jogadores, QR, comparar): mesma identidade chapada ---------- */
+.theme-original [class*='backdrop-blur'] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.theme-original [role='dialog'] {
+  border: var(--rdb-line) solid var(--rdb-crimson) !important;
+  background: var(--rdb-navy) !important;
+  box-shadow: none !important;
+}
+.theme-original [role='dialog'] [class*='shadow-'] {
+  box-shadow: none !important;
+}
+[role='dialog'] [class*='text-[9px]'],
+[role='dialog'] [class*='text-[10px]'] {
+  font-size: 0.7rem;
+}
+[role='dialog'] [class*='text-[11px]'] {
+  font-size: 0.75rem;
 }

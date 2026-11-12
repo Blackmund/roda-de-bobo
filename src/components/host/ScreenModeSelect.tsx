@@ -41,6 +41,7 @@ import {
   Trash2,
   Star
 } from 'lucide-react';
+import { ModeArt } from '../art/GameCardArt';
 
 export interface ScreenModeSelectProps {
   room: GameRoom;
@@ -124,6 +125,13 @@ const MODE_OPTIONS: Array<{
     ctaLabel: 'CRIAR SALA 100% MOBILE ➔'
   }
 ];
+
+/** Nome e resumo de cada modo (uma linha: o que muda para quem joga). */
+const MODE_COPY: Record<ConnectionMode, { name: string; line: string }> = {
+  local: { name: 'Uma tela só', line: 'Todo mundo joga na mesma TV ou computador, sem celulares' },
+  host: { name: 'TV + celulares', line: 'A TV mostra o jogo e cada um responde no próprio celular, pelo QR Code' },
+  multi: { name: 'Só celulares', line: 'Sem TV: cada jogador vê e joga tudo no próprio celular' }
+};
 
 export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
   room,
@@ -257,182 +265,75 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
   return (
     <div
       data-testid="screen-mode-select"
-      className="max-w-6xl mx-auto w-full h-full flex flex-col justify-between overflow-hidden p-2 md:p-3 gap-2 text-[#F5F2EB] select-none"
+      className="rdb-wide mx-auto w-full h-full flex flex-col overflow-hidden gap-3 lg:gap-4 text-[#F5F2EB] select-none"
     >
-      {/* 1. CABEÇALHO RETRÔ OS */}
-      <div className="shrink-0 bg-[#07080d] border border-cyan-500/40 p-2.5 flex flex-wrap items-center justify-between gap-2 shadow-lg">
-        <div className="space-y-0.5">
-          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-cyan-950/80 border border-cyan-400/60 text-cyan-300 font-mono-code text-[10px] font-bold uppercase tracking-widest">
-            <Sparkles size={11} className="text-cyan-300" />
-            <span>CONFIGURAÇÃO DA SALA</span>
-          </div>
-          <h1 className="font-anton text-lg md:text-2xl text-white uppercase tracking-wider leading-tight">
-            ESCOLHA O MODO DE JOGO & JOGADORES
-          </h1>
-          <p className="text-[11px] font-mono-code text-slate-300">
-            Defina como o grupo vai jogar e adicione os participantes da partida.
-          </p>
+      {/* Barra da tela: etiqueta, os 2 passos e o estado da conexao */}
+      <div className="rdb-toolbar shrink-0">
+        <div data-testid="mode-select-tabs" className="flex items-center gap-3 min-w-0 flex-wrap">
+          <h1 className="rdb-tag">Sala</h1>
+          <button
+            type="button"
+            data-testid="mode-tab-mode"
+            aria-pressed={step === 'mode'}
+            onClick={() => {
+              sounds.playTick();
+              setStep('mode');
+            }}
+            className="rdb-btn rdb-btn--cream cursor-pointer"
+            title="Escolher como o grupo vai jogar"
+          >
+            <span>1 · {step === 'mode' ? 'Como jogar' : MODE_COPY[activeMode].name}</span>
+          </button>
+          <button
+            type="button"
+            data-testid="mode-tab-players"
+            aria-pressed={step === 'players'}
+            onClick={() => {
+              sounds.playTick();
+              setStep('players');
+            }}
+            className="rdb-btn rdb-btn--cream cursor-pointer"
+          >
+            <span>2 · Jogadores ({room.players.length})</span>
+          </button>
         </div>
-
         {transportStatus && (
-          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 bg-black/60 border border-slate-700 font-mono-code text-[10px] text-slate-300">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="uppercase">CONEXÃO: {transportStatus}</span>
-          </div>
+          <span className="rdb-toolbar-note rdb-hide-md">Conexão: {String(transportStatus).toLowerCase()}</span>
         )}
       </div>
 
-      {/* 1b. ABAS: MODO ESCOLHIDO / JOGADORES NA SALA */}
-      <div data-testid="mode-select-tabs" className="shrink-0 flex items-stretch gap-1.5">
-        <button
-          type="button"
-          data-testid="mode-tab-mode"
-          onClick={() => { sounds.playTick(); setStep('mode'); }}
-          className={`flex-1 sm:flex-none px-3 py-2 border-2 font-anton text-xs md:text-sm uppercase tracking-wider flex items-center gap-2 cursor-pointer transition-all ${
-            step === 'mode'
-              ? 'border-cyan-400 bg-cyan-500/20 text-cyan-200'
-              : `${activeModeOption.accentBorder} bg-black/60 ${activeModeOption.accentText} hover:bg-white/5`
-          }`}
-          title="Voltar para a escolha do modo de jogo"
-        >
-          <span className="w-5 h-5 inline-flex items-center justify-center bg-black/60 border border-current text-[10px]">1</span>
-          <span>{step === 'mode' ? 'ESCOLHER MODO' : activeModeName}</span>
-          {step !== 'mode' && <span className="text-[9px] font-mono-code normal-case opacity-80">(trocar)</span>}
-        </button>
-        <button
-          type="button"
-          data-testid="mode-tab-players"
-          onClick={() => { sounds.playTick(); setStep('players'); }}
-          className={`flex-1 sm:flex-none px-3 py-2 border-2 font-anton text-xs md:text-sm uppercase tracking-wider flex items-center gap-2 cursor-pointer transition-all ${
-            step === 'players'
-              ? 'border-cyan-400 bg-cyan-500/20 text-cyan-200'
-              : 'border-slate-700 bg-black/60 text-slate-300 hover:border-slate-500'
-          }`}
-        >
-          <span className="w-5 h-5 inline-flex items-center justify-center bg-black/60 border border-current text-[10px]">2</span>
-          <Users size={14} />
-          <span>JOGADORES NA SALA ({room.players.length})</span>
-          <span className={`text-[10px] font-mono-code ${hasMinPlayers ? 'text-emerald-400' : 'text-rose-400'}`}>
-            {hasMinPlayers ? 'OK' : '!'}
-          </span>
-        </button>
-      </div>
-      {/* 2. OS 3 CARDS DE SELEÇÃO DE MODO COM ILUSTRAÇÕES RETRÔ CLÁSSICAS */}
-      {step === 'mode' && (<div className="flex-1 min-h-0 overflow-y-auto grid grid-cols-1 md:grid-cols-3 gap-2.5 content-start">
-        {MODE_OPTIONS.map((opt) => {
-          const isSelected = activeMode === opt.mode;
-          return (
-            <div
-              key={opt.mode}
-              data-testid={`mode-select-card-${opt.mode}`}
-              onClick={() => handleSelectModeClick(opt.mode)}
-              className={`p-3 border-2 transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden gap-2.5 ${
-                isSelected
-                  ? `${opt.accentBorder} bg-gradient-to-b from-black/90 to-[#0e1220] ${opt.accentGlow}`
-                  : 'border-slate-800 bg-[#090b14]/80 hover:border-slate-600 hover:bg-[#0c0f1d]'
-              }`}
-            >
-              <div className="space-y-2">
-                {/* Linha Superior: Badge do Modo + Status Ativo */}
-                <div className="flex items-center justify-between gap-1">
-                  <span
-                    className={`px-2 py-0.5 text-[9px] font-mono-code font-bold uppercase border ${
-                      isSelected
-                        ? `${opt.accentBorder} ${opt.accentBg} ${opt.accentText}`
-                        : 'border-slate-700 bg-black/60 text-slate-400'
-                    }`}
-                  >
-                    {opt.badge}
+      {/* Os 3 modos, no mesmo card do catalogo: vinheta animada em cima, nome e resumo embaixo */}
+      {step === 'mode' && (
+        <div className="rdb-grid rdb-grid--row">
+          {MODE_OPTIONS.map((opt) => {
+            const isSelected = activeMode === opt.mode;
+            return (
+              <button
+                key={opt.mode}
+                type="button"
+                data-testid={`mode-select-card-${opt.mode}`}
+                aria-pressed={isSelected}
+                onClick={() => handleSelectModeClick(opt.mode)}
+                className={`rdb-card group cursor-pointer ${isSelected ? 'rdb-card--on' : ''}`}
+              >
+                {isSelected && <span className="rdb-card-mode">Escolhido</span>}
+                <span className="rdb-card-art">
+                  <ModeArt mode={opt.mode} />
+                </span>
+                <span className="rdb-card-foot">
+                  <span className="min-w-0">
+                    <span className="rdb-card-name block">{MODE_COPY[opt.mode].name}</span>
+                    <span className="rdb-card-tagline rdb-card-tagline--wrap block">{MODE_COPY[opt.mode].line}</span>
                   </span>
-                  {isSelected && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-mono-code text-emerald-400 font-bold">
-                      <CheckCircle2 size={12} className="text-emerald-400" />
-                      <span>ATIVO</span>
-                    </span>
-                  )}
-                </div>
-
-                {/* Caixa de Ilustração Retrô Clássica (Ícones Antigos da Imagem) */}
-                <div className="h-16 rounded-xl bg-black/80 border border-white/10 flex items-center justify-center gap-3 px-3 overflow-hidden shadow-inner">
-                  {opt.mode === 'local' && (
-                    <div className="flex items-center gap-2.5 text-cyan-300">
-                      <Monitor size={28} className="shrink-0" />
-                      <span className="font-mono-code text-xs text-slate-500 font-bold">+</span>
-                      <div className="flex items-center gap-1 bg-cyan-950/70 border border-cyan-400/50 px-2 py-1 rounded-md">
-                        <Users size={16} />
-                        <span className="font-mono-code text-[10px] font-black tracking-wider">SOFÁ</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {opt.mode === 'host' && (
-                    <div className="flex items-center gap-2 text-rose-300">
-                      <Tv size={28} className="shrink-0" />
-                      <QrCode size={18} className="text-cyan-300 animate-pulse shrink-0" />
-                      <div className="flex items-center gap-1">
-                        <Smartphone size={18} className="text-cyan-300" />
-                        <Smartphone size={18} className="text-amber-300" />
-                      </div>
-                    </div>
-                  )}
-
-                  {opt.mode === 'multi' && (
-                    <div className="flex items-center gap-1.5 text-amber-300">
-                      <div className="relative p-1 rounded-md bg-amber-500/20 border border-amber-400">
-                        <Smartphone size={18} />
-                        <Crown
-                          size={9}
-                          className="absolute -top-1.5 -right-1.5 text-amber-300 fill-amber-300"
-                        />
-                      </div>
-                      <Smartphone size={16} className="text-cyan-300" />
-                      <Smartphone size={16} className="text-rose-300" />
-                      <Smartphone size={16} className="text-emerald-300" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Título e Subtítulo */}
-                <div>
-                  <h3 className="font-anton text-base md:text-lg uppercase text-white tracking-wide">
-                    {opt.title}
-                  </h3>
-                  <div className={`text-[10px] font-mono-code font-bold uppercase tracking-wider ${opt.accentText}`}>
-                    {opt.subtitle}
-                  </div>
-                </div>
-
-                {/* Frase de Efeito em Bloco Destaque */}
-                <div className="px-2 py-1 border-l-2 border-cyan-400 bg-black/60 text-[10px] font-mono-code text-cyan-200 italic leading-snug">
-                  {opt.headline}
-                </div>
-
-                {/* Descrição */}
-                <p className="text-[10px] font-mono-code text-slate-300 leading-relaxed line-clamp-3">
-                  {opt.description}
-                </p>
-              </div>
-
-              {/* Botão de Ação Estilizado */}
-              <div className="pt-2 border-t border-white/10">
-                <button
-                  type="button"
-                  className={`w-full py-1.5 font-anton text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                    isSelected
-                      ? `${opt.accentBg} ${opt.accentText} border ${opt.accentBorder} shadow-sm font-black`
-                      : 'border border-slate-700 bg-black/50 text-slate-300 hover:border-cyan-400 hover:text-white'
-                  }`}
-                >
-                  <span>{opt.ctaLabel}</span>
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* 3. GERENCIAMENTO DE JOGADORES (ADAPTADO AO MODO ESCOLHIDO) */}
-      {step === 'players' && (<div className="flex-1 min-h-0 bg-[#090b14] border border-cyan-500/30 p-2.5 overflow-hidden flex flex-col justify-between">
+      {step === 'players' && (<div className="rdb-players flex-1 min-h-0 overflow-hidden flex flex-col justify-between">
         {/* MODO LOCAL: EXIBE ROSTER LOCAL COMPLETO */}
         {activeMode === 'local' && (
           <div className="h-full flex flex-col justify-between overflow-hidden">
@@ -443,7 +344,7 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
               onSwitchPlayerTeam={onSwitchPlayerTeam}
               onUpdatePlayerAvatar={onUpdatePlayerAvatar}
               hideTeamControls={true}
-              showMissingPlayersWarning={!hasMinPlayers}
+              showMissingPlayersWarning={false}
             />
           </div>
         )}
@@ -687,51 +588,37 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
       </div>)}
 
       {/* 4. BARRA INFERIOR DE VALIDAÇÃO E AVANÇO */}
-      <div className="shrink-0 bg-[#07080d] border border-cyan-500/40 p-2.5 flex flex-wrap items-center justify-between gap-3 shadow-2xl">
-        {/* Status de Validação */}
-        <div className="flex items-center gap-2">
-          {hasMinPlayers ? (
-            <div className="flex items-center gap-2 text-emerald-400">
-              <CheckCircle2 size={18} />
-              <div className="space-y-0.5">
-                <div className="font-anton text-sm uppercase tracking-wide text-white">
-                  {room.players.length} JOGADORES PRONTOS PARA A PARTIDA!
-                </div>
-                <div className="text-[10px] font-mono-code text-emerald-300">
-                  Modo ativo: [{activeMode.toUpperCase()}] · Tudo pronto para escolher os jogos
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-rose-400 animate-pulse">
-              <AlertTriangle size={18} />
-              <div className="space-y-0.5">
-                <div className="font-anton text-sm uppercase tracking-wide text-rose-300">
-                  MÍNIMO DE 2 JOGADORES NECESSÁRIOS
-                </div>
-                <div className="text-[10px] font-mono-code text-rose-400">
-                  Adicione pelo menos mais {2 - room.players.length} jogador(es) para avançar
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Botão Gigante de Avanço */}
-        {step === 'mode' ? (<button type="button" data-testid="mode-continue-btn" onClick={() => { sounds.playTick(); setStep('players'); }} className="px-6 py-3 font-anton text-base md:text-lg uppercase tracking-wider flex items-center justify-center gap-2 bg-[#17B8B8] hover:bg-cyan-300 text-black cursor-pointer shadow-lg"><span>CONTINUAR COM {activeModeName}</span><ArrowRight size={20} /></button>) : (<button
-          type="button"
-          data-testid="advance-to-lobby-btn"
-          disabled={!hasMinPlayers}
-          onClick={handleAdvance}
-          className={`px-6 py-3 font-anton text-base md:text-lg uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg ${
-            hasMinPlayers
-              ? 'bg-[#17B8B8] hover:bg-cyan-300 text-black shadow-neon-cyan hover:scale-[1.02]'
-              : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-50'
-          }`}
-        >
-          <span>AVANÇAR PARA OS JOGOS</span>
-          <ArrowRight size={20} />
-        </button>)}
+      <div className="rdb-toolbar shrink-0">
+        <p className="rdb-toolbar-note" data-ok={hasMinPlayers}>
+          {hasMinPlayers
+            ? `${room.players.length} jogadores na sala`
+            : `Faltam ${2 - room.players.length} jogador${2 - room.players.length === 1 ? '' : 'es'} para começar (mínimo 2)`}
+        </p>
+        {step === 'mode' ? (
+          <button
+            type="button"
+            data-testid="mode-continue-btn"
+            onClick={() => {
+              sounds.playTick();
+              setStep('players');
+            }}
+            className="rdb-btn rdb-btn--solid rdb-btn--lg cursor-pointer"
+          >
+            <span>Continuar: {MODE_COPY[activeMode].name}</span>
+            <ArrowRight size={20} />
+          </button>
+        ) : (
+          <button
+            type="button"
+            data-testid="advance-to-lobby-btn"
+            disabled={!hasMinPlayers}
+            onClick={handleAdvance}
+            className="rdb-btn rdb-btn--solid rdb-btn--lg cursor-pointer"
+          >
+            <span>Escolher o jogo</span>
+            <ArrowRight size={20} />
+          </button>
+        )}
       </div>
     </div>
   );
