@@ -11,7 +11,6 @@ import { ActiveTurnBanner } from '../components/ActiveTurnBanner';
 
 /** Jogos que ainda nao desenham a propria faixa "Vez de": ela entra aqui, acima do jogo. */
 const TURN_BAR_GAMES: GameId[] = [
-  'limite',
   'mimica',
   'quem-sou-eu',
   'onde-estou',

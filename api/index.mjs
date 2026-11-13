@@ -76620,7 +76620,7 @@ ESTUDE ESTES EXEMPLOS PERFEITOS DO NOSSO BANCO OFICIAL E IMITE EXATAMENTE O ESTI
 ${JSON.stringify(exemplosFewShot, null, 2)}
 
 COMO FORMULAR A SUA PERGUNTA (OBRIGAT\xD3RIO):
-1. PERGUNTA CURTA E DIRETA: no M\xC1XIMO 200 caracteres e no m\xE1ximo 2 frases, para ser lida em voz alta na TV. Uma premissa de poucas palavras e a pergunta (ex: "No filme Titanic (1997), quantos metros tinha o navio?"). N\xC3O escreva par\xE1grafos, N\xC3O explique o contexto da carreira, N\xC3O coloque ressalvas entre par\xEAnteses.
+1. PERGUNTA CURTA E DIRETA: no M\xC1XIMO 120 caracteres (conte!) e no m\xE1ximo 2 frases, para ser lida em voz alta na TV. Uma premissa de poucas palavras e a pergunta (ex: "No filme Titanic (1997), quantos metros tinha o navio?"). N\xC3O escreva par\xE1grafos, N\xC3O explique o contexto da carreira, N\xC3O coloque ressalvas entre par\xEAnteses.
 2. UNIDADE EXPL\xCDCITA: Deixe 100% claro na pergunta em qual unidade de medida o jogador deve responder (ex: "em quil\xF4metros", "em minutos", "em milh\xF5es de d\xF3lares", "em cent\xEDmetros").
 3. REQUISITO DO N\xCDVEL (${dificuldade.toUpperCase()}):
 ${getLimiteRule3ByDifficulty(dificuldade)}
@@ -79149,7 +79149,7 @@ ${buildTemOuNaoTemPrompt(
       if (gameId === "limite" && item.pergunta) {
         const pergunta = sanitizeCleanGameText(item.pergunta || "", "limite");
         const frases = pergunta.split(/[.!?]+\s+/).filter(Boolean).length;
-        if (pergunta.length > 260 || frases > 3 || String(item.fonte_do_numero || "").trim().length < 3) return null;
+        if (pergunta.length > 130 || frases > 2 || String(item.fonte_do_numero || "").trim().length < 3) return null;
         return {
           ...item,
           pergunta

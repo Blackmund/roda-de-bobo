@@ -930,7 +930,7 @@ ESTUDE ESTES EXEMPLOS PERFEITOS DO NOSSO BANCO OFICIAL E IMITE EXATAMENTE O ESTI
 ${JSON.stringify(exemplosFewShot, null, 2)}
 
 COMO FORMULAR A SUA PERGUNTA (OBRIGATÓRIO):
-1. PERGUNTA CURTA E DIRETA: no MÁXIMO 200 caracteres e no máximo 2 frases, para ser lida em voz alta na TV. Uma premissa de poucas palavras e a pergunta (ex: "No filme Titanic (1997), quantos metros tinha o navio?"). NÃO escreva parágrafos, NÃO explique o contexto da carreira, NÃO coloque ressalvas entre parênteses.
+1. PERGUNTA CURTA E DIRETA: no MÁXIMO 120 caracteres (conte!) e no máximo 2 frases, para ser lida em voz alta na TV. Uma premissa de poucas palavras e a pergunta (ex: "No filme Titanic (1997), quantos metros tinha o navio?"). NÃO escreva parágrafos, NÃO explique o contexto da carreira, NÃO coloque ressalvas entre parênteses.
 2. UNIDADE EXPLÍCITA: Deixe 100% claro na pergunta em qual unidade de medida o jogador deve responder (ex: "em quilômetros", "em minutos", "em milhões de dólares", "em centímetros").
 3. REQUISITO DO NÍVEL (${dificuldade.toUpperCase()}):
 ${getLimiteRule3ByDifficulty(dificuldade)}
