@@ -29,12 +29,12 @@ export interface MobileStandaloneGameViewProps {
 }
 
 const GAME_TITLES: Record<string, string> = {
-  limite: '🎯 JOGO DO LIMITE',
-  duvido: '🚨 JOGO DO DUVIDO',
-  proibido: '🚫 JOGO DO PROIBIDO',
-  nota: '🔟 JOGO DA NOTA',
-  'tem-ou-nao-tem': '📊 TEM OU NÃO TEM',
-  'perguntas-e-verdades': '🃏 PERGUNTAS E VERDADES'
+  limite: 'JOGO DO LIMITE',
+  duvido: 'JOGO DO DUVIDO',
+  proibido: 'JOGO DO PROIBIDO',
+  nota: 'JOGO DA NOTA',
+  'tem-ou-nao-tem': 'TEM OU NÃO TEM',
+  'perguntas-e-verdades': 'PERGUNTAS E VERDADES'
 };
 
 export const MobileStandaloneGameView: React.FC<MobileStandaloneGameViewProps> = React.memo(({
@@ -91,7 +91,7 @@ export const MobileStandaloneGameView: React.FC<MobileStandaloneGameViewProps> =
         <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="px-2 py-0.5 rounded bg-amber-400 text-black font-mono-code text-[10px] font-black uppercase shrink-0">
-              📱 MULTI #{room.roomId}
+              MULTI #{room.roomId}
             </span>
             <span className="font-anton text-sm text-white uppercase truncate">
               {GAME_TITLES[room.activeGame || 'limite']}
@@ -239,7 +239,7 @@ export const MobileStandaloneGameView: React.FC<MobileStandaloneGameViewProps> =
           (room.nota.phase === 'STEP_4_REVEAL' || room.nota.phase === 'REVEAL') && (
             <div className="bg-slate-900/90 border border-amber-400/50 rounded-xl p-3 text-center space-y-2">
               <div className="text-[10px] font-mono-code text-amber-300 font-bold uppercase">
-                🎡 ROLETA DE REVELAÇÃO SINCRONIZADA
+                ROLETA DE REVELAÇÃO SINCRONIZADA
               </div>
               <div className="flex justify-center">
                 <SpinningNumberWheel

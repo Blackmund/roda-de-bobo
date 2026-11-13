@@ -39,7 +39,7 @@ export const MasterRemoteController: React.FC<MasterRemoteControllerProps> = ({
                 MODO 2 // NETFLIX GAME CONTROLLER
               </div>
               <div className="font-anton text-lg text-white uppercase tracking-wide">
-                🎮 CONTROLE MESTRE DA SALA ({room.roomId})
+                CONTROLE MESTRE DA SALA ({room.roomId})
               </div>
             </div>
             <button
@@ -51,7 +51,7 @@ export const MasterRemoteController: React.FC<MasterRemoteControllerProps> = ({
               }}
               className="px-2.5 py-1 border border-cyan-400 bg-cyan-950 text-cyan-200 font-mono-code text-[10px] font-bold uppercase cursor-pointer shrink-0"
             >
-              🙋‍♂️ Modo Individual
+              Modo Individual
             </button>
           </div>
 
@@ -62,16 +62,16 @@ export const MasterRemoteController: React.FC<MasterRemoteControllerProps> = ({
           {(room.screen === 'mode-select' || room.screen === 'lobby' || room.screen === 'game-setup' || room.screen === 'rules') && (
             <div className="border-2 border-cyan-400 bg-[#090b14] p-4 space-y-3 shadow-neon-cyan">
               <div className="font-anton text-base text-cyan-300 uppercase tracking-wider">
-                📺 ESCOLHER JOGO NA TV:
+                ESCOLHER JOGO NA TV:
               </div>
               <div className="grid grid-cols-1 gap-2">
                 {[
-                  { id: 'limite', name: '🎯 JOGO DO LIMITE' },
-                  { id: 'duvido', name: '🚨 JOGO DO DUVIDO' },
-                  { id: 'proibido', name: '🚫 JOGO DO PROIBIDO' },
-                  { id: 'nota', name: '🔟 JOGO DA NOTA' },
-                  { id: 'tem-ou-nao-tem', name: '📊 TEM OU NÃO TEM' },
-                  { id: 'perguntas-e-verdades', name: '🃏 PERGUNTAS E VERDADES' }
+                  { id: 'limite', name: 'JOGO DO LIMITE' },
+                  { id: 'duvido', name: 'JOGO DO DUVIDO' },
+                  { id: 'proibido', name: 'JOGO DO PROIBIDO' },
+                  { id: 'nota', name: 'JOGO DA NOTA' },
+                  { id: 'tem-ou-nao-tem', name: 'TEM OU NÃO TEM' },
+                  { id: 'perguntas-e-verdades', name: 'PERGUNTAS E VERDADES' }
                 ].map((g) => (
                   <button
                     key={g.id}
@@ -106,7 +106,7 @@ export const MasterRemoteController: React.FC<MasterRemoteControllerProps> = ({
                   }}
                   className="w-full py-2.5 border border-rose-500 bg-rose-950/70 text-rose-200 font-anton text-xs uppercase cursor-pointer"
                 >
-                  ⬅️ VOLTAR TV PARA O LOBBY
+                  VOLTAR TV PARA O LOBBY
                 </button>
               )}
             </div>
@@ -116,7 +116,7 @@ export const MasterRemoteController: React.FC<MasterRemoteControllerProps> = ({
           {room.screen === 'playing' && room.activeGame === 'proibido' && room.proibido && (
             <div className="border-2 border-rose-500 bg-[#090b14] p-4 space-y-3 shadow-neon-rose">
               <div className="flex items-center justify-between text-xs font-mono-code text-rose-300 font-bold uppercase">
-                <span>🚫 CARTA SECRETA DO PROIBIDO</span>
+                <span>CARTA SECRETA DO PROIBIDO</span>
                 <span>PONTOS: {room.proibido.roundScore}</span>
               </div>
               <div className="bg-rose-600 text-white p-3 text-center">
@@ -155,7 +155,7 @@ export const MasterRemoteController: React.FC<MasterRemoteControllerProps> = ({
                   }}
                   className="py-4 border-2 border-emerald-400 bg-emerald-600 text-white font-anton text-sm uppercase cursor-pointer"
                 >
-                  ✅ ACERTO (+1)
+                  ACERTO (+1)
                 </button>
                 <button
                   type="button"
@@ -169,7 +169,7 @@ export const MasterRemoteController: React.FC<MasterRemoteControllerProps> = ({
                   }}
                   className="py-4 border-2 border-rose-400 bg-rose-600 text-white font-anton text-sm uppercase cursor-pointer"
                 >
-                  🚨 FALTA (-1)
+                  FALTA (-1)
                 </button>
                 <button
                   type="button"
@@ -183,7 +183,7 @@ export const MasterRemoteController: React.FC<MasterRemoteControllerProps> = ({
                   }}
                   className="py-4 border border-slate-600 bg-slate-800 text-slate-200 font-anton text-sm uppercase cursor-pointer"
                 >
-                  ⏭️ PULAR
+                  PULAR
                 </button>
               </div>
             </div>
@@ -193,7 +193,7 @@ export const MasterRemoteController: React.FC<MasterRemoteControllerProps> = ({
           {room.screen === 'playing' && room.activeGame === 'tem-ou-nao-tem' && room.temOuNaoTem && (
             <div className="border-2 border-cyan-400 bg-[#090b14] p-4 space-y-3 shadow-neon-cyan">
               <div className="text-xs font-mono-code text-cyan-300 font-bold uppercase">
-                📊 GABARITO DO APRESENTADOR (TOQUE PARA REVELAR NA TV):
+                GABARITO DO APRESENTADOR (TOQUE PARA REVELAR NA TV):
               </div>
               <div className="space-y-2">
                 {room.temOuNaoTem.items.map((it, idx) => (
@@ -283,7 +283,7 @@ export const MasterRemoteController: React.FC<MasterRemoteControllerProps> = ({
                 }}
                 className="w-full py-4 border-2 border-rose-500 bg-rose-600 text-white font-anton text-lg uppercase tracking-wider shadow-neon-rose cursor-pointer"
               >
-                ❌ MARCAR ERRO (STRIKE EQUIPE {room.temOuNaoTem.activeTeam})
+                MARCAR ERRO (STRIKE EQUIPE {room.temOuNaoTem.activeTeam})
               </button>
             </div>
           )}
@@ -292,14 +292,14 @@ export const MasterRemoteController: React.FC<MasterRemoteControllerProps> = ({
           {room.screen === 'playing' && room.activeGame === 'duvido' && room.duvido && (
             <div className="border-2 border-rose-500 bg-[#090b14] p-4 space-y-3">
               <div className="text-xs font-mono-code text-rose-300 font-bold uppercase">
-                🚨 CATEGORIA SECRETA (SÓ NO CONTROLE):
+                CATEGORIA SECRETA (SÓ NO CONTROLE):
               </div>
               <div className="font-anton text-xl text-white uppercase">
                 "{room.duvido.roundData.categoria_secreta}"
               </div>
               {room.duvido.roundData.dica_arbitro && (
                 <div className="p-2 border border-amber-400/60 bg-amber-950/40 text-xs font-mono-code text-amber-200">
-                  ⚠️ {room.duvido.roundData.dica_arbitro}
+                  {room.duvido.roundData.dica_arbitro}
                 </div>
               )}
               <div className="grid grid-cols-2 gap-2">
@@ -345,7 +345,7 @@ export const MasterRemoteController: React.FC<MasterRemoteControllerProps> = ({
                   }}
                   className="py-3.5 border border-rose-500 bg-rose-600 text-white font-anton text-sm uppercase cursor-pointer"
                 >
-                  🚨 DUVIDO!
+                  DUVIDO!
                 </button>
               </div>
               {room.duvido.phase === 'EXECUTION' && (
@@ -424,7 +424,7 @@ export const MasterRemoteController: React.FC<MasterRemoteControllerProps> = ({
           {room.screen === 'playing' && room.activeGame === 'nota' && room.nota && (
             <div className="border-2 border-purple-500 bg-[#090b14] p-4 space-y-3 text-center">
               <div className="font-anton text-lg text-purple-300 uppercase">
-                🔟 CONTROLE DO JOGO DA NOTA
+                CONTROLE DO JOGO DA NOTA
               </div>
               <div
                 onMouseDown={() => setHoldingSecret(true)}
@@ -437,7 +437,7 @@ export const MasterRemoteController: React.FC<MasterRemoteControllerProps> = ({
                   <span className="font-anton text-6xl text-amber-300">{room.nota.secretScore}</span>
                 ) : (
                   <span className="font-mono-code text-xs text-amber-200 font-bold uppercase">
-                    👁️ SEGURE AQUI PARA ESPIAR A NOTA SECRETA
+                    SEGURE AQUI PARA ESPIAR A NOTA SECRETA
                   </span>
                 )}
               </div>

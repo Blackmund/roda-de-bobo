@@ -39,12 +39,12 @@ import { PRESET_THEMES } from '../../utils/aiGameGenerator';
 import { PlayerMark } from '../rdb/PlayerMark';
 
 const GAME_OPTIONS: Array<{ id: GameId; name: string; badge: string }> = [
-  { id: 'limite', name: '🎯 JOGO DO LIMITE', badge: 'Individual' },
-  { id: 'duvido', name: '🚨 JOGO DO DUVIDO', badge: 'Em Equipe' },
-  { id: 'proibido', name: '🚫 JOGO DO PROIBIDO', badge: 'Em Equipe' },
-  { id: 'nota', name: '🔟 JOGO DA NOTA', badge: 'Individual' },
-  { id: 'tem-ou-nao-tem', name: '📊 TEM OU NÃO TEM', badge: 'Em Equipe' },
-  { id: 'perguntas-e-verdades', name: '🃏 PERGUNTAS E VERDADES', badge: '2 a 6 Jogadores' }
+  { id: 'limite', name: 'JOGO DO LIMITE', badge: 'Individual' },
+  { id: 'duvido', name: 'JOGO DO DUVIDO', badge: 'Em Equipe' },
+  { id: 'proibido', name: 'JOGO DO PROIBIDO', badge: 'Em Equipe' },
+  { id: 'nota', name: 'JOGO DA NOTA', badge: 'Individual' },
+  { id: 'tem-ou-nao-tem', name: 'TEM OU NÃO TEM', badge: 'Em Equipe' },
+  { id: 'perguntas-e-verdades', name: 'PERGUNTAS E VERDADES', badge: '2 a 6 Jogadores' }
 ];
 
 export const ScreenMobileController: React.FC<ScreenMobileControllerProps> = ({
@@ -192,7 +192,7 @@ export const ScreenMobileController: React.FC<ScreenMobileControllerProps> = ({
                 data-testid="mobile-controller-live-status"
                 className="text-[10px] font-mono-code text-emerald-300 font-bold flex items-center gap-1 whitespace-nowrap"
               >
-                <span>🟢 Ao Vivo na TV</span>
+                <span>Ao Vivo na TV</span>
               </div>
             </div>
           </div>
@@ -244,7 +244,7 @@ export const ScreenMobileController: React.FC<ScreenMobileControllerProps> = ({
                 : 'border-slate-800 bg-slate-950/60 text-slate-400'
             }`}
           >
-            🙋‍♂️ Modo Jogador
+            Modo Jogador
           </button>
           <button
             type="button"
@@ -259,7 +259,7 @@ export const ScreenMobileController: React.FC<ScreenMobileControllerProps> = ({
                 : 'border-slate-800 bg-slate-950/60 text-slate-400'
             }`}
           >
-            👑 Controle Mestre (VIP)
+            Controle Mestre (VIP)
           </button>
         </div>
       </header>
@@ -270,7 +270,7 @@ export const ScreenMobileController: React.FC<ScreenMobileControllerProps> = ({
           data-testid="mobile-controller-ping-alert"
           className="p-3.5 rounded-2xl border-2 border-cyan-300 bg-cyan-500/25 text-cyan-100 font-anton text-sm uppercase tracking-wider text-center shadow-[0_0_25px_rgba(6,182,212,0.5)] animate-pulse"
         >
-          📳 PING RECEBIDO DA TV! SEU CELULAR ESTÁ 100% CONECTADO!
+          PING RECEBIDO DA TV! SEU CELULAR ESTÁ 100% CONECTADO!
         </div>
       )}
 
@@ -414,7 +414,7 @@ export const ScreenMobileController: React.FC<ScreenMobileControllerProps> = ({
                   className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/60 text-amber-200 font-mono-code text-[11px] font-bold uppercase flex items-center gap-1.5 cursor-pointer"
                 >
                   <Shuffle size={12} />
-                  <span>🎲 Sortear Equipes</span>
+                  <span>Sortear Equipes</span>
                 </button>
               </div>
 
@@ -489,7 +489,7 @@ export const ScreenMobileController: React.FC<ScreenMobileControllerProps> = ({
                 >
                   {PRESET_THEMES.map((th) => (
                     <option key={th} value={th}>
-                      🎨 {th}
+                      {th}
                     </option>
                   ))}
                 </select>
@@ -517,7 +517,7 @@ export const ScreenMobileController: React.FC<ScreenMobileControllerProps> = ({
                 className="w-full py-4 rounded-full font-black text-base sm:text-lg uppercase tracking-wider bg-gradient-to-r from-cyan-500 to-rose-500 text-white shadow-[0_0_25px_rgba(6,182,212,0.45)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <Play size={18} className="fill-white" />
-                <span>▶ INICIAR PARTIDA NA TV</span>
+                <span>INICIAR PARTIDA NA TV</span>
               </button>
             </div>
           )}

@@ -61,7 +61,7 @@ export const LobbyExtrasPanel: React.FC<LobbyExtrasPanelProps> = ({
                       >
                         <div className="flex items-center justify-between">
                           <span className="font-anton text-sm uppercase tracking-wide text-cyan-300 flex items-center gap-1.5">
-                            <span>⚡ VERSÃO NEON</span>
+                            <span>VERSÃO NEON</span>
                             <span className="text-[10px] font-mono-code bg-black/60 px-1.5 py-0.5 text-[#17B8B8]">PADRÃO</span>
                           </span>
                           {visualTheme === 'neon' && <Check size={16} className="text-[#17B8B8]" />}
@@ -86,7 +86,7 @@ export const LobbyExtrasPanel: React.FC<LobbyExtrasPanelProps> = ({
                       >
                         <div className="flex items-center justify-between">
                           <span className="font-anton text-sm uppercase tracking-wide text-white flex items-center gap-1.5">
-                            <span>🔲 VERSÃO CLEAN</span>
+                            <span>VERSÃO CLEAN</span>
                             <span className="text-[10px] font-mono-code bg-white/10 px-1.5 py-0.5 text-slate-300">MINIMAL</span>
                           </span>
                           {visualTheme === 'clean' && <Check size={16} className="text-white" />}
@@ -95,7 +95,7 @@ export const LobbyExtrasPanel: React.FC<LobbyExtrasPanelProps> = ({
                           Visual moderno de estúdio: bordas finas sutis, tema escuro flat e sem efeito de scanlines.
                         </p>
                       </button>
-                      {([['cazetv','📺 MODO 2','Broadcast CazéTV: navy, moldura crimson, cartelas de auditório.'],['original','🔴 MODO 3 · ORIGINAL','Réplica do Roda de Bobo original: janela retrô, logo oficial e ilustrações flat.']] as const).map(([tid, label, desc]) => (
+                      {([['cazetv','MODO 2','Broadcast CazéTV: navy, moldura crimson, cartelas de auditório.'],['original','MODO 3 · ORIGINAL','Réplica do Roda de Bobo original: janela retrô, logo oficial e ilustrações flat.']] as const).map(([tid, label, desc]) => (
                         <button
                           key={tid}
                           type="button"
@@ -156,7 +156,7 @@ export const LobbyExtrasPanel: React.FC<LobbyExtrasPanelProps> = ({
                       <RotateCcw size={14} />
                       <span>
                         {clearedMemoryNotice
-                          ? '✅ MEMÓRIA DE PERGUNTAS REINICIADA!'
+                          ? 'MEMÓRIA DE PERGUNTAS REINICIADA!'
                           : 'LIMPAR HISTÓRICO DE PERGUNTAS USADAS'}
                       </span>
                     </button>
