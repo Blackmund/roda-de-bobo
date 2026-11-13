@@ -1019,6 +1019,7 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
             >
               <PlayerMark p={player} />
               <span>{player.name}</span>
+              {isTurn && <span className="rdb-pv-flag">Vez</span>}
               {isTarget && <span className="rdb-pv-flag is-target">Alvo</span>}
               {totalMatchRounds > 1 && (
                 <span
