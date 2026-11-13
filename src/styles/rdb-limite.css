@@ -4502,3 +4502,22 @@
 }
 .rdb-select:focus { outline: none; border-color: var(--rdb-teal); }
 .rdb-adstep > strong { min-width: 8rem; }
+
+/* ---------- Configuracao densa (Adedanha): tudo numa tela so ---------- */
+.rdb-setup.is-dense .rdb-opt { padding: 0.32rem 0.8rem; gap: 0.7rem; grid-template-columns: 9.5rem minmax(0, 1fr); }
+.rdb-setup.is-dense .rdb-opt-label { font-size: 0.8rem; }
+.rdb-setup.is-dense .rdb-opt-choices { gap: 0.3rem; }
+.rdb-setup.is-dense .rdb-seg { min-height: 1.85rem; min-width: 3rem; padding: 0 0.75rem; font-size: 0.82rem; }
+.rdb-setup.is-dense .rdb-select { height: 1.85rem; font-size: 0.82rem; min-width: 12rem; }
+.rdb-setup.is-dense .rdb-adstep > strong { font-size: 1.05rem; min-width: 6.5rem; }
+.rdb-setup.is-dense .rdb-adcat-body { gap: 0.3rem; }
+.rdb-setup.is-dense .rdb-adcat-sets-label { font-size: 0.68rem; }
+.rdb-setup.is-dense .rdb-adcat-set { width: 1.55rem; height: 1.55rem; font-size: 0.82rem; }
+.rdb-setup.is-dense .rdb-adcat-set svg { width: 12px; height: 12px; }
+.rdb-setup.is-dense .rdb-adcat-tools .rdb-lim-icon { width: 1.55rem; height: 1.55rem; }
+.rdb-setup.is-dense .rdb-adcat-tools .rdb-lim-icon svg { width: 13px; height: 13px; }
+.rdb-setup.is-dense .rdb-adcat-chips { max-height: 3.7rem; gap: 0.25rem; padding: 0.25rem; }
+.rdb-setup.is-dense .rdb-adcat-chip { font-size: 0.72rem; padding: 0.06rem 0.2rem 0.06rem 0.45rem; }
+.rdb-setup.is-dense .rdb-adcat-add input { height: 1.85rem; font-size: 0.82rem; }
+.rdb-setup.is-dense .rdb-adcat-add .rdb-seg { min-height: 1.85rem; }
+.rdb-setup.is-dense .rdb-setup-notes { font-size: 0.8rem; }

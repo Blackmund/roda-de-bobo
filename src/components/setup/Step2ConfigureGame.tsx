@@ -77,10 +77,10 @@ const TIMER_OPTIONS: Array<{ value: number; label: string; desc: string }> = [
 
 /** Adedanha: tempo por rodada no estilo do Stop (rapido, medio, lento) ou sem tempo. */
 const AD_TIMER_OPTIONS: Array<{ value: number; label: string; desc: string }> = [
-  { value: 60, label: 'Rápido · 60 s', desc: 'Para quem joga muito' },
-  { value: 90, label: 'Médio · 90 s', desc: 'Padrão' },
-  { value: 150, label: 'Lento · 2:30', desc: 'Com calma' },
-  { value: 0, label: 'Sem tempo', desc: 'Só para no STOP' }
+  { value: 60, label: 'Rápido', desc: '60 segundos por rodada' },
+  { value: 90, label: 'Médio', desc: '90 segundos por rodada (padrão)' },
+  { value: 150, label: 'Lento', desc: '2 minutos e 30 por rodada' },
+  { value: 0, label: 'Sem tempo', desc: 'A rodada só para no STOP' }
 ];
 
 const ROUND_OPTIONS: Array<{ value: number; label: string; desc: string }> = [
@@ -279,10 +279,10 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             ['host', 'Só o diretor', { adedanhaStopRule: 'host' }],
             ['none', 'Ninguém (só o tempo)', { adedanhaStopRule: 'none' }]
           ]) },
-          pickRow('ad-letras', 'Letras difíceis', (customConfig.adedanhaExcludedLetters ?? ADEDANHA_LETRAS_EXCLUIDAS_PADRAO).length > 0, [
+          { select: true, ...pickRow('ad-letras', 'Letras difíceis', (customConfig.adedanhaExcludedLetters ?? ADEDANHA_LETRAS_EXCLUIDAS_PADRAO).length > 0, [
             [true, 'Fora (K, W, Y, X, Q)', { adedanhaExcludedLetters: ADEDANHA_LETRAS_EXCLUIDAS_PADRAO }],
             [false, 'Todas as letras', { adedanhaExcludedLetters: [] }]
-          ])
+          ]) }
         ]
       : [];
 
@@ -305,7 +305,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
   );
 
   return (
-    <div data-testid="step2-configure-game" className="rdb-setup">
+    <div data-testid="step2-configure-game" className={'rdb-setup' + (activeGame === 'adedanha' ? ' is-dense' : '')}>
       <div className="rdb-setup-body">
         {/* CARTAZ DO JOGO: vinheta, nome e o resumo das regras do modo escolhido */}
         <aside className="rdb-setup-poster" data-testid="setup-poster">
