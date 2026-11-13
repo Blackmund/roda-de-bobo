@@ -134,10 +134,20 @@ export const buildStartedRoundUpdater = ({
             exactBonus: limiteExactBonusFor(mergedCustomConfig)
           };
         } else if (gameId === 'duvido') {
-          const teamAPlayers = prev.players.filter((p) => p.team === 'A');
-          const teamBPlayers = prev.players.filter((p) => p.team === 'B');
-          const teamCPlayers = prev.players.filter((p) => p.team === 'C');
-          const teamDPlayers = prev.players.filter((p) => p.team === 'D');
+          const roundIdx = Math.max(0, prev.roundNumber - 1);
+          const pickTeamRoles = (teamId: TeamId, suffix: string) => {
+            const list = nextMatchPlayers.filter((p) => p.team === teamId);
+            if (list.length === 0) {
+              return { blind: `p-blind-${suffix}`, neg: `p-neg-${suffix}` };
+            }
+            const blindIdx = (roundIdx + 1) % list.length;
+            const negIdx = roundIdx % list.length;
+            return { blind: list[blindIdx].id, neg: list[negIdx].id };
+          };
+          const rolesA = pickTeamRoles('A', 'a');
+          const rolesB = pickTeamRoles('B', 'b');
+          const rolesC = pickTeamRoles('C', 'c');
+          const rolesD = pickTeamRoles('D', 'd');
           const maxExamples = mergedCustomConfig.duvidoExamplesCount || 16;
 
           duvidoState = {
@@ -149,16 +159,16 @@ export const buildStartedRoundUpdater = ({
                 : []
             },
             blindfoldedPlayers: {
-              A: teamAPlayers[1]?.id || teamAPlayers[0]?.id || 'p-blind-a',
-              B: teamBPlayers[1]?.id || teamBPlayers[0]?.id || 'p-blind-b',
-              C: teamCPlayers[1]?.id || teamCPlayers[0]?.id || 'p-blind-c',
-              D: teamDPlayers[1]?.id || teamDPlayers[0]?.id || 'p-blind-d'
+              A: rolesA.blind,
+              B: rolesB.blind,
+              C: rolesC.blind,
+              D: rolesD.blind
             },
             negotiators: {
-              A: teamAPlayers[0]?.id || 'p-neg-a',
-              B: teamBPlayers[0]?.id || 'p-neg-b',
-              C: teamCPlayers[0]?.id || 'p-neg-c',
-              D: teamDPlayers[0]?.id || 'p-neg-d'
+              A: rolesA.neg,
+              B: rolesB.neg,
+              C: rolesC.neg,
+              D: rolesD.neg
             },
             blindfoldConfirmed: { A: true, B: true, C: true, D: true },
             currentBid: 0,

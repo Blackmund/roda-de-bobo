@@ -134,13 +134,7 @@ import { PlayingScreen } from './app/PlayingScreen';
 import { buildNextRoundUpdater } from './app/buildNextRoundUpdater';
 import { buildStartedRoundUpdater } from './app/buildStartedRoundUpdater';
 
-const LazyDuvidoLayoutPreview = lazy(() =>
-  import('./components/host/duvido/DuvidoLayoutPreview').then((m) => ({
-    default: m.DuvidoLayoutPreview
-  }))
-);
-
-function MainApp() {
+export default function App() {
   const parsedQuery = parseRoomQueryParams(window.location.search);
   const urlParams = new URLSearchParams(window.location.search);
   const [roomIdParam] = useState<string>(() => {
@@ -1024,17 +1018,5 @@ function MainApp() {
       {renderJoinRoomModal()}
     </div>
   );
-}
-
-export default function App() {
-  const path = typeof window !== 'undefined' ? window.location.pathname.replace(/\/+$/, '').toLowerCase() : '';
-  if (path === '/duvido-a' || path === '/duvido-b') {
-    return (
-      <Suspense fallback={null}>
-        <LazyDuvidoLayoutPreview initialVariant={path === '/duvido-b' ? 'b' : 'a'} />
-      </Suspense>
-    );
-  }
-  return <MainApp />;
 }
 
