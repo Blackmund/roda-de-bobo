@@ -2849,3 +2849,80 @@
 .rdb-pro-sum-head h2 { display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: 8px 12px; }
 .rdb-pro-sum-head h2 small { font-size: clamp(1rem, 1.6vw, 1.4rem); }
 .rdb-pro-sum-head p { max-width: 60ch; line-height: 1.45; text-wrap: balance; }
+
+/* ---------- Duvido v2: o tema (a pergunta) manda; o resto fica pequeno ---------- */
+.rdb-duv { gap: 0.4rem; }
+.rdb-duv-theme {
+  padding: 0.9rem 1rem 0.7rem;
+  border: 0;
+  border-bottom: var(--rdb-line) solid rgba(245, 242, 235, 0.22);
+  background: transparent;
+}
+.rdb-duv-theme .rdb-pro-label {
+  position: static;
+  display: inline-block;
+  margin-bottom: 0.3rem;
+}
+.rdb-duv-category,
+.rdb-duv-category[data-len='m'],
+.rdb-duv-category[data-len='l'] {
+  color: var(--rdb-cream);
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  font-size: clamp(1.9rem, 5.6vh, 3.8rem);
+  line-height: 1.05;
+}
+.rdb-duv-category[data-len='m'] { font-size: clamp(1.7rem, 4.8vh, 3.2rem); }
+.rdb-duv-category[data-len='l'] { font-size: clamp(1.45rem, 4vh, 2.6rem); }
+.rdb-duv-meta { margin-top: 0.4rem; font-size: 0.8rem; }
+.rdb-duv-tip { color: var(--rdb-ink-2); font-weight: 600; }
+.rdb-duv-tip svg { color: var(--rdb-amber); }
+
+/* quem joga: placar e vez em duas linhas finas */
+.rdb-duv-teams .rdb-tem-team.is-strip { padding-top: 0.15rem; padding-bottom: 0.15rem; }
+.rdb-duv-teams .rdb-tem-team-name { font-size: 1.1rem; }
+.rdb-duv-teams .rdb-tem-team-pts { font-size: 1.5rem; }
+.rdb-duv .rdb-turn { min-height: 0; padding: 0.15rem 0.5rem 0.15rem 0; gap: 0.6rem; }
+.rdb-duv .rdb-turn-what { display: none; }
+.rdb-duv .rdb-turn-flag { font-size: 0.8rem; padding: 0.25rem 0.7rem; align-self: stretch; display: grid; place-items: center; }
+.rdb-duv .rdb-turn-name { font-size: 1.5rem; }
+.rdb-duv .rdb-turn-role { font-size: 0.8rem; }
+.rdb-duv .rdb-turn-mark { transform: scale(0.8); }
+
+/* lance e botoes menores, tudo numa linha */
+.rdb-duv-bid { min-height: 3.5rem; }
+.rdb-duv-bid-label { font-size: 0.8rem; }
+.rdb-duv-bid-value { font-size: clamp(2.2rem, 7vh, 4.4rem); }
+.rdb-duv-bid-value.is-text { font-size: clamp(1.4rem, 4vh, 2.6rem); }
+.rdb-duv-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.rdb-duv-controls .rdb-btn,
+.rdb-duv-actions .rdb-btn { height: 2.2rem; font-size: 0.9rem; padding: 0 0.8rem; }
+.rdb-duv-free { flex: 0 1 auto; }
+.rdb-duv-free input { width: 4rem; font-size: 1rem; height: 2.2rem; }
+.rdb-duv-free .rdb-btn { flex: 0 0 auto; }
+.rdb-duv-controls .rdb-duv-call {
+  margin-left: auto;
+  height: 2.2rem;
+  font-size: 1rem;
+  padding: 0 1.2rem;
+  letter-spacing: 0.05em;
+}
+.rdb-duv-exec { min-height: 5rem; }
+.rdb-duv-panel { min-height: 5rem; padding: 0.4rem 0.6rem; gap: 0.2rem; }
+.rdb-duv-panel-value { font-size: clamp(2rem, 6vh, 3.8rem); }
+.rdb-duv-panel .rdb-btn { height: 1.9rem; font-size: 0.8rem; }
+/* Na execucao o que manda e contar os itens: o tema encolhe e a dica de regra some (fica no gabarito) */
+.rdb-duv.is-exec .rdb-duv-tip { display: none; }
+.rdb-duv.is-exec .rdb-duv-theme { padding: 0.4rem 1rem 0.4rem; }
+.rdb-duv.is-exec .rdb-duv-theme .rdb-pro-label { display: none; }
+.rdb-duv.is-exec .rdb-duv-category,
+.rdb-duv.is-exec .rdb-duv-category[data-len='m'],
+.rdb-duv.is-exec .rdb-duv-category[data-len='l'] { font-size: clamp(1.4rem, 3.6vh, 2.4rem); }
+.rdb-duv.is-exec .rdb-duv-exec,
+.rdb-duv.is-exec .rdb-duv-panel { min-height: 4rem; }
+.rdb-duv.is-exec .rdb-duv-panel-value { font-size: clamp(1.8rem, 5vh, 3.2rem); }
