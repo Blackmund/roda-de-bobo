@@ -160,7 +160,7 @@
   max-width: 100%;
   font-weight: 900;
   font-size: clamp(1.3rem, 3.25vw, 4.2rem);
-  line-height: 1.1;
+  line-height: 1.24;
   letter-spacing: -0.01em;
   text-transform: uppercase;
   text-wrap: balance;
@@ -190,22 +190,23 @@
   -webkit-line-clamp: 4;
 }
 .rdb-lim-stage:not(.is-scoring) .rdb-lim-question[data-len='xs'] {
-  font-size: clamp(2.2rem, 6.8vw, 8.2rem);
+  font-size: clamp(2.4rem, 7.2vw, 8.8rem);
 }
 .rdb-lim-stage:not(.is-scoring) .rdb-lim-question[data-len='s'] {
-  font-size: clamp(2rem, 5.2vw, 6.6rem);
+  font-size: clamp(2.15rem, 5.6vw, 7rem);
 }
 .rdb-lim-stage:not(.is-scoring) .rdb-lim-question[data-len='m'] {
-  font-size: clamp(1.8rem, 4vw, 5.2rem);
+  font-size: clamp(1.95rem, 4.4vw, 5.7rem);
 }
 .rdb-lim-stage:not(.is-scoring) .rdb-lim-question[data-len='l'] {
-  font-size: clamp(1.55rem, 3.2vw, 4.2rem);
+  font-size: clamp(1.7rem, 3.6vw, 4.7rem);
 }
 .rdb-lim-stage:not(.is-scoring) .rdb-lim-question[data-len='xl'] {
-  font-size: clamp(1.4rem, 2.5vw, 3.4rem);
+  font-size: clamp(1.5rem, 2.8vw, 3.8rem);
 }
 .rdb-lim-stage.is-scoring .rdb-lim-question {
   font-size: clamp(1rem, 1.6vw, 1.7rem);
+  line-height: 1.2;
   color: var(--rdb-ink-2);
   -webkit-line-clamp: 2;
 }
@@ -347,8 +348,8 @@
 .rdb-lim-card {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  padding: 0.42rem 0.65rem;
+  gap: 0.22rem;
+  padding: 0.34rem 0.6rem;
   border: var(--rdb-line) solid rgba(245, 242, 235, 0.22);
   background: var(--rdb-navy-2);
 }
@@ -411,11 +412,11 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.4rem 0.6rem;
+  gap: 0.25rem 0.5rem;
 }
 .rdb-lim-card-guess {
   font-family: 'Anton', 'Impact', sans-serif;
-  font-size: 1.65rem;
+  font-size: 1.35rem;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -452,10 +453,10 @@
 }
 .rdb-lim-card .rdb-seg {
   min-width: 0;
-  min-height: 2rem;
-  padding: 0 0.6rem;
+  min-height: 1.55rem;
+  padding: 0 0.45rem;
   gap: 0.25rem;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
 }
 .rdb-lim-card-locked {
   display: inline-flex;
