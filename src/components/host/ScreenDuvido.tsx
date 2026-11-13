@@ -286,7 +286,7 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
   const teamLabel = (tId: TeamId) => room.teams[tId]?.name || TEAM_META[tId].defaultName;
 
   return (
-    <div className="rdb-duv">
+    <div className={'rdb-duv' + (phase === 'EXECUTION' ? ' is-exec' : '')}>
       {/* Barra: o essencial aparece, o resto vira icone com dica */}
       <header className="rdb-lim-bar">
         <span className="rdb-lim-title">
@@ -340,6 +340,28 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
         </div>
       </header>
 
+      {/* O tema da rodada: o que importa para quem aposta */}
+      {phase !== 'RESULT' && (
+        <section data-testid="duvido-theme-banner" className="rdb-duv-theme">
+          <span className="rdb-pro-label">Tema</span>
+          <h2 data-testid="duvido-secret-category-title" className="rdb-duv-category" data-len={category.length > 70 ? 'l' : category.length > 40 ? 'm' : 's'}>
+            {category}
+          </h2>
+          <div className="rdb-duv-meta">
+            {duvido.roundData.total_itens_possiveis > 0 && (
+              <span data-testid="duvido-total-items-badge" data-tip="Quantidade aproximada de itens que existem no tema">
+                <ListChecks size={16} /> até ~{duvido.roundData.total_itens_possiveis}
+              </span>
+            )}
+            {duvido.roundData.dica_arbitro && (
+              <span data-testid="duvido-referee-tip" className="rdb-duv-tip">
+                <Lightbulb size={16} /> {duvido.roundData.dica_arbitro}
+              </span>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Placar das equipes */}
       <div className="rdb-tem-strip rdb-duv-teams">
         {activeTeamIds.map((tId) => {
@@ -377,35 +399,13 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
         />
       </div>
 
-      {/* O tema da rodada: o que importa para quem aposta */}
-      {phase !== 'RESULT' && (
-        <section data-testid="duvido-theme-banner" className="rdb-duv-theme">
-          <span className="rdb-pro-label">Tema</span>
-          <h2 data-testid="duvido-secret-category-title" className="rdb-duv-category" data-len={category.length > 70 ? 'l' : category.length > 40 ? 'm' : 's'}>
-            {category}
-          </h2>
-          <div className="rdb-duv-meta">
-            {duvido.roundData.total_itens_possiveis > 0 && (
-              <span data-testid="duvido-total-items-badge" data-tip="Quantidade aproximada de itens que existem no tema">
-                <ListChecks size={16} /> até ~{duvido.roundData.total_itens_possiveis}
-              </span>
-            )}
-            {duvido.roundData.dica_arbitro && (
-              <span data-testid="duvido-referee-tip" className="rdb-duv-tip">
-                <Lightbulb size={16} /> {duvido.roundData.dica_arbitro}
-              </span>
-            )}
-          </div>
-        </section>
-      )}
-
       <div className="rdb-duv-stage">
         {/* Fase 1: leilao */}
         {inAuction && (
           <>
             <div className="rdb-duv-bid">
               <span className="rdb-duv-bid-label">
-                {duvido.currentBid > 0 ? `Lance de ${teamLabel(duvido.currentBidTeam as TeamId)}` : 'Nenhum lance ainda'}
+                {duvido.currentBid > 0 ? `Lance de ${teamLabel(duvido.currentBidTeam as TeamId)}: tem que citar` : 'Nenhum lance ainda'}
               </span>
               <div
                 data-testid="duvido-current-bid-display"
@@ -451,20 +451,18 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
               <button type="button" data-testid="duvido-bid-plus-2-btn" className="rdb-btn" onClick={() => handleHostBid(duvido.currentBid + 2)}>
                 +2 <small>({duvido.currentBid + 2})</small>
               </button>
+            
+              <button
+                type="button"
+                data-testid="duvido-call-btn"
+                className="rdb-btn rdb-duv-call"
+                data-tip={duvido.currentBid > 0 ? `${teamLabel(duvido.currentBidTeam as TeamId)} tem que citar ${duvido.currentBid}` : 'Faça um lance primeiro'}
+                onClick={handleHostCallDuvido}
+                disabled={duvido.currentBid <= 0}
+              >
+                <Siren /> Duvido!
+              </button>
             </div>
-
-            <button
-              type="button"
-              data-testid="duvido-call-btn"
-              className="rdb-btn rdb-duv-call"
-              onClick={handleHostCallDuvido}
-              disabled={duvido.currentBid <= 0}
-            >
-              <Siren /> Duvido!
-              <small>
-                {duvido.currentBid > 0 ? `${teamLabel(duvido.currentBidTeam as TeamId)} tem que falar ${duvido.currentBid}` : 'faça um lance primeiro'}
-              </small>
-            </button>
           </>
         )}
 
