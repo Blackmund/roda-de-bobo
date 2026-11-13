@@ -19,6 +19,7 @@ const PRESETS: Array<{ id: string; label: string; make: () => string[] }> = [
   { id: 'tematicas', label: 'Temáticas', make: () => ADEDANHA_TEMATICAS.slice(0, 7) },
   { id: 'resenha', label: 'Com resenha', make: () => [...ADEDANHA_PADRAO.slice(0, 4), ...ADEDANHA_RESENHA.slice(0, 3)] }
 ];
+const presetTip = (p: { label: string; make: () => string[] }) => `${p.label}: ${p.make().join(', ')}`;
 
 /**
  * Categorias da Adedanha: comeca de um conjunto pronto, apaga o que nao quer, digita as suas e desfaz se apagou sem
@@ -53,26 +54,30 @@ export const AdedanhaCategoryEditor: React.FC<Props> = ({ categories, onChange }
       </span>
       <div className="rdb-adcat-body">
         <div className="rdb-adcat-presets">
-          {PRESETS.map((p) => (
+          <span className="rdb-adcat-sets-label">Conjuntos</span>
+          {PRESETS.map((p, n) => (
             <button
               key={p.id}
               type="button"
-              className="rdb-seg"
+              className="rdb-adcat-set"
               data-testid={`ad-cat-preset-${p.id}`}
+              aria-label={p.label}
+              data-tip={presetTip(p)}
               aria-pressed={categories.join() === p.make().join()}
               onClick={() => commit(p.make())}
             >
-              {p.label}
+              {n + 1}
             </button>
           ))}
           <button
             type="button"
-            className="rdb-seg"
+            className="rdb-adcat-set"
             data-testid="ad-cat-preset-sorteio"
-            data-tip="Sorteia 7 categorias de todas as listas"
+            aria-label="Sortear"
+            data-tip="Sortear 7 categorias de todas as listas"
             onClick={() => commit([...ADEDANHA_TODAS].sort(() => Math.random() - 0.5).slice(0, 7))}
           >
-            <Shuffle size={14} /> Sortear
+            <Shuffle size={14} />
           </button>
           <span className="rdb-adcat-tools">
             <button type="button" className="rdb-lim-icon" data-testid="ad-cat-undo" aria-label="Desfazer" data-tip="Desfazer a última mudança" disabled={history.length === 0} onClick={undo}>

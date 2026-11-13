@@ -48,10 +48,6 @@ export const ScreenAdedanha: React.FC<ScreenAdedanhaProps> = ({ room, onUpdateAd
   const clock = ad.timerSeconds === 0 && ad.phase === 'WRITING' ? 'Livre' : left === null ? '—' : `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
   const clockHot = left !== null && left <= 10;
 
-  const start = () => {
-    sounds.playPowerup();
-    update((prev) => startWriting(prev));
-  };
 
   const bar = (
     <header className="rdb-lim-bar">
@@ -95,19 +91,45 @@ export const ScreenAdedanha: React.FC<ScreenAdedanhaProps> = ({ room, onUpdateAd
   // ---------------- Escrevendo ----------------
   if (ad.phase === 'READY' || ad.phase === 'WRITING' || ad.phase === 'STOPPING') {
     const sent = ad.playerIds.filter((id) => ad.submitted[id]).length;
+    const hidden = ad.phase === 'READY' || spin.spinning;
+    const pct = ad.timerSeconds > 0 && left !== null && ad.phase === 'WRITING' ? Math.max(0, Math.min(100, (left / ad.timerSeconds) * 100)) : ad.phase === 'STOPPING' ? 0 : 100;
+    const stopNote =
+      ad.stopRule === 'majority' && ad.phase === 'WRITING'
+        ? `STOP: ${stopVotesCount(ad)} de ${ad.playerIds.length} pediram`
+        : ad.stopRule === 'host'
+        ? 'Só o diretor pede STOP'
+        : ad.stopRule === 'none'
+        ? 'Para quando o tempo acabar'
+        : 'Quem completar tudo pede STOP';
     return (
-      <div data-testid="screen-adedanha" className="rdb-pro rdb-ade">
+      <div data-testid="screen-adedanha" className={'rdb-pro rdb-ade is-play' + (ad.phase === 'STOPPING' ? ' is-stopping' : '')}>
         {bar}
         <LetterDrawOverlay letter={spin.letter} spinning={spin.spinning} />
-        <div className="rdb-ade-stage">
-          <div className={'rdb-ade-letter' + (ad.phase === 'READY' ? ' is-hidden' : '') + (spin.spinning ? ' is-waiting' : '')} data-testid="ad-letter">
-            {ad.phase === 'READY' || spin.spinning ? '?' : <span key={ad.letter}>{ad.letter}</span>}
-          </div>
-          <div className="rdb-ade-cats" data-tip={`${ad.categories.length} categorias`}>
-            {ad.categories.map((c) => (
-              <span key={c}>{c}</span>
+
+        <div className="rdb-ade-play">
+          {/* A letra da rodada, grande, com o tempo escorrendo embaixo */}
+          <aside className="rdb-ade-plate">
+            <span className="rdb-ade-plate-label">Letra</span>
+            <div className={'rdb-ade-plate-letter' + (hidden ? ' is-wait' : '')} data-testid="ad-letter">
+              {hidden ? '?' : <span key={ad.letter}>{ad.letter}</span>}
+            </div>
+            <div className={'rdb-ade-timebar' + (clockHot ? ' is-hot' : '')} aria-hidden="true">
+              <i style={{ width: `${pct}%` }} />
+            </div>
+            <span className="rdb-ade-plate-note">{ad.phase === 'READY' ? 'Sorteando…' : stopNote}</span>
+          </aside>
+
+          {/* A folha: as categorias como campos, igual ao celular, com a letra marcando o comeco */}
+          <section className="rdb-ade-sheet" aria-label="Categorias da rodada">
+            {ad.categories.map((c, i) => (
+              <div key={c} className="rdb-ade-field" style={{ ['--i' as string]: i }}>
+                <span className="rdb-ade-field-name">{c}</span>
+                <span className="rdb-ade-field-line">
+                  <b>{hidden ? '' : ad.letter}</b>
+                </span>
+              </div>
             ))}
-          </div>
+          </section>
         </div>
 
         {ad.phase === 'STOPPING' && (
@@ -119,48 +141,30 @@ export const ScreenAdedanha: React.FC<ScreenAdedanhaProps> = ({ room, onUpdateAd
           </div>
         )}
 
-        <div className="rdb-ade-players">
-          {ad.playerIds.map((id) => {
-            const p = playerOf(id);
-            const done = ad.submitted[id];
-            return (
-              <div key={id} className={'rdb-ade-player' + (done ? ' is-done' : '') + (ad.stopBy === id ? ' is-stop' : '')}>
-                {p && <PlayerMark p={p} />}
-                <span className="rdb-ade-player-name">{nameOf(id)}</span>
-                <span className="rdb-ade-player-state">
-                  {ad.stopBy === id ? 'STOP' : done ? <Check size={16} strokeWidth={3} /> : ad.phase === 'READY' ? '' : '…'}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        <footer className="rdb-pro-foot">
-          {ad.phase === 'READY' ? (
-            <>
-              <span className="rdb-ade-hint">
-                {room.connectionMode === 'local'
-                  ? 'Cada jogador entra pelo celular (QR no topo) para escrever as respostas.'
-                  : 'Os celulares mostram as categorias assim que a letra sair.'}
-              </span>
-              <div className="rdb-pro-foot-end">
-                <button type="button" data-testid="ad-start-btn" className="rdb-btn rdb-setup-start" onClick={start}>
-                  <Play /> Sortear a letra e começar
-                </button>
-              </div>
-            </>
-          ) : (
-            <span className="rdb-ade-hint">
-              {sent}/{ad.playerIds.length} mandaram as respostas
-              {ad.stopRule === 'majority' && ad.phase === 'WRITING'
-                ? ` · STOP pedido por ${stopVotesCount(ad)} de ${ad.playerIds.length} (precisa da maioria)`
-                : ad.stopRule === 'host'
-                ? ' · só o diretor pede STOP (mão na barra)'
-                : ad.stopRule === 'none'
-                ? ' · a rodada para quando o tempo acabar'
-                : ''}
-            </span>
-          )}
+        <footer className="rdb-ade-foot">
+          <span className="rdb-ade-foot-count" data-tip="Quem já mandou as respostas">
+            <strong>{sent}</strong>/{ad.playerIds.length}
+          </span>
+          <div className="rdb-ade-players">
+            {ad.playerIds.map((id) => {
+              const p = playerOf(id);
+              const done = ad.submitted[id];
+              const asked = ad.stopVotes?.[id];
+              return (
+                <div
+                  key={id}
+                  className={'rdb-ade-player' + (done ? ' is-done' : '') + (ad.stopBy === id ? ' is-stop' : '') + (asked ? ' is-asked' : '')}
+                  data-tip={ad.stopBy === id ? 'Pediu STOP' : done ? 'Mandou as respostas' : asked ? 'Pediu STOP' : 'Escrevendo'}
+                >
+                  {p && <PlayerMark p={p} />}
+                  <span className="rdb-ade-player-name">{nameOf(id)}</span>
+                  {(done || ad.stopBy === id) && (
+                    <span className="rdb-ade-player-state">{ad.stopBy === id ? 'STOP' : <Check size={14} strokeWidth={3} />}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </footer>
       </div>
     );

@@ -124,12 +124,7 @@ export const AdedanhaController: React.FC<AdedanhaControllerProps> = ({ room, pl
         <span className="rdb-adc-kicker">Adedanha</span>
         <h2>Prepare-se</h2>
         <p>{ad.categories.length} categorias: {ad.categories.join(', ')}</p>
-        {isLeader && (
-          <button type="button" className="rdb-adc-main" data-testid="adc-start" onClick={() => updateAd((prev) => startWriting(prev))}>
-            <Play size={18} /> Sortear a letra
-          </button>
-        )}
-        {!isLeader && <p className="rdb-adc-muted">A letra aparece aqui quando a rodada começar.</p>}
+        <p className="rdb-adc-muted">A letra vai ser sorteada em instantes.</p>
       </div>
     );
   } else if (ad.phase === 'WRITING' || ad.phase === 'STOPPING') {
