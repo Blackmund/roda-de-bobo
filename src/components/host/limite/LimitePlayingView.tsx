@@ -171,15 +171,17 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
         <div className="rdb-lim-center">
           {scoring ? (
             <>
-              <div data-testid="limite-exact-value-display" className="rdb-lim-value">
-                {limite.roundData.valor_exato.toLocaleString('pt-BR')}
+              <div className="rdb-lim-answer-row">
+                <div data-testid="limite-exact-value-display" className="rdb-lim-value">
+                  {limite.roundData.valor_exato.toLocaleString('pt-BR')}
+                </div>
+                <span data-testid="limite-unit-badge" className="rdb-lim-unit">
+                  {unitText}
+                </span>
               </div>
-              <span data-testid="limite-unit-badge" className="rdb-lim-unit">
-                {unitText}
-              </span>
               {limite.roundData.curiosidade_explicacao && (
                 <p data-testid="limite-curiosity-card" className="rdb-lim-fact">
-                  <Lightbulb size={16} aria-hidden="true" />
+                  <Lightbulb size={14} aria-hidden="true" />
                   <span>{limite.roundData.curiosidade_explicacao}</span>
                 </p>
               )}

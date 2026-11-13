@@ -577,12 +577,35 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
     });
   };
 
-  const handleSubmitSecretTvGuess = (playerId: string) => {
-    if (isTimeExpired) return;
-    const rawVal = tvDraftGuesses[playerId] ?? '';
+  const parseDraftGuess = (rawVal: string): number | null => {
     const normalized = rawVal.replace(',', '.');
     const parsed = parseFloat(normalized);
-    if (rawVal.trim() === '' || isNaN(parsed)) return;
+    if (rawVal.trim() === '' || isNaN(parsed)) return null;
+    return parsed;
+  };
+
+  const mergeDraftGuesses = (prev: LimiteGameState, drafts: Record<string, string>): LimiteGameState => {
+    let changed = false;
+    const nextGuesses = { ...prev.guesses };
+    for (const [playerId, rawVal] of Object.entries(drafts)) {
+      const parsed = parseDraftGuess(rawVal ?? '');
+      if (parsed !== null) {
+        nextGuesses[playerId] = parsed;
+        changed = true;
+      }
+    }
+    if (!changed) return prev;
+    return {
+      ...prev,
+      guesses: nextGuesses,
+      submittedPlayers: Object.keys(nextGuesses)
+    };
+  };
+
+  const handleSubmitSecretTvGuess = (playerId: string) => {
+    if (isTimeExpired) return;
+    const parsed = parseDraftGuess(tvDraftGuesses[playerId] ?? '');
+    if (parsed === null) return;
     sounds.playSuccess();
     setTvDraftGuesses((prev) => ({ ...prev, [playerId]: '' }));
     setEditingSecretPlayers((prev) => ({ ...prev, [playerId]: false }));
@@ -653,6 +676,9 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
   };
 
   const handleImmediateReveal = () => {
+    const draftsSnapshot = tvDraftGuesses;
+    setTvDraftGuesses({});
+    setEditingSecretPlayers({});
     setDrumrolling(false);
     sounds.playSuccess();
     confetti({
@@ -662,7 +688,7 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
     });
     onUpdateLimiteState((prev) =>
       evaluateLimiteRoundReveal({
-        ...prev,
+        ...mergeDraftGuesses(prev, draftsSnapshot),
         timerActive: false,
         revealCountdown: null
       })
@@ -679,9 +705,12 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
       handleImmediateReveal();
       return;
     }
+    const draftsSnapshot = tvDraftGuesses;
+    setTvDraftGuesses({});
+    setEditingSecretPlayers({});
     // Launch dramatic 5-second countdown with beeps
     onUpdateLimiteState((prev) => ({
-      ...prev,
+      ...mergeDraftGuesses(prev, draftsSnapshot),
       timerActive: false,
       revealCountdown: 5
     }));
