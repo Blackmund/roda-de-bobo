@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { GameRoom, GameId, VisualTheme, TeamId } from '../../types/game';
 import { isCazeFamily, themeBadge } from '../../utils/themeUtils';
@@ -384,8 +384,98 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
   const [gamePage, setGamePage] = useState(0);
   const gamePageCount = Math.max(1, Math.ceil(GAMES.length / GAMES_PER_PAGE));
   const currentGamePage = Math.min(gamePage, gamePageCount - 1);
-  const pageGames = GAMES.slice(currentGamePage * GAMES_PER_PAGE, (currentGamePage + 1) * GAMES_PER_PAGE);
+  const gamePages = Array.from({ length: gamePageCount }, (_, i) =>
+    GAMES.slice(i * GAMES_PER_PAGE, (i + 1) * GAMES_PER_PAGE)
+  );
   const isLastGamePage = currentGamePage >= gamePageCount - 1;
+
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDraggingCatalog, setIsDraggingCatalog] = useState(false);
+  const dragStateRef = useRef<{
+    active: boolean;
+    pointerId: number | null;
+    startX: number;
+    startY: number;
+    startTime: number;
+    moved: boolean;
+  }>({ active: false, pointerId: null, startX: 0, startY: 0, startTime: 0, moved: false });
+  const suppressCardClickRef = useRef(false);
+  const wheelCooldownRef = useRef(0);
+
+  const goToGamePage = (nextPage: number) => {
+    const clamped = Math.max(0, Math.min(gamePageCount - 1, nextPage));
+    if (clamped !== currentGamePage) {
+      sounds.playTick();
+      setGamePage(clamped);
+    }
+  };
+
+  const handleCatalogPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (gamePageCount <= 1 || e.button !== 0) return;
+    dragStateRef.current = {
+      active: true,
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      startTime: performance.now(),
+      moved: false
+    };
+  };
+
+  const handleCatalogPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const st = dragStateRef.current;
+    if (!st.active || st.pointerId !== e.pointerId) return;
+    const dx = e.clientX - st.startX;
+    const dy = e.clientY - st.startY;
+    if (!st.moved) {
+      if (Math.abs(dx) < 10) return;
+      if (Math.abs(dy) > Math.abs(dx)) {
+        st.active = false;
+        return;
+      }
+      st.moved = true;
+      setIsDraggingCatalog(true);
+      e.currentTarget.setPointerCapture?.(e.pointerId);
+    }
+    const atStartEdge = currentGamePage === 0 && dx > 0;
+    const atEndEdge = isLastGamePage && dx < 0;
+    setDragOffset(atStartEdge || atEndEdge ? dx * 0.28 : dx);
+  };
+
+  const finishCatalogDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    const st = dragStateRef.current;
+    if (!st.active || st.pointerId !== e.pointerId) return;
+    st.active = false;
+    if (st.moved) {
+      const dx = e.clientX - st.startX;
+      const elapsed = Math.max(1, performance.now() - st.startTime);
+      const velocity = Math.abs(dx) / elapsed;
+      if (dx <= -65 || (dx <= -25 && velocity > 0.35)) {
+        goToGamePage(currentGamePage + 1);
+      } else if (dx >= 65 || (dx >= 25 && velocity > 0.35)) {
+        goToGamePage(currentGamePage - 1);
+      }
+      suppressCardClickRef.current = true;
+      window.setTimeout(() => {
+        suppressCardClickRef.current = false;
+      }, 60);
+    }
+    setIsDraggingCatalog(false);
+    setDragOffset(0);
+    if (e.currentTarget.hasPointerCapture?.(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+  };
+
+  const handleCatalogWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (gamePageCount <= 1) return;
+    const horizontalDelta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.shiftKey ? e.deltaY : 0;
+    if (Math.abs(horizontalDelta) < 14) return;
+    const now = performance.now();
+    if (now - wheelCooldownRef.current < 380) return;
+    wheelCooldownRef.current = now;
+    goToGamePage(currentGamePage + (horizontalDelta > 0 ? 1 : -1));
+  };
   const [guestName, setGuestName] = useState('');
   const [guestTeam, setGuestTeam] = useState<TeamId>('A');
   const activeTeamIds = getActiveTeamIds(room);
@@ -646,16 +736,13 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                     type="button"
                     data-testid="lobby-page-prev"
                     disabled={currentGamePage === 0}
-                    onClick={() => {
-                      sounds.playTick();
-                      setGamePage(Math.max(0, currentGamePage - 1));
-                    }}
-                    className="rdb-btn rdb-btn--icon cursor-pointer"
+                    onClick={() => goToGamePage(currentGamePage - 1)}
+                    className="rdb-pager-arrow cursor-pointer"
                     aria-label="Página anterior"
                   >
                     <ChevronLeft />
                   </button>
-                  <div className="rdb-pager" role="tablist">
+                  <div className="rdb-pager-list" role="tablist">
                     {Array.from({ length: gamePageCount }, (_, i) => (
                       <button
                         key={i}
@@ -665,11 +752,8 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                         aria-pressed={i === currentGamePage}
                         aria-label={`Página ${i + 1} de ${gamePageCount}`}
                         data-testid={`lobby-page-dot-${i}`}
-                        onClick={() => {
-                          sounds.playTick();
-                          setGamePage(i);
-                        }}
-                        className="rdb-btn rdb-btn--icon cursor-pointer"
+                        onClick={() => goToGamePage(i)}
+                        className="rdb-pager-dot cursor-pointer"
                       >
                         {i + 1}
                       </button>
@@ -679,11 +763,8 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                     type="button"
                     data-testid="lobby-page-next"
                     disabled={isLastGamePage}
-                    onClick={() => {
-                      sounds.playTick();
-                      setGamePage(Math.min(gamePageCount - 1, currentGamePage + 1));
-                    }}
-                    className="rdb-btn rdb-btn--icon cursor-pointer"
+                    onClick={() => goToGamePage(currentGamePage + 1)}
+                    className="rdb-pager-arrow cursor-pointer"
                     aria-label="Próxima página"
                   >
                     <ChevronRight />
@@ -693,27 +774,69 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
             </div>
           </div>
 
-          {/* Grade 3x2: seis jogos por pagina; na ultima, a casa que sobra vira o sorteio */}
-          <div className={`rdb-grid ${pageGames.length + (isLastGamePage ? 1 : 0) <= 3 ? "rdb-grid--row" : ""}`}>
-            {pageGames.map((game) => <LobbyGameCard key={game.id} game={game} handleGameClick={handleGameClick} setHoveredGame={setHoveredGame} visualTheme={visualTheme} />)}
-            {isLastGamePage && pageGames.length < GAMES_PER_PAGE && (
-              <button
-                type="button"
-                data-testid="lobby-surprise-roulette-btn"
-                onClick={handleSurpriseRoulette}
-                className="rdb-card rdb-card--surprise group cursor-pointer"
-              >
-                <span className="rdb-card-art">
-                  <SurpriseArt />
-                </span>
-                <span className="rdb-card-foot">
-                  <span className="min-w-0">
-                    <span className="rdb-card-name block">Sortear jogo surpresa</span>
-                    <span className="rdb-card-tagline block">Deixa o dado escolher um dos {GAMES.length}</span>
-                  </span>
-                </span>
-              </button>
-            )}
+          {/* Grade 3x2 em carrossel horizontal: scroll lateral ou arraste trocam de pagina */}
+          <div
+            className={`rdb-catalog-viewport${isDraggingCatalog ? ' is-dragging' : ''}`}
+            onPointerDown={handleCatalogPointerDown}
+            onPointerMove={handleCatalogPointerMove}
+            onPointerUp={finishCatalogDrag}
+            onPointerCancel={finishCatalogDrag}
+            onWheel={handleCatalogWheel}
+            onClickCapture={(e) => {
+              if (suppressCardClickRef.current) {
+                e.preventDefault();
+                e.stopPropagation();
+                suppressCardClickRef.current = false;
+              }
+            }}
+          >
+            <div
+              className={`rdb-catalog-track${isDraggingCatalog ? ' is-dragging' : ''}`}
+              style={{
+                transform: `translate3d(calc(${-currentGamePage * 100}% + ${dragOffset}px), 0, 0)`
+              }}
+            >
+              {gamePages.map((items, pageIdx) => {
+                const isLast = pageIdx >= gamePageCount - 1;
+                const isActive = pageIdx === currentGamePage;
+                return (
+                  <div
+                    key={pageIdx}
+                    aria-hidden={!isActive}
+                    className={`rdb-grid rdb-catalog-page ${items.length + (isLast ? 1 : 0) <= 3 ? 'rdb-grid--row' : ''}`}
+                  >
+                    {items.map((game) => (
+                      <LobbyGameCard
+                        key={game.id}
+                        game={game}
+                        handleGameClick={handleGameClick}
+                        setHoveredGame={setHoveredGame}
+                        visualTheme={visualTheme}
+                      />
+                    ))}
+                    {isLast && items.length < GAMES_PER_PAGE && (
+                      <button
+                        type="button"
+                        data-testid="lobby-surprise-roulette-btn"
+                        onClick={handleSurpriseRoulette}
+                        className="rdb-card rdb-card--surprise group cursor-pointer"
+                        tabIndex={isActive ? 0 : -1}
+                      >
+                        <span className="rdb-card-art">
+                          <SurpriseArt />
+                        </span>
+                        <span className="rdb-card-foot">
+                          <span className="min-w-0">
+                            <span className="rdb-card-name block">Sortear jogo surpresa</span>
+                            <span className="rdb-card-tagline block">Deixa o dado escolher um dos {GAMES.length}</span>
+                          </span>
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
