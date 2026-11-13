@@ -2849,3 +2849,73 @@
 .rdb-pro-sum-head h2 { display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: 8px 12px; }
 .rdb-pro-sum-head h2 small { font-size: clamp(1rem, 1.6vw, 1.4rem); }
 .rdb-pro-sum-head p { max-width: 60ch; line-height: 1.45; text-wrap: balance; }
+
+/* ---------- Carta do Perguntas e Verdades (padrao) ---------- */
+.rdb-pcard {
+  --tone: var(--rdb-cream);
+  position: relative;
+  height: 100%;
+  min-height: 4.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0.35rem 0.3rem;
+  background: var(--rdb-navy-2);
+  border: var(--rdb-line) solid var(--tone);
+  color: var(--tone);
+  cursor: pointer;
+  user-select: none;
+  animation: rdb-pcard-in 0.26s cubic-bezier(0.3, 1.5, 0.5, 1);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.rdb-pcard:hover { transform: translateY(-2px); background: rgba(245, 242, 235, 0.06); }
+.rdb-pcard.is-selected { box-shadow: 0 0 0 3px var(--rdb-cream); }
+.rdb-pcard.is-conflict { border-color: var(--rdb-crimson); background: rgba(230, 25, 75, 0.2); animation: rdb-pcard-shake 0.35s; }
+.rdb-pcard.is-empty {
+  --tone: rgba(245, 242, 235, 0.35);
+  justify-content: flex-start;
+  background: transparent;
+  border-style: dashed;
+  animation: none;
+}
+.rdb-pcard.is-empty.is-selected { --tone: var(--rdb-teal); border-style: solid; box-shadow: none; background: rgba(23, 184, 184, 0.12); }
+.rdb-pcard-top {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 1rem;
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: var(--rdb-ink-2);
+  text-transform: uppercase;
+}
+.rdb-pcard-top button {
+  width: 1.1rem;
+  height: 1.1rem;
+  line-height: 1;
+  background: var(--rdb-crimson);
+  border: 0;
+  color: var(--rdb-cream);
+  font-weight: 900;
+  cursor: pointer;
+}
+.rdb-pcard-rank {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(1.4rem, 3.4vh, 2.4rem);
+  line-height: 1;
+}
+.rdb-pcard-suit { font-size: clamp(0.9rem, 2vh, 1.4rem); line-height: 1; }
+@keyframes rdb-pcard-in { from { transform: scale(0.7) translateY(-0.4rem); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes rdb-pcard-shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+/* Arrastar: a carta levantada, o destino iluminado */
+.rdb-pv-slot { transition: transform 0.15s ease, opacity 0.15s ease; }
+.rdb-pv-slot[draggable='true'] { cursor: grab; }
+.rdb-pv-slot[draggable='true']:active { cursor: grabbing; }
+.rdb-pv-slot.is-dragging { opacity: 0.35; transform: scale(0.94) rotate(-2deg); }
+.rdb-pv-slot.is-over .rdb-pcard { border-color: var(--rdb-teal); border-style: solid; background: rgba(23, 184, 184, 0.2); transform: scale(1.06); box-shadow: 0 0 0 3px rgba(23, 184, 184, 0.5); }
+.rdb-pv-card[draggable='true'] { cursor: grab; }
+.rdb-pv-card[draggable='true']:active { cursor: grabbing; transform: scale(1.12) rotate(-3deg); }
+@media (prefers-reduced-motion: reduce) { .rdb-pcard, .rdb-pv-slot { animation: none !important; transition: none !important; } }

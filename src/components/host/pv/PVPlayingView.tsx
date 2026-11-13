@@ -105,6 +105,7 @@ export const PVPlayingView: React.FC<PVPlayingViewProps> = ({
   activePlayers,
   handleAwardRoundWinToPlayer
 }) => {
+  const [overIdx, setOverIdx] = React.useState<number | null>(null);
   const deckStyle: PVDeckStyle = pv.deckStyle || room.customConfig?.pvDeckStyle || 'padrao';
   const targetHand = targetOpponent ? pv.playerHands[targetOpponent.id] || [] : [];
   const allOpen = targetOpponent ? (pv.revealedCards[targetOpponent.id] || []).every(Boolean) : false;
@@ -446,9 +447,19 @@ export const PVPlayingView: React.FC<PVPlayingViewProps> = ({
                 <div
                   key={slotIdx}
                   data-testid={`pv-card-slot-${targetOpponent?.id}-${slotIdx + 1}`}
-                  onDragOver={(e) => e.preventDefault()}
+                  className={'rdb-pv-slot' + (truthDraggedCard?.fromSlotIndex === slotIdx ? ' is-dragging' : '') + (overIdx === slotIdx ? ' is-over' : '')}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (overIdx !== slotIdx) setOverIdx(slotIdx);
+                  }}
+                  onDragLeave={() => setOverIdx((cur) => (cur === slotIdx ? null : cur))}
+                  onDragEnd={() => {
+                    setOverIdx(null);
+                    setTruthDraggedCard(null);
+                  }}
                   onDrop={(e) => {
                     e.preventDefault();
+                    setOverIdx(null);
                     if (truthDraggedCard) {
                       handlePlaceCardInTruthSlot(truthDraggedCard.card, slotIdx, truthDraggedCard.fromSlotIndex);
                       setTruthDraggedCard(null);
