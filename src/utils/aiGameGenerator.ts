@@ -1158,7 +1158,7 @@ function drawFallbackRound(
     const picked = pickUnused(
       limitePool,
       (it) => `${category}-limite-${it.pergunta}`,
-      (it) => !usedQuestionsTracker.has(it.pergunta),
+      (it) => !usedQuestionsTracker.has(it.pergunta) && it.pergunta.length <= 130,
       (it) => it.pergunta
     );
     registerUsedSignature(picked.item.pergunta);
@@ -1665,6 +1665,8 @@ function sanitizeAndFormatRoundItem(
   }
   if (gameId === 'limite' && item.pergunta) {
     item.pergunta = sanitizeCleanGameText(item.pergunta, 'limite');
+    // Pergunta longa nao cabe em 2 linhas na TV: recusa e deixa o banco pronto assumir.
+    if (String(item.pergunta).length > 130) return null;
     return { data: item, signature: String(item.pergunta) };
   }
   if (gameId === 'proibido') {
@@ -2024,7 +2026,7 @@ export async function generateRoundContent(
   difficulty?: string,
   explicitSubAngle?: SubAngleDefinition
 ): Promise<GenerateRoundResponse<unknown>> {
-  const round = await generateRoundContentCore(
+  let round = await generateRoundContentCore(
     gameId,
     customTheme,
     customConfig,
@@ -2032,6 +2034,23 @@ export async function generateRoundContent(
     difficulty,
     explicitSubAngle
   );
+  // Limite: pergunta longa nao cabe em 2 linhas na TV (vale tambem para rodadas guardadas em cache); troca por uma do banco.
+  const limiteQuestionLen = (r: GenerateRoundResponse<unknown>) => String((r.data as any)?.pergunta ?? '').length;
+  if (gameId === 'limite' && limiteQuestionLen(round) > 130) {
+    try {
+      const shorter = await generateRoundContentCore(
+        gameId,
+        customTheme,
+        { ...customConfig, contentSource: 'bank' },
+        excludeSignatures,
+        difficulty,
+        explicitSubAngle
+      );
+      if (limiteQuestionLen(shorter) > 0 && limiteQuestionLen(shorter) < limiteQuestionLen(round)) round = shorter;
+    } catch {
+      // sem alternativa no banco: segue com a pergunta original
+    }
+  }
   // Memoria de vistos (longo prazo): o que sai daqui nao deve voltar tao cedo, venha do banco, do cache ou da IA.
   markContentSeen(gameId, round.data);
   return round;

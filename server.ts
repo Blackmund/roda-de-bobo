@@ -1368,7 +1368,7 @@ ${buildTemOuNaoTemPrompt(
         if (gameId === 'limite' && item.pergunta) {
           const pergunta = sanitizeCleanGameText(item.pergunta || '', 'limite');
           const frases = pergunta.split(/[.!?]+\s+/).filter(Boolean).length;
-          if (pergunta.length > 260 || frases > 3 || String(item.fonte_do_numero || '').trim().length < 3) return null;
+          if (pergunta.length > 130 || frases > 2 || String(item.fonte_do_numero || '').trim().length < 3) return null;
           return {
             ...item,
             pergunta

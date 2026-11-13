@@ -49,3 +49,17 @@ test('parecidos: os sorteios de palavras nao repetem familia na mesma rodada', (
     }
   }
 });
+
+test('Limite: a maioria das perguntas dos bancos tem ate 130 caracteres (cabe em 2 linhas na TV)', async () => {
+  const { LIMITE_GOLDEN_QUESTIONS } = await import('../utils/limiteGoldenDatabase.ts');
+  const { LIMITE_BANKS_BY_CATEGORY, CURATED_LIMITE } = await import('../data/categoryBanks.ts').then(async (m: any) => ({ LIMITE_BANKS_BY_CATEGORY: m.LIMITE_BANKS_BY_CATEGORY || {}, CURATED_LIMITE: (await import('../data/curatedRounds.ts')).CURATED_LIMITE }));
+  const all: string[] = [
+    ...LIMITE_GOLDEN_QUESTIONS.map((q: any) => q.pergunta),
+    ...(CURATED_LIMITE as any[]).map((q) => q.pergunta),
+    ...Object.values(LIMITE_BANKS_BY_CATEGORY as Record<string, any[]>).flat().map((q: any) => q.pergunta)
+  ];
+  assert.ok(all.length > 50);
+  const short = all.filter((p) => p.length <= 130).length;
+  assert.ok(short / all.length >= 0.8, `so ${short}/${all.length} cabem`);
+  assert.ok(all.every((p) => p.length <= 200));
+});
