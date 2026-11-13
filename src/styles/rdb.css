@@ -1,0 +1,1878 @@
+/* =====================================================================================================
+   Identidade Roda de Bobo (CazeTV): navy, creme, teal e crimson, tudo chapado e de contorno reto.
+   Regua em .claude/skills/deslop/receitas.md. Tamanhos em clamp() com vw: a mesma tela serve de 1280x720
+   ate a TV Full HD/4K sem barra de rolagem e com texto legivel de longe.
+   ===================================================================================================== */
+:root {
+  --rdb-navy: #0a0b1e;
+  --rdb-navy-2: #10122b;
+  --rdb-cream: #f5f2eb;
+  --rdb-teal: #17b8b8;
+  --rdb-crimson: #e6194b;
+  --rdb-amber: #ffc93c;
+  --rdb-ink-2: #b9bdd4; /* texto secundario: 9,6:1 sobre o navy */
+  --rdb-line: 2px;
+  --rdb-heavy: 'Inter', 'Arial Black', system-ui, sans-serif;
+  --rdb-fs-bar: clamp(12px, 0.92vw, 19px);
+  --rdb-fs-card: clamp(15px, 1.5vw, 31px);
+  --rdb-fs-meta: clamp(12px, 0.9vw, 18px);
+  --rdb-bar-h: clamp(48px, 4.2vw, 84px);
+}
+
+/* ---------- Barra de janela (cabecalho) ---------- */
+.rdb-bar {
+  position: relative;
+  z-index: 30;
+  flex-shrink: 0;
+  height: var(--rdb-bar-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(8px, 0.8vw, 16px);
+  padding: 0 clamp(10px, 0.9vw, 20px);
+  background: var(--rdb-navy);
+  border-bottom: var(--rdb-line) solid var(--rdb-crimson);
+  user-select: none;
+}
+.rdb-bar-group {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 0.6vw, 12px);
+  min-width: 0;
+}
+.rdb-bar-logo {
+  flex-shrink: 0;
+  height: calc(var(--rdb-bar-h) * 0.46);
+  width: calc(var(--rdb-bar-h) * 0.46 * 4.64);
+}
+.rdb-bar-group:first-child {
+  flex: 1 1 0;
+  overflow: hidden;
+}
+.rdb-bar-title {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(15px, 1.25vw, 26px);
+  letter-spacing: 0.03em;
+  color: var(--rdb-cream);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rdb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  height: calc(var(--rdb-bar-h) * 0.66);
+  padding: 0 0.85em;
+  border: var(--rdb-line) solid var(--rdb-teal);
+  background: transparent;
+  color: var(--rdb-teal);
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: var(--rdb-fs-bar);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease-out, color 0.15s ease-out;
+}
+.rdb-btn svg {
+  width: 1.25em;
+  height: 1.25em;
+  flex-shrink: 0;
+  --rdb-accent: currentColor;
+}
+.rdb-btn:hover:not(:disabled),
+.rdb-btn[aria-pressed='true'],
+.rdb-btn[aria-expanded='true'] {
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-btn:focus-visible {
+  outline: 3px solid var(--rdb-cream);
+  outline-offset: 2px;
+}
+.rdb-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.rdb-btn--icon {
+  width: calc(var(--rdb-bar-h) * 0.66);
+  padding: 0;
+}
+.rdb-btn--cream {
+  border-color: var(--rdb-cream);
+  color: var(--rdb-cream);
+}
+.rdb-btn--cream:hover:not(:disabled),
+.rdb-btn--cream[aria-pressed='true'] {
+  background: var(--rdb-cream);
+  color: var(--rdb-navy);
+}
+.rdb-btn--crimson {
+  border-color: var(--rdb-crimson);
+  color: var(--rdb-cream);
+}
+.rdb-btn--crimson:hover:not(:disabled),
+.rdb-btn--crimson[aria-pressed='true'] {
+  background: var(--rdb-crimson);
+  color: #fff;
+}
+.rdb-btn--amber {
+  border-color: var(--rdb-amber);
+  color: var(--rdb-amber);
+}
+.rdb-btn--amber:hover:not(:disabled),
+.rdb-btn--amber[aria-expanded='true'] {
+  background: var(--rdb-amber);
+  color: var(--rdb-navy);
+}
+.rdb-btn--solid {
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-btn--solid:hover:not(:disabled) {
+  background: var(--rdb-cream);
+  border-color: var(--rdb-cream);
+}
+.rdb-live-dot {
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  background: var(--rdb-crimson);
+}
+/* Os 3 botoes de janela do programa: minimizar, restaurar e fechar (o ultimo cheio em crimson) */
+.rdb-winctl {
+  display: flex;
+  flex-shrink: 0;
+  border: var(--rdb-line) solid var(--rdb-crimson);
+  height: calc(var(--rdb-bar-h) * 0.66);
+}
+.rdb-winctl > * {
+  width: calc(var(--rdb-bar-h) * 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rdb-crimson);
+  border-left: var(--rdb-line) solid var(--rdb-crimson);
+}
+.rdb-winctl > *:first-child {
+  border-left: 0;
+}
+.rdb-winctl > .rdb-winctl-close {
+  background: var(--rdb-crimson);
+  color: var(--rdb-navy);
+}
+.rdb-winctl button.rdb-winctl-close:hover {
+  background: var(--rdb-cream);
+}
+.rdb-winctl svg {
+  width: 45%;
+  height: 45%;
+}
+@media (max-width: 640px) {
+  .rdb-hide-sm {
+    display: none !important;
+  }
+}
+@media (max-width: 1023px) {
+  .rdb-hide-md {
+    display: none !important;
+  }
+}
+@media (max-width: 1439px) {
+  .rdb-hide-lg {
+    display: none !important;
+  }
+}
+
+/* ---------- Catalogo ---------- */
+.rdb-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: clamp(8px, 0.8vw, 16px);
+  flex-shrink: 0;
+}
+/* Etiqueta cheia em teal, como o "DESAFIO" do programa */
+.rdb-tag {
+  display: inline-flex;
+  align-items: center;
+  height: calc(var(--rdb-bar-h) * 0.66);
+  padding: 0 0.7em;
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-size: clamp(15px, 1.25vw, 26px);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.rdb-toolbar-note {
+  font-family: var(--rdb-heavy);
+  font-weight: 600;
+  font-size: var(--rdb-fs-meta);
+  color: var(--rdb-ink-2);
+}
+.rdb-pager {
+  display: inline-flex;
+  align-items: center;
+  height: calc(var(--rdb-bar-h) * 0.52);
+  padding: 2px;
+  gap: 2px;
+  border: var(--rdb-line) solid rgba(23, 184, 184, 0.45);
+  background: rgba(7, 8, 13, 0.72);
+}
+.rdb-pager-list {
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  gap: 2px;
+}
+.rdb-pager-arrow,
+.rdb-pager-dot {
+  display: inline-grid;
+  place-items: center;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--rdb-ink-2);
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-size: 0.78rem;
+  line-height: 1;
+  transition: background-color 0.18s ease-out, color 0.18s ease-out, min-width 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease-out;
+}
+.rdb-pager-arrow {
+  width: 1.7rem;
+  color: var(--rdb-teal);
+}
+.rdb-pager-arrow svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+.rdb-pager-dot {
+  min-width: 1.55rem;
+  padding: 0 0.4rem;
+}
+.rdb-pager-arrow:hover:not(:disabled),
+.rdb-pager-dot:hover:not([aria-pressed='true']) {
+  background: rgba(23, 184, 184, 0.18);
+  color: var(--rdb-cream);
+}
+.rdb-pager-dot[aria-pressed='true'] {
+  min-width: 2.2rem;
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-pager-arrow:disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+.rdb-pager-arrow:focus-visible,
+.rdb-pager-dot:focus-visible {
+  outline: 2px solid var(--rdb-cream);
+  outline-offset: 1px;
+}
+.rdb-catalog-viewport {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+}
+.rdb-catalog-viewport.is-dragging {
+  cursor: grabbing;
+}
+.rdb-catalog-track {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.rdb-catalog-track.is-dragging {
+  transition: none;
+}
+.rdb-catalog-page {
+  flex: 0 0 100%;
+  min-width: 100%;
+  height: 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rdb-catalog-track,
+  .rdb-pager-arrow,
+  .rdb-pager-dot {
+    transition: none;
+  }
+}
+.rdb-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: clamp(10px, 1vw, 22px);
+  flex: 1 1 0;
+  min-height: 0;
+}
+/* Pagina com ate 3 cards: uma fileira so, na altura toda (nada de meia tela vazia) */
+.rdb-grid--row {
+  grid-template-rows: minmax(0, 1fr);
+}
+@media (max-width: 899px) {
+  .rdb-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: none;
+    grid-auto-rows: minmax(190px, 1fr);
+    overflow-y: auto;
+  }
+}
+@media (max-width: 519px) {
+  .rdb-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.rdb-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+  text-align: left;
+  background: var(--rdb-navy);
+  border: var(--rdb-line) solid var(--rdb-teal);
+  color: var(--rdb-teal);
+  overflow: hidden;
+  transition: border-color 0.15s ease-out;
+}
+.rdb-card:hover,
+.rdb-card:focus-visible {
+  border-color: var(--rdb-cream);
+  outline: none;
+}
+.rdb-card:focus-visible {
+  outline: 3px solid var(--rdb-cream);
+  outline-offset: 2px;
+}
+.rdb-card-art {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.rdb-card-mode {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  padding: 0.3em 0.7em;
+  background: var(--rdb-crimson);
+  color: #fff;
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: var(--rdb-fs-meta);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.rdb-card-foot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6em;
+  padding: 0.5em 0.8em;
+  border-top: var(--rdb-line) solid var(--rdb-teal);
+  transition: background-color 0.15s ease-out, color 0.15s ease-out, border-color 0.15s ease-out;
+}
+.rdb-card:hover .rdb-card-foot,
+.rdb-card:focus-visible .rdb-card-foot {
+  background: var(--rdb-teal);
+  border-color: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-card-name {
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-size: var(--rdb-fs-card);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rdb-card-tagline {
+  margin-top: 0.2em;
+  font-family: var(--rdb-heavy);
+  font-weight: 600;
+  font-size: var(--rdb-fs-meta);
+  line-height: 1.2;
+  color: var(--rdb-ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rdb-card:hover .rdb-card-tagline,
+.rdb-card:focus-visible .rdb-card-tagline {
+  color: var(--rdb-navy);
+}
+.rdb-card-players {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: var(--rdb-fs-meta);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.rdb-card-players svg {
+  width: 1.3em;
+  height: 1.3em;
+  --rdb-accent: currentColor;
+}
+.rdb-card--surprise {
+  border-style: dashed;
+  border-color: var(--rdb-cream);
+  color: var(--rdb-cream);
+}
+.rdb-card--surprise .rdb-card-foot {
+  border-top-style: dashed;
+  border-color: var(--rdb-cream);
+}
+
+/* ---------- Arte dos cards ---------- */
+.rdbv {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+.rdbv--vignette {
+  align-items: center;
+  padding: 4% 6%;
+}
+.rdbv-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.rdbv-char {
+  position: relative;
+  height: auto;
+  width: auto;
+  max-height: 94%;
+  max-width: 78%;
+  object-fit: contain;
+  object-position: bottom;
+  transform-origin: 50% 100%;
+  animation: rdbv-breathe 4.2s ease-in-out infinite;
+}
+.rdbv-burst {
+  position: absolute;
+  left: 50%;
+  bottom: -18%;
+  height: 150%;
+  aspect-ratio: 1;
+  transform: translateX(-50%) scale(0.6);
+  opacity: 0;
+  transition: opacity 0.2s ease-out, transform 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+  /* a animacao roda sempre (invisivel em repouso): o hover so muda opacidade, nunca reinicia nada */
+  animation: rdbv-spin 40s linear infinite;
+}
+.rdbv-burst path {
+  opacity: 0.22;
+}
+.rdb-card:hover .rdbv-burst,
+.rdb-card:focus-visible .rdbv-burst {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+@keyframes rdbv-breathe {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(0) scaleY(1.018); }
+}
+@keyframes rdbv-hop {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1, 1); }
+  18% { transform: translateY(0) rotate(0deg) scale(1.03, 0.96); }
+  48% { transform: translateY(-5%) rotate(-2deg) scale(0.99, 1.03); }
+  78% { transform: translateY(0) rotate(1deg) scale(1.02, 0.98); }
+}
+@keyframes rdbv-spin {
+  to { rotate: 360deg; }
+}
+
+/* Mega Resenha: os pontos da senha acendem em sequencia */
+.rdbv-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rdbv-dot 2.2s ease-in-out infinite;
+}
+@keyframes rdbv-dot {
+  0%, 60%, 100% { transform: scale(1); opacity: 0.55; }
+  20% { transform: scale(1.45); opacity: 1; }
+}
+/* Como eu pinto: a bicicleta e desenhada traco a traco; a barra de tempo esvazia */
+.rdbv-draw > * {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: rdbv-draw 7s ease-in-out infinite;
+}
+.rdbv-draw > *:nth-child(2) { animation-delay: 0.5s; }
+.rdbv-draw > *:nth-child(3) { animation-delay: 1s; }
+.rdbv-draw > *:nth-child(4) { animation-delay: 1.5s; }
+.rdbv-draw > *:nth-child(5) { animation-delay: 2s; }
+@keyframes rdbv-draw {
+  0% { stroke-dashoffset: 1; }
+  22%, 86% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 1; }
+}
+.rdbv-bar {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: rdbv-bar 7s linear infinite;
+}
+@keyframes rdbv-bar {
+  0% { transform: scaleX(1); }
+  90%, 100% { transform: scaleX(0); }
+}
+/* Estadios e Onde estou: o alfinete cai e quica; a sombra acompanha */
+.rdbv-pin {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: rdbv-pin 2.8s cubic-bezier(0.3, 0, 0.3, 1) infinite;
+}
+@keyframes rdbv-pin {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  12% { transform: translateY(0) scale(1.08, 0.9); }
+  42% { transform: translateY(-26%) scale(0.96, 1.05); }
+  70% { transform: translateY(0) scale(1.06, 0.92); }
+  82% { transform: translateY(-6%) scale(1, 1); }
+}
+.rdbv-pin-shadow {
+  opacity: 0.35;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rdbv-pin-shadow 2.8s cubic-bezier(0.3, 0, 0.3, 1) infinite;
+}
+@keyframes rdbv-pin-shadow {
+  0%, 100%, 70% { transform: scale(1); opacity: 0.4; }
+  42% { transform: scale(0.55); opacity: 0.15; }
+}
+.rdbv-route {
+  animation: rdbv-route 1.6s linear infinite;
+}
+@keyframes rdbv-route {
+  to { stroke-dashoffset: -18; }
+}
+/* Quem sou eu: os olhos procuram a plaquinha na testa */
+.rdbv-eyes {
+  animation: rdbv-eyes 4.5s ease-in-out infinite;
+}
+@keyframes rdbv-eyes {
+  0%, 12%, 100% { transform: translate(0, 0); }
+  22%, 40% { transform: translate(-6px, -5px); }
+  52%, 70% { transform: translate(6px, -5px); }
+  82% { transform: translate(0, 4px); }
+}
+.rdbv-card {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: rdbv-wobble 4.5s ease-in-out infinite;
+}
+@keyframes rdbv-wobble {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+/* Mimica: o ziper fecha a boca do balao */
+.rdbv-zip {
+  animation: rdbv-zip 3.6s ease-in-out infinite;
+}
+.rdbv-zip-line {
+  stroke-dasharray: 1;
+  animation: rdbv-zip-line 3.6s ease-in-out infinite;
+}
+@keyframes rdbv-zip {
+  0%, 8% { transform: translateX(0); }
+  45%, 80% { transform: translateX(178px); }
+  100% { transform: translateX(0); }
+}
+@keyframes rdbv-zip-line {
+  0%, 8% { stroke-dashoffset: 1; }
+  45%, 80% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 1; }
+}
+.rdbv-shh {
+  animation: rdbv-blink 3.6s steps(1) infinite;
+}
+@keyframes rdbv-blink {
+  0%, 44% { opacity: 0; }
+  45%, 80% { opacity: 1; }
+  81%, 100% { opacity: 0; }
+}
+/* Repetente: as duas placas trocam de palavra ao mesmo tempo */
+.rdbv-word-a { animation: rdbv-word-a 4s steps(1) infinite; }
+.rdbv-word-b { animation: rdbv-word-b 4s steps(1) infinite; }
+@keyframes rdbv-word-a {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes rdbv-word-b {
+  0%, 49% { opacity: 0; }
+  50%, 100% { opacity: 1; }
+}
+.rdbv-equal {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rdbv-pop 4s ease-out infinite;
+}
+@keyframes rdbv-pop {
+  0%, 50% { transform: scale(0); }
+  8%, 58% { transform: scale(1.25); }
+  14%, 44%, 64%, 94% { transform: scale(1); }
+  49%, 99% { transform: scale(0); }
+}
+/* Respostas sem perguntas: as casas viram uma a uma */
+.rdbv-tile {
+  animation: rdbv-flip 5s ease-in-out infinite;
+}
+@keyframes rdbv-flip {
+  0%, 16%, 100% { transform: scaleX(1); }
+  8% { transform: scaleX(0.05); }
+}
+/* Sortear: o dado rola */
+.rdbv-dice {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rdbv-dice 3.2s cubic-bezier(0.4, 0, 0.3, 1) infinite;
+}
+@keyframes rdbv-dice {
+  0%, 55%, 100% { transform: rotate(-8deg); }
+  75% { transform: rotate(352deg) scale(1.06); }
+  76%, 99% { transform: rotate(-8deg); }
+}
+.rdbv-q1, .rdbv-q2 {
+  animation: rdbv-float 3.2s ease-in-out infinite;
+}
+.rdbv-q2 { animation-delay: 1.6s; }
+@keyframes rdbv-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Hover e foco nao mexem em animation-*: trocar duracao ou animacao reiniciaria a vinheta. */
+
+@media (prefers-reduced-motion: reduce) {
+  .rdbv *, .rdbv-char, .rdbv-burst {
+    animation: none !important;
+    transition: none !important;
+  }
+  .rdbv-draw > *, .rdbv-zip-line {
+    stroke-dashoffset: 0;
+  }
+  .rdbv-word-b {
+    opacity: 0;
+  }
+}
+
+/* =====================================================================================================
+   Modo TV: a interface inteira escala com a largura da tela. Em 1280x720 fica como foi desenhada; em Full HD
+   tudo cresce 1,5x e em 4K 3x, mantendo a mesma composicao (sem barra de rolagem e legivel do sofa).
+   O Tailwind usa rem, entao basta escalar a fonte raiz; os tamanhos fixos em px sao convertidos abaixo.
+   ===================================================================================================== */
+@media (min-width: 1280px) and (min-aspect-ratio: 3/2) {
+  html.rb-tv {
+    font-size: clamp(16px, 1.25vw, 48px);
+  }
+}
+.retro-window-container [class*='text-[8px]'],
+.retro-window-container [class*='text-[9px]'] {
+  font-size: 0.66rem;
+}
+.retro-window-container [class*='text-[10px]'] {
+  font-size: 0.7rem;
+}
+.retro-window-container [class*='text-[11px]'] {
+  font-size: 0.75rem;
+}
+
+/* ---------- Configuracao do jogo: duas colunas em tela larga, para caber em 16:9 sem rolar ---------- */
+.rdb-wide {
+  max-width: min(97vw, 112rem);
+}
+@media (min-width: 1100px) {
+  .rdb-setup-cols {
+    column-count: 2;
+    column-gap: 0.75rem;
+  }
+  .rdb-setup-cols > * {
+    break-inside: avoid;
+    margin-top: 0 !important;
+    margin-bottom: 0.6rem;
+  }
+}
+/* Um contorno so para todas as secoes (antes cada uma tinha uma cor) e nada de sombra */
+[data-testid='step2-configure-game'] section,
+[data-testid='step2-configure-game'] section > div[class*='border'] {
+  border-color: rgba(245, 242, 235, 0.2) !important;
+  box-shadow: none !important;
+}
+[data-testid='step2-configure-game'] h4 {
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+@media (min-width: 1100px) {
+  /* Dificuldade, tempo e rodadas: uma linha cada (nas 3 colunas apertadas os titulos quebravam) */
+  .rdb-setup-cols > section.grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .rdb-setup-cols > section.grid .grid-cols-2 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  /* Categorias em 4 por linha: os nomes cabem inteiros */
+  .rdb-setup-cols [class*='md:grid-cols-8'] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* =====================================================================================================
+   Telas de jogo na identidade do programa: tudo chapado. Sem brilho em volta, sem degrade e sem ponto
+   pulsando em loop (o estado ja aparece na cor e no texto).
+   ===================================================================================================== */
+.theme-original [class*='shadow-[0_0'] {
+  box-shadow: none !important;
+}
+.theme-original [class*='bg-gradient-to'] {
+  background-image: none !important;
+  background-color: var(--rdb-navy-2);
+}
+.theme-original .animate-ping {
+  display: none;
+}
+/* Faixa "jogador da vez": o nome e a noticia, entao e o maior texto da faixa */
+[data-testid='active-turn-spotlight-banner'] {
+  background: var(--rdb-navy-2) !important;
+  box-shadow: none !important;
+}
+[data-testid='active-turn-player-name'] {
+  font-size: 1.75rem;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Vinhetas dos 6 jogos classicos ---------- */
+/* Limite: o ponteiro sobe ate quase a zona de estouro, hesita e volta */
+.rdbv-needle {
+  animation: rdbv-needle 4.2s cubic-bezier(0.35, 0, 0.25, 1) infinite;
+}
+@keyframes rdbv-needle {
+  0%, 100% { transform: rotate(-150deg); }
+  45% { transform: rotate(-12deg); }
+  52% { transform: rotate(-20deg); }
+  60%, 78% { transform: rotate(-6deg); }
+}
+/* Duvido e Nota: tres valores se revezam */
+.rdbv-cyc-a { animation: rdbv-cyc-a 4.5s steps(1) infinite; }
+.rdbv-cyc-b { animation: rdbv-cyc-b 4.5s steps(1) infinite; }
+.rdbv-cyc-c { animation: rdbv-cyc-c 4.5s steps(1) infinite; }
+@keyframes rdbv-cyc-a {
+  0% { opacity: 1; }
+  33%, 100% { opacity: 0; }
+}
+@keyframes rdbv-cyc-b {
+  0%, 66%, 100% { opacity: 0; }
+  33% { opacity: 1; }
+}
+@keyframes rdbv-cyc-c {
+  0%, 100% { opacity: 0; }
+  66% { opacity: 1; }
+}
+/* Duvido: o balao do "?!" treme quando o lance chega no 7 */
+.rdbv-shake {
+  animation: rdbv-shake 4.5s ease-in-out infinite;
+}
+@keyframes rdbv-shake {
+  0%, 64%, 100% { transform: rotate(0deg) scale(1); }
+  68% { transform: rotate(-6deg) scale(1.08); }
+  74% { transform: rotate(5deg) scale(1.08); }
+  80% { transform: rotate(-3deg) scale(1.04); }
+  88% { transform: rotate(0deg) scale(1); }
+}
+/* Proibido: as palavras sao riscadas uma a uma; a sirene pisca */
+.rdbv-strike {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: rdbv-strike 4s ease-out infinite;
+}
+@keyframes rdbv-strike {
+  0% { stroke-dashoffset: 1; }
+  12%, 80% { stroke-dashoffset: 0; }
+  92%, 100% { stroke-dashoffset: 1; }
+}
+.rdbv-flash {
+  animation: rdbv-flash 1s steps(1) infinite;
+}
+@keyframes rdbv-flash {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.15; }
+}
+/* Tem ou Nao Tem: as respostas do painel sao reveladas de cima para baixo */
+.rdbv-reveal {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rdbv-reveal 6s ease-in-out infinite;
+}
+@keyframes rdbv-reveal {
+  0% { transform: scaleY(0); }
+  6%, 78% { transform: scaleY(1); }
+  86%, 100% { transform: scaleY(0); }
+}
+/* Perguntas e Verdades: as cartas abrem em leque; as fichas caem na pilha */
+.rdbv-fan {
+  animation: rdbv-fan 5s cubic-bezier(0.3, 1.3, 0.5, 1) infinite;
+}
+@keyframes rdbv-fan {
+  0%, 100% { transform: rotate(0deg); }
+  14%, 82% { transform: rotate(var(--rdbv-a)); }
+}
+.rdbv-chip {
+  animation: rdbv-chip 5s cubic-bezier(0.3, 0, 0.3, 1) infinite;
+}
+@keyframes rdbv-chip {
+  0% { transform: translateY(-60px); opacity: 0; }
+  10% { transform: translateY(0); opacity: 1; }
+  13% { transform: translateY(-6px); }
+  16%, 84% { transform: translateY(0); opacity: 1; }
+  92%, 100% { transform: translateY(0); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rdbv-strike { stroke-dashoffset: 0; }
+  .rdbv-cyc-b, .rdbv-cyc-c { opacity: 0; }
+  .rdbv-needle { transform: rotate(-6deg); }
+  .rdbv-fan { transform: rotate(var(--rdbv-a)); }
+}
+
+/* ---------- Escolha do modo da sala ---------- */
+.rdb-card--on {
+  border-color: var(--rdb-cream);
+}
+.rdb-card--on .rdb-card-foot {
+  background: var(--rdb-teal);
+  border-color: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-card--on .rdb-card-tagline {
+  color: var(--rdb-navy);
+}
+.rdb-card-tagline--wrap {
+  white-space: normal;
+}
+.rdb-btn--lg {
+  height: calc(var(--rdb-bar-h) * 0.9);
+  padding: 0 1.3em;
+  font-size: clamp(15px, 1.25vw, 26px);
+  font-weight: 900;
+}
+.rdb-toolbar-note[data-ok='false'] {
+  color: var(--rdb-amber);
+}
+/* tela do celular acende em sequencia */
+.rdbv-screen {
+  animation: rdbv-screen 2.4s steps(1) infinite;
+}
+@keyframes rdbv-screen {
+  0%, 59% { opacity: 1; }
+  60%, 100% { opacity: 0.35; }
+}
+.rdb-card-tagline--wrap {
+  min-height: 2.4em;
+}
+
+/* ---------- Jogadores da sala (seletor de elenco) na identidade ---------- */
+[data-testid='pregame-player-selector'] {
+  border: var(--rdb-line) solid var(--rdb-teal) !important;
+  background: var(--rdb-navy) !important;
+  box-shadow: none !important;
+  padding: 1rem !important;
+}
+[data-testid='pregame-player-selector'] h3,
+[data-testid='pregame-player-selector'] h4 {
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+}
+/* Elenco fixo: botoes grandes, faceis de acertar de longe com o mouse */
+[data-testid^='pregame-fixed-player-'] {
+  padding: 0.55em 0.95em !important;
+  border: var(--rdb-line) solid var(--rdb-teal) !important;
+  background: transparent !important;
+  color: var(--rdb-cream) !important;
+  font-family: var(--rdb-heavy) !important;
+  font-weight: 800 !important;
+  font-size: 0.95rem !important;
+  box-shadow: none !important;
+}
+[data-testid^='pregame-fixed-player-']:hover:not(:disabled) {
+  background: var(--rdb-teal) !important;
+  color: var(--rdb-navy) !important;
+}
+[data-testid^='pregame-fixed-player-']:disabled {
+  border-color: rgba(245, 242, 235, 0.25) !important;
+  opacity: 0.55;
+}
+[data-testid='pregame-guest-input'] {
+  font-size: 0.95rem !important;
+  padding: 0.55em 0.8em !important;
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.35) !important;
+}
+[data-testid='pregame-add-guest-btn'],
+[data-testid='pregame-add-all-fixed-btn'] {
+  font-family: var(--rdb-heavy) !important;
+  font-weight: 800 !important;
+  font-size: 0.85rem !important;
+  padding: 0.55em 0.95em !important;
+  box-shadow: none !important;
+}
+[data-testid^='roster-player-card-'] {
+  border: var(--rdb-line) solid var(--rdb-teal) !important;
+  background: var(--rdb-navy-2) !important;
+  box-shadow: none !important;
+}
+
+/* ---------- Modais (menu, jogadores, QR, comparar): mesma identidade chapada ---------- */
+.theme-original [class*='backdrop-blur'] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.theme-original [role='dialog'] {
+  border: var(--rdb-line) solid var(--rdb-crimson) !important;
+  background: var(--rdb-navy) !important;
+  box-shadow: none !important;
+}
+.theme-original [role='dialog'] [class*='shadow-'] {
+  box-shadow: none !important;
+}
+[role='dialog'] [class*='text-[9px]'],
+[role='dialog'] [class*='text-[10px]'] {
+  font-size: 0.7rem;
+}
+[role='dialog'] [class*='text-[11px]'] {
+  font-size: 0.75rem;
+}
+
+/* ---------- Jogador do elenco ja na sala: botao preenchido ---------- */
+[data-testid^='pregame-fixed-player-'][aria-pressed='true'] {
+  background: var(--rdb-teal) !important;
+  border-color: var(--rdb-teal) !important;
+  color: var(--rdb-navy) !important;
+}
+[data-testid^='pregame-fixed-player-'][aria-pressed='true']:hover {
+  background: var(--rdb-cream) !important;
+  border-color: var(--rdb-cream) !important;
+}
+[data-testid^='pregame-fixed-player-'][aria-pressed='true'] svg {
+  color: var(--rdb-navy);
+  animation: rdb-check-in 0.28s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+@keyframes rdb-check-in {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+/* ---------- Roleta do "Sortear jogo" ---------- */
+.rdb-roulette {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: var(--rdb-navy);
+  animation: rdb-fade-in 0.15s ease-out;
+}
+@keyframes rdb-fade-in {
+  from { opacity: 0; }
+}
+.rdb-roulette-kicker {
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rdb-amber);
+}
+.rdb-roulette-frame {
+  position: relative;
+  width: min(46vw, 78vh);
+  aspect-ratio: 16 / 10;
+  border: var(--rdb-line) solid var(--rdb-teal);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.rdb-roulette-frame--landed {
+  border-color: var(--rdb-cream);
+  animation: rdb-land 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+@keyframes rdb-land {
+  0% { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+.rdb-roulette-art {
+  position: absolute;
+  inset: 0;
+  animation: rdb-roll-in 0.12s ease-out;
+}
+@keyframes rdb-roll-in {
+  from { transform: translateY(-22%); opacity: 0.3; }
+}
+.rdb-roulette-name {
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-size: clamp(1.6rem, 3.4vw, 4rem);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--rdb-teal);
+}
+.rdb-roulette-name--landed {
+  color: var(--rdb-cream);
+  animation: rdb-land 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+/* ---------- Vinheta de transicao da partida ---------- */
+.rdb-stinger {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  overflow: hidden;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+/* veu: tampa a tela nova desde o primeiro quadro, ate as cortinas cobrirem tudo */
+.rdb-stinger::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--rdb-navy);
+  animation: rdb-stinger-veil 1.3s linear forwards;
+}
+@keyframes rdb-stinger-veil {
+  0%, 30% { opacity: 1; }
+  31%, 100% { opacity: 0; }
+}
+/* tres cortinas inclinadas cruzam a tela inteira, uma atras da outra */
+.rdb-stinger-bar {
+  position: absolute;
+  top: -10%;
+  left: -30%;
+  width: 160%;
+  height: 120%;
+  transform: translateX(-112%) skewX(-14deg);
+  animation: rdb-stinger-bar 1.3s cubic-bezier(0.76, 0, 0.18, 1) forwards;
+}
+.rdb-stinger-bar--a {
+  background: var(--rdb-crimson);
+}
+.rdb-stinger-bar--b {
+  background: var(--rdb-teal);
+  animation-delay: 0.06s;
+}
+.rdb-stinger-bar--c {
+  background: var(--rdb-navy);
+  animation-delay: 0.12s;
+}
+@keyframes rdb-stinger-bar {
+  0% { transform: translateX(-112%) skewX(-14deg); }
+  22%, 64% { transform: translateX(0) skewX(-14deg); }
+  100% { transform: translateX(112%) skewX(-14deg); }
+}
+.rdb-stinger-text {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  opacity: 0;
+  animation: rdb-stinger-label 1.3s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+.rdb-stinger-kicker {
+  padding: 0.25em 0.7em;
+  background: var(--rdb-crimson);
+  color: #fff;
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-size: clamp(0.8rem, 1.4vw, 1.5rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.rdb-stinger-label {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(3rem, 11vw, 12rem);
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--rdb-cream);
+}
+.rdb-stinger-rule {
+  width: 100%;
+  height: clamp(4px, 0.6vw, 10px);
+  background: var(--rdb-teal);
+  transform-origin: left;
+  animation: rdb-stinger-rule 1.3s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+@keyframes rdb-stinger-label {
+  0%, 26% { opacity: 0; transform: translateX(-6vw); }
+  38%, 60% { opacity: 1; transform: translateX(0); }
+  72%, 100% { opacity: 0; transform: translateX(6vw); }
+}
+@keyframes rdb-stinger-rule {
+  0%, 30% { transform: scaleX(0); }
+  48%, 100% { transform: scaleX(1); }
+}
+
+/* Configuracao com os ajustes do jogo na propria tela (6 ou 7 linhas) */
+.rdb-setup-rows--dense .rdb-opt {
+  padding-block: 0.45rem;
+}
+.rdb-setup-rows--dense .rdb-seg {
+  min-height: 2.2rem;
+}
+
+/* ---------- Vez de: quem joga agora (igual em todos os jogos) ---------- */
+.rdb-turn {
+  --turn: var(--rdb-teal);
+  display: flex;
+  align-items: stretch;
+  gap: 0.9rem;
+  min-height: 3.6rem;
+  border: var(--rdb-line) solid var(--turn);
+  background: var(--rdb-navy);
+  color: var(--rdb-cream);
+  font-family: var(--rdb-heavy);
+}
+.rdb-turn-flag {
+  display: grid;
+  place-items: center;
+  padding: 0 1rem;
+  background: var(--turn);
+  color: var(--rdb-navy);
+  font-weight: 900;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.rdb-turn-mark {
+  align-self: center;
+  font-size: 1.5rem;
+}
+.rdb-turn-who {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 0.35rem 0;
+}
+.rdb-turn-name {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-weight: 400;
+  font-size: 1.9rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rdb-turn-role {
+  color: var(--rdb-ink-2);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rdb-turn-what {
+  flex: 1;
+  align-self: center;
+  min-width: 0;
+  margin: 0;
+  padding-left: 0.9rem;
+  border-left: 1px solid rgba(245, 242, 235, 0.2);
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.rdb-turn-side {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-right: 0.6rem;
+  flex-shrink: 0;
+}
+.rdb-turn-other {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 800;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+.rdb-turn-other > span:first-child {
+  color: var(--rdb-ink-2);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.rdb-turn-teams {
+  display: flex;
+  gap: 0.25rem;
+}
+.rdb-turn .rdb-seg {
+  min-width: 0;
+  min-height: 2.2rem;
+  padding: 0 0.7rem;
+  font-size: 0.78rem;
+}
+@media (max-width: 899px) {
+  .rdb-turn {
+    flex-wrap: wrap;
+    gap: 0.5rem 0.7rem;
+  }
+  .rdb-turn-flag {
+    padding: 0.3rem 0.7rem;
+  }
+  .rdb-turn-name {
+    font-size: 1.4rem;
+  }
+  .rdb-turn-what {
+    flex-basis: 100%;
+    padding: 0 0.7rem;
+    border-left: 0;
+  }
+  .rdb-turn-side {
+    flex-wrap: wrap;
+    padding: 0 0.7rem 0.5rem;
+  }
+}
+
+/* ---------- Proibido: a carta usa a tela inteira ---------- */
+.rdb-proibido-card {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 0.8rem;
+}
+.rdb-proibido-target {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+.rdb-proibido-target-word {
+  font-size: clamp(2.2rem, 6.2vw, 7rem);
+  line-height: 0.95;
+  overflow-wrap: anywhere;
+}
+.rdb-proibido-forbidden {
+  min-height: 0;
+}
+.rdb-proibido-word {
+  font-size: clamp(1.2rem, min(5vh, 3vw), 3.2rem);
+  line-height: 1.05;
+}
+@media (max-width: 899px) {
+  .rdb-proibido-card {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .rdb-proibido-target {
+    padding-block: 0.8rem;
+  }
+}
+
+/* ---------- Tela de vitoria ---------- */
+[data-testid='gameover-winner-centerpiece'],
+[data-testid='mvp-highlight-card'] {
+  border: var(--rdb-line) solid var(--rdb-teal) !important;
+  background: var(--rdb-navy) !important;
+  box-shadow: none !important;
+}
+.rdb-win-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.rdb-win-art {
+  height: clamp(56px, 10vh, 240px);
+  aspect-ratio: 16 / 10;
+}
+.rdb-win-kicker {
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rdb-teal);
+}
+.rdb-win-name {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(2rem, min(5.2vw, 7vh), 6.5rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--rdb-cream);
+  animation: rdb-land 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) 0.25s both;
+}
+[data-testid^='winning-player-pill-'] {
+  border-width: var(--rdb-line) !important;
+  box-shadow: none !important;
+}
+[data-testid^='winning-player-pill-'] .font-anton {
+  font-size: 1.05rem;
+}
+.rdbv-win-rays {
+  animation: rdbv-spin 30s linear infinite;
+}
+.rdbv-win-cup {
+  animation: rdbv-win-cup 2.6s cubic-bezier(0.3, 1.5, 0.5, 1) infinite;
+}
+@keyframes rdbv-win-cup {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30% { transform: translateY(-8px) rotate(-4deg); }
+  60% { transform: translateY(0) rotate(3deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rdbv-win-rays, .rdbv-win-cup, .rdb-win-name { animation: none; }
+}
+
+/* =====================================================================================================
+   Configuracao do jogo: cartaz a esquerda, uma linha por escolha a direita, um botao forte no rodape.
+   ===================================================================================================== */
+.rdb-setup {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  color: var(--rdb-cream);
+  user-select: none;
+}
+.rdb-setup-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr);
+  gap: 1rem;
+}
+.rdb-setup-poster {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: var(--rdb-line) solid var(--rdb-teal);
+  background: var(--rdb-navy);
+  overflow: hidden;
+}
+.rdb-setup-poster-art {
+  position: relative;
+  flex: 1;
+  min-height: 6rem;
+  overflow: hidden;
+  border-bottom: var(--rdb-line) solid var(--rdb-teal);
+}
+.rdb-setup-poster-text {
+  padding: 1.25rem 1.4rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+.rdb-setup-title {
+  font-family: var(--rdb-display, 'Anton', sans-serif);
+  font-size: clamp(1.5rem, 2.4vw, 2.6rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+.rdb-setup-notes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: rgba(245, 242, 235, 0.78);
+}
+.rdb-setup-notes li {
+  padding-left: 0.9rem;
+  position: relative;
+}
+.rdb-setup-notes li + li {
+  margin-top: 0.25rem;
+}
+.rdb-setup-notes li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 0.4rem;
+  height: 0.4rem;
+  background: var(--rdb-amber);
+}
+.rdb-setup-rows {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.rdb-opt {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid rgba(245, 242, 235, 0.16);
+}
+.rdb-opt:first-child {
+  border-top: 1px solid rgba(245, 242, 235, 0.16);
+}
+.rdb-opt-label {
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(245, 242, 235, 0.7);
+}
+.rdb-opt-choices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+.rdb-opt-value {
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 1.05rem;
+  margin-right: 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.rdb-seg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.4rem;
+  min-height: 2.5rem;
+  padding: 0 1.2rem;
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.3);
+  background: transparent;
+  color: var(--rdb-cream);
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 0.95rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background-color 0.12s, border-color 0.12s, color 0.12s;
+}
+.rdb-seg:hover {
+  border-color: var(--rdb-teal);
+}
+.rdb-seg[aria-pressed='true'] {
+  background: var(--rdb-teal);
+  border-color: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-seg:focus-visible,
+.rdb-setup-more:focus-visible {
+  outline: 3px solid var(--rdb-cream);
+  outline-offset: 2px;
+}
+.rdb-seg--action {
+  border-color: var(--rdb-amber);
+  color: var(--rdb-amber);
+}
+.rdb-seg--action:hover {
+  background: var(--rdb-amber);
+  border-color: var(--rdb-amber);
+  color: var(--rdb-navy);
+}
+.rdb-setup-more {
+  align-self: flex-start;
+  margin: 0.9rem 0 0 0.9rem;
+  padding: 0.2rem 0;
+  background: none;
+  border: 0;
+  border-bottom: var(--rdb-line) solid var(--rdb-amber);
+  color: var(--rdb-amber);
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+.rdb-setup-more:hover {
+  color: var(--rdb-cream);
+  border-color: var(--rdb-cream);
+}
+.rdb-setup-foot {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(245, 242, 235, 0.16);
+}
+.rdb-setup-foot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+.rdb-btn.rdb-setup-start {
+  background: var(--rdb-crimson);
+  border-color: var(--rdb-crimson);
+  color: #fff;
+  font-size: 1.15em;
+  padding-inline: 1.6em;
+}
+.rdb-btn.rdb-setup-start:hover:not(:disabled) {
+  background: var(--rdb-cream);
+  border-color: var(--rdb-cream);
+  color: var(--rdb-navy);
+}
+
+/* Janela (tema e ajustes do jogo) */
+.rdb-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(5, 6, 18, 0.86);
+}
+.rdb-sheet {
+  width: min(100%, 62rem);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--rdb-navy);
+  border: var(--rdb-line) solid var(--rdb-teal);
+  color: var(--rdb-cream);
+}
+.rdb-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 1rem;
+  border-bottom: var(--rdb-line) solid var(--rdb-teal);
+}
+.rdb-sheet-head h3 {
+  margin: 0;
+  font-family: var(--rdb-display, 'Anton', sans-serif);
+  font-size: 1.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.rdb-sheet-body {
+  padding: 1rem;
+  overflow-y: auto;
+}
+.rdb-sheet-body > section {
+  border: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+}
+
+/* Celular e janelas estreitas: empilha, o cartaz vira uma faixa e a tela rola */
+@media (max-width: 899px) {
+  .rdb-setup {
+    overflow-y: auto;
+  }
+  .rdb-setup-body {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+  }
+  .rdb-setup-poster {
+    flex-direction: row;
+    flex-shrink: 0;
+  }
+  .rdb-setup-poster-art {
+    flex: 0 0 34%;
+    min-height: 0;
+    border-bottom: 0;
+    border-right: var(--rdb-line) solid var(--rdb-teal);
+  }
+  .rdb-setup-rows {
+    overflow: visible;
+  }
+  .rdb-opt {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.4rem;
+  }
+  .rdb-seg {
+    flex: 1 1 auto;
+  }
+  .rdb-setup-foot-actions {
+    width: 100%;
+  }
+  .rdb-setup-foot-actions .rdb-btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* =====================================================================================================
+   Marca do jogador: bloco chapado com as iniciais (substitui o emoji de avatar em todas as telas).
+   O tamanho vem da fonte de quem envolve; a cor sai do nome.
+   ===================================================================================================== */
+.rdb-mark {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1.7em;
+  height: 1.7em;
+  vertical-align: middle;
+  background: var(--rdb-cream);
+  color: var(--rdb-navy);
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-style: normal;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: uppercase;
+  animation: none !important;
+  transform: none;
+}
+.rdb-mark > span {
+  font-size: 0.62em;
+}
+.rdb-mark--teal { background: var(--rdb-teal); }
+.rdb-mark--amber { background: var(--rdb-amber); }
+.rdb-mark--crimson { background: var(--rdb-crimson); color: #fff; }
+
+/* Caixa-alta centralizada pela altura da letra (e nao pela linha), para o texto nao ficar "subido" no box */
+@supports (text-box: trim-both cap alphabetic) {
+  .rdb-btn,
+  .rdb-seg,
+  .rdb-tag,
+  .rdb-mark > span,
+  .rdb-tut-num,
+  .rdb-tut-stage-cap > span {
+    text-box: trim-both cap alphabetic;
+  }
+}
+
+/* =====================================================================================================
+   Tutorial: um palco com a ilustracao do passo em destaque e, ao lado, os 3 passos em lista.
+   Nada se sobrepoe: cada bloco tem o seu espaco e o texto nunca passa por cima do desenho.
+   ===================================================================================================== */
+.rdb-tut {
+  margin-inline: auto;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  color: var(--rdb-cream);
+  user-select: none;
+}
+.rdb-tut-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 1.5rem;
+}
+.rdb-tut-stage {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: var(--rdb-line) solid var(--rdb-teal);
+  background: var(--rdb-navy);
+  overflow: hidden;
+}
+.rdb-tut-stage-art {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.rdb-tut-stage-cap {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.8rem 1.2rem;
+  border-top: var(--rdb-line) solid var(--rdb-teal);
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.rdb-tut-num {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  background: var(--rdb-cream);
+  color: var(--rdb-navy);
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-size: 1rem;
+  line-height: 1;
+}
+.rdb-tut-text {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
+  gap: 0.5rem;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.rdb-tut-title {
+  margin: 0;
+  font-family: var(--rdb-display, 'Anton', sans-serif);
+  font-size: clamp(1.6rem, 2.6vw, 2.8rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.rdb-tut-sub {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: rgba(245, 242, 235, 0.8);
+}
+.rdb-tut-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.rdb-tut-step {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 0.5rem 0.9rem;
+  border-top: 1px solid rgba(245, 242, 235, 0.16);
+}
+.rdb-tut-step:last-child {
+  border-bottom: 1px solid rgba(245, 242, 235, 0.16);
+}
+.rdb-tut-step .rdb-tut-num {
+  background: var(--rdb-teal);
+}
+.rdb-tut-step-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.rdb-tut-step-text strong {
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 1.05rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.rdb-tut-step-text span {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: rgba(245, 242, 235, 0.78);
+}
+.rdb-tut-score {
+  padding-inline: 0.9rem;
+}
+.rdb-tut-score p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin: 0.15rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: rgba(245, 242, 235, 0.86);
+}
+.rdb-tut-score a {
+  color: var(--rdb-teal);
+  text-decoration: underline;
+  white-space: nowrap;
+}
+.rdb-tut-label {
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rdb-amber);
+}
+.rdb-tut-ready {
+  font-size: 0.85rem;
+  color: rgba(245, 242, 235, 0.65);
+  max-width: 26rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 899px) {
+  .rdb-tut {
+    overflow-y: auto;
+  }
+  .rdb-tut-body {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    gap: 1rem;
+  }
+  .rdb-tut-stage {
+    flex-shrink: 0;
+  }
+  .rdb-tut-stage-art {
+    flex: none;
+    height: 11rem;
+  }
+  .rdb-tut-text {
+    overflow: visible;
+  }
+  .rdb-tut-ready {
+    display: none;
+  }
+}
