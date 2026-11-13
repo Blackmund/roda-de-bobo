@@ -617,7 +617,7 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
                 {nextTurn.isGameOver ? '🏁 PARTIDA FINALIZADA' : '👉 PRÓXIMA VEZ / PRÓXIMO A FALAR:'}
               </div>
               <div className="font-anton text-base md:text-lg text-white uppercase flex items-center gap-1.5">
-                <span>{nextTurn.nextSpeakerAvatar}</span>
+                <PlayerMark p={{ name: nextTurn.nextSpeakerName }} />
                 <span className="text-amber-300">{nextTurn.nextSpeakerName}</span>
                 <span className="text-slate-400 text-xs font-mono-code font-normal">
                   ({nextTurn.nextTeamName})

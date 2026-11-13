@@ -1,4 +1,5 @@
 import React from 'react';
+import { PlayerMark } from './rdb/PlayerMark';
 import { motion } from 'motion/react';
 import { PartyAchievement } from '../utils/achievements';
 import { Award, Sparkles, Flame, Crown, Target, Zap } from 'lucide-react';
@@ -113,7 +114,7 @@ export const PartyAchievements: React.FC<PartyAchievementsProps> = ({ achievemen
               {/* Awarded Player Spotlight */}
               <div className="flex items-center gap-3 bg-black/60 p-2 border border-slate-800">
                 <div className="w-10 h-10 border border-amber-400/60 bg-amber-500/10 flex items-center justify-center text-xl shrink-0 shadow-inner">
-                  {item.playerAvatar}
+                  <PlayerMark p={{ name: item.playerName }} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 flex-wrap">

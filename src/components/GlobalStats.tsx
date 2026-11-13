@@ -478,7 +478,7 @@ export const GlobalStats: React.FC<GlobalStatsProps> = ({
                 key={medal.id}
                 className="p-2.5 bg-black/40 border border-white/10 flex items-center gap-2.5 rounded"
               >
-                <span className="text-2xl shrink-0">{medal.playerAvatar}</span>
+                <span className="text-2xl shrink-0"><PlayerMark p={{ name: medal.playerName }} /></span>
                 <div className="min-w-0">
                   <div className="text-[10px] font-mono-code text-amber-400 font-bold uppercase truncate">
                     {medal.title}

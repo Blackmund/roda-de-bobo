@@ -370,12 +370,12 @@ export const ScreenTemOuNaoTem: React.FC<ScreenTemOuNaoTemProps> = ({
       </div>
 
       {/* Quem responde agora */}
-      <div className="shrink-0 mb-1">
+      <div className="shrink-0">
         <ActiveTurnBanner room={room} />
       </div>
 
       {/* Main Arena Content: Responsive Stacked (< xl) vs Arena Widescreen (xl:grid xl:grid-cols-12) */}
-      <div className="flex-1 min-h-0 xl:grid xl:grid-cols-12 xl:gap-6 xl:items-stretch flex flex-col justify-between overflow-hidden">
+      <div className="flex-1 min-h-0 xl:grid xl:grid-cols-12 xl:grid-rows-[minmax(0,1fr)] xl:gap-6 xl:items-stretch flex flex-col justify-between overflow-hidden">
         {/* =========================================================================
             COLUNA ESQUERDA (xl:col-span-2) — Totem Vertical EQUIPE / JOGADOR A (Modo Widescreen)
            ========================================================================= */}

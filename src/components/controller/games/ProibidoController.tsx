@@ -1,4 +1,5 @@
 import React from 'react';
+import { PlayerMark } from '../../rdb/PlayerMark';
 import { GameRoom, Player } from '../../../types/game';
 import { sounds } from '../../../utils/soundEffects';
 import { AlertTriangle, ArrowRight } from 'lucide-react';
@@ -166,7 +167,7 @@ export const ProibidoController: React.FC<ProibidoControllerProps> = ({
                   {nextTurn.isGameOver ? '🏁 PARTIDA FINALIZADA' : '👉 PRÓXIMA VEZ / PRÓXIMO A FALAR:'}
                 </div>
                 <div className="font-anton text-base text-white uppercase flex items-center justify-center gap-1.5">
-                  <span>{nextTurn.nextSpeakerAvatar}</span>
+                  <PlayerMark p={{ name: nextTurn.nextSpeakerName }} />
                   <span className="text-amber-300">{nextTurn.nextSpeakerName}</span>
                   <span className="text-slate-400 text-xs font-mono-code">
                     ({nextTurn.nextTeamName})

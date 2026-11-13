@@ -325,22 +325,13 @@ export const ScreenMobileJoin: React.FC<ScreenMobileJoinProps> = ({
               />
             </div>
 
-            <button
-              type="button"
+            <span
               data-testid="mobile-join-avatar-btn"
-              onClick={() => {
-                sounds.playTick();
-                setShowAvatarModal(true);
-              }}
-              title="Escolher Avatar ou Emoji"
-              aria-label={`Escolher Avatar (atual: ${selectedAvatar})`}
-              className="h-[48px] px-3.5 rounded-xl bg-slate-950 border-2 border-slate-800 hover:border-cyan-400 flex items-center justify-center gap-1.5 text-xl cursor-pointer transition-colors shrink-0"
+              aria-hidden="true"
+              className="h-[48px] px-2 flex items-center justify-center text-2xl shrink-0"
             >
-              <span>{selectedAvatar}</span>
-              <span className="text-[10px] font-mono-code text-cyan-400 uppercase font-bold">
-                ▼
-              </span>
-            </button>
+              <PlayerMark p={{ name: playerName.trim() || '?' }} />
+            </span>
           </div>
         </div>
 
