@@ -9,9 +9,10 @@ import {
   secondsLeft,
   setOverride,
   startWriting,
+  stopVotesCount,
   voteKey
 } from '../../utils/adedanhaEngine';
-import { useAdedanhaDriver, useNow } from '../adedanha/useAdedanhaDriver';
+import { useAdedanhaDriver, useLetterSpin, useNow } from '../adedanha/useAdedanhaDriver';
 import { PlayerMark } from '../rdb/PlayerMark';
 
 interface ScreenAdedanhaProps {
@@ -36,6 +37,7 @@ export const ScreenAdedanha: React.FC<ScreenAdedanhaProps> = ({ room, onUpdateAd
   // No modo so celulares quem roda o relogio e o celular do lider; aqui so na TV.
   useAdedanhaDriver(ad, update, room.connectionMode !== 'multi');
   const now = useNow(ad?.phase === 'WRITING' || ad?.phase === 'STOPPING');
+  const spin = useLetterSpin(ad);
 
   if (!ad) return null;
 
@@ -96,8 +98,8 @@ export const ScreenAdedanha: React.FC<ScreenAdedanhaProps> = ({ room, onUpdateAd
       <div data-testid="screen-adedanha" className="rdb-pro rdb-ade">
         {bar}
         <div className="rdb-ade-stage">
-          <div className={'rdb-ade-letter' + (ad.phase === 'READY' ? ' is-hidden' : '')} data-testid="ad-letter">
-            {ad.phase === 'READY' ? '?' : ad.letter}
+          <div className={'rdb-ade-letter' + (ad.phase === 'READY' ? ' is-hidden' : '') + (spin.spinning ? ' is-spin' : '')} data-testid="ad-letter">
+            {ad.phase === 'READY' ? '?' : <span key={spin.letter + spin.spinning}>{spin.letter}</span>}
           </div>
           <div className="rdb-ade-side">
             <span className="rdb-pro-label" style={{ position: 'static', alignSelf: 'flex-start' }}>
@@ -153,6 +155,13 @@ export const ScreenAdedanha: React.FC<ScreenAdedanhaProps> = ({ room, onUpdateAd
           ) : (
             <span className="rdb-ade-hint">
               {sent}/{ad.playerIds.length} mandaram as respostas
+              {ad.stopRule === 'majority' && ad.phase === 'WRITING'
+                ? ` · STOP pedido por ${stopVotesCount(ad)} de ${ad.playerIds.length} (precisa da maioria)`
+                : ad.stopRule === 'host'
+                ? ' · só o diretor pede STOP (mão na barra)'
+                : ad.stopRule === 'none'
+                ? ' · a rodada para quando o tempo acabar'
+                : ''}
             </span>
           )}
         </footer>

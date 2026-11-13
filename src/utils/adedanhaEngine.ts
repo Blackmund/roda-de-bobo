@@ -11,10 +11,12 @@
  *
  * O tempo usa horario de termino (endsAt) em vez de contar segundo a segundo: menos mensagens entre TV e celulares.
  */
-import type { AdedanhaState, Player } from '../types/game';
+import type { AdedanhaState, AdedanhaStopRule, Player } from '../types/game';
 import { ADEDANHA_LETRAS } from '../data/adedanhaCategorias';
 
 export const ADEDANHA_STOP_GRACE_MS = 4000;
+/** A letra gira por este tempo antes de parar; o relogio so comeca a contar depois. */
+export const ADEDANHA_SPIN_MS = 1800;
 export const ADEDANHA_POINTS_UNIQUE = 10;
 export const ADEDANHA_POINTS_REPEATED = 5;
 
@@ -47,9 +49,12 @@ export function buildAdedanhaState(
   players: Pick<Player, 'id'>[],
   categories: string[],
   letter: string,
-  timerSeconds: number
+  timerSeconds: number,
+  stopRule: AdedanhaStopRule = 'first'
 ): AdedanhaState {
   return {
+    stopRule,
+    stopVotes: {},
     phase: 'READY',
     letter: letter.toUpperCase(),
     categories: [...categories],
@@ -68,7 +73,7 @@ export function buildAdedanhaState(
 
 export function startWriting(s: AdedanhaState, now = Date.now()): AdedanhaState {
   if (s.phase !== 'READY') return s;
-  return { ...s, phase: 'WRITING', endsAt: s.timerSeconds > 0 ? now + s.timerSeconds * 1000 : null };
+  return { ...s, phase: 'WRITING', startedAt: now, endsAt: s.timerSeconds > 0 ? now + ADEDANHA_SPIN_MS + s.timerSeconds * 1000 : null };
 }
 
 /** Guarda as respostas do jogador (pode mandar de novo ate a validacao comecar). */
@@ -87,6 +92,27 @@ export function callStop(s: AdedanhaState, playerId: string | null, now = Date.n
   if (s.phase !== 'WRITING') return s;
   return { ...s, phase: 'STOPPING', stopBy: playerId, stopAt: now };
 }
+
+/** Pelo celular, este jogador pode pedir STOP? (o diretor sempre pode, pela TV) */
+export function playerCanStop(s: AdedanhaState): boolean {
+  const rule = s.stopRule || 'first';
+  return rule === 'first' || rule === 'majority';
+}
+
+/**
+ * Pedido de STOP vindo do celular (so com tudo preenchido). Regra "primeiro": para na hora.
+ * Regra "maioria": conta o pedido e so para quando mais da metade dos jogadores pediu.
+ */
+export function requestStop(s: AdedanhaState, playerId: string, now = Date.now()): AdedanhaState {
+  if (s.phase !== 'WRITING' || !playerCanStop(s)) return s;
+  if ((s.stopRule || 'first') === 'first') return callStop(s, playerId, now);
+  const stopVotes = { ...(s.stopVotes || {}), [playerId]: true };
+  const asked = s.playerIds.filter((id) => stopVotes[id]).length;
+  if (asked * 2 > s.playerIds.length) return callStop({ ...s, stopVotes }, playerId, now);
+  return { ...s, stopVotes };
+}
+
+export const stopVotesCount = (s: AdedanhaState): number => s.playerIds.filter((id) => s.stopVotes?.[id]).length;
 
 export const allFilled = (s: AdedanhaState, answers: string[]): boolean =>
   s.categories.every((_, i) => String(answers[i] ?? '').trim().length > 0);

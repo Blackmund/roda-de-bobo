@@ -33,21 +33,12 @@ import { POPULAR_THEMES } from './step2/popularThemes';
 import { GameCardArt } from '../art/GameCardArt';
 import { CT_MODE_LABEL } from '../../utils/comTerraEngine';
 import { usesLocalContent } from '../../config/localGames';
+import { AdedanhaCategoryEditor } from './AdedanhaCategoryEditor';
 import {
   ADEDANHA_LETRAS_EXCLUIDAS_PADRAO,
-  ADEDANHA_PADRAO,
-  ADEDANHA_RESENHA,
-  ADEDANHA_TEMATICAS,
-  ADEDANHA_TODAS
+  ADEDANHA_PADRAO
 } from '../../data/adedanhaCategorias';
 
-/** Qual conjunto de categorias da Adedanha esta escolhido (para marcar o botao). */
-const adedanhaSetId = (cats?: string[]): string => {
-  if (!cats || cats.join() === ADEDANHA_PADRAO.join()) return 'classicas';
-  if (cats.join() === ADEDANHA_TEMATICAS.slice(0, 7).join()) return 'tematicas';
-  if (cats.some((c) => ADEDANHA_RESENHA.includes(c)) && cats.length === 7 && cats.slice(0, 4).join() === ADEDANHA_PADRAO.slice(0, 4).join()) return 'resenha';
-  return 'sorteio';
-};
 
 export interface Step2ConfigureGameProps {
   activeGame: GameId;
@@ -82,6 +73,14 @@ const TIMER_OPTIONS: Array<{ value: number; label: string; desc: string }> = [
   { value: 60, label: '60 s', desc: 'Padrão Oficial' },
   { value: 90, label: '90 s', desc: 'Com calma' },
   { value: 0, label: 'Livre', desc: 'Sem limite' }
+];
+
+/** Adedanha: tempo por rodada no estilo do Stop (rapido, medio, lento) ou sem tempo. */
+const AD_TIMER_OPTIONS: Array<{ value: number; label: string; desc: string }> = [
+  { value: 60, label: 'Rápido · 60 s', desc: 'Para quem joga muito' },
+  { value: 90, label: 'Médio · 90 s', desc: 'Padrão' },
+  { value: 150, label: 'Lento · 2:30', desc: 'Com calma' },
+  { value: 0, label: 'Sem tempo', desc: 'Só para no STOP' }
 ];
 
 const ROUND_OPTIONS: Array<{ value: number; label: string; desc: string }> = [
@@ -274,11 +273,11 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
         ]
       : activeGame === 'adedanha'
       ? [
-          pickRow('ad-categorias', 'Categorias', adedanhaSetId(customConfig.adedanhaCategories), [
-            ['classicas', 'Clássicas', { adedanhaCategories: ADEDANHA_PADRAO }],
-            ['tematicas', 'Temáticas', { adedanhaCategories: ADEDANHA_TEMATICAS.slice(0, 7) }],
-            ['resenha', 'Com resenha', { adedanhaCategories: [...ADEDANHA_PADRAO.slice(0, 4), ...ADEDANHA_RESENHA.slice(0, 3)] }],
-            ['sorteio', 'Sortear 7', { adedanhaCategories: [...ADEDANHA_TODAS].sort(() => Math.random() - 0.5).slice(0, 7) }]
+          pickRow('ad-stop', 'Quem pede STOP', customConfig.adedanhaStopRule || 'first', [
+            ['first', 'Quem terminar primeiro', { adedanhaStopRule: 'first' }],
+            ['majority', 'A maioria', { adedanhaStopRule: 'majority' }],
+            ['host', 'Só o diretor', { adedanhaStopRule: 'host' }],
+            ['none', 'Ninguém (só o tempo)', { adedanhaStopRule: 'none' }]
           ]),
           pickRow('ad-letras', 'Letras difíceis', (customConfig.adedanhaExcludedLetters ?? ADEDANHA_LETRAS_EXCLUIDAS_PADRAO).length > 0, [
             [true, 'Fora (K, W, Y, X, Q)', { adedanhaExcludedLetters: ADEDANHA_LETRAS_EXCLUIDAS_PADRAO }],
@@ -399,7 +398,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             <div className="rdb-opt">
               <span className="rdb-opt-label">Tempo por rodada</span>
               <div className="rdb-opt-choices">
-                {TIMER_OPTIONS.map((opt) => (
+                {(activeGame === 'adedanha' ? AD_TIMER_OPTIONS : TIMER_OPTIONS).map((opt) => (
                   <Seg key={opt.value} testid={`timer-btn-${opt.value}`} on={timer === opt.value} onClick={() => onChangeTimer(opt.value)} title={opt.desc}>
                     {opt.label}
                   </Seg>
@@ -408,6 +407,25 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
           )}
 
+          {activeGame === 'adedanha' ? (
+            <div className="rdb-opt">
+              <span className="rdb-opt-label">Rodadas</span>
+              <div className="rdb-opt-choices rdb-adstep" data-testid="ad-rounds-stepper">
+                <button type="button" className="rdb-seg" aria-label="Menos uma rodada" data-testid="ad-rounds-minus" disabled={rounds <= 1} onClick={() => onChangeRounds(Math.max(1, rounds - 1))}>
+                  −
+                </button>
+                <strong data-testid="ad-rounds-value">{rounds} {rounds === 1 ? 'rodada' : 'rodadas'}</strong>
+                <button type="button" className="rdb-seg" aria-label="Mais uma rodada" data-testid="ad-rounds-plus" disabled={rounds >= 30} onClick={() => onChangeRounds(Math.min(30, rounds + 1))}>
+                  +
+                </button>
+                {[3, 5, 8, 12].map((n) => (
+                  <Seg key={n} testid={`rounds-btn-${n}`} on={rounds === n} onClick={() => onChangeRounds(n)}>
+                    {n}
+                  </Seg>
+                ))}
+              </div>
+            </div>
+          ) : (
           <div className="rdb-opt">
             <span className="rdb-opt-label">{isPV ? 'Série de jogos' : 'Rodadas'}</span>
             <div className="rdb-opt-choices">
@@ -418,6 +436,14 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
               ))}
             </div>
           </div>
+          )}
+
+          {activeGame === 'adedanha' && (
+            <AdedanhaCategoryEditor
+              categories={customConfig.adedanhaCategories ?? ADEDANHA_PADRAO}
+              onChange={(next) => onChangeCustomConfig((prev) => ({ ...prev, adedanhaCategories: next }))}
+            />
+          )}
 
           {extraRows.map((row) => (
             <div className="rdb-opt" key={row.id} data-testid={'setup-extra-' + row.id}>

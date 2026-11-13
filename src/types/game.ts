@@ -283,6 +283,8 @@ export interface RepetenteGameState {
   result?: { groups: RepetenteGroupResult[]; pointsByTeam: Record<TeamId, number> };
 }
 
+export type AdedanhaStopRule = 'first' | 'host' | 'majority' | 'none';
+
 // ADEDANHA (Stop): letra sorteada, cada um escreve no celular, STOP, validacao por voto
 export interface AdedanhaState {
   phase: 'READY' | 'WRITING' | 'STOPPING' | 'VOTING' | 'SUMMARY';
@@ -306,6 +308,11 @@ export interface AdedanhaState {
   /** decisao do diretor, vence os votos */
   overrides: Record<string, boolean>;
   pointsAwarded?: Record<string, number>;
+  stopRule?: AdedanhaStopRule;
+  /** quando a letra foi sorteada (o giro na tela usa isso) */
+  startedAt?: number;
+  /** pedidos de STOP (regra da maioria) */
+  stopVotes?: Record<string, boolean>;
 }
 
 // NOV-08: RESPOSTAS SEM PERGUNTAS (a pergunta e oculta; so se sabe quantas palavras tem)
@@ -620,6 +627,8 @@ export interface GameCustomConfig {
   // Adedanha: categorias da partida e letras que nao saem
   adedanhaCategories?: string[];
   adedanhaExcludedLetters?: string[];
+  /** quem pode pedir STOP: o primeiro que completar, so o diretor, a maioria ou ninguem (so o tempo) */
+  adedanhaStopRule?: AdedanhaStopRule;
   // Tem ou Não Tem
   temItemsCount: number; // default 5 (range 3..10)
   temMaxStrikes: number; // default 2 (range 1..4)

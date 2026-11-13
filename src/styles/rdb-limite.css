@@ -4217,3 +4217,69 @@
 @media (prefers-reduced-motion: reduce) {
   .rdb-pad-intro, .rdb-pad-intro strong, .rdb-pad-alert, .rdb-pinto-flash, .rdb-pad-clock.is-hot { animation: none !important; }
 }
+
+/* ---------- Adedanha v2: letra girando, editor de categorias, contador de rodadas ---------- */
+.rdb-ade-letter.is-spin,
+.rdb-adc-letter.is-spin { background: var(--rdb-amber); }
+.rdb-ade-letter > span,
+.rdb-adc-letter > span { display: inline-block; animation: rdb-ade-tick 0.12s ease-out; }
+.rdb-ade-letter:not(.is-spin) > span,
+.rdb-adc-letter:not(.is-spin) > span { animation: rdb-ade-land 0.5s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes rdb-ade-tick { from { transform: translateY(-35%); opacity: 0.3; } to { transform: none; opacity: 1; } }
+@keyframes rdb-ade-land { 0% { transform: scale(1.5); } 100% { transform: none; } }
+.rdb-adcat { align-items: flex-start; }
+.rdb-adcat .rdb-opt-label small { color: var(--rdb-ink-2); font-weight: 700; }
+.rdb-adcat-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.rdb-adcat-presets { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; }
+.rdb-adcat-presets .rdb-seg { display: inline-flex; align-items: center; gap: 0.3rem; }
+.rdb-adcat-tools { margin-left: auto; display: inline-flex; gap: 0.3rem; }
+.rdb-adcat-tools .rdb-lim-icon:disabled { opacity: 0.35; cursor: default; }
+.rdb-adcat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  max-height: 7.5rem;
+  overflow-y: auto;
+  padding: 0.45rem;
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.2);
+}
+.rdb-adcat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.3rem 0.2rem 0.6rem;
+  background: var(--rdb-cream);
+  color: var(--rdb-navy);
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+.rdb-adcat-chip button {
+  display: grid;
+  place-items: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 0;
+  background: var(--rdb-navy);
+  color: var(--rdb-cream);
+  cursor: pointer;
+}
+.rdb-adcat-chip button:hover { background: var(--rdb-crimson); }
+.rdb-adcat-empty { color: var(--rdb-ink-2); font-weight: 700; font-size: 0.85rem; }
+.rdb-adcat-add { display: flex; gap: 0.35rem; }
+.rdb-adcat-add input {
+  flex: 1;
+  min-width: 0;
+  height: 2.2rem;
+  padding: 0 0.6rem;
+  background: var(--rdb-navy-2);
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.3);
+  color: var(--rdb-cream);
+  font-weight: 700;
+}
+.rdb-adcat-add input:focus { outline: none; border-color: var(--rdb-teal); }
+.rdb-adcat-add .rdb-seg { display: inline-flex; align-items: center; gap: 0.3rem; }
+.rdb-adstep { align-items: center; }
+.rdb-adstep > strong { min-width: 7rem; text-align: center; font-family: 'Anton', 'Impact', sans-serif; font-weight: 400; font-size: 1.3rem; text-transform: uppercase; }
+@media (prefers-reduced-motion: reduce) {
+  .rdb-ade-letter > span, .rdb-adc-letter > span { animation: none !important; }
+}
