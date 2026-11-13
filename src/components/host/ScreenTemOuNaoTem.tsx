@@ -11,8 +11,7 @@ import {
   generateProceduralGameContent
 } from '../../utils/aiGameGenerator';
 import confetti from 'canvas-confetti';
-import { ArrowRight, RefreshCw } from 'lucide-react';
-import { RodaDeBoboOfficialBadge } from '../RodaIcons';
+import { ArrowRight, Eye, EyeOff, Info, ListChecks, RefreshCw, X } from 'lucide-react';
 import {
   TEAM_META,
   getActiveTeamIds,
@@ -341,509 +340,171 @@ export const ScreenTemOuNaoTem: React.FC<ScreenTemOuNaoTemProps> = ({
   const playerAName = isIndividualA ? teamAPlayers[0].name : (room.teams.A.name || 'EQUIPE A');
   const playerBName = isIndividualB ? teamBPlayers[0].name : (room.teams.B.name || 'EQUIPE B');
 
+  const ended = tem.phase === 'ROUND_END';
+  const teamColor = (tId: TeamId) => TEAM_META[tId].hex;
+  const teamName = (tId: TeamId) => {
+    const members = room.players.filter((p) => p.team === tId || room.teams[tId]?.members?.includes(p.id));
+    return members.length === 1 ? members[0].name : room.teams[tId]?.name || TEAM_META[tId].equipeLabel;
+  };
+
+  /** Painel de uma equipe (ou jogador): nome, quem joga, pontos e erros. Clicar passa a vez para ela. */
+  const renderTeam = (tId: TeamId, side: 'left' | 'right' | 'strip') => {
+    const meta = TEAM_META[tId];
+    const isTurn = tem.activeTeam === tId && tem.phase === 'GUESSING';
+    const isElim = tem.eliminatedTeams.includes(tId);
+    const members = room.players.filter((p) => p.team === tId || room.teams[tId]?.members?.includes(p.id));
+    const strikes = tem.strikes[tId] || 0;
+    return (
+      <button
+        type="button"
+        key={tId}
+        data-testid={side === 'strip' ? `tem-compact-team-${tId}` : `tem-totem-dupla-${tId.toLowerCase()}`}
+        className={`rdb-tem-team is-${side}${isTurn ? ' is-turn' : ''}${isElim ? ' is-out' : ''}`}
+        style={{ ['--team' as string]: teamColor(tId) }}
+        data-tip={isTurn ? 'Está na vez' : `Passar a vez para ${teamName(tId)}`}
+        aria-label={`${teamName(tId)}: ${room.teams[tId]?.score || 0} pontos, ${strikes} de ${maxStrikes} erros`}
+        onClick={() => !isTurn && handleSelectActiveTeam(tId)}
+      >
+        <span className="rdb-tem-team-name">{teamName(tId)}</span>
+        <span className="rdb-tem-team-members">
+          {members.map((m) => (
+            <PlayerMark key={m.id} p={m} />
+          ))}
+        </span>
+        <span className="rdb-tem-team-pts">
+          {room.teams[tId]?.score || 0}
+          <small>pts</small>
+        </span>
+        <span className="rdb-tem-strikes" aria-hidden="true">
+          {strikeNumbers.map((num) => (
+            <i key={num} className={strikes >= num ? 'is-on' : ''}>
+              {strikes >= num ? <X size={16} strokeWidth={4} /> : null}
+            </i>
+          ))}
+        </span>
+        {isElim && <span className="rdb-tem-team-flag">Eliminada</span>}
+      </button>
+    );
+  };
+
+  const twoTeams = activeTeamIds.length === 2;
+
   return (
-    <div className="h-full flex flex-col justify-between min-h-0 overflow-hidden gap-1.5 max-w-[1750px] w-full mx-auto px-2 sm:px-4">
-      {/* Top Banner Header: CazéTV Roda de Bobo Logo + Round Score Counter */}
-      <div className="flex items-center justify-between border-b border-white/10 pb-1 shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-[#17B8B8] border border-white/40 flex items-center justify-center font-anton text-black text-sm">
-            RB
-          </div>
-          <div>
-            <span className="font-anton text-base md:text-lg text-white tracking-wider uppercase leading-none block">
-              TEM OU NÃO TEM (TOP {tem.items.length})
-            </span>
-            <div
-              data-testid="tem-respondents-subtitle"
-              className="text-[10px] font-mono-code text-[#17B8B8] uppercase"
+    <div className="rdb-tem">
+      {/* Barra: o essencial aparece, o resto vira icone com dica */}
+      <header className="rdb-lim-bar">
+        <span className="rdb-lim-title">
+          Tem ou não tem
+          <span className="rdb-lim-round">Top {tem.items.length}</span>
+        </span>
+        <span
+          data-testid="tem-respondents-subtitle"
+          className="rdb-lim-rule"
+          tabIndex={0}
+          data-tip={`Pesquisa com ${totalRespondents} pessoas. Os votos somam ${totalRespondents}. Tema: ${room.theme}`}
+        >
+          <Info size={16} />
+        </span>
+        {!ended && (
+          <div className="rdb-lim-tools">
+            <button
+              type="button"
+              data-testid="tem-presenter-peek-btn"
+              className={'rdb-lim-icon' + (presenterPeek ? ' is-on' : '')}
+              aria-pressed={presenterPeek}
+              aria-label="Espiar o gabarito"
+              data-tip={presenterPeek ? 'Esconder o gabarito' : 'Espiar o gabarito (só o diretor)'}
+              onClick={() => {
+                sounds.playTick();
+                setPresenterPeek((prev) => !prev);
+              }}
             >
-              PESQUISA COM {totalRespondents} PESSOAS // SOMA = {totalRespondents} PONTOS
-            </div>
+              {presenterPeek ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+            <button
+              type="button"
+              data-testid="tem-swap-question-btn"
+              className="rdb-lim-icon"
+              disabled={isSwappingQuestion}
+              aria-label="Trocar a pergunta"
+              data-tip={isSwappingQuestion ? 'Gerando uma pergunta nova...' : 'Trocar a pergunta (IA)'}
+              onClick={handleSwapQuestionWithAi}
+            >
+              <RefreshCw size={16} className={isSwappingQuestion ? 'animate-spin' : ''} />
+            </button>
+            <button
+              type="button"
+              className="rdb-lim-icon"
+              aria-label="Revelar tudo"
+              data-tip="Revelar todas as respostas e encerrar a rodada"
+              onClick={handleRevealAllRemaining}
+            >
+              <ListChecks size={16} />
+            </button>
           </div>
-        </div>
+        )}
+      </header>
 
-        {/* Center Official Badge */}
-        <div className="hidden md:flex items-center justify-center">
-          <RodaDeBoboOfficialBadge size="sm" />
-        </div>
-
-      </div>
-
-      {/* Quem responde agora */}
-      <div className="shrink-0">
+      <div className="rdb-tem-turn">
         <ActiveTurnBanner room={room} />
       </div>
 
-      {/* Main Arena Content: Responsive Stacked (< xl) vs Arena Widescreen (xl:grid xl:grid-cols-12) */}
-      <div className="flex-1 min-h-0 xl:grid xl:grid-cols-12 xl:grid-rows-[minmax(0,1fr)] xl:gap-6 xl:items-stretch flex flex-col justify-between overflow-hidden">
-        {/* =========================================================================
-            COLUNA ESQUERDA (xl:col-span-2) — Totem Vertical EQUIPE / JOGADOR A (Modo Widescreen)
-           ========================================================================= */}
-        <div
-          data-testid="tem-totem-dupla-a"
-          className={`hidden xl:flex xl:col-span-2 flex-col justify-between border p-3.5 bg-[#07080d]/90 transition-all duration-200 ${
-            tem.activeTeam === 'A' && tem.phase === 'GUESSING'
-              ? 'border-2 border-[#E6194B] shadow-[0_0_25px_rgba(230,25,75,0.45)] ring-2 ring-[#E6194B] bg-gradient-to-b from-[#E6194B]/20 via-[#07080d]/95 to-[#E6194B]/5'
-              : 'border-white/10 bg-[#07080d]/80 opacity-70 hover:opacity-100 transition-opacity'
-          }`}
-        >
-          {/* Topo do Totem A: Nome da Equipe / Jogador + Badge de Turno */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between border-b border-white/10 pb-2">
-              <span className="font-anton text-lg tracking-wider uppercase text-rose-300 truncate" title={playerAName}>
-                {playerAName}
-              </span>
-              <span className="font-mono-code text-[10px] text-white/50 uppercase">
-                {isIndividualA ? 'JOGADOR' : 'EQUIPE A'}
-              </span>
-            </div>
+      <div className={'rdb-tem-arena' + (twoTeams ? ' has-sides' : '')}>
+        {twoTeams && renderTeam(activeTeamIds[0], 'left')}
 
-            {tem.activeTeam === 'A' && tem.phase === 'GUESSING' ? (
-              <div className="py-2 px-2 border-2 border-[#E6194B] bg-gradient-to-r from-[#E6194B]/30 via-[#E6194B]/20 to-[#E6194B]/30 text-white font-anton text-xs uppercase tracking-widest text-center shadow-[0_0_15px_rgba(230,25,75,0.5)] flex items-center justify-center gap-1.5 animate-pulse">
-                <span>🎯</span>
-                <span className="font-black text-rose-200">
-                  {isIndividualA ? `VEZ DE ${playerAName.toUpperCase()}!` : 'VEZ DA EQUIPE A!'}
-                </span>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => handleSelectActiveTeam('A')}
-                className="w-full py-1.5 px-2 border border-white/10 bg-white/[0.02] hover:border-rose-400 hover:bg-rose-950/30 text-slate-500 hover:text-rose-300 font-mono-code text-[10px] uppercase tracking-wider text-center transition-colors cursor-pointer"
-                title={`Clique para passar a vez para ${isIndividualA ? playerAName : 'a Equipe A'}`}
-              >
-                AGUARDANDO TURNO
-              </button>
-            )}
+        <section className="rdb-tem-main">
+          <h2 data-testid="tem-ou-nao-tem-question" className="rdb-tem-question" data-len={displayQuestion.length > 110 ? 'l' : displayQuestion.length > 80 ? 'm' : 's'}>
+            {displayQuestion}
+          </h2>
+          {tem.freeDomainTeam && !ended && (
+            <span className="rdb-tem-free">Domínio livre: {teamName(tem.freeDomainTeam)} joga sozinha</span>
+          )}
 
-            {/* Integrantes da Equipe A / Perfil Individual */}
-            <div className="pt-1">
-              <div className="text-[10px] font-mono-code text-slate-400 uppercase tracking-widest mb-1 flex items-center justify-between">
-                <span>{isIndividualA ? 'JOGADOR:' : 'INTEGRANTES:'}</span>
-                <span className="text-[9px] text-rose-400 font-mono-code font-bold">
-                  {isIndividualA ? 'DUELO 1x1' : 'JOGAM JUNTOS'}
-                </span>
-              </div>
-              <div className="space-y-1">
-                {teamAPlayers.length > 0 ? (
-                  teamAPlayers.map((player) => (
-                    <div
-                      key={player.id}
-                      className="px-2.5 py-1.5 border border-white/10 bg-white/[0.03] font-mono-code text-xs text-slate-200 font-semibold flex items-center gap-2 truncate"
-                    >
-                      <span className="text-base shrink-0"><PlayerMark p={player} /></span>
-                      <span className="truncate">{player.name}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-xs font-mono-code text-slate-500 italic">
-                    {isIndividualA ? 'Jogador da Equipe A' : 'Integrantes da Equipe A'}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Centro do Totem A: Placar Acumulado Gigante */}
-          <div className="my-auto py-4 text-center border-y border-white/10 bg-white/[0.02]">
-            <div className="text-[11px] font-mono-code text-[#17B8B8] font-bold uppercase tracking-widest mb-1">
-              {isIndividualA ? `PONTOS DE ${playerAName.toUpperCase()}` : 'PONTOS DA EQUIPE'}
-            </div>
-            <div className="font-anton text-4xl xl:text-5xl text-rose-300 font-black tracking-normal leading-none">
-              +{tem.roundScore.A} <span className="text-xl font-normal text-rose-400/80">PTS</span>
-            </div>
-            <div className="text-[10px] font-mono-code text-slate-400 mt-1">
-              TOTAL GERAL: {room.teams.A.score} PTS
-            </div>
-          </div>
-
-          {/* Base do Totem A: Blocos de Strike [ X ] + Atalho Rápido */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono-code text-rose-400 uppercase font-bold tracking-wider">
-                ERROS / STRIKES
-              </span>
-              <span className="font-mono-code text-[10px] text-slate-400">
-                {tem.strikes.A} DE {maxStrikes}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              {strikeNumbers.map((num) => (
-                <div
-                  key={num}
-                  className={`h-11 border-2 flex items-center justify-center font-anton text-2xl transition-all ${
-                    tem.strikes.A >= num
-                      ? 'border-[#E6194B] bg-[#E6194B] text-white shadow-[0_0_15px_rgba(230,25,75,0.6)]'
-                      : 'border-white/15 bg-[#07080d] text-slate-700'
-                  }`}
-                >
-                  {tem.strikes.A >= num ? 'X' : ''}
-                </div>
-              ))}
-            </div>
-
-            {tem.eliminatedTeams.includes('A') ? (
-              <div className="text-[10px] font-mono-code text-rose-400 font-bold uppercase text-center py-1 border border-rose-500/40 bg-rose-500/10">
-                ELIMINADA DA RODADA
-              </div>
-            ) : (
-              <button
-                type="button"
-                disabled={tem.phase === 'ROUND_END'}
-                onClick={() => handleMarkStrikeDirectly('A')}
-                className="w-full py-1.5 border border-[#E6194B] bg-[#E6194B]/20 hover:bg-[#E6194B] disabled:opacity-40 text-white font-anton text-xs uppercase tracking-wider transition-colors cursor-pointer"
-              >
-                ❌ STRIKE EQUIPE A
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* =========================================================================
-            COLUNA CENTRAL (xl:col-span-8) — O Painel Principal de Posições (Esticado)
-           ========================================================================= */}
-        <div className="flex-1 min-h-0 xl:col-span-8 flex flex-col justify-between gap-1.5 overflow-hidden">
-
-          {/* Survey Question Header */}
-          <div className="text-center space-y-0.5 shrink-0">
-            <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] font-mono-code text-[#17B8B8] uppercase tracking-widest">
-              <span>
-                TEMA CENTRAL: {room.theme} // PESQUISA COM {totalRespondents} RESPONDENTES
-              </span>
-              {tem.phase !== 'ROUND_END' && (
-                <>
-                  <button
-                    type="button"
-                    data-testid="tem-swap-question-btn"
-                    disabled={isSwappingQuestion}
-                    onClick={handleSwapQuestionWithAi}
-                    className="px-2 py-0.5 border border-[#17B8B8]/50 bg-[#17B8B8]/10 hover:bg-[#17B8B8] hover:text-black text-cyan-200 font-mono-code text-[10px] font-bold uppercase inline-flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
-                  >
-                    <RefreshCw size={10} className={isSwappingQuestion ? 'animate-spin' : ''} />
-                    <span>{isSwappingQuestion ? 'Gerando Nova...' : 'Trocar Pergunta (IA)'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    data-testid="tem-presenter-peek-btn"
-                    onClick={() => {
-                      sounds.playTick();
-                      setPresenterPeek((prev) => !prev);
-                    }}
-                    className={`px-2 py-0.5 border font-mono-code text-[10px] font-bold uppercase inline-flex items-center gap-1 transition-colors cursor-pointer ${
-                      presenterPeek
-                        ? 'border-amber-400 bg-amber-400 text-black'
-                        : 'border-white/15 bg-[#07080d] text-slate-300 hover:border-amber-400'
-                    }`}
-                  >
-                    <span>{presenterPeek ? '🙈 Ocultar Gabarito' : '👁️ Espiar Gabarito'}</span>
-                  </button>
-                </>
-              )}
-            </div>
-
-            <h2
-              data-testid="tem-ou-nao-tem-question"
-              className="text-base sm:text-lg md:text-xl xl:text-2xl font-black text-[#F5F2EB] uppercase leading-tight tracking-normal text-center max-w-4xl mx-auto py-1"
-            >
-              {displayQuestion}
-            </h2>
-
-            {tem.freeDomainTeam && tem.phase !== 'ROUND_END' && (
-              <div className="inline-block px-3 py-0.5 bg-amber-400 text-black font-anton text-xs uppercase tracking-widest animate-pulse">
-                ⭐ DOMÍNIO LIVRE! EQUIPE {tem.freeDomainTeam} JOGA SOZINHA SEM REVEZAR
-              </div>
-            )}
-          </div>
-
-          {/* Official Dynamic Block Panel Layout (3 to 10 positions — Elastic Stretched Grid) */}
-          <div
-            data-testid="tem-board-panel"
-            data-items-count={tem.items.length}
-            className={`flex-1 min-h-0 overflow-y-auto scrollbar-none w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-2 content-stretch py-1`}
-          >
+          <div data-testid="tem-board-panel" data-items-count={tem.items.length} className="rdb-tem-board">
             {tem.items.map((item, idx) => {
               if (!item) return null;
-              const isTop1 = idx === 0;
-              const spanFullRow = isTop1 && isOddCount;
-              const isCompactBoard = tem.items.length >= 7;
-
+              const top = idx === 0;
+              const wide = top && isOddCount;
               return (
                 <div
                   key={idx}
                   data-testid={`tem-slot-${idx + 1}`}
-                  data-span-full={spanFullRow ? 'true' : 'false'}
+                  data-span-full={wide ? 'true' : 'false'}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={item.revealed ? `${idx + 1}º: ${item.texto}, ${item.votos} votos` : `Revelar a posição ${idx + 1}`}
                   onClick={() => !item.revealed && handleRevealItemDirectly(idx)}
-                  className={`cursor-pointer relative border bg-[#07080d] overflow-hidden transition-all duration-200 flex flex-col justify-between ${
-                    spanFullRow ? 'md:col-span-2' : ''
-                  } ${
-                    isTop1
-                      ? item.revealed
-                        ? 'ring-2 ring-[#17B8B8] bg-[#17B8B8]/10 border-[#17B8B8]'
-                        : 'border-[#17B8B8]/60 hover:border-[#17B8B8]'
-                      : item.revealed
-                      ? 'border-[#E6194B] bg-[#E6194B]/10'
-                      : 'border-white/15 hover:border-[#E6194B]/70'
-                  }`}
+                  onKeyDown={(e) => e.key === 'Enter' && !item.revealed && handleRevealItemDirectly(idx)}
+                  className={`rdb-tem-slot${top ? ' is-top' : ''}${wide ? ' is-wide' : ''}${item.revealed ? ' is-open' : ''}`}
                 >
-                  {/* Header Bar: Cyan (#17B8B8) for Top 1, Red/Pink (#E6194B) for Positions 2..N */}
-                  <div
-                    className={`font-anton text-[10px] xl:text-xs uppercase tracking-widest px-2.5 py-0.5 flex items-center justify-between shrink-0 ${
-                      isTop1 ? 'bg-[#17B8B8] text-black' : 'bg-[#E6194B] text-white'
-                    }`}
-                  >
-                    <span>{isTop1 ? 'POSIÇÃO 1 // TOP 1 MAIS VOTADO' : `POSIÇÃO ${idx + 1}`}</span>
-                    <span className="font-mono-code font-bold">{isTop1 ? 'TOP VOTOS' : 'VOTOS'}</span>
-                  </div>
-
-                  <div
-                    className={`px-3 py-1.5 flex items-center justify-between gap-2 flex-1 ${
-                      isCompactBoard ? 'min-h-[44px] xl:min-h-[54px]' : 'min-h-[50px] xl:min-h-[64px]'
-                    }`}
-                  >
-                    {item.revealed ? (
-                      <>
-                        <div
-                          className={`font-anton text-white uppercase tracking-wide leading-tight break-words flex-1 ${
-                            isCompactBoard
-                              ? 'text-sm md:text-base xl:text-xl'
-                              : spanFullRow
-                              ? 'text-base md:text-xl xl:text-2xl'
-                              : 'text-sm md:text-lg xl:text-2xl'
-                          }`}
-                        >
-                          {item.texto}
-                        </div>
-                        <div
-                          className={`px-2.5 py-1 border font-anton ${
-                            isCompactBoard ? 'text-lg md:text-xl xl:text-2xl' : 'text-xl md:text-2xl xl:text-3xl'
-                          } shrink-0 ${
-                            isTop1
-                              ? 'border-[#17B8B8] bg-[#17B8B8]/20 text-cyan-200'
-                              : 'border-[#E6194B] bg-[#E6194B]/20 text-rose-200'
-                          }`}
-                        >
-                          {item.votos}
-                        </div>
-                      </>
-                    ) : (
-                      <div className="w-full flex flex-col items-center justify-center text-center py-1">
-                        <div
-                          className={`font-anton text-[#F5F2EB]/80 leading-none ${
-                            isCompactBoard ? 'text-xl md:text-2xl xl:text-3xl' : 'text-2xl md:text-3xl xl:text-4xl'
-                          }`}
-                        >
-                          {idx + 1}
-                        </div>
-                        {presenterPeek && (
-                          <div className="text-[10px] xl:text-xs font-mono-code text-amber-300/90 uppercase font-bold mt-0.5">
-                            👁️ {item.texto} ({item.votos} pts)
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Strike & Score Displays for all active teams (always shown when >2 teams, or < xl when 2 teams) */}
-          <div
-            className={`grid gap-2 max-w-4xl w-full mx-auto shrink-0 ${
-              activeTeamIds.length > 2
-                ? activeTeamIds.length === 3
-                  ? 'grid-cols-3'
-                  : 'grid-cols-2 sm:grid-cols-4'
-                : 'grid-cols-2 xl:hidden'
-            }`}
-          >
-            {activeTeamIds.map((tId) => {
-              const meta = TEAM_META[tId];
-              const isTurn = tem.activeTeam === tId && tem.phase === 'GUESSING';
-              const teamStrikes = tem.strikes[tId] || 0;
-              const teamRoundPts = tem.roundScore[tId] || 0;
-              const isElim = tem.eliminatedTeams.includes(tId);
-              const teamMembers = room.players.filter(
-                (p) => p.team === tId || room.teams[tId]?.members?.includes(p.id)
-              );
-              const isSinglePlayer = teamMembers.length === 1;
-              const displayLabel = isSinglePlayer
-                ? teamMembers[0].name.toUpperCase()
-                : meta.equipeLabel;
-
-              return (
-                <div
-                  key={tId}
-                  data-testid={`tem-compact-team-${tId}`}
-                  className={`px-2.5 py-1.5 border transition-all ${
-                    isTurn
-                      ? `${meta.borderClass} ${meta.bgClass} ${meta.glowShadow}`
-                      : 'border-white/10 bg-white/[0.03]'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className={`font-anton text-xs uppercase tracking-wide truncate ${meta.textClass}`}>
-                      {displayLabel} {isTurn ? '• 🎤 VEZ' : ''}
+                  <span className="rdb-tem-slot-n">{idx + 1}</span>
+                  {item.revealed ? (
+                    <>
+                      <span className="rdb-tem-slot-text">{item.texto}</span>
+                      <span className="rdb-tem-slot-votes">{item.votos}</span>
+                    </>
+                  ) : presenterPeek ? (
+                    <span className="rdb-tem-slot-peek">
+                      {item.texto} <small>({item.votos})</small>
                     </span>
-                    <span className={`font-mono-code text-[11px] sm:text-xs font-bold shrink-0 ${meta.textClass}`}>
-                      +{teamRoundPts} PTS <span className="opacity-75 font-normal">({room.teams[tId]?.score || 0} TOT)</span>
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    {strikeNumbers.map((num) => (
-                      <div
-                        key={num}
-                        className={`flex-1 h-5 border flex items-center justify-center font-anton text-sm ${
-                          teamStrikes >= num
-                            ? 'border-[#E6194B] bg-[#E6194B] text-white'
-                            : 'border-white/10 bg-[#07080d] text-slate-700'
-                        }`}
-                      >
-                        {teamStrikes >= num ? 'X' : ''}
-                      </div>
-                    ))}
-                  </div>
-
-                  {isElim && (
-                    <div className="text-[9px] font-mono-code text-rose-400 font-bold uppercase mt-0.5 text-center">
-                      ELIMINADA ({maxStrikes} {maxStrikes === 1 ? 'STRIKE' : 'STRIKES'})
-                    </div>
+                  ) : (
+                    <span className="rdb-tem-slot-closed" aria-hidden="true" />
                   )}
                 </div>
               );
             })}
           </div>
-        </div>
 
-        {/* =========================================================================
-            COLUNA DIREITA (xl:col-span-2) — Totem Vertical EQUIPE / JOGADOR B (Modo Widescreen)
-           ========================================================================= */}
-        <div
-          data-testid="tem-totem-dupla-b"
-          className={`hidden xl:flex xl:col-span-2 flex-col justify-between border p-3.5 bg-[#07080d]/90 transition-all duration-200 ${
-            tem.activeTeam === 'B' && tem.phase === 'GUESSING'
-              ? 'border-2 border-[#17B8B8] shadow-[0_0_25px_rgba(23,184,184,0.45)] ring-2 ring-[#17B8B8] bg-gradient-to-b from-[#17B8B8]/20 via-[#07080d]/95 to-[#17B8B8]/5'
-              : 'border-white/10 bg-[#07080d]/80 opacity-70 hover:opacity-100 transition-opacity'
-          }`}
-        >
-          {/* Topo do Totem B: Nome da Equipe / Jogador + Badge de Turno */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between border-b border-white/10 pb-2">
-              <span className="font-anton text-lg tracking-wider uppercase text-[#17B8B8] truncate" title={playerBName}>
-                {playerBName}
-              </span>
-              <span className="font-mono-code text-[10px] text-white/50 uppercase">
-                {isIndividualB ? 'JOGADOR' : 'EQUIPE B'}
-              </span>
-            </div>
+          {!twoTeams && (
+            <div className="rdb-tem-strip">{activeTeamIds.map((tId) => renderTeam(tId, 'strip'))}</div>
+          )}
+        </section>
 
-            {tem.activeTeam === 'B' && tem.phase === 'GUESSING' ? (
-              <div className="py-2 px-2 border-2 border-[#17B8B8] bg-gradient-to-r from-[#17B8B8]/30 via-[#17B8B8]/20 to-[#17B8B8]/30 text-white font-anton text-xs uppercase tracking-widest text-center shadow-[0_0_15px_rgba(23,184,184,0.5)] flex items-center justify-center gap-1.5 animate-pulse">
-                <span>🎯</span>
-                <span className="font-black text-cyan-200">
-                  {isIndividualB ? `VEZ DE ${playerBName.toUpperCase()}!` : 'VEZ DA EQUIPE B!'}
-                </span>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => handleSelectActiveTeam('B')}
-                className="w-full py-1.5 px-2 border border-white/10 bg-white/[0.02] hover:border-cyan-400 hover:bg-cyan-950/30 text-slate-500 hover:text-cyan-300 font-mono-code text-[10px] uppercase tracking-wider text-center transition-colors cursor-pointer"
-                title={`Clique para passar a vez para ${isIndividualB ? playerBName : 'a Equipe B'}`}
-              >
-                AGUARDANDO TURNO
-              </button>
-            )}
-
-            {/* Integrantes da Equipe B / Perfil Individual */}
-            <div className="pt-1">
-              <div className="text-[10px] font-mono-code text-slate-400 uppercase tracking-widest mb-1 flex items-center justify-between">
-                <span>{isIndividualB ? 'JOGADOR:' : 'INTEGRANTES:'}</span>
-                <span className="text-[9px] text-[#17B8B8] font-mono-code font-bold">
-                  {isIndividualB ? 'DUELO 1x1' : 'JOGAM JUNTOS'}
-                </span>
-              </div>
-              <div className="space-y-1">
-                {teamBPlayers.length > 0 ? (
-                  teamBPlayers.map((player) => (
-                    <div
-                      key={player.id}
-                      className="px-2.5 py-1.5 border border-white/10 bg-white/[0.03] font-mono-code text-xs text-slate-200 font-semibold flex items-center gap-2 truncate"
-                    >
-                      <span className="text-base shrink-0"><PlayerMark p={player} /></span>
-                      <span className="truncate">{player.name}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-xs font-mono-code text-slate-500 italic">
-                    {isIndividualB ? 'Jogador da Equipe B' : 'Integrantes da Equipe B'}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Centro do Totem B: Placar Acumulado Gigante */}
-          <div className="my-auto py-4 text-center border-y border-white/10 bg-white/[0.02]">
-            <div className="text-[11px] font-mono-code text-[#17B8B8] font-bold uppercase tracking-widest mb-1">
-              {isIndividualB ? `PONTOS DE ${playerBName.toUpperCase()}` : 'PONTOS DA EQUIPE'}
-            </div>
-            <div className="font-anton text-4xl xl:text-5xl text-[#17B8B8] font-black tracking-normal leading-none">
-              +{tem.roundScore.B} <span className="text-xl font-normal text-cyan-200/80">PTS</span>
-            </div>
-            <div className="text-[10px] font-mono-code text-slate-400 mt-1">
-              TOTAL GERAL: {room.teams.B.score} PTS
-            </div>
-          </div>
-
-          {/* Base do Totem B: Blocos de Strike [ X ] + Atalho Rápido */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono-code text-rose-400 uppercase font-bold tracking-wider">
-                ERROS / STRIKES
-              </span>
-              <span className="font-mono-code text-[10px] text-slate-400">
-                {tem.strikes.B} DE {maxStrikes}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              {strikeNumbers.map((num) => (
-                <div
-                  key={num}
-                  className={`h-11 border-2 flex items-center justify-center font-anton text-2xl transition-all ${
-                    tem.strikes.B >= num
-                      ? 'border-[#E6194B] bg-[#E6194B] text-white shadow-[0_0_15px_rgba(230,25,75,0.6)]'
-                      : 'border-white/15 bg-[#07080d] text-slate-700'
-                  }`}
-                >
-                  {tem.strikes.B >= num ? 'X' : ''}
-                </div>
-              ))}
-            </div>
-
-            {tem.eliminatedTeams.includes('B') ? (
-              <div className="text-[10px] font-mono-code text-[#17B8B8] font-bold uppercase text-center py-1 border border-[#17B8B8]/40 bg-[#17B8B8]/10">
-                ELIMINADA DA RODADA
-              </div>
-            ) : (
-              <button
-                type="button"
-                disabled={tem.phase === 'ROUND_END'}
-                onClick={() => handleMarkStrikeDirectly('B')}
-                className="w-full py-1.5 border border-[#E6194B] bg-[#E6194B]/20 hover:bg-[#E6194B] disabled:opacity-40 text-white font-anton text-xs uppercase tracking-wider transition-colors cursor-pointer"
-              >
-                ❌ STRIKE EQUIPE B
-              </button>
-            )}
-          </div>
-        </div>
+        {twoTeams && renderTeam(activeTeamIds[1], 'right')}
       </div>
 
-      {/* Barra Inferior de Ação: Host TV Assistant Input + Direct Strike Button + Explicit Commit CTA */}
-      <div className="w-full mx-auto border border-white/10 bg-white/[0.03] p-1.5 flex flex-wrap items-center gap-2 shrink-0 mt-2">
+      {/* Palpite e a acao principal */}
+      <footer className="rdb-tem-foot">
         <label htmlFor="host-tv-guess-input" className="sr-only">
           Palpite falado pela equipe
         </label>
@@ -853,57 +514,32 @@ export const ScreenTemOuNaoTem: React.FC<ScreenTemOuNaoTemProps> = ({
           aria-label="Palpite falado pela equipe"
           type="text"
           autoComplete="off"
-          disabled={tem.phase === 'ROUND_END'}
+          disabled={ended}
           value={manualGuessText}
           onChange={(e) => setManualGuessText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleProcessGuess(manualGuessText, tem.activeTeam)}
-          placeholder={`Digite o palpite falado pela Equipe ${tem.activeTeam} (ou clique nas posições 1-${tem.items.length})...`}
-          className="flex-1 min-w-[180px] bg-[#07080d] border border-white/15 px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#17B8B8]"
+          placeholder={`Palpite de ${teamName(tem.activeTeam)}, ou clique numa posição`}
         />
+        <button type="button" className="rdb-btn" disabled={ended} onClick={() => handleProcessGuess(manualGuessText, tem.activeTeam)}>
+          Validar
+        </button>
         <button
           type="button"
-          disabled={tem.phase === 'ROUND_END'}
-          onClick={() => handleProcessGuess(manualGuessText, tem.activeTeam)}
-          className="disabled:opacity-40 disabled:cursor-not-allowed px-3.5 py-1.5 border border-[#17B8B8] bg-[#17B8B8] hover:bg-cyan-300 text-black font-anton text-xs uppercase cursor-pointer transition-colors"
+          data-testid="tem-strike-btn"
+          className="rdb-btn rdb-tem-strike"
+          disabled={ended}
+          data-tip="Marcar erro para quem está na vez (tecla X)"
+          onClick={() => handleMarkStrikeDirectly(tem.activeTeam)}
         >
-          VALIDAR PALPITE (EQUIPE {tem.activeTeam})
+          <X size={18} strokeWidth={3} /> Erro
         </button>
-
-        <button
-          type="button"
-          disabled={tem.phase === 'ROUND_END'}
-          onClick={handleRevealAllRemaining}
-          className="disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1.5 border border-white/20 bg-[#07080d] hover:bg-white/10 text-slate-300 font-anton text-xs uppercase cursor-pointer transition-colors"
-        >
-          REVELAR TUDO
-        </button>
-
-        {/* Destructive Control (Strike) visually separated with margin and distinct red border */}
-        <div className="pl-2 border-l border-white/20">
-          <button
-            type="button"
-            data-testid="tem-strike-btn"
-            disabled={tem.phase === 'ROUND_END'}
-            onClick={() => handleMarkStrikeDirectly(tem.activeTeam)}
-            className="px-3.5 py-1.5 border border-[#E6194B] bg-[#E6194B]/20 hover:bg-[#E6194B] disabled:opacity-40 text-rose-200 hover:text-white font-anton text-xs uppercase tracking-wider cursor-pointer transition-all"
-            title="Atalho de teclado: Tecla X"
-          >
-            ❌ MARCAR ERRO (STRIKE)
-          </button>
-        </div>
-
-        {tem.phase === 'ROUND_END' && (
-          <button
-            type="button"
-            data-testid="tem-confirm-points-btn"
-            onClick={onNextRound}
-            className="ml-auto px-5 py-1.5 border border-[#17B8B8] bg-[#17B8B8] hover:bg-cyan-300 text-black font-anton text-xs md:text-sm uppercase tracking-wider shadow-neon-cyan transition-colors flex items-center gap-1.5 cursor-pointer"
-          >
-            <span>Confirmar Pontos e Avançar ➔</span>
-            <ArrowRight size={15} />
+        {ended && (
+          <button type="button" data-testid="tem-confirm-points-btn" className="rdb-btn rdb-setup-start" onClick={onNextRound}>
+            Confirmar pontos e avançar
+            <ArrowRight />
           </button>
         )}
-      </div>
+      </footer>
     </div>
   );
 };
