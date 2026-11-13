@@ -203,7 +203,6 @@ export interface QuemSouEuEntry {
   identity: string;
   category: string;
   image?: string;
-  imageCredit?: string;
   status: 'searching' | 'found' | 'out';
   questions: number;
   wrongGuesses: number;

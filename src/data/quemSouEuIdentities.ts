@@ -10,7 +10,6 @@ export interface QuemSouEuIdentity {
   categoria: string;
   /** link direto de uma foto (so no Onde estou) */
   imagem?: string;
-  credito?: string;
 }
 
 const c = (categoria: string, nomes: string[]): QuemSouEuIdentity[] => nomes.map((nome) => ({ nome, categoria }));

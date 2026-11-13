@@ -14,7 +14,7 @@ export interface OndeEstouMoment extends QuemSouEuIdentity {
   origem: 'programa' | 'autoral';
 }
 
-const commons = (arquivo: string): string => `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(arquivo.replace(/ /g, '_'))}?width=640`;
+const commons = (arquivo: string): string => arquivo.startsWith('http') ? arquivo : `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(arquivo.replace(/ /g, '_'))}?width=640`;
 
 /**
  * Fotos livres do Wikimedia Commons (link direto, sem baixar). Chave: trecho do nome do momento. Quem nao tem foto aqui
@@ -35,12 +35,29 @@ const FOTOS: Record<string, string> = {
   'Daiane dos Santos': 'Daiane dos Santos 13072007.jpg',
   'Michael Phelps': 'Michael Phelps Ryan Lochte Laszlo Cseh medals 2008 Olympics.jpg',
   'Usain Bolt': 'Usain Bolt Berlin 2009.JPG',
-  'Rebeca Andrade': 'Rebeca Andrade Paris Olympics.jpg'
+  'Rebeca Andrade': 'Rebeca Andrade Paris Olympics.jpg',
+  'defesa de Gordon Banks': 'https://upload.wikimedia.org/wikipedia/commons/a/a3/Gordon_Banks_2007.jpg',
+  'Baggio isola': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/%D8%B1%D9%88%D8%A8%D8%B1%D8%AA%D9%88_%D8%A8%D8%A7%D8%AC%D9%88_%28cropped%29.jpg/960px-%D8%B1%D9%88%D8%A8%D8%B1%D8%AA%D9%88_%D8%A8%D8%A7%D8%AC%D9%88_%28cropped%29.jpg',
+  'Ronaldinho faz o gol de falta': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/2019_-_Press_conferences_-_Day_1_ENX_6950_%2849019873887%29_%28cropped%29.jpg/960px-2019_-_Press_conferences_-_Day_1_ENX_6950_%2849019873887%29_%28cropped%29.jpg',
+  'O 7 a 1 da Alemanha': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Stadion_Belo_Horizonte_Halbfinale_WM_2014_%2822117986076%29.jpg/960px-Stadion_Belo_Horizonte_Halbfinale_WM_2014_%2822117986076%29.jpg',
+  'Argentina de Messi campeã': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Lionel_Messi_Argentina_v_Egypt_7_July_2026-112%28cropped%29.jpg/960px-Lionel_Messi_Argentina_v_Egypt_7_July_2026-112%28cropped%29.jpg',
+  'Pelé marca o gol mil': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Pele_con_brasil_%28cropped%29.jpg/960px-Pele_con_brasil_%28cropped%29.jpg',
+  'Flamengo vence o Liverpool': 'https://upload.wikimedia.org/wikipedia/en/9/94/ToyotaCup1981.jpg',
+  'Roberto Carlos faz o gol impossível': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Roberto_Carlos_Credicard_Hall_%2842626066250%29.jpg/960px-Roberto_Carlos_Credicard_Hall_%2842626066250%29.jpg',
+  'Milagre de Istambul': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Istanbul_Atat%C3%BCrk_Olympic_Stadium_1.jpg/960px-Istanbul_Atat%C3%BCrk_Olympic_Stadium_1.jpg',
+  'Neymar leva o Santos': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Neymar_Junior_Brazil_V_Morocco_13_June_2026-40.jpg/960px-Neymar_Junior_Brazil_V_Morocco_13_June_2026-40.jpg',
+  'Barcelona vira o PSG': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Bar%C3%A7a_6_-_PSG_1%3B_Dimecres_8_de_mar%C3%A7_de_2017.jpg/960px-Bar%C3%A7a_6_-_PSG_1%3B_Dimecres_8_de_mar%C3%A7_de_2017.jpg',
+  'Brasil tricampeão no México': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Pele_celebrating_1970.jpg/960px-Pele_celebrating_1970.jpg',
+  'Iniesta decide': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/FIFA_World_Cup_2010_Spain_with_cup.jpg/960px-FIFA_World_Cup_2010_Spain_with_cup.jpg',
+  'Sergio Ramos empata': 'https://upload.wikimedia.org/wikipedia/commons/3/33/Sergio_Ramos_Interview_2021.jpg',
+  'O Dream Team': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Dream_Team_at_the_1992_Summer_Olympics.JPEG/960px-Dream_Team_at_the_1992_Summer_Olympics.JPEG',
+  'Guga conquista': 'https://upload.wikimedia.org/wikipedia/commons/f/f3/Guga_Kuerten.jpg',
+  'Gabigol faz dois gols': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Gabriel_Barbosa_2022.jpg/960px-Gabriel_Barbosa_2022.jpg',
 };
 
 const withPhoto = (x: OndeEstouMoment): OndeEstouMoment => {
   const key = Object.keys(FOTOS).find((k) => x.nome.includes(k));
-  return key ? { ...x, imagem: commons(FOTOS[key]), credito: 'Wikimedia Commons' } : x;
+  return key ? { ...x, imagem: commons(FOTOS[key]) } : x;
 };
 
 const m = (categoria: string, origem: OndeEstouMoment['origem'], nomes: string[]): OndeEstouMoment[] =>

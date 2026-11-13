@@ -25751,7 +25751,7 @@ var require_application = __commonJS({
     };
     app2.del = deprecate3.function(app2.delete, "app.del: Use app.delete instead");
     app2.render = function render(name, options, callback) {
-      var cache = this.cache;
+      var cache2 = this.cache;
       var done = callback;
       var engines = this.engines;
       var opts = options;
@@ -25770,7 +25770,7 @@ var require_application = __commonJS({
         renderOptions.cache = this.enabled("view cache");
       }
       if (renderOptions.cache) {
-        view = cache[name];
+        view = cache2[name];
       }
       if (!view) {
         var View2 = this.get("view");
@@ -25786,7 +25786,7 @@ var require_application = __commonJS({
           return done(err);
         }
         if (renderOptions.cache) {
-          cache[name] = view;
+          cache2[name] = view;
         }
       }
       tryRender(view, renderOptions, done);
@@ -67453,10 +67453,10 @@ function abortSignalAny(signals) {
   }
   function abort() {
     controller.abort(this.reason);
-    clean();
+    clean2();
   }
   const signalRefs = [];
-  function clean() {
+  function clean2() {
     for (const signalRef of signalRefs) {
       const signal = signalRef.deref();
       if (signal) {
@@ -75167,12 +75167,12 @@ function getSavedPlayerAvatar(playerKeysOrOptions, customStorage) {
   return null;
 }
 function saveLastSelectedAvatar(avatar, customStorage) {
-  const clean = String(avatar || "").trim();
-  if (!clean) return;
+  const clean2 = String(avatar || "").trim();
+  if (!clean2) return;
   const storage = getDefaultStorage(customStorage);
   if (storage) {
     try {
-      storage.setItem(LAST_SELECTED_AVATAR_STORAGE_KEY, clean);
+      storage.setItem(LAST_SELECTED_AVATAR_STORAGE_KEY, clean2);
     } catch {
     }
   }
@@ -78145,6 +78145,144 @@ function isRelated(a, b) {
   return cs.length >= 5 && cl.includes(cs);
 }
 
+// src/utils/momentImages.ts
+var UA = "RodaDeBobo/1.0 (party game; non-commercial)";
+var BAD_NAME = /(flag|bandeira|logo|escudo|brasao|brasão|coat[_ ]of[_ ]arms|\bmap|mapa|icon|symbol|crest|badge|signature|assinatura|\.svg|\.gif|\.tif|placeholder)/i;
+var maxRateWaitMs = 8e3;
+async function getJson(url, timeoutMs = 6e3, attempt = 0) {
+  const ctrl = new AbortController();
+  const t2 = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const r2 = await fetch(url, { headers: { "User-Agent": UA, Accept: "application/json" }, signal: ctrl.signal });
+    if (r2.status === 429 && attempt < 2) {
+      const ra = (Number(r2.headers.get("retry-after")) || 2) * 1e3;
+      if (ra <= maxRateWaitMs) {
+        await new Promise((res) => setTimeout(res, ra + 200));
+        return getJson(url, timeoutMs, attempt + 1);
+      }
+      return null;
+    }
+    if (!r2.ok) return null;
+    return await r2.json();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(t2);
+  }
+}
+var flat = (t2) => t2.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+var clean = (u) => u.split("?")[0];
+var PAGE_PROPS = "&prop=pageimages|extracts|description&piprop=thumbnail&pithumbsize=960&exintro=1&explaintext=1&exlimit=max&exchars=500";
+function toHit(p2) {
+  const src = p2?.thumbnail?.source;
+  const name = src ? decodeURIComponent(src.split("/").pop() || "") : "";
+  const image = src && !BAD_NAME.test(name) ? clean(src) : null;
+  return { title: p2?.title || "", image, text: flat(`${p2?.title || ""} ${p2?.description || ""} ${p2?.extract || ""}`) };
+}
+function confirms(hit, confirma) {
+  if (!confirma || confirma.length === 0) return true;
+  return confirma.some((c) => c && hit.text.includes(flat(c)));
+}
+async function pagesByTitle(lang, titles) {
+  const out = /* @__PURE__ */ new Map();
+  const uniq = [...new Set(titles.filter(Boolean))].slice(0, 20);
+  if (uniq.length === 0) return out;
+  const j = await getJson(
+    `https://${lang}.wikipedia.org/w/api.php?action=query&format=json&redirects=1${PAGE_PROPS}&titles=${encodeURIComponent(uniq.join("|"))}`
+  );
+  const q = j?.query;
+  if (!q) return out;
+  const hop = /* @__PURE__ */ new Map();
+  for (const n of q.normalized || []) hop.set(n.from, n.to);
+  for (const r2 of q.redirects || []) hop.set(r2.from, r2.to);
+  const byTitle = /* @__PURE__ */ new Map();
+  for (const p2 of Object.values(q.pages || {})) {
+    if (p2.missing !== void 0 || p2.invalid !== void 0) continue;
+    byTitle.set(p2.title, toHit(p2));
+  }
+  for (const t2 of uniq) {
+    let cur = t2;
+    for (let i2 = 0; i2 < 4 && hop.has(cur); i2++) cur = hop.get(cur);
+    const hit = byTitle.get(cur);
+    if (hit) out.set(t2, hit);
+  }
+  return out;
+}
+async function searchPages(lang, term) {
+  const j = await getJson(
+    `https://${lang}.wikipedia.org/w/api.php?action=query&format=json&generator=search&gsrlimit=4&gsrsearch=${encodeURIComponent(term)}${PAGE_PROPS}`
+  );
+  const pages = Object.values(j?.query?.pages || {}).sort((a, b) => a.index - b.index);
+  return pages.map(toHit);
+}
+async function fromCommons(q) {
+  const j = await getJson(
+    "https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrnamespace=6&gsrlimit=6&gsrsearch=" + encodeURIComponent(q + " filetype:bitmap") + "&prop=imageinfo&iiprop=url|size&iiurlwidth=960"
+  );
+  const pages = Object.values(j?.query?.pages || {}).sort((a, b) => a.index - b.index);
+  for (const p2 of pages) {
+    const ii = p2.imageinfo?.[0];
+    if (!ii || ii.width < 400 || BAD_NAME.test(p2.title)) continue;
+    const ok = ii.width <= 1100 ? clean(String(ii.url)) : clean(String(ii.thumburl));
+    if (ok) return ok;
+  }
+  return null;
+}
+var cache = /* @__PURE__ */ new Map();
+var keyOf = (q) => flat(`${q.wiki || ""}|${q.wikiEn || ""}|${q.busca || ""}`);
+async function findMomentImages(queries) {
+  const cached = queries.map((q) => cache.get(keyOf(q)) || null);
+  const todo = queries.map((q, i2) => ({ q, i: i2 })).filter((x2) => !cached[x2.i]);
+  if (todo.length === 0) return cached;
+  const found = await findMomentImagesUncached(todo.map((x2) => x2.q));
+  todo.forEach((x2, k) => {
+    if (found[k]) {
+      cache.set(keyOf(x2.q), found[k]);
+      cached[x2.i] = found[k];
+    }
+  });
+  return cached;
+}
+async function findMomentImagesUncached(queries) {
+  const res = queries.map(() => null);
+  const pt = await pagesByTitle("pt", queries.map((q) => q.wiki || ""));
+  queries.forEach((q, i2) => {
+    const hit = q.wiki ? pt.get(q.wiki) : void 0;
+    if (hit?.image && confirms(hit, q.confirma)) res[i2] = hit.image;
+  });
+  const need2 = queries.map((q, i2) => res[i2] ? "" : q.wikiEn || "");
+  if (need2.some(Boolean)) {
+    const en = await pagesByTitle("en", need2);
+    queries.forEach((q, i2) => {
+      if (res[i2]) return;
+      const hit = need2[i2] ? en.get(need2[i2]) : void 0;
+      if (hit?.image && confirms(hit, q.confirma)) res[i2] = hit.image;
+    });
+  }
+  for (let i2 = 0; i2 < queries.length; i2++) {
+    if (res[i2]) continue;
+    const q = queries[i2];
+    const term = q.busca || q.wiki || q.wikiEn;
+    if (!term) continue;
+    for (const lang of ["pt", "en"]) {
+      const hits = await searchPages(lang, term);
+      const ok = hits.find((h2) => h2.image && confirms(h2, q.confirma));
+      if (ok?.image) {
+        res[i2] = ok.image;
+        break;
+      }
+    }
+  }
+  for (let i2 = 0; i2 < queries.length; i2++) {
+    if (res[i2]) continue;
+    const q = queries[i2];
+    if (q.confirma && q.confirma.length > 0) continue;
+    const term = q.busca || q.wiki || q.wikiEn;
+    if (term) res[i2] = await fromCommons(term);
+  }
+  return res;
+}
+
 // server.ts
 var PERMISSIVE_SAFETY_SETTINGS = [
   {
@@ -78877,6 +79015,92 @@ REGRA OBRIGAT\xD3RIA: N\xC3O repita o nome do tema antes de dois-pontos (NUNCA e
     return res.json({ subthemes: null, fallback: true });
   } catch (err) {
     return res.status(200).json({ subthemes: null, fallback: true, error: err?.message });
+  }
+});
+app.post("/api/onde-estou-moments", async (req, res) => {
+  const { theme: rawTheme, count: rawCount, exclude = [] } = req.body || {};
+  const theme = String(rawTheme || "").trim();
+  const isGeneral = !theme || /^(geral|assuntos diversos|cultura pop e curiosidades)$/i.test(theme);
+  const count = Math.min(10, Math.max(2, Number(rawCount) || 6));
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey.trim() === "") {
+    return res.status(200).json({ moments: [], fallback: true, reason: "no_key" });
+  }
+  try {
+    const ai = new GoogleGenAI2({ apiKey, httpOptions: { headers: { "User-Agent": "aistudio-build" } } });
+    const excludeList = (Array.isArray(exclude) ? exclude : []).slice(-40).map((s2) => String(s2));
+    const response = await generateContentWithFallback(ai, {
+      contents: `Voc\xEA \xE9 o diretor criativo do party game brasileiro "Roda de Bobo" (estilo Caz\xE9TV, humor de mesa de bar).
+No jogo "Onde estou?" cada jogador recebe, na testa, a FOTO de um momento famoso (um lance, um fato hist\xF3rico, um meme) e descobre qual \xE9 com perguntas de sim ou n\xE3o.
+${isGeneral ? "Tema: livre. Misture esporte (principalmente futebol), hist\xF3ria e mundo, cultura pop, internet e memes brasileiros." : `Tema: "${theme}". Todos os momentos precisam ter a ver com esse tema.`}
+Gere exatamente ${count + 4} momentos DIFERENTES entre si, todos REAIS e muito conhecidos. S\xF3 inclua o que voc\xEA tem CERTEZA ABSOLUTA que aconteceu, com o ano certo: nunca invente fato, data ou detalhe. Cada um precisa ter foto na Wikip\xE9dia ou no Commons (a pessoa, o time, o lugar ou o evento principal).
+Inclua pelo menos ${Math.max(1, Math.round(count / 4))} piada ou meme engra\xE7ado conhecido do Brasil quando o tema permitir.
+Para cada um:
+- "legenda": o que a foto mostra, curta (at\xE9 75 caracteres), no estilo do programa, e com o ano entre par\xEAnteses no fim quando for um fato datado. N\xE3o d\xEA spoilers desnecess\xE1rios al\xE9m disso.
+- "categoria": 1 a 3 palavras.
+- "wiki": t\xEDtulo EXATO de um artigo da Wikip\xE9dia em portugu\xEAs que tenha foto do momento ou da pessoa/lugar principal (ex.: "Maracanazo", "Zinedine Zidane").
+- "wiki_en": t\xEDtulo exato do artigo equivalente na Wikip\xE9dia em ingl\xEAs.
+- "busca": 3 a 5 palavras para achar a foto (nomes pr\xF3prios e o ano).
+- "confirma": 2 a 4 palavras que o resumo do artigo CERTO da Wikip\xE9dia com certeza cita (ex.: "futebol", "jogador", "Copa do Mundo"), para eu descartar hom\xF4nimos.
+IMPORTANTE: se o nome tiver hom\xF4nimo, use o t\xEDtulo desambiguado em "wiki" (ex.: "Roberto Carlos (futebolista)", n\xE3o o cantor).
+N\xC3O repita nem pare\xE7a com: ${JSON.stringify(excludeList)}.
+Semente de aleatoriedade: #${Date.now()}-${Math.floor(Math.random() * 1e6)}.`,
+      config: {
+        temperature: 1,
+        topP: 0.95,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            momentos: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  legenda: { type: Type.STRING },
+                  categoria: { type: Type.STRING },
+                  wiki: { type: Type.STRING },
+                  wiki_en: { type: Type.STRING },
+                  busca: { type: Type.STRING },
+                  confirma: { type: Type.ARRAY, items: { type: Type.STRING } }
+                },
+                required: ["legenda", "categoria", "wiki", "busca", "confirma"]
+              }
+            }
+          },
+          required: ["momentos"]
+        }
+      }
+    });
+    const parsed = JSON.parse(response.text || "{}");
+    const raw = Array.isArray(parsed.momentos) ? parsed.momentos : [];
+    const picked = [];
+    for (const m2 of raw) {
+      const legenda = sanitizeCleanGameText(String(m2?.legenda || "")).slice(0, 90);
+      if (!legenda || legenda.length < 8) continue;
+      if (picked.some((p2) => isRelated(p2.legenda, legenda))) continue;
+      if (excludeList.some((e2) => isRelated(e2, legenda))) continue;
+      picked.push({
+        nome: legenda,
+        categoria: sanitizeCleanGameText(String(m2?.categoria || "Momentos")).slice(0, 30) || "Momentos",
+        wiki: String(m2?.wiki || ""),
+        wikiEn: String(m2?.wiki_en || ""),
+        busca: String(m2?.busca || ""),
+        confirma: Array.isArray(m2?.confirma) ? m2.confirma.map((x2) => String(x2)).slice(0, 5) : []
+      });
+    }
+    const urls = await findMomentImages(picked.map((p2) => ({ wiki: p2.wiki, wikiEn: p2.wikiEn, busca: p2.busca, confirma: p2.confirma })));
+    const withImg = [];
+    picked.forEach((p2, k) => {
+      let img = urls[k] || void 0;
+      if (img && withImg.some((w) => w.imagem === img)) img = void 0;
+      withImg.push({ nome: p2.nome, categoria: p2.categoria, imagem: img });
+    });
+    const sorted = [...withImg.filter((w) => w.imagem), ...withImg.filter((w) => !w.imagem)].slice(0, count);
+    return res.json({ moments: sorted, fallback: sorted.length === 0 });
+  } catch (err) {
+    const kind = classifyGeminiError(err);
+    return res.status(200).json({ moments: [], fallback: true, reason: kind, error: err?.message });
   }
 });
 app.post("/api/generate-round", async (req, res) => {

@@ -2148,9 +2148,32 @@ async function generateRoundContentCore(
 
   // NOV-06: o Onde estou sorteia os momentos no proprio App (precisa do numero de jogadores); aqui so um marcador.
   if (gameId === 'onde-estou') {
+    // A IA propoe momentos do tema (com foto achada no servidor); sem IA ou com a fonte "banco", o App sorteia do banco.
+    let aiMoments: unknown[] = [];
+    if ((customConfig?.contentSource ?? 'auto') !== 'bank') {
+      try {
+        if (await isApiAvailable()) {
+          const used = excludeSignatures
+            .filter((sig) => typeof sig === 'string' && sig.startsWith('oe:'))
+            .flatMap((sig) => sig.slice(3).split('|'));
+          const res = await fetch('/api/onde-estou-moments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(25000),
+            body: JSON.stringify({ theme: customTheme, count: 8, exclude: used })
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (Array.isArray(json.moments)) aiMoments = json.moments;
+          }
+        }
+      } catch {
+        // sem IA: segue com o banco
+      }
+    }
     return {
-      source: 'curated',
-      data: {},
+      source: aiMoments.length > 0 ? 'ai' : 'curated',
+      data: { moments: aiMoments },
       themeUsed: 'Onde estou',
       subthemeUsed: 'Grandes momentos na testa',
       signature: `oe-round-${Date.now()}`

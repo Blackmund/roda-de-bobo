@@ -15,7 +15,7 @@ import { buildComoEuPintoState, pickPintoPair } from '../utils/comoEuPintoEngine
 import { drawEstadio, normalizeEstadioKey } from '../data/estadiosBank';
 import { drawRespostaQuestion, normalizeRespostaKey } from '../data/respostasSemPerguntas';
 import { drawRepetenteTheme, normalizeThemeKey } from '../data/repetenteThemes';
-import { normalizeIdentity } from '../data/quemSouEuIdentities';
+import { normalizeIdentity, type QuemSouEuIdentity } from '../data/quemSouEuIdentities';
 import { drawLimitePowerCardsForPlayers } from '../components/host/ScreenLimite';
 import { drawRandomScoreCSPRNG } from '../components/SpinningNumberWheel';
 import { limiteExactBonusFor } from '../config/rulesets';
@@ -454,7 +454,15 @@ export const buildStartedRoundUpdater = ({
               sig.slice(3).split('|').forEach((n) => usedMoments.add(normalizeMomentKey(n)));
             }
           });
-          const moments = drawMoments(nextMatchPlayers.length, usedMoments);
+          // Momentos da IA (com foto) entram primeiro; o banco completa o que faltar.
+          const aiMoments: QuemSouEuIdentity[] = (Array.isArray(data?.moments) ? data.moments : [])
+            .filter((x: any) => x && typeof x.nome === 'string' && !usedMoments.has(normalizeMomentKey(x.nome)))
+            .map((x: any) => ({ nome: x.nome, categoria: x.categoria || 'Momentos', imagem: x.imagem || undefined }));
+          const need = nextMatchPlayers.length;
+          const fromAi = aiMoments.slice(0, need);
+          const moments = fromAi.length >= need
+            ? fromAi
+            : [...fromAi, ...drawMoments(need - fromAi.length, new Set([...usedMoments, ...fromAi.map((x) => normalizeMomentKey(x.nome))]))];
           const firstIdx = (Math.max(1, prev.roundNumber) - 1) % Math.max(1, nextMatchPlayers.length);
           quemSouEuState = buildQuemSouEuState(nextMatchPlayers, moments, firstIdx);
           extraSignature = 'oe:' + moments.map((i) => i.nome).join('|');

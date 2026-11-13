@@ -19,8 +19,13 @@ interface ScreenQuemSouEuProps {
   onNextRound: () => void;
 }
 
+const SumPhoto: React.FC<{ src: string }> = ({ src }) => {
+  const [failed, setFailed] = React.useState(false);
+  return failed ? null : <img className="rdb-sum-photo" src={src} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(true)} />;
+};
+
 /** Foto real do momento com a legenda embaixo; se o link falhar, fica so a legenda. */
-const MomentPhoto: React.FC<{ src: string; credit?: string; caption: string }> = ({ src, credit, caption }) => {
+const MomentPhoto: React.FC<{ src: string; caption: string }> = ({ src, caption }) => {
   const [failed, setFailed] = React.useState(false);
   return (
     <figure className="rdb-qse-photo">
@@ -28,7 +33,6 @@ const MomentPhoto: React.FC<{ src: string; credit?: string; caption: string }> =
         <img src={src} alt={caption} loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(true)} />
       )}
       <figcaption>{caption}</figcaption>
-      {!failed && credit && <small>Foto: {credit}</small>}
     </figure>
   );
 };
@@ -118,7 +122,8 @@ export const ScreenQuemSouEu: React.FC<ScreenQuemSouEuProps> = ({ room, onUpdate
       </header>
 
       {/* Na testa: a identidade so aparece quando o diretor libera */}
-      <div className={'rdb-qse-cards' + (moment ? ' is-moment' : '')}>
+      {qse.phase !== 'SUMMARY' && (
+      <div className={'rdb-qse-cards' + (moment ? ' is-moment' : '') + (qse.entries.length >= 5 ? ' is-many' : '')}>
         {qse.entries.map((e) => {
           const isTurn = qse.phase === 'PLAYING' && e.playerId === qse.turnPlayerId;
           const showIdentity = qse.identitiesVisible || qse.phase === 'SUMMARY' || e.status === 'found';
@@ -130,7 +135,7 @@ export const ScreenQuemSouEu: React.FC<ScreenQuemSouEuProps> = ({ room, onUpdate
               <div data-testid={`qse-identity-${e.playerId}`} className="rdb-qse-identity">
                 {showIdentity ? (
                   e.image ? (
-                    <MomentPhoto src={e.image} credit={e.imageCredit} caption={e.identity} />
+                    <MomentPhoto src={e.image} caption={e.identity} />
                   ) : (
                     e.identity
                   )
@@ -146,6 +151,7 @@ export const ScreenQuemSouEu: React.FC<ScreenQuemSouEuProps> = ({ room, onUpdate
           );
         })}
       </div>
+      )}
 
       {qse.phase === 'READY' && (
         <section className="rdb-pro-ready">
@@ -186,7 +192,7 @@ export const ScreenQuemSouEu: React.FC<ScreenQuemSouEuProps> = ({ room, onUpdate
       )}
 
       {qse.phase === 'SUMMARY' && (
-        <section data-testid="qse-summary" className="rdb-pro-sum">
+        <section data-testid="qse-summary" className={'rdb-pro-sum' + (qse.entries.some((x) => x.image) ? ' is-photos' : '')}>
           <div className="rdb-pro-sum-head">
             <span className="rdb-lim-round">Fim da rodada</span>
             <h2>{moment ? 'Momentos revelados' : 'Identidades reveladas'}</h2>
@@ -196,6 +202,7 @@ export const ScreenQuemSouEu: React.FC<ScreenQuemSouEuProps> = ({ room, onUpdate
               .sort((a, b) => (a.foundOrder ?? 99) - (b.foundOrder ?? 99))
               .map((e) => (
                 <div key={e.playerId} className={'rdb-pro-sum-card' + (e.status === 'found' ? ' is-hit' : '')}>
+                  {e.image && <SumPhoto src={e.image} />}
                   <span className="rdb-pro-sum-top">
                     <strong>{e.identity}</strong>
                     <span className="rdb-pro-sum-mark">{e.status === 'found' ? <Check size={18} strokeWidth={4} /> : <XIcon size={18} strokeWidth={4} />}</span>
