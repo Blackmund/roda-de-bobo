@@ -20,7 +20,8 @@ const TURN_BAR_GAMES: GameId[] = [
   'respostas-sem-perguntas',
   'estadios',
   'como-eu-pinto',
-  'perguntas-e-verdades'
+  'perguntas-e-verdades',
+  'com-terra'
 ];
 
 interface PlayingScreenProps {

@@ -185,7 +185,7 @@ export const GlobalStats: React.FC<GlobalStatsProps> = ({
               {recordScore > 0 ? `${recordScore}P` : '-'}
             </span>
             <span className="text-[10px] font-mono-code text-rose-400/80 font-bold truncate ml-1">
-              {recordPlayerName !== '-' ? `${recordPlayerAvatar} ${recordPlayerName}` : 'RECORDE DA MESA'}
+              {recordPlayerName !== '-' ? recordPlayerName : 'RECORDE DA MESA'}
             </span>
           </div>
         </div>

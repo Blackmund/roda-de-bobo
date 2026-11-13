@@ -15,13 +15,16 @@ export interface Step5GameTutorialProps {
   players: Player[];
   onBack: () => void;
   onStartGameNow: () => void;
+  /** Linha extra de pontuacao que depende dos ajustes da partida (ex.: bonus do Limite). */
+  extraScoring?: string | null;
 }
 
 export const Step5GameTutorial: React.FC<Step5GameTutorialProps> = React.memo(({
   gameId,
   players,
   onBack,
-  onStartGameNow
+  onStartGameNow,
+  extraScoring
 }) => {
   const tutorial = GAME_TUTORIALS[gameId] || GAME_TUTORIALS.limite;
   const example = TUTORIAL_EXAMPLES[gameId];
@@ -57,7 +60,7 @@ export const Step5GameTutorial: React.FC<Step5GameTutorialProps> = React.memo(({
 
           <div className="rdb-tut-score" data-testid="tutorial-scoring">
             <span className="rdb-tut-label">Como pontua</span>
-            {tutorial.scoringSummary.slice(0, 2).map((line) => (
+            {[...tutorial.scoringSummary.slice(0, extraScoring ? 1 : 2), ...(extraScoring ? [extraScoring] : [])].map((line) => (
               <p key={line}>{line}</p>
             ))}
           </div>

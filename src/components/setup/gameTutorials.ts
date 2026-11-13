@@ -8,7 +8,7 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
     name: 'JOGO DO LIMITE',
     welcomeTitle: 'Como Jogar o Limite',
     welcomeSubtitle:
-      'Estime o valor numérico da pergunta sem ultrapassar o valor real. Quem chegar mais perto pontua e quem cravar o número exato leva bônus!',
+      'Estime o valor numérico da pergunta sem ultrapassar o valor real. Quem chegar mais perto sem passar pontua.',
     steps: [
       {
         stepNumber: 1,
@@ -31,8 +31,8 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
         icon: '🃏',
         headline: 'Cartas de Poder e Revelação',
         description:
-          'São 4 cartas de poder sorteadas às cegas: cada jogador pega UMA e só pode usá-la uma vez na partida. O palpite mais próximo sem passar fatura 1 ponto; cravar o valor exato vale 2 pontos diretos!',
-        accentTag: 'Cravou = 2 Pontos'
+          'São 4 cartas de poder sorteadas às cegas: cada jogador pega UMA e só pode usá-la uma vez na partida. O palpite mais próximo sem passar fatura 1 ponto.',
+        accentTag: 'Mais perto = 1 ponto'
       }
     ],
     proibido: [
@@ -42,12 +42,10 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
     ],
     permitido: [
       'USAR A CARTA DE PODER SORTEADA (UMA CARTA POR JOGADOR, USO ÚNICO)',
-      'CRAVAR O NÚMERO EXATO PARA GANHAR 2 PONTOS DIRETOS',
       'ARREDONDAR PARA BAIXO COM CAUTELA PARA NÃO ESTOURAR'
     ],
     scoringSummary: [
-      'Maior palpite que não ultrapassar o valor real fatura +1 ponto. Se todos estourarem, vence quem estourou menos.',
-      'SUPER BÔNUS: Cravar o número exato vale 2 PONTOS diretos!'
+      'Maior palpite que não ultrapassar o valor real fatura +1 ponto. Se todos estourarem, vence quem estourou menos.'
     ]
   },
   duvido: {

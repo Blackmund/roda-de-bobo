@@ -75333,7 +75333,8 @@ function triggerBuzzReadyInRoom(room, playerId) {
 
 // src/types/game.ts
 var DEFAULT_GAME_CUSTOM_CONFIG = {
-  ruleset: "home",
+  ruleset: "show",
+  contentSource: "auto",
   temItemsCount: 5,
   temMaxStrikes: 2,
   proibidoCardsCount: 5,
@@ -78064,7 +78065,7 @@ REGRAS CR\xCDTICAS DE OURO (OBRIGAT\xD3RIO E SEM EXCE\xC7\xC3O):
    - Coloque sin\xF4nimos ou apelidos apenas no array "sinonimos_aceitos".
 3. As ${qtdRespostas} respostas DEVEM estar ordenadas da 1\xAA (mais votada) at\xE9 a ${qtdRespostas}\xAA, e a SOMA EXATA dos votos das ${qtdRespostas} respostas DEVE SER ${totalVotos} (ex: 45 + 23 + 15 + 10 + 7 = 100).
 4. CALIBRA\xC7\xC3O DO N\xCDVEL (${dificuldade.toUpperCase()}): As perguntas e respostas devem refletir fielmente o n\xEDvel escolhido (f\xE1cil e cotidiano no F\xE1cil; curioso no Dif\xEDcil; surpreendente no Imposs\xEDvel).
-5. Cada resposta deve ser curta (1 a 3 palavras) e incluir um array "sinonimos_aceitos" em letras min\xFAsculas e sem acento para permitir valida\xE7\xE3o flex\xEDvel quando o jogador digitar.
+5. Cada resposta deve ser curta (1 a 4 palavras), mas COMPLETA: quem l\xEA s\xF3 a resposta, sem a pergunta, entende do que se trata. NUNCA corte a resposta no meio (ERRADO: "Primeiro homem", "Lan\xE7amento foguete". CERTO: "Homem no espa\xE7o", "Gagarin em \xF3rbita", "Lan\xE7amento do Sputnik"). Prefira o nome pr\xF3prio do fato, da pessoa ou do objeto. O campo "texto" vai em portugu\xEAs com acentua\xE7\xE3o correta (ERRADO: "Estacao espacial". CERTO: "Esta\xE7\xE3o Espacial"); s\xF3 os "sinonimos_aceitos" ficam sem acento. Cada resposta deve incluir um array "sinonimos_aceitos" em letras min\xFAsculas e sem acento para permitir valida\xE7\xE3o flex\xEDvel quando o jogador digitar.
 6. Zero sobreposi\xE7\xE3o entre as posi\xE7\xF5es: itens equivalentes devem ficar agrupados nos sin\xF4nimos.
 7. PROIBIDO PERGUNTA TRIVIA DE RESPOSTA \xDANICA: NUNCA fa\xE7a perguntas cuja resposta verdadeira seja um fato isolado (ex: NUNCA fa\xE7a "Qual evento hist\xF3rico foi o maior desastre mar\xEDtimo em sua viagem inaugural?"). Se o tema for Titanic, a pergunta DEVE ser de associa\xE7\xE3o aberta: "Quando voc\xEA pensa no Titanic, o que vem primeiro \xE0 sua mente?".
 8. NUNCA repita perguntas ou pain\xE9is j\xE1 utilizados: ${JSON.stringify(historicoUsado)}.
