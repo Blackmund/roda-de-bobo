@@ -212,7 +212,7 @@
   line-height: 1.25;
   margin-bottom: 0.75rem;
   color: var(--rdb-ink-2);
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 4;
 }
 .rdb-lim-cat {
   padding: 0.2em 0.8em;
@@ -252,6 +252,13 @@
 }
 .rdb-lim-players-head .rdb-lim-rule {
   margin-left: 0.5rem;
+}
+.rdb-lim-score-hint {
+  color: var(--rdb-ink-2);
+  font-weight: 700;
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
 }
 .rdb-lim-answer-row {
   display: inline-flex;
@@ -525,6 +532,13 @@
   border: 0;
   color: var(--rdb-navy);
   cursor: pointer;
+  transition: opacity 0.15s, background-color 0.15s;
+}
+.rdb-lim-card-input button:disabled {
+  background: rgba(245, 242, 235, 0.14);
+  color: var(--rdb-ink-2);
+  opacity: 0.5;
+  cursor: default;
 }
 .rdb-lim-foot {
   display: flex;

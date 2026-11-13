@@ -98,14 +98,16 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
           <Info size={16} />
         </span>
         <div className="rdb-lim-tools">
-          <span
-            data-testid="limite-tv-timer-badge"
-            className={'rdb-lim-timer' + (timerHot ? ' is-hot' : '')}
-            data-tip={room.timerConfig === 0 ? 'Sem limite de tempo' : isTimeExpired ? 'Tempo esgotado: palpites fechados' : 'Tempo para os palpites'}
-          >
-            {room.timerConfig === 0 ? <InfinityIcon size={16} /> : <Clock size={16} />}
-            {timerLabel}
-          </span>
+          {!scoring && (
+            <span
+              data-testid="limite-tv-timer-badge"
+              className={'rdb-lim-timer' + (timerHot ? ' is-hot' : '')}
+              data-tip={room.timerConfig === 0 ? 'Sem limite de tempo' : isTimeExpired ? 'Tempo esgotado: palpites fechados' : 'Tempo para os palpites'}
+            >
+              {room.timerConfig === 0 ? <InfinityIcon size={16} /> : <Clock size={16} />}
+              {timerLabel}
+            </span>
+          )}
           <div className="rdb-lim-seg" role="group" aria-label="Como os palpites entram">
             <button
               type="button"
@@ -191,9 +193,6 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
               <span data-testid="limite-reveal-countdown-number" className="rdb-lim-count">
                 {limite.revealCountdown}
               </span>
-              <button type="button" data-testid="limite-reveal-now-btn" className="rdb-btn" onClick={handleImmediateReveal}>
-                Revelar agora
-              </button>
             </div>
           ) : (
             <div className="rdb-lim-wait">Apurando os palpites...</div>
@@ -222,13 +221,8 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
             </span>
           )}
           {scoring && (
-            <span
-              data-testid="limite-multi-winner-hint"
-              className="rdb-lim-rule"
-              tabIndex={0}
-              data-tip={`Clique no jogador para dar ou tirar o ponto${bonus > 1 ? `. Cravou exato: +${bonus}` : ''}`}
-            >
-              <Info size={16} />
+            <span data-testid="limite-multi-winner-hint" className="rdb-lim-score-hint">
+              Clique no jogador para pontuar{bonus > 1 ? ` · Exato: +${bonus}` : ''}
             </span>
           )}
         </div>

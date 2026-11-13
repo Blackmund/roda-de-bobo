@@ -186,6 +186,7 @@ export const LimitePlayerGuessCard: React.FC<LimitePlayerGuessCardProps> = ({
             />
             <button
               type="button"
+              disabled={(tvDraftGuesses[p.id] ?? '').trim() === ''}
               aria-label="Guardar o palpite"
               data-tip="Guardar o palpite"
               onClick={(e) => {
