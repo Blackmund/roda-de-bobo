@@ -185,6 +185,25 @@
 .rdb-lim-question[data-len='xl'] {
   font-size: clamp(1.1rem, 1.6vw, 2.2rem);
 }
+/* antes da revelação a pergunta é a protagonista: ocupa o espaço que era do "?" e da unidade */
+.rdb-lim-stage:not(.is-scoring) .rdb-lim-question {
+  -webkit-line-clamp: 4;
+}
+.rdb-lim-stage:not(.is-scoring) .rdb-lim-question[data-len='xs'] {
+  font-size: clamp(2rem, 6.2vw, 7.4rem);
+}
+.rdb-lim-stage:not(.is-scoring) .rdb-lim-question[data-len='s'] {
+  font-size: clamp(1.8rem, 4.7vw, 6rem);
+}
+.rdb-lim-stage:not(.is-scoring) .rdb-lim-question[data-len='m'] {
+  font-size: clamp(1.6rem, 3.5vw, 4.6rem);
+}
+.rdb-lim-stage:not(.is-scoring) .rdb-lim-question[data-len='l'] {
+  font-size: clamp(1.4rem, 2.8vw, 3.7rem);
+}
+.rdb-lim-stage:not(.is-scoring) .rdb-lim-question[data-len='xl'] {
+  font-size: clamp(1.25rem, 2.2vw, 3rem);
+}
 .rdb-lim-stage.is-scoring .rdb-lim-question {
   font-size: clamp(1rem, 1.6vw, 1.7rem);
   color: var(--rdb-ink-2);
@@ -205,11 +224,23 @@
   align-items: center;
   gap: 0.6rem;
 }
-.rdb-lim-q {
-  font-family: 'Anton', 'Impact', sans-serif;
-  font-size: clamp(4rem, 10vh, 8rem);
-  line-height: 0.9;
-  color: var(--rdb-amber);
+/* unidade junto dos palpites: ajuda a responder sem competir com a pergunta */
+.rdb-lim-unit-hint {
+  margin-left: auto;
+  padding: 0.2em 0.7em;
+  background: var(--rdb-amber);
+  color: var(--rdb-navy);
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.rdb-lim-unit-hint b {
+  font-weight: 900;
+  color: inherit;
+}
+.rdb-lim-players-head .rdb-lim-rule {
+  margin-left: 0.5rem;
 }
 .rdb-lim-unit {
   padding: 0.25em 0.9em;
@@ -2520,3 +2551,9 @@
 }
 .rdb-qse-cards.is-many .rdb-qse-card:has(.rdb-qse-photo) .rdb-qse-meta { display: none; }
 .rdb-qse-cards.is-many .rdb-qse-photo img { min-height: 3rem; }
+
+/* A summary reads as one result, followed by the correction action. */
+.rdb-pro-sum-head { gap: 8px; }
+.rdb-pro-sum-head h2 { display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: 8px 12px; }
+.rdb-pro-sum-head h2 small { font-size: clamp(1rem, 1.6vw, 1.4rem); }
+.rdb-pro-sum-head p { max-width: 60ch; line-height: 1.45; text-wrap: balance; }

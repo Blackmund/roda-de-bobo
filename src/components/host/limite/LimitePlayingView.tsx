@@ -166,6 +166,8 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
         </h2>
         {!scoring && limite.roundData.category && <span className="rdb-lim-cat">{limite.roundData.category}</span>}
 
+        {/* Antes da revelação o palco é só a pergunta: sem "?" gigante e sem unidade solta (ela vai junto dos palpites) */}
+        {(scoring || countdown || drumrolling) && (
         <div className="rdb-lim-center">
           {scoring ? (
             <>
@@ -192,17 +194,11 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
                 Revelar agora
               </button>
             </div>
-          ) : drumrolling ? (
-            <div className="rdb-lim-wait">Apurando os palpites...</div>
           ) : (
-            <>
-              <div className="rdb-lim-q">?</div>
-              <span data-testid="limite-unit-badge" className="rdb-lim-unit">
-                {unitText}
-              </span>
-            </>
+            <div className="rdb-lim-wait">Apurando os palpites...</div>
           )}
         </div>
+        )}
 
         {limite.phase === 'CALL_TIMEOUT' && (
           <div className="rdb-lim-call">
@@ -219,6 +215,11 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
           <span>
             {scoring ? 'Palpites' : 'Quem já palpitou'} <b>{guessed}/{room.players.length}</b>
           </span>
+          {!scoring && (
+            <span data-testid="limite-unit-badge" className="rdb-lim-unit-hint">
+              Responda em <b>{unitText}</b>
+            </span>
+          )}
           {scoring && (
             <span
               data-testid="limite-multi-winner-hint"
@@ -244,7 +245,7 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
             const exactPointValueIfAwarded = computeLimiteWinnerPoints(limite, p.id, true);
             const isScoredAsExact = isWinner && liveDelta >= exactPointValueIfAwarded;
 
-            return <LimitePlayerGuessCard key={p.id} p={p} limite={limite} isWinner={isWinner} handleAwardDirectMesaVictory={handleAwardDirectMesaVictory} isBusted={isBusted} hasGuessed={hasGuessed} cardPlayed={cardPlayed} totalPts={totalPts} liveDelta={liveDelta} guess={guess} isExactGuess={isExactGuess} exactPointValueIfAwarded={exactPointValueIfAwarded} pointValueIfAwarded={pointValueIfAwarded} isScoredAsExact={isScoredAsExact} editingSecretPlayers={editingSecretPlayers} playMode={playMode} isTimeExpired={isTimeExpired} setEditingSecretPlayers={setEditingSecretPlayers} setTvDraftGuesses={setTvDraftGuesses} tvDraftGuesses={tvDraftGuesses} handleSubmitSecretTvGuess={handleSubmitSecretTvGuess} />;
+            return <LimitePlayerGuessCard key={p.id} p={p} limite={limite} isWinner={isWinner} handleAwardDirectMesaVictory={handleAwardDirectMesaVictory} isBusted={isBusted} hasGuessed={hasGuessed} cardPlayed={cardPlayed} totalPts={totalPts} liveDelta={liveDelta} guess={guess} isExactGuess={isExactGuess} exactPointValueIfAwarded={exactPointValueIfAwarded} pointValueIfAwarded={pointValueIfAwarded} isScoredAsExact={isScoredAsExact} unitText={unitText} editingSecretPlayers={editingSecretPlayers} playMode={playMode} isTimeExpired={isTimeExpired} setEditingSecretPlayers={setEditingSecretPlayers} setTvDraftGuesses={setTvDraftGuesses} tvDraftGuesses={tvDraftGuesses} handleSubmitSecretTvGuess={handleSubmitSecretTvGuess} />;
           })}
         </div>
       </section>

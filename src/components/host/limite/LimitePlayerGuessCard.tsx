@@ -18,6 +18,7 @@ interface LimitePlayerGuessCardProps {
   exactPointValueIfAwarded: number;
   pointValueIfAwarded: number;
   isScoredAsExact: boolean;
+  unitText?: string;
   editingSecretPlayers: Record<string, boolean>;
   playMode: 'mesa' | 'digital';
   isTimeExpired: boolean;
@@ -49,6 +50,7 @@ export const LimitePlayerGuessCard: React.FC<LimitePlayerGuessCardProps> = ({
   exactPointValueIfAwarded,
   pointValueIfAwarded,
   isScoredAsExact,
+  unitText,
   editingSecretPlayers,
   playMode,
   isTimeExpired,
@@ -174,7 +176,7 @@ export const LimitePlayerGuessCard: React.FC<LimitePlayerGuessCardProps> = ({
               type="password"
               inputMode="numeric"
               data-testid={`limite-tv-guess-input-${p.id}`}
-              aria-label={`Palpite de ${p.name}`}
+              aria-label={`Palpite de ${p.name}${unitText ? ` em ${unitText.toLowerCase()}` : ''}`}
               value={tvDraftGuesses[p.id] ?? ''}
               onChange={(e) => setTvDraftGuesses((prev) => ({ ...prev, [p.id]: e.target.value }))}
               onKeyDown={(e) => {
