@@ -50,7 +50,7 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
                 <div
                   data-testid="round-source-badge"
                   title={room.roundSource === 'ai' ? 'Conteúdo desta rodada gerado pela IA (Gemini)' : 'Conteúdo desta rodada vem do banco pronto do jogo'}
-                  className="pointer-events-none absolute right-1.5 top-0.5 z-10 rounded border border-white/15 bg-black/50 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-300"
+                  className="pointer-events-none absolute left-1.5 bottom-0.5 z-10 rounded border border-white/15 bg-black/50 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-300"
                 >
                   {room.roundSource === 'ai' ? '🤖 IA' : '📚 Banco pronto'}
                 </div>
