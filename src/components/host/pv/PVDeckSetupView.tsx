@@ -1,17 +1,15 @@
 import type { Player } from '../../../types/game';
 import { FULL_52_DECK } from './pvConstants';
-import { themeBadge } from '../../../utils/themeUtils';
 import React from 'react';
 import { GameRoom, PerguntasEVerdadesGameState, PVDeckStyle } from '../../../types/game';
 import { PlayingCardView } from '../../PlayingCardView';
 import { SUIT_META, SUIT_ORDER, PVCard } from '../../../utils/perguntasEVerdadesEngine';
 import { sounds } from '../../../utils/soundEffects';
-import { CheckCircle2, Shuffle, AlertCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { Check, Shuffle, Eraser, Info, FastForward } from 'lucide-react';
 import { PlayerMark } from '../../rdb/PlayerMark';
 
 interface PVDeckSetupViewProps {
-  tvWrapperClass: "h-full flex flex-col justify-between min-h-0 overflow-hidden gap-1.5 text-xs select-none";
+  tvWrapperClass: string;
   matchRoundNumber: number;
   totalMatchRounds: number;
   currentSetupPlayer: Player;
@@ -25,9 +23,9 @@ interface PVDeckSetupViewProps {
   selectedSlotIdx: number;
   conflictingSlotIdx: number | null;
   pv: PerguntasEVerdadesGameState;
-  draggedCard: { card: PVCard; fromSlotIndex?: number; } | null;
+  draggedCard: { card: PVCard; fromSlotIndex?: number } | null;
   attemptPlaceCardInSlot: (card: PVCard, targetIndex: number, sourceSlotIndex?: number) => void;
-  setDraggedCard: React.Dispatch<React.SetStateAction<{ card: PVCard; fromSlotIndex?: number; } | null>>;
+  setDraggedCard: React.Dispatch<React.SetStateAction<{ card: PVCard; fromSlotIndex?: number } | null>>;
   setSelectedSlotIdx: React.Dispatch<React.SetStateAction<number>>;
   handleRemoveCardFromSlot: (slotIdx: number) => void;
   handleFillRandomValidHandForCurrentPlayer: () => void;
@@ -40,7 +38,6 @@ interface PVDeckSetupViewProps {
 }
 
 export const PVDeckSetupView: React.FC<PVDeckSetupViewProps> = ({
-  tvWrapperClass,
   matchRoundNumber,
   totalMatchRounds,
   currentSetupPlayer,
@@ -67,200 +64,163 @@ export const PVDeckSetupView: React.FC<PVDeckSetupViewProps> = ({
   cardsInCurrentSlots,
   cardsUsedByOtherPlayers
 }) => {
-  return (
-      <div data-testid="screen-perguntas-e-verdades" className={tvWrapperClass}>
-        <div data-testid="pv-deck-setup-screen" className="border-2 border-cyan-400 bg-[#080b16] p-2.5 md:p-3 shadow-neon-cyan flex-1 min-h-0 flex flex-col justify-between gap-2 overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-cyan-500/30 pb-1.5 shrink-0">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 bg-cyan-400 text-black font-anton text-xs uppercase">
-                FASE A: MONTAGEM DO BARALHO (R#{matchRoundNumber}{totalMatchRounds > 1 ? `/${totalMatchRounds}` : ''})
-              </span>
-              <h2 data-testid="pv-setup-current-player-banner" className="font-anton text-base md:text-lg text-white uppercase">
-                <PlayerMark p={currentSetupPlayer} /> {currentSetupPlayer.name} ({setupPlayerIndex + 1}/{activePlayers.length})
-              </h2>
-            </div>
+  const deckStyle: PVDeckStyle = pv.deckStyle || room.customConfig?.pvDeckStyle || 'padrao';
+  const isLast = setupPlayerIndex >= activePlayers.length - 1;
 
+  return (
+    <div data-testid="screen-perguntas-e-verdades" className="rdb-pro">
+      <div data-testid="pv-deck-setup-screen" className="rdb-pv-body">
+        <header className="rdb-lim-bar">
+          <span className="rdb-lim-title">
+            Montar a mão
+            <span className="rdb-lim-round">
+              Rodada {matchRoundNumber}
+              {totalMatchRounds > 1 ? `/${totalMatchRounds}` : ''}
+            </span>
+          </span>
+          <span
+            className="rdb-lim-rule"
+            tabIndex={0}
+            data-tip="Escolha 8 cartas em segredo, na ordem que quiser. Cartas do mesmo naipe precisam estar em ordem crescente."
+          >
+            <Info size={16} />
+          </span>
+          <div className="rdb-lim-tools">
+            <span data-testid="pv-setup-current-player-banner" className="rdb-tag">
+              <PlayerMark p={currentSetupPlayer} /> {currentSetupPlayer.name} ({setupPlayerIndex + 1}/{activePlayers.length})
+            </span>
             <button
               type="button"
               data-testid="pv-auto-deal-all-btn"
+              className="rdb-lim-icon"
+              aria-label="Sortear as mãos de todos e avançar"
+              data-tip="Sortear as mãos de todos e avançar"
               onClick={handleAutoDealAllHands}
-              className="px-3 py-1 border border-amber-400/80 bg-amber-950/60 hover:bg-amber-400 hover:text-black text-amber-200 font-mono-code text-[10px] font-bold uppercase flex items-center gap-1 cursor-pointer"
             >
-              <Shuffle size={12} />
-              <span>Sortear Mãos de Todos e Avançar</span>
+              <FastForward size={16} />
             </button>
           </div>
+        </header>
 
-          {/* Rule Error Banner */}
-          <AnimatePresence>
-            {setupRuleError && (
-              <motion.div
-                data-testid="pv-setup-rule-error"
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                className="p-2 border-2 border-rose-500 bg-rose-950/90 text-white flex items-center gap-2 text-xs font-mono-code font-bold shrink-0"
-              >
-                <AlertCircle size={16} className="text-rose-300 shrink-0" />
-                <span>{setupRuleError}</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* TOP 8 SLOTS */}
-          <div className="space-y-1 shrink-0">
-            <div className="flex items-center justify-between text-[11px] font-mono-code font-bold">
-              <span className="text-cyan-300 uppercase">SUA BANCADA DE 8 CARTAS SECRETAS:</span>
-              <span className="text-amber-300">{filledCount} / 8 POSICIONADAS</span>
-            </div>
-
-            <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
-              {[0, 1, 2, 3, 4, 5, 6, 7].map((slotIdx) => {
-                const card = setupSlots[slotIdx];
-                const isSelectedSlot = selectedSlotIdx === slotIdx;
-                const isConflictSlot = conflictingSlotIdx === slotIdx;
-                const deckStyle: PVDeckStyle = pv.deckStyle || room.customConfig?.pvDeckStyle || 'padrao';
-
-                return (
-                  <div
-                    key={slotIdx}
-                    data-testid={`pv-setup-slot-${slotIdx + 1}`}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      if (draggedCard) {
-                        attemptPlaceCardInSlot(draggedCard.card, slotIdx, draggedCard.fromSlotIndex);
-                        setDraggedCard(null);
-                      }
-                    }}
-                    draggable={Boolean(card)}
-                    onDragStart={() => {
-                      if (card) setDraggedCard({ card, fromSlotIndex: slotIdx });
-                    }}
-                  >
-                    <PlayingCardView
-                      card={card}
-                      styleMode={deckStyle}
-                      slotLabel={`${slotIdx + 1}ª POS`}
-                      isSelected={isSelectedSlot}
-                      isConflict={isConflictSlot}
-                      onClick={() => setSelectedSlotIdx(slotIdx)}
-                      onRemove={card ? () => handleRemoveCardFromSlot(slotIdx) : undefined}
-                    />
-                  </div>
-                );
-              })}
-            </div>
+        {setupRuleError && (
+          <div data-testid="pv-setup-rule-error" className="rdb-pv-banner is-bad">
+            <span>{setupRuleError}</span>
           </div>
+        )}
 
-          {/* ACTION BUTTONS */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-cyan-500/30 shrink-0">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                data-testid="pv-setup-random-hand-btn"
-                onClick={handleFillRandomValidHandForCurrentPlayer}
-                className="px-3 py-1 border-2 border-amber-400 bg-amber-400 hover:bg-amber-300 text-black font-anton text-xs uppercase flex items-center gap-1 cursor-pointer"
-              >
-                <Shuffle size={13} />
-                <span>Sortear Mão Aleatória</span>
-              </button>
-
-              <button
-                type="button"
-                data-testid="pv-setup-clear-hand-btn"
-                onClick={() => {
-                  sounds.playTick();
-                  setSetupSlots(new Array(8).fill(null));
-                  setSelectedSlotIdx(0);
-                  setSetupRuleError(null);
-                  setConflictingSlotIdx(null);
+        <div className="rdb-pv-slots">
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((slotIdx) => {
+            const card = setupSlots[slotIdx];
+            return (
+              <div
+                key={slotIdx}
+                data-testid={`pv-setup-slot-${slotIdx + 1}`}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (draggedCard) {
+                    attemptPlaceCardInSlot(draggedCard.card, slotIdx, draggedCard.fromSlotIndex);
+                    setDraggedCard(null);
+                  }
                 }}
-                className="px-2.5 py-1 border border-slate-700 bg-black text-slate-300 font-mono-code text-[10px] font-bold uppercase cursor-pointer"
+                draggable={Boolean(card)}
+                onDragStart={() => {
+                  if (card) setDraggedCard({ card, fromSlotIndex: slotIdx });
+                }}
               >
-                Limpar
-              </button>
-            </div>
+                <PlayingCardView
+                  card={card}
+                  styleMode={deckStyle}
+                  slotLabel={`${slotIdx + 1}ª POS`}
+                  isSelected={selectedSlotIdx === slotIdx}
+                  isConflict={conflictingSlotIdx === slotIdx}
+                  onClick={() => setSelectedSlotIdx(slotIdx)}
+                  onRemove={card ? () => handleRemoveCardFromSlot(slotIdx) : undefined}
+                />
+              </div>
+            );
+          })}
+        </div>
 
+        <div className="rdb-pv-deck rdb-pv-scroll">
+          <div className="rdb-pro-label" style={{ position: 'static', alignSelf: 'flex-start' }}>
+            Baralho · clique para pôr na {selectedSlotIdx + 1}ª posição · {filledCount}/8
+          </div>
+          {SUIT_ORDER.map((suitKey) => {
+            const suitMeta = SUIT_META[suitKey];
+            const suitCards = FULL_52_DECK.filter((c) => c.suit === suitKey);
+            const isRed = suitKey === 'hearts' || suitKey === 'diamonds';
+            return (
+              <div key={suitKey} className="rdb-pv-suit">
+                <span className={'rdb-pv-suit-name' + (isRed ? ' is-red' : '')} data-tip={suitMeta.name}>
+                  {suitMeta.symbol}
+                </span>
+                <div className="rdb-pv-suit-cards">
+                  {suitCards.map((card) => {
+                    const disabled = cardsInCurrentSlots.has(card.id) || cardsUsedByOtherPlayers.has(card.id);
+                    return (
+                      <button
+                        key={card.id}
+                        type="button"
+                        data-testid={`pv-deck-card-${card.id}`}
+                        className={'rdb-pv-card' + (isRed ? ' is-red' : '')}
+                        disabled={disabled}
+                        draggable={!disabled}
+                        onDragStart={() => {
+                          if (!disabled) setDraggedCard({ card });
+                        }}
+                        onClick={() => {
+                          if (!disabled) attemptPlaceCardInSlot(card, selectedSlotIdx);
+                        }}
+                      >
+                        {card.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <footer className="rdb-pro-foot">
+          <button
+            type="button"
+            data-testid="pv-setup-random-hand-btn"
+            className="rdb-btn"
+            onClick={handleFillRandomValidHandForCurrentPlayer}
+            data-tip="Sorteia uma mão válida para este jogador"
+          >
+            <Shuffle /> Sortear mão
+          </button>
+          <button
+            type="button"
+            data-testid="pv-setup-clear-hand-btn"
+            className="rdb-btn"
+            data-tip="Tira todas as cartas"
+            onClick={() => {
+              sounds.playTick();
+              setSetupSlots(new Array(8).fill(null));
+              setSelectedSlotIdx(0);
+              setSetupRuleError(null);
+              setConflictingSlotIdx(null);
+            }}
+          >
+            <Eraser /> Limpar
+          </button>
+          <div className="rdb-pro-foot-end">
             <button
               type="button"
               data-testid="pv-setup-confirm-hand-btn"
+              className="rdb-btn rdb-pro-hit"
               onClick={handleConfirmCurrentPlayerHand}
               disabled={filledCount < 8}
-              className={`px-4 py-1 border-2 font-anton text-xs uppercase flex items-center gap-1 cursor-pointer ${
-                filledCount === 8
-                  ? 'border-emerald-300 bg-emerald-400 hover:bg-emerald-300 text-black shadow-md'
-                  : 'border-slate-800 bg-slate-900 text-slate-600 cursor-not-allowed'
-              }`}
             >
-              <CheckCircle2 size={14} />
-              <span>
-                {setupPlayerIndex < activePlayers.length - 1
-                  ? `CONFIRMAR (${currentSetupPlayer.name}) ➔ PRÓXIMO`
-                  : `CONFIRMAR E INICIAR PARTIDA!`}
-              </span>
+              <Check /> {isLast ? 'Confirmar e iniciar' : `Confirmar · próximo`}
             </button>
           </div>
-
-          {/* FULL 52-CARD DECK */}
-          <div className="space-y-1 pt-1 border-t border-cyan-500/30 flex-1 min-h-0 overflow-y-auto scrollbar-none">
-            <div className="text-[10px] font-mono-code text-white font-bold uppercase">
-              BARALHO (52 CARTAS) — CLIQUE PARA INSERIR NA{' '}
-              <span className="text-cyan-300">{selectedSlotIdx + 1}ª POSIÇÃO</span>:
-            </div>
-
-            <div className="space-y-1">
-              {SUIT_ORDER.map((suitKey) => {
-                const suitMeta = SUIT_META[suitKey];
-                const suitCards = FULL_52_DECK.filter((c) => c.suit === suitKey);
-                const isRed = suitKey === 'hearts' || suitKey === 'diamonds';
-
-                return (
-                  <div key={suitKey} className="p-1 border border-slate-800 bg-black/80 flex items-center gap-1.5">
-                    <span className={`w-16 font-anton text-[10px] uppercase flex items-center gap-1 shrink-0 ${isRed ? 'text-rose-400' : 'text-cyan-300'}`}>
-                      <span>{suitMeta.symbol}</span>
-                      <span>{suitMeta.name}</span>
-                    </span>
-
-                    <div className="grid grid-cols-13 gap-1 flex-1">
-                      {suitCards.map((card) => {
-                        const inCurrentHand = cardsInCurrentSlots.has(card.id);
-                        const usedByOther = cardsUsedByOtherPlayers.has(card.id);
-                        const isDisabled = inCurrentHand || usedByOther;
-
-                        return (
-                          <button
-                            key={card.id}
-                            type="button"
-                            data-testid={`pv-deck-card-${card.id}`}
-                            disabled={isDisabled}
-                            draggable={!isDisabled}
-                            onDragStart={() => {
-                              if (!isDisabled) setDraggedCard({ card });
-                            }}
-                            onClick={() => {
-                              if (!isDisabled) attemptPlaceCardInSlot(card, selectedSlotIdx);
-                            }}
-                            className={`h-7 border font-anton text-[10px] flex items-center justify-center transition-all ${
-                              isDisabled
-                                ? 'border-slate-800 bg-slate-950/40 text-slate-700 opacity-40 cursor-not-allowed'
-                                : isRed
-                                ? 'border-rose-500/60 bg-[#1a0812] hover:bg-rose-500 hover:text-white text-rose-300 cursor-grab'
-                                : 'border-cyan-500/60 bg-[#081524] hover:bg-cyan-400 hover:text-black text-cyan-200 cursor-grab'
-                            }`}
-                          >
-                            <span>{card.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+        </footer>
       </div>
-    );
+    </div>
+  );
 };

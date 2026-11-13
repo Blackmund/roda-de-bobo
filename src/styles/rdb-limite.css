@@ -2141,3 +2141,321 @@
 .rdb-word.is-slim .rdb-word-text {
   font-size: clamp(1.8rem, 5vh, 3rem);
 }
+
+/* ---------- Perguntas e Verdades ---------- */
+.rdb-pv-roster {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.rdb-pv-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.7rem;
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.25);
+  background: var(--rdb-navy-2);
+  color: var(--rdb-ink-2);
+  font-weight: 900;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.rdb-pv-chip.is-turn {
+  border-color: var(--rdb-teal);
+  background: rgba(23, 184, 184, 0.14);
+  color: var(--rdb-cream);
+}
+.rdb-pv-chip.is-target {
+  border-color: var(--rdb-crimson);
+  color: var(--rdb-cream);
+}
+.rdb-pv-flag {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: 0.7rem;
+  padding: 0.05rem 0.35rem;
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-pv-flag.is-target { background: var(--rdb-crimson); color: var(--rdb-cream); }
+.rdb-pv-flag.is-wins { background: var(--rdb-amber); color: var(--rdb-navy); }
+.rdb-pv-flag.is-low {
+  background: var(--rdb-amber);
+  color: var(--rdb-navy);
+  animation: rdb-pv-pulse 1.2s ease-in-out infinite;
+}
+@keyframes rdb-pv-pulse { 50% { opacity: 0.45; } }
+.rdb-pv-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow: hidden;
+}
+.rdb-pv-scroll { overflow-y: auto; scrollbar-width: none; }
+.rdb-pv-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-shrink: 0;
+  padding: 0.5rem 0.9rem;
+  border: var(--rdb-line) solid var(--rdb-amber);
+  background: rgba(244, 177, 30, 0.1);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.rdb-pv-banner.is-ok { border-color: var(--rdb-teal); background: rgba(23, 184, 184, 0.12); }
+.rdb-pv-banner.is-bad { border-color: var(--rdb-crimson); background: rgba(210, 40, 60, 0.14); }
+.rdb-pv-qgrid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+  gap: 0.4rem;
+}
+.rdb-pv-q {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 0.7rem;
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.22);
+  background: var(--rdb-navy-2);
+  color: var(--rdb-cream);
+  text-align: left;
+  cursor: pointer;
+}
+.rdb-pv-q:hover { border-color: var(--rdb-teal); }
+.rdb-pv-q.is-on { border-color: var(--rdb-teal); background: rgba(23, 184, 184, 0.16); }
+.rdb-pv-q-n {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: 1.3rem;
+  color: var(--rdb-teal);
+}
+.rdb-pv-q-t {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(0.85rem, 1.9vh, 1.15rem);
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.rdb-pv-spot {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.8rem 1rem;
+  border: var(--rdb-line) solid var(--rdb-teal);
+  background: rgba(23, 184, 184, 0.1);
+}
+.rdb-pv-spot-text {
+  margin: 0;
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.4rem, 4vh, 2.4rem);
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+.rdb-pv-spot-meta {
+  display: flex;
+  justify-content: space-between;
+  color: var(--rdb-ink-2);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+.rdb-pv-pick {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  color: var(--rdb-ink-2);
+}
+.rdb-pv-pick button {
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.45rem;
+  background: var(--rdb-navy);
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.3);
+  color: var(--rdb-cream);
+  font-family: 'Anton', 'Impact', sans-serif;
+  cursor: pointer;
+}
+.rdb-pv-pick button.is-on { background: var(--rdb-amber); border-color: var(--rdb-amber); color: var(--rdb-navy); }
+.rdb-pv-slots {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+.rdb-pv-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-height: 0;
+  flex: 1;
+  justify-content: center;
+}
+.rdb-pv-suit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.rdb-pv-suit-name {
+  width: 1.8rem;
+  text-align: center;
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: 1.3rem;
+  color: var(--rdb-cream);
+  cursor: help;
+}
+.rdb-pv-suit-name.is-red { color: #ff6b7d; }
+.rdb-pv-suit-cards {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(13, minmax(0, 1fr));
+  gap: 0.25rem;
+}
+.rdb-pv-card {
+  position: relative;
+  height: clamp(1.7rem, 4vh, 2.4rem);
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.3);
+  background: var(--rdb-navy-2);
+  color: var(--rdb-cream);
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.rdb-pv-card.is-red { color: #ff6b7d; }
+.rdb-pv-card:hover:not(:disabled) { background: var(--rdb-teal); color: var(--rdb-navy); border-color: var(--rdb-teal); }
+.rdb-pv-card:disabled { opacity: 0.25; cursor: not-allowed; }
+.rdb-pv-card.is-placed { border-color: var(--rdb-amber); color: var(--rdb-amber); }
+.rdb-pv-card sup {
+  position: absolute;
+  top: -0.35rem;
+  right: -0.2rem;
+  padding: 0 0.2rem;
+  background: var(--rdb-amber);
+  color: var(--rdb-navy);
+  font-size: 0.6rem;
+  line-height: 1.2;
+}
+.rdb-pv-hand {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+.rdb-pv-hidden {
+  display: grid;
+  place-items: center;
+  height: 5rem;
+  border: var(--rdb-line) dashed rgba(245, 242, 235, 0.3);
+  color: var(--rdb-ink-2);
+  cursor: pointer;
+  font-weight: 900;
+}
+.rdb-pv-bid-center {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+}
+.rdb-pv-bid-who {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 6vh, 3.6rem);
+  text-transform: uppercase;
+}
+.rdb-pv-bid-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(3rem, 3.4rem));
+  justify-content: center;
+  gap: 0.4rem;
+  max-width: 48rem;
+}
+.rdb-pv-bid-grid button {
+  height: 3rem;
+  background: var(--rdb-navy-2);
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.3);
+  color: var(--rdb-cream);
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+.rdb-pv-bid-grid button.is-on { background: var(--rdb-amber); border-color: var(--rdb-amber); color: var(--rdb-navy); }
+.rdb-pv-bid-grid button:hover { border-color: var(--rdb-teal); }
+.rdb-pv-notes {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0.3rem;
+  flex-shrink: 0;
+  padding: 0.4rem;
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.25);
+}
+.rdb-pv-notes input {
+  width: 100%;
+  background: var(--rdb-navy);
+  border: 1px solid rgba(245, 242, 235, 0.25);
+  color: var(--rdb-cream);
+  padding: 0.25rem 0.4rem;
+  font-weight: 700;
+}
+.rdb-pv-history {
+  flex-shrink: 0;
+  max-height: 6rem;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 0.4rem 0.6rem;
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.25);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.rdb-pv-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 10, 25, 0.85);
+}
+.rdb-pv-modal-box {
+  width: min(28rem, 92vw);
+  padding: 1rem;
+  background: var(--rdb-navy);
+  border: var(--rdb-line) solid var(--rdb-amber);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.rdb-pv-modal-box h3 {
+  margin: 0;
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+.rdb-pv-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.rdb-pv-hidden { height: clamp(2.6rem, 8vh, 4rem); }
+.rdb-pv-body .rdb-pv-slots { height: clamp(4rem, 12vh, 5.5rem); }
+.rdb-pv-body .rdb-pv-slots > div,
+.rdb-pv-body .rdb-pv-slots > div > * { height: 100%; min-height: 0; }
+.rdb-pv-body .rdb-pv-hand > div { height: clamp(2.6rem, 8vh, 4rem); overflow: hidden; }
+.rdb-pv-body .rdb-pv-hand > div > * { height: 100%; min-height: 0; }
+.rdb-pv-hidden { height: clamp(2rem, 6vh, 3rem); }
+.rdb-pv-body .rdb-pv-hand > div { height: clamp(2rem, 6vh, 3rem); }
+.rdb-pv-body .rdb-pv-slots { height: clamp(4.4rem, 12vh, 5.5rem); }
