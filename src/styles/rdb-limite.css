@@ -2962,8 +2962,8 @@
   padding: 0.25rem;
 }
 .rdb-pad-sheet > canvas {
-  width: min(calc(100cqw - 0.5rem), calc((100cqh - 0.5rem) * 4 / 3)) !important;
-  height: min(calc(100cqh - 0.5rem), calc((100cqw - 0.5rem) * 3 / 4)) !important;
+  width: min(calc(100cqw - 0.5rem), calc((100cqh - 0.5rem) * 16 / 9)) !important;
+  height: min(calc(100cqh - 0.5rem), calc((100cqw - 0.5rem) * 9 / 16)) !important;
   max-width: 100%;
   max-height: 100%;
 }
@@ -3123,7 +3123,7 @@
   }
   .rdb-pad-studio {
     display: grid;
-    grid-template-columns: 3.1rem minmax(0, 1fr) 5.5rem;
+    grid-template-columns: 2.7rem minmax(0, 1fr) 4.6rem;
     grid-template-rows: minmax(0, 1fr) auto;
     gap: 0.45rem;
   }
@@ -4085,3 +4085,135 @@
 .rdb-adc-rank strong { font-family: 'Anton', 'Impact', sans-serif; font-weight: 400; font-size: 1.2rem; }
 
 @keyframes rdb-ade-pop { from { transform: scale(0.9); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ---------- Como eu pinto v2: prancheta deitada, palavra em tela cheia, avisos e palpites ---------- */
+.rdb-pinto-board { position: relative; }
+.rdb-pad { position: relative; }
+.rdb-pad-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1rem;
+  background: var(--rdb-navy);
+  text-align: center;
+  animation: rdb-pad-intro 2.2s ease both;
+}
+.rdb-pad-intro span {
+  padding: 0.2rem 0.8rem;
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.rdb-pad-intro strong {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-weight: 400;
+  font-size: clamp(2.6rem, 14vw, 6rem);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--rdb-cream);
+  animation: rdb-pad-word-in 0.45s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.rdb-pad-intro small { color: var(--rdb-ink-2); font-weight: 700; }
+@keyframes rdb-pad-intro { 0% { opacity: 0; } 8% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes rdb-pad-word-in { from { transform: scale(0.5) rotate(-4deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.rdb-pad-alert {
+  position: fixed;
+  left: 50%;
+  top: 18%;
+  z-index: 70;
+  transform: translateX(-50%);
+  padding: 0.45rem 1.1rem;
+  background: var(--rdb-amber);
+  color: var(--rdb-navy);
+  font-weight: 900;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  pointer-events: none;
+  animation: rdb-pad-alert 1.6s ease both;
+}
+.rdb-pad-alert.is-big {
+  top: 50%;
+  padding: 0;
+  background: transparent;
+  color: var(--rdb-crimson);
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-weight: 400;
+  font-size: clamp(6rem, 40vh, 14rem);
+  line-height: 1;
+  text-shadow: 0 0 0 var(--rdb-navy), 4px 4px 0 var(--rdb-navy);
+  transform: translate(-50%, -50%);
+  animation: rdb-pad-count 0.9s ease both;
+}
+@keyframes rdb-pad-alert { 0% { opacity: 0; transform: translate(-50%, -0.6rem); } 15% { opacity: 1; transform: translate(-50%, 0); } 80% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes rdb-pad-count { 0% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); } 25% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.85); } }
+.rdb-pad-clock.is-big { font-family: 'Anton', 'Impact', sans-serif; font-size: 1.7rem; padding: 0.1rem 0.6rem; }
+.rdb-pad-clock.is-warn { color: var(--rdb-amber); }
+.rdb-pad-clock.is-hot { color: var(--rdb-crimson); animation: rdb-pad-pulse 1s ease-in-out infinite; }
+@keyframes rdb-pad-pulse { 50% { opacity: 0.55; } }
+
+/* TV: prancheta deitada ocupando a largura */
+.rdb-pinto-canvas > * { max-width: 100%; }
+.rdb-pinto-flash {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  padding: 0.6rem 1.4rem;
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(1.8rem, 5vh, 3rem);
+  text-transform: uppercase;
+  pointer-events: none;
+  animation: rdb-pad-alert 1.8s ease both;
+}
+.rdb-pinto-guesses {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+.rdb-pinto-guess {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.rdb-pinto-guess > span {
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: var(--rdb-ink-2);
+}
+.rdb-pinto-guess input {
+  height: 2.2rem;
+  padding: 0 0.6rem;
+  background: var(--rdb-navy-2);
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.3);
+  color: var(--rdb-cream);
+  font-weight: 800;
+}
+.rdb-pinto-guess input:focus { outline: none; border-color: var(--rdb-teal); }
+.rdb-pinto-guess.is-miss input::placeholder { color: var(--rdb-crimson); text-decoration: line-through; opacity: 0.85; }
+.rdb-pinto-judge { display: inline-flex; gap: 0.25rem; }
+.rdb-pinto-judge button {
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  background: transparent;
+  border: 2px solid rgba(245, 242, 235, 0.3);
+  color: var(--rdb-ink-2);
+  cursor: pointer;
+}
+.rdb-pinto-judge button.is-on { background: var(--rdb-teal); border-color: var(--rdb-teal); color: var(--rdb-navy); }
+.rdb-pinto-judge button.is-on.is-rival { background: var(--rdb-amber); border-color: var(--rdb-amber); }
+@media (prefers-reduced-motion: reduce) {
+  .rdb-pad-intro, .rdb-pad-intro strong, .rdb-pad-alert, .rdb-pinto-flash, .rdb-pad-clock.is-hot { animation: none !important; }
+}

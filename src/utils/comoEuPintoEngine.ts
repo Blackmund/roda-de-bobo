@@ -325,3 +325,38 @@ export function pintoRoundPoints(s: ComoEuPintoState): { draw: number; rival: nu
     rival: s.outcomes.filter((o) => o === 'stolen').length
   };
 }
+
+/**
+ * Depois do tempo (roubo ou resumo), o diretor ainda pode dar o ponto: marca a palavra como acertada pela dupla que
+ * desenhou, roubada pela rival ou volta para "sem ponto". So vale fora do desenho.
+ */
+/** Proporcao da prancheta (deitada, como a TV e o celular na horizontal). Igual em todo lugar para o traco nao deformar. */
+export const PINTO_ASPECT = 16 / 9;
+
+export function setPintoOutcome(
+  prev: ComoEuPintoState,
+  index: number,
+  outcome: 'pending' | 'correct' | 'stolen'
+): ComoEuPintoState {
+  if ((prev.phase !== 'STEAL' && prev.phase !== 'SUMMARY') || index < 0 || index >= prev.outcomes.length) return prev;
+  if (outcome === 'stolen' && !prev.rivalTeam) return prev;
+  const outcomes = [...prev.outcomes];
+  outcomes[index] = outcome;
+  const done = outcomes.every((o) => o !== 'pending');
+  return { ...prev, outcomes, phase: prev.phase === 'STEAL' && done ? 'SUMMARY' : prev.phase };
+}
+
+/** Palpite digitado bate com a palavra? (sem acento, maiusculas, espacos ou artigo na frente) */
+export function pintoGuessMatches(guess: string, word: string): boolean {
+  const n = (s: string) =>
+    s
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .trim()
+      .replace(/^(o|a|os|as|um|uma)\s+/, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  return n(guess).length > 0 && n(guess) === n(word);
+}

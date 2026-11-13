@@ -27,6 +27,7 @@ import { DynamicQRCode } from '../DynamicQRCode';
 import {
   PINTO_BRUSH_PRESETS,
   PINTO_COLORS,
+  PINTO_ASPECT,
   PINTO_PAPER_COLOR,
   addStroke,
   clearDrawing,
@@ -34,8 +35,10 @@ import {
   endDrawing,
   finishSteal,
   markDrawn,
+  pintoGuessMatches,
   pintoRoundPoints,
   redoStroke,
+  setPintoOutcome,
   setLiveStroke,
   skipWord,
   startPintoWithMode,
@@ -53,6 +56,52 @@ interface ScreenComoEuPintoProps {
 
 const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
+/**
+ * Palpites digitados na TV: um campo por jogador que adivinha (os nomes embaixo, como nos outros jogos).
+ * Acertou a palavra = ponto direto; errou = o palpite fica riscado no campo ate a proxima tentativa.
+ */
+const PintoGuessRow: React.FC<{ room: GameRoom; st: ComoEuPintoState; onHit: (name: string) => void }> = ({ room, st, onHit }) => {
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [misses, setMisses] = useState<Record<string, string>>({});
+  useEffect(() => {
+    setDrafts({});
+    setMisses({});
+  }, [st.currentIndex, st.drawerPlayerId]);
+  const sameTeam = room.players.filter((p) => p.id !== st.drawerPlayerId && p.team === st.drawTeam);
+  const guessers = (sameTeam.length > 0 ? sameTeam : room.players.filter((p) => p.id !== st.drawerPlayerId)).slice(0, 8);
+  if (guessers.length === 0) return null;
+  const word = st.words[st.currentIndex] || '';
+  const submit = (pid: string, name: string) => {
+    const g = (drafts[pid] || '').trim();
+    if (!g) return;
+    setDrafts((d) => ({ ...d, [pid]: '' }));
+    if (pintoGuessMatches(g, word)) onHit(name);
+    else {
+      sounds.playTick();
+      setMisses((m) => ({ ...m, [pid]: g }));
+    }
+  };
+  return (
+    <div className="rdb-pinto-guesses" data-testid="pinto-guess-row">
+      {guessers.map((p) => (
+        <label key={p.id} className={'rdb-pinto-guess' + (misses[p.id] ? ' is-miss' : '')}>
+          <span>{p.name}</span>
+          <input
+            data-testid={`pinto-guess-${p.id}`}
+            value={drafts[p.id] || ''}
+            placeholder={misses[p.id] ? misses[p.id] : 'Palpite…'}
+            autoComplete="off"
+            onChange={(e) => setDrafts((d) => ({ ...d, [p.id]: e.target.value }))}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') submit(p.id, p.name);
+            }}
+          />
+        </label>
+      ))}
+    </div>
+  );
+};
+
 export const ScreenComoEuPinto: React.FC<ScreenComoEuPintoProps> = ({ room, onUpdatePintoState, onNextRound }) => {
   const st = room.comoEuPinto;
   const updateRef = useRef(onUpdatePintoState);
@@ -61,6 +110,12 @@ export const ScreenComoEuPinto: React.FC<ScreenComoEuPintoProps> = ({ room, onUp
   const [tool, setTool] = useState<'pen' | 'eraser'>('pen');
   const [lineWidth, setLineWidth] = useState<number>(0.011);
   const [opacity, setOpacity] = useState<number>(1);
+  const [guessFlash, setGuessFlash] = useState<string | null>(null);
+  useEffect(() => {
+    if (!guessFlash) return;
+    const t = window.setTimeout(() => setGuessFlash(null), 1800);
+    return () => window.clearTimeout(t);
+  }, [guessFlash]);
 
   useEffect(() => {
     if (!st || room.timerConfig === 0 || st.phase !== 'PLAYING' || !st.timerActive) return;
@@ -371,6 +426,7 @@ export const ScreenComoEuPinto: React.FC<ScreenComoEuPintoProps> = ({ room, onUp
                 lineWidth={tool === 'eraser' ? Math.max(0.018, lineWidth * 1.4) : lineWidth}
                 opacity={activeOpacity}
                 backgroundColor={PINTO_PAPER_COLOR}
+                aspect={PINTO_ASPECT}
                 onLiveStroke={(s) => onUpdatePintoState((prev) => setLiveStroke(prev, s))}
                 onStroke={onStroke}
               />
@@ -490,13 +546,13 @@ export const ScreenComoEuPinto: React.FC<ScreenComoEuPintoProps> = ({ room, onUp
                 </i>
               ))}
             </div>
-            <span data-testid="pinto-mirror-status" className="rdb-pinto-mirror-pill">
-              {st.padPassGate
-                ? `Passando o celular para ${drawer?.name || 'quem desenha'}...`
-                : isLocalRoom
-                ? `Desenhando no celular (${drawer?.name || 'vez'}) · tema oculto na TV`
-                : `Ao vivo do celular de ${drawer?.name || 'quem desenha'} · tema oculto na TV`}
-            </span>
+            {st.padPassGate ? (
+              <span data-testid="pinto-mirror-status" className="rdb-pinto-mirror-pill">
+                Passando o celular para {drawer?.name || 'quem desenha'}...
+              </span>
+            ) : (
+              <span />
+            )}
             <div className="rdb-pro-counts" data-testid="pinto-score">
               <span data-tip="Acertos">
                 <Check size={16} /> {hits}
@@ -513,9 +569,24 @@ export const ScreenComoEuPinto: React.FC<ScreenComoEuPintoProps> = ({ room, onUp
                 liveStroke={st.liveStroke}
                 editable={false}
                 backgroundColor={PINTO_PAPER_COLOR}
+                aspect={PINTO_ASPECT}
               />
             </div>
+            {guessFlash && (
+              <div key={guessFlash} className="rdb-pinto-flash" data-testid="pinto-guess-flash">
+                {guessFlash}
+              </div>
+            )}
           </div>
+
+          <PintoGuessRow
+            room={room}
+            st={st}
+            onHit={(name) => {
+              setGuessFlash(`${name} acertou!`);
+              hit();
+            }}
+          />
 
           <footer className="rdb-pro-foot">
             <button type="button" data-testid="pinto-hit-btn" className="rdb-btn rdb-pro-hit" onClick={hit}>
@@ -557,7 +628,7 @@ export const ScreenComoEuPinto: React.FC<ScreenComoEuPintoProps> = ({ room, onUp
             <h2>
               {rivalName} <small>pode roubar</small>
             </h2>
-            <p>A dupla rival palpita as palavras que faltaram (1 ponto cada). Marque as que ela acertou.</p>
+            <p>A dupla rival palpita as palavras que faltaram (1 ponto cada). Se quem desenhou acertou no fim do tempo, o ponto é dela.</p>
           </div>
           <div className="rdb-pro-sum-grid">
             {st.words.map((w, i) =>
@@ -575,7 +646,19 @@ export const ScreenComoEuPinto: React.FC<ScreenComoEuPintoProps> = ({ room, onUp
                       onUpdatePintoState((prev) => stealWord(prev, i));
                     }}
                   >
-                    <Check /> A rival acertou
+                    <Swords /> {rivalName} acertou
+                  </button>
+                  <button
+                    type="button"
+                    data-testid={`pinto-late-hit-${i}`}
+                    className="rdb-btn"
+                    data-tip="Acertaram no fim do tempo: o ponto vai para quem desenhou"
+                    onClick={() => {
+                      sounds.playSuccess();
+                      onUpdatePintoState((prev) => setPintoOutcome(prev, i, 'correct'));
+                    }}
+                  >
+                    <Check /> {teamName} acertou
                   </button>
                 </div>
               ) : null
@@ -603,10 +686,33 @@ export const ScreenComoEuPinto: React.FC<ScreenComoEuPintoProps> = ({ room, onUp
           <div className="rdb-pinto-thumbs">
             {st.words.map((w, i) => (
               <div key={i} className={'rdb-pinto-thumb' + (st.outcomes[i] === 'correct' ? ' is-hit' : st.outcomes[i] === 'stolen' ? ' is-stolen' : '')}>
-                <DrawingCanvas testId={`pinto-thumb-${i}`} strokes={st.drawings[i] ?? []} backgroundColor={PINTO_PAPER_COLOR} aspect={4 / 3} />
+                <DrawingCanvas testId={`pinto-thumb-${i}`} strokes={st.drawings[i] ?? []} backgroundColor={PINTO_PAPER_COLOR} aspect={PINTO_ASPECT} />
                 <span>
                   {st.outcomes[i] === 'correct' ? <Check size={16} strokeWidth={4} /> : st.outcomes[i] === 'stolen' ? <Swords size={16} /> : <XIcon size={16} strokeWidth={4} />} {w}
                   {st.outcomes[i] === 'stolen' ? ' (roubada)' : ''}
+                </span>
+                <span className="rdb-pinto-judge">
+                  <button
+                    type="button"
+                    data-testid={`pinto-sum-hit-${i}`}
+                    aria-label={`Ponto para ${teamName}`}
+                    data-tip={`Ponto para ${teamName}`}
+                    className={st.outcomes[i] === 'correct' ? 'is-on' : ''}
+                    onClick={() => onUpdatePintoState((prev) => setPintoOutcome(prev, i, prev.outcomes[i] === 'correct' ? 'pending' : 'correct'))}
+                  >
+                    <Check size={14} strokeWidth={3} />
+                  </button>
+                  {st.rivalTeam && (
+                    <button
+                      type="button"
+                      aria-label={`Ponto para ${rivalName}`}
+                      data-tip={`Ponto para ${rivalName} (roubo)`}
+                      className={st.outcomes[i] === 'stolen' ? 'is-on is-rival' : ''}
+                      onClick={() => onUpdatePintoState((prev) => setPintoOutcome(prev, i, prev.outcomes[i] === 'stolen' ? 'pending' : 'stolen'))}
+                    >
+                      <Swords size={14} />
+                    </button>
+                  )}
                 </span>
               </div>
             ))}
