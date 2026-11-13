@@ -295,14 +295,14 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
 
               <div className="p-2.5 bg-slate-900/80 border border-slate-700 text-[11px] font-mono-code text-slate-300 flex items-center justify-between gap-2">
                 <span>
-                  🎲 Cada jogador recebe 1 poder sorteado para usar 1 única vez durante todo o jogo.
+                  Cada jogador recebe 1 poder sorteado para usar 1 única vez durante todo o jogo.
                 </span>
                 <button
                   type="button"
                   onClick={handleRedrawPowerCardsOnTV}
                   className="px-2 py-1 border border-cyan-500/40 bg-cyan-950/40 hover:bg-cyan-400 hover:text-black text-cyan-300 font-bold uppercase text-[10px] shrink-0 cursor-pointer"
                 >
-                  🔄 Ressortear
+                  Ressortear
                 </button>
               </div>
 
@@ -383,7 +383,7 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
                     >
                       {isSelectedPlayerCardUsed
                         ? '✓ PODER JÁ UTILIZADO NESTA PARTIDA'
-                        : `⚡ ATIVAR ${selectedPlayerCardMeta.title.toUpperCase()} AGORA`}
+                        : `ATIVAR ${selectedPlayerCardMeta.title.toUpperCase()} AGORA`}
                     </button>
                   </div>
                 </div>
