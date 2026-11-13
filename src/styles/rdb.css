@@ -1234,7 +1234,7 @@
   align-items: center;
 }
 .rdb-win-art {
-  height: clamp(110px, 24vh, 300px);
+  height: clamp(56px, 10vh, 240px);
   aspect-ratio: 16 / 10;
 }
 .rdb-win-kicker {
@@ -1247,7 +1247,7 @@
 }
 .rdb-win-name {
   font-family: 'Anton', 'Impact', sans-serif;
-  font-size: clamp(2.2rem, 5.2vw, 6.5rem);
+  font-size: clamp(2rem, min(5.2vw, 7vh), 6.5rem);
   line-height: 1;
   letter-spacing: 0.02em;
   text-transform: uppercase;
