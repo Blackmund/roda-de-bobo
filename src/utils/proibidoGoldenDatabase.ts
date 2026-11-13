@@ -385,7 +385,7 @@ ${JSON.stringify(exemplosFewShot.slice(0, 6), null, 2)}
 
 COMO FORMULAR AS CARTAS (OBRIGATÓRIO):
 1. REGRA ABSOLUTA: Cada carta DEVE conter ESTRITAMENTE e EXATAMENTE 5 palavras proibidas no array (nunca 4, nunca 6, exatamente 5!).
-2. DIVERSIDADE NA MÃO: As ${qtdCartas} palavras-alvo geradas agora DEVEM ser de subcategorias diferentes dentro do tema "${tema}" (misture pessoas/personagens, objetos, lugares, eventos e conceitos). NUNCA gere palavras parecidas na mesma rodada!
+2. DIVERSIDADE NA MÃO: As ${qtdCartas} palavras-alvo geradas agora DEVEM ser de subcategorias diferentes, mas TODAS dentro do universo do tema "${tema}" (pessoas, objetos, lugares, eventos e conceitos QUE FAZEM PARTE desse tema). Teste: um fã apaixonado de "${tema}" reconheceria cada palavra como parte do assunto sem esforço? Se não, troque. PROIBIDO palavra-alvo de outro assunto só para variar (ex: "Sibéria" no tema Futebol). NUNCA gere palavras parecidas na mesma rodada!
 3. AS 5 PALAVRAS PROIBIDAS DEVEM SEGUIR A CALIBRAÇÃO DO NÍVEL (${dificuldade.toUpperCase()}):
    - Proibidas relevantes que respeitem a experiência do jogador (fácil para crianças no Fácil, cruel para adultos no Difícil/Impossível).
 4. PROIBIDO usar palavras proibidas genéricas ("Famoso", "Grande", "Legal") ou palavras com o mesmo radical da palavra-alvo.
@@ -394,6 +394,7 @@ COMO FORMULAR AS CARTAS (OBRIGATÓRIO):
 Retorne APENAS um JSON válido com array de objetos:
 [
   {
+    "ligacao_com_tema": "Em poucas palavras, por que isto é parte do tema",
     "palavra_alvo": "TERMO EM MAIÚSCULO",
     "palavras_proibidas": ["PROIBIDA 1", "PROIBIDA 2", "PROIBIDA 3", "PROIBIDA 4", "PROIBIDA 5"]
   }

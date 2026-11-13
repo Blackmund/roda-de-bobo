@@ -76620,19 +76620,21 @@ ESTUDE ESTES EXEMPLOS PERFEITOS DO NOSSO BANCO OFICIAL E IMITE EXATAMENTE O ESTI
 ${JSON.stringify(exemplosFewShot, null, 2)}
 
 COMO FORMULAR A SUA PERGUNTA (OBRIGAT\xD3RIO):
-1. COMECE COM UMA PREMISSA / CURIOSIDADE: Apresente o personagem, o recordista, o filme ou o fen\xF4meno antes de soltar a pergunta (ex: "No filme Titanic (1997)...", "O americano Joey Chestnut...").
+1. PERGUNTA CURTA E DIRETA: no M\xC1XIMO 200 caracteres e no m\xE1ximo 2 frases, para ser lida em voz alta na TV. Uma premissa de poucas palavras e a pergunta (ex: "No filme Titanic (1997), quantos metros tinha o navio?"). N\xC3O escreva par\xE1grafos, N\xC3O explique o contexto da carreira, N\xC3O coloque ressalvas entre par\xEAnteses.
 2. UNIDADE EXPL\xCDCITA: Deixe 100% claro na pergunta em qual unidade de medida o jogador deve responder (ex: "em quil\xF4metros", "em minutos", "em milh\xF5es de d\xF3lares", "em cent\xEDmetros").
 3. REQUISITO DO N\xCDVEL (${dificuldade.toUpperCase()}):
 ${getLimiteRule3ByDifficulty(dificuldade)}
 4. CURIOSIDADE COMPARATIVA NO GABARITO: No campo "curiosidade_explicacao", traga uma compara\xE7\xE3o visual impactante ou fato b\xF4nus sobre aquele n\xFAmero (ex: "quase o tamanho de um \xF4nibus!", "o suficiente para dar duas voltas na Terra!").
-5. N\xC3O REPITA NADA DESTA LISTA J\xC1 USADA: ${JSON.stringify(historicoUsado)}.
+5. N\xDAMERO INDISCUT\xCDVEL: o "valor_exato" deve ser um n\xFAmero oficial e amplamente aceito, com UMA fonte de refer\xEAncia clara (federa\xE7\xE3o, censo, recorde homologado, ficha t\xE9cnica). PROIBIDO usar totais que t\xEAm v\xE1rias contagens diferentes (ex: gols de toda a carreira de Pel\xE9, que variam por crit\xE9rio), estimativas, n\xFAmeros "aproximados" ou fatos disputados. Se n\xE3o tiver certeza do n\xFAmero, escolha outro assunto.
+6. N\xC3O REPITA NADA DESTA LISTA J\xC1 USADA: ${JSON.stringify(historicoUsado)}.
 
 Retorne APENAS um JSON v\xE1lido com:
 {
   "pergunta": "Texto completo e envolvente da pergunta com a unidade clara",
   "valor_exato": 1234,
   "unidade": "unidade curta exibida ao lado do n\xFAmero",
-  "curiosidade_explicacao": "Explica\xE7\xE3o curta e impactante revelada junto com o gabarito"
+  "curiosidade_explicacao": "Explica\xE7\xE3o curta e impactante revelada junto com o gabarito",
+  "fonte_do_numero": "Quem divulga esse n\xFAmero oficialmente (ex: FIFA, IBGE, Guinness)"
 }
 `;
 
@@ -77446,7 +77448,7 @@ ${JSON.stringify(exemplosFewShot.slice(0, 6), null, 2)}
 
 COMO FORMULAR AS CARTAS (OBRIGAT\xD3RIO):
 1. REGRA ABSOLUTA: Cada carta DEVE conter ESTRITAMENTE e EXATAMENTE 5 palavras proibidas no array (nunca 4, nunca 6, exatamente 5!).
-2. DIVERSIDADE NA M\xC3O: As ${qtdCartas} palavras-alvo geradas agora DEVEM ser de subcategorias diferentes dentro do tema "${tema}" (misture pessoas/personagens, objetos, lugares, eventos e conceitos). NUNCA gere palavras parecidas na mesma rodada!
+2. DIVERSIDADE NA M\xC3O: As ${qtdCartas} palavras-alvo geradas agora DEVEM ser de subcategorias diferentes, mas TODAS dentro do universo do tema "${tema}" (pessoas, objetos, lugares, eventos e conceitos QUE FAZEM PARTE desse tema). Teste: um f\xE3 apaixonado de "${tema}" reconheceria cada palavra como parte do assunto sem esfor\xE7o? Se n\xE3o, troque. PROIBIDO palavra-alvo de outro assunto s\xF3 para variar (ex: "Sib\xE9ria" no tema Futebol). NUNCA gere palavras parecidas na mesma rodada!
 3. AS 5 PALAVRAS PROIBIDAS DEVEM SEGUIR A CALIBRA\xC7\xC3O DO N\xCDVEL (${dificuldade.toUpperCase()}):
    - Proibidas relevantes que respeitem a experi\xEAncia do jogador (f\xE1cil para crian\xE7as no F\xE1cil, cruel para adultos no Dif\xEDcil/Imposs\xEDvel).
 4. PROIBIDO usar palavras proibidas gen\xE9ricas ("Famoso", "Grande", "Legal") ou palavras com o mesmo radical da palavra-alvo.
@@ -77455,6 +77457,7 @@ COMO FORMULAR AS CARTAS (OBRIGAT\xD3RIO):
 Retorne APENAS um JSON v\xE1lido com array de objetos:
 [
   {
+    "ligacao_com_tema": "Em poucas palavras, por que isto \xE9 parte do tema",
     "palavra_alvo": "TERMO EM MAI\xDASCULO",
     "palavras_proibidas": ["PROIBIDA 1", "PROIBIDA 2", "PROIBIDA 3", "PROIBIDA 4", "PROIBIDA 5"]
   }
@@ -78941,9 +78944,10 @@ ${buildLimitePrompt(theme, difficulty, exemplosFewShot, combinedMemory.slice(-40
           pergunta: { type: Type.STRING },
           valor_exato: { type: Type.NUMBER },
           unidade: { type: Type.STRING },
-          curiosidade_explicacao: { type: Type.STRING }
+          curiosidade_explicacao: { type: Type.STRING },
+          fonte_do_numero: { type: Type.STRING }
         },
-        required: ["pergunta", "valor_exato", "unidade", "curiosidade_explicacao"]
+        required: ["pergunta", "valor_exato", "unidade", "curiosidade_explicacao", "fonte_do_numero"]
       };
     } else if (gameId === "duvido") {
       const exemplosFewShot = Array.isArray(req.body?.duvidoFewShotExamples) && req.body.duvidoFewShotExamples.length >= 3 ? req.body.duvidoFewShotExamples : selectFewShotDuvidoExamples(theme, 4, combinedMemory);
@@ -78974,13 +78978,14 @@ ${buildProibidoPrompt(theme, totalBatchCards, difficulty, exemplosFewShot, combi
         items: {
           type: Type.OBJECT,
           properties: {
+            ligacao_com_tema: { type: Type.STRING },
             palavra_alvo: { type: Type.STRING },
             palavras_proibidas: {
               type: Type.ARRAY,
               items: { type: Type.STRING }
             }
           },
-          required: ["palavra_alvo", "palavras_proibidas"]
+          required: ["ligacao_com_tema", "palavra_alvo", "palavras_proibidas"]
         }
       };
     } else if (gameId === "nota") {
@@ -79055,6 +79060,7 @@ ${buildTemOuNaoTemPrompt(
       const seenInBatch = /* @__PURE__ */ new Set();
       const cleanedAllCards = [];
       for (const card of parsed) {
+        if (String(card?.ligacao_com_tema || "").trim().length < 4) continue;
         const target = sanitizeCleanGameText(String(card?.palavra_alvo || "")).toUpperCase();
         if (!target || seenInBatch.has(target) || blockedTargets.has(target)) {
           continue;
@@ -79141,9 +79147,12 @@ ${buildTemOuNaoTemPrompt(
         };
       }
       if (gameId === "limite" && item.pergunta) {
+        const pergunta = sanitizeCleanGameText(item.pergunta || "", "limite");
+        const frases = pergunta.split(/[.!?]+\s+/).filter(Boolean).length;
+        if (pergunta.length > 260 || frases > 3 || String(item.fonte_do_numero || "").trim().length < 3) return null;
         return {
           ...item,
-          pergunta: sanitizeCleanGameText(item.pergunta || "", "limite")
+          pergunta
         };
       }
       return null;
