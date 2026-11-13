@@ -1113,9 +1113,10 @@ ${buildLimitePrompt(theme, difficulty, exemplosFewShot, combinedMemory.slice(-40
           pergunta: { type: Type.STRING },
           valor_exato: { type: Type.NUMBER },
           unidade: { type: Type.STRING },
-          curiosidade_explicacao: { type: Type.STRING }
+          curiosidade_explicacao: { type: Type.STRING },
+          fonte_do_numero: { type: Type.STRING }
         },
-        required: ['pergunta', 'valor_exato', 'unidade', 'curiosidade_explicacao']
+        required: ['pergunta', 'valor_exato', 'unidade', 'curiosidade_explicacao', 'fonte_do_numero']
       };
     } else if (gameId === 'duvido') {
       const exemplosFewShot: DuvidoCategory[] =
@@ -1156,13 +1157,14 @@ ${buildProibidoPrompt(theme, totalBatchCards, difficulty, exemplosFewShot, combi
         items: {
           type: Type.OBJECT,
           properties: {
+            ligacao_com_tema: { type: Type.STRING },
             palavra_alvo: { type: Type.STRING },
             palavras_proibidas: {
               type: Type.ARRAY,
               items: { type: Type.STRING }
             }
           },
-          required: ['palavra_alvo', 'palavras_proibidas']
+          required: ['ligacao_com_tema', 'palavra_alvo', 'palavras_proibidas']
         }
       };
     } else if (gameId === 'nota') {
@@ -1252,6 +1254,7 @@ ${buildTemOuNaoTemPrompt(
       const cleanedAllCards: Array<{ palavra_alvo: string; palavras_proibidas: string[] }> = [];
 
       for (const card of parsed) {
+        if (String(card?.ligacao_com_tema || '').trim().length < 4) continue;
         const target = sanitizeCleanGameText(String(card?.palavra_alvo || '')).toUpperCase();
         if (!target || seenInBatch.has(target) || blockedTargets.has(target)) {
           continue;
@@ -1363,9 +1366,12 @@ ${buildTemOuNaoTemPrompt(
           };
         }
         if (gameId === 'limite' && item.pergunta) {
+          const pergunta = sanitizeCleanGameText(item.pergunta || '', 'limite');
+          const frases = pergunta.split(/[.!?]+\s+/).filter(Boolean).length;
+          if (pergunta.length > 260 || frases > 3 || String(item.fonte_do_numero || '').trim().length < 3) return null;
           return {
             ...item,
-            pergunta: sanitizeCleanGameText(item.pergunta || '', 'limite')
+            pergunta
           };
         }
         return null;

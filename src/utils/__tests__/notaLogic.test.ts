@@ -609,7 +609,7 @@ describe('Jogo da Nota — CSPRNG, Reversible Toggle & Scoring Logic', () => {
     );
     assert.ok(promptText.includes('AS 7 LEIS DE OURO PARA FORMULAR UMA PERGUNTA DO "JOGO DO LIMITE"'));
     assert.ok(promptText.includes('ESTUDE ESTES EXEMPLOS PERFEITOS DO NOSSO BANCO OFICIAL'));
-    assert.ok(promptText.includes('COMECE COM UMA PREMISSA / CURIOSIDADE'));
+    assert.ok(promptText.includes('PERGUNTA CURTA E DIRETA'));
     assert.ok(promptText.includes('UNIDADE EXPLÍCITA'));
     assert.ok(promptText.includes('CURIOSIDADE COMPARATIVA NO GABARITO'));
 

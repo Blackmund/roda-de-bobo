@@ -930,18 +930,20 @@ ESTUDE ESTES EXEMPLOS PERFEITOS DO NOSSO BANCO OFICIAL E IMITE EXATAMENTE O ESTI
 ${JSON.stringify(exemplosFewShot, null, 2)}
 
 COMO FORMULAR A SUA PERGUNTA (OBRIGATÓRIO):
-1. COMECE COM UMA PREMISSA / CURIOSIDADE: Apresente o personagem, o recordista, o filme ou o fenômeno antes de soltar a pergunta (ex: "No filme Titanic (1997)...", "O americano Joey Chestnut...").
+1. PERGUNTA CURTA E DIRETA: no MÁXIMO 200 caracteres e no máximo 2 frases, para ser lida em voz alta na TV. Uma premissa de poucas palavras e a pergunta (ex: "No filme Titanic (1997), quantos metros tinha o navio?"). NÃO escreva parágrafos, NÃO explique o contexto da carreira, NÃO coloque ressalvas entre parênteses.
 2. UNIDADE EXPLÍCITA: Deixe 100% claro na pergunta em qual unidade de medida o jogador deve responder (ex: "em quilômetros", "em minutos", "em milhões de dólares", "em centímetros").
 3. REQUISITO DO NÍVEL (${dificuldade.toUpperCase()}):
 ${getLimiteRule3ByDifficulty(dificuldade)}
 4. CURIOSIDADE COMPARATIVA NO GABARITO: No campo "curiosidade_explicacao", traga uma comparação visual impactante ou fato bônus sobre aquele número (ex: "quase o tamanho de um ônibus!", "o suficiente para dar duas voltas na Terra!").
-5. NÃO REPITA NADA DESTA LISTA JÁ USADA: ${JSON.stringify(historicoUsado)}.
+5. NÚMERO INDISCUTÍVEL: o "valor_exato" deve ser um número oficial e amplamente aceito, com UMA fonte de referência clara (federação, censo, recorde homologado, ficha técnica). PROIBIDO usar totais que têm várias contagens diferentes (ex: gols de toda a carreira de Pelé, que variam por critério), estimativas, números "aproximados" ou fatos disputados. Se não tiver certeza do número, escolha outro assunto.
+6. NÃO REPITA NADA DESTA LISTA JÁ USADA: ${JSON.stringify(historicoUsado)}.
 
 Retorne APENAS um JSON válido com:
 {
   "pergunta": "Texto completo e envolvente da pergunta com a unidade clara",
   "valor_exato": 1234,
   "unidade": "unidade curta exibida ao lado do número",
-  "curiosidade_explicacao": "Explicação curta e impactante revelada junto com o gabarito"
+  "curiosidade_explicacao": "Explicação curta e impactante revelada junto com o gabarito",
+  "fonte_do_numero": "Quem divulga esse número oficialmente (ex: FIFA, IBGE, Guinness)"
 }
 `;
