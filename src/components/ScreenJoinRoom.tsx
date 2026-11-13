@@ -459,19 +459,13 @@ export const ScreenJoinRoom: React.FC<ScreenJoinRoomProps> = ({
                     className="flex-1 bg-black border-2 border-slate-700 focus:border-cyan-400 focus:outline-none rounded px-3 py-2 text-white font-bold text-sm placeholder:text-slate-600"
                   />
 
-                  <button
-                    type="button"
+                  <span
                     data-testid="join-room-avatar-btn"
-                    onClick={() => {
-                      sounds.playTick();
-                      setShowAvatarModal(true);
-                    }}
-                    title="Escolher Avatar"
-                    className="h-[42px] px-3.5 rounded bg-black border-2 border-slate-700 hover:border-cyan-400 flex items-center justify-center gap-1 text-xl cursor-pointer shrink-0"
+                    aria-hidden="true"
+                    className="h-[42px] px-2 flex items-center justify-center text-xl shrink-0"
                   >
-                    <span>{selectedAvatar}</span>
-                    <span className="text-[10px] font-mono-code text-cyan-400 font-bold">▼</span>
-                  </button>
+                    <PlayerMark p={{ name: playerName.trim() || '?' }} />
+                  </span>
                 </div>
               </div>
             </div>

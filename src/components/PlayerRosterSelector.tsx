@@ -433,7 +433,7 @@ export const PlayerRosterSelector: React.FC<PlayerRosterSelectorProps> = ({
                       : 'bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white'
                   }`}
                 >
-                  <span>{displayAvatar}</span>
+                  <PlayerMark p={fp} />
                   <span>{fp.name}</span>
                   {isSelected ? (
                     <Check size={14} strokeWidth={4} />
@@ -455,16 +455,9 @@ export const PlayerRosterSelector: React.FC<PlayerRosterSelectorProps> = ({
             + Adicionar Convidado:
           </label>
           <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              data-testid="pregame-guest-avatar-btn"
-              onClick={() => setShowGuestAvatarModal(true)}
-              className="px-2 py-1 bg-[#17B8B8]/15 hover:bg-[#17B8B8]/30 border border-[#17B8B8]/40 text-base leading-none cursor-pointer shrink-0 transition-all"
-              title="Escolher avatar retrô"
-              aria-label="Escolher avatar retrô"
-            >
-              {selectedGuestAvatar}
-            </button>
+            <span className="shrink-0 text-base" data-testid="pregame-guest-avatar-btn" aria-hidden="true">
+              <PlayerMark p={{ name: guestName.trim() || '?' }} />
+            </span>
             <input
               id="pregame-guest-input"
               data-testid="pregame-guest-input"
@@ -575,15 +568,9 @@ export const PlayerRosterSelector: React.FC<PlayerRosterSelectorProps> = ({
                   }`}
                 >
                   <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                    <button
-                      type="button"
-                      data-testid={`roster-edit-avatar-btn-${player.id}`}
-                      onClick={() => setEditingAvatarPlayer(player)}
-                      className="text-base shrink-0 hover:scale-110 transition-transform cursor-pointer px-0.5 bg-white/[0.03] hover:bg-[#17B8B8]/20 border border-transparent hover:border-[#17B8B8]/50"
-                      title={`Trocar avatar de ${player.name}`}
-                    >
+                    <span className="text-base shrink-0" data-testid={`roster-edit-avatar-btn-${player.id}`}>
                       <PlayerMark p={player} />
-                    </button>
+                    </span>
                     <span className="font-bold text-white truncate">{player.name}</span>
                     {(sessionTrophies[player.id] || 0) > 0 && (
                       <span
@@ -677,15 +664,9 @@ export const PlayerRosterSelector: React.FC<PlayerRosterSelectorProps> = ({
                                 } transition-colors`}
                               >
                                 <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                                  <button
-                                    type="button"
-                                    data-testid={`roster-edit-avatar-btn-${player.id}`}
-                                    onClick={() => setEditingAvatarPlayer(player)}
-                                    className="text-base shrink-0 hover:scale-110 transition-transform cursor-pointer px-0.5 bg-white/[0.03] hover:bg-[#17B8B8]/20 border border-transparent hover:border-[#17B8B8]/50"
-                                    title={`Trocar avatar de ${player.name}`}
-                                  >
+                                  <span className="text-base shrink-0" data-testid={`roster-edit-avatar-btn-${player.id}`}>
                                     <PlayerMark p={player} />
-                                  </button>
+                                  </span>
                                   <span className="font-bold text-white truncate">
                                     {player.name}
                                   </span>
