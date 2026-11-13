@@ -65,7 +65,25 @@ export const QuemSouEuController: React.FC<QuemSouEuControllerProps> = ({
                   data-testid={'controller-qse-identity-' + e.playerId}
                   className="font-anton text-base uppercase text-[#F5F2EB]"
                 >
-                  {self && e.status !== 'found' && q.phase !== 'SUMMARY' ? '❓' : e.identity}
+                  {self && e.status !== 'found' && q.phase !== 'SUMMARY' ? (
+                    '❓'
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      {e.image && (
+                        <img
+                          src={e.image}
+                          alt=""
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                          className="h-10 w-14 shrink-0 object-cover"
+                          onError={(ev) => {
+                            ev.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      )}
+                      <span>{e.identity}</span>
+                    </span>
+                  )}
                 </span>
               </li>
             );

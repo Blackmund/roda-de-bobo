@@ -19,6 +19,20 @@ interface ScreenQuemSouEuProps {
   onNextRound: () => void;
 }
 
+/** Foto real do momento com a legenda embaixo; se o link falhar, fica so a legenda. */
+const MomentPhoto: React.FC<{ src: string; credit?: string; caption: string }> = ({ src, credit, caption }) => {
+  const [failed, setFailed] = React.useState(false);
+  return (
+    <figure className="rdb-qse-photo">
+      {!failed && (
+        <img src={src} alt={caption} loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(true)} />
+      )}
+      <figcaption>{caption}</figcaption>
+      {!failed && credit && <small>Foto: {credit}</small>}
+    </figure>
+  );
+};
+
 export const ScreenQuemSouEu: React.FC<ScreenQuemSouEuProps> = ({ room, onUpdateQuemSouEuState, onNextRound }) => {
   const qse = room.quemSouEu;
   if (!qse) {
@@ -114,7 +128,15 @@ export const ScreenQuemSouEu: React.FC<ScreenQuemSouEuProps> = ({ room, onUpdate
                 {avatarOf(e.playerId)} {nameOf(e.playerId)}
               </span>
               <div data-testid={`qse-identity-${e.playerId}`} className="rdb-qse-identity">
-                {showIdentity ? e.identity : <HelpCircle size={40} aria-label="Escondido" />}
+                {showIdentity ? (
+                  e.image ? (
+                    <MomentPhoto src={e.image} credit={e.imageCredit} caption={e.identity} />
+                  ) : (
+                    e.identity
+                  )
+                ) : (
+                  <HelpCircle size={40} aria-label="Escondido" />
+                )}
               </div>
               <span className="rdb-qse-meta">
                 {showIdentity ? e.category + ' · ' : ''}

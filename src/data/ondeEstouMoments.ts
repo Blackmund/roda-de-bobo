@@ -14,10 +14,45 @@ export interface OndeEstouMoment extends QuemSouEuIdentity {
   origem: 'programa' | 'autoral';
 }
 
+const commons = (arquivo: string): string => `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(arquivo.replace(/ /g, '_'))}?width=640`;
+
+/**
+ * Fotos livres do Wikimedia Commons (link direto, sem baixar). Chave: trecho do nome do momento. Quem nao tem foto aqui
+ * aparece so com a legenda; a tela esconde a imagem se o link falhar.
+ */
+const FOTOS: Record<string, string> = {
+  'Cascão': 'Ronaldo 2002 cropped.jpg',
+  'Maracanazo': 'Gol ghiggia vs brasil.jpg',
+  'Pelé, aos 17': 'Pelé octubre 1958.JPG',
+  'mão de Deus': 'Maradona shilton mano dios.jpg',
+  'Zidane dá uma cabeçada': 'Zidane-materazzi-2006.jpg',
+  'Götze marca': 'Götze kicks the match winning goal.jpg',
+  'Mbappé faz três': '2022 wc final 05.jpg',
+  'Corinthians vence o Chelsea': 'Taça FIFA Campeão Mundial 2012 Corinthians.jpg',
+  'Fluminense campeão': 'Troféu da Copa Libertadores da América de 2023.jpg',
+  'Botafogo campeão': 'TaçaLibertadores2024.jpg',
+  'Ayrton Senna': 'Ayrton Senna at Interlagos 1993.jpg',
+  'Daiane dos Santos': 'Daiane dos Santos 13072007.jpg',
+  'Michael Phelps': 'Michael Phelps Ryan Lochte Laszlo Cseh medals 2008 Olympics.jpg',
+  'Usain Bolt': 'Usain Bolt Berlin 2009.JPG',
+  'Rebeca Andrade': 'Rebeca Andrade Paris Olympics.jpg'
+};
+
+const withPhoto = (x: OndeEstouMoment): OndeEstouMoment => {
+  const key = Object.keys(FOTOS).find((k) => x.nome.includes(k));
+  return key ? { ...x, imagem: commons(FOTOS[key]), credito: 'Wikimedia Commons' } : x;
+};
+
 const m = (categoria: string, origem: OndeEstouMoment['origem'], nomes: string[]): OndeEstouMoment[] =>
   nomes.map((nome) => ({ nome, categoria, origem }));
 
 export const ONDE_ESTOU_MOMENTS: OndeEstouMoment[] = [
+  // Piadas e memes do programa (a foto real de cada um fica por conta do link `imagem`, quando houver)
+  ...m('Piadas e memes', 'programa', [
+    'André Luís tira o cartão da mão do árbitro (Botafogo x Estudiantes)',
+    'O ensaio nu do Vampeta, o "Vampetaço" (1999)',
+    'Deyverson simulando falta do juiz (2021)'
+  ]),
   ...m('Copa do Mundo', 'programa', ['O cabelo "Cascão" de Ronaldo na Copa (2002)']),
   ...m('Copa do Mundo', 'autoral', [
     'O Maracanazo: Uruguai vence o Brasil na final (1950)',
@@ -64,7 +99,7 @@ export const ONDE_ESTOU_MOMENTS: OndeEstouMoment[] = [
     'Usain Bolt corre os 100 m em 9,58 s em Berlim (2009)',
     'Rebeca Andrade é ouro no solo em Paris (2024)'
   ])
-];
+].map(withPhoto);
 
 export const normalizeMomentKey = (s: string): string =>
   s
