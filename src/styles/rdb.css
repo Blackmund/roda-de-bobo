@@ -970,6 +970,18 @@
   display: grid;
   place-items: center;
 }
+/* veu: tampa a tela nova desde o primeiro quadro, ate as cortinas cobrirem tudo */
+.rdb-stinger::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--rdb-navy);
+  animation: rdb-stinger-veil 1.3s linear forwards;
+}
+@keyframes rdb-stinger-veil {
+  0%, 30% { opacity: 1; }
+  31%, 100% { opacity: 0; }
+}
 /* tres cortinas inclinadas cruzam a tela inteira, uma atras da outra */
 .rdb-stinger-bar {
   position: absolute;
@@ -978,22 +990,22 @@
   width: 160%;
   height: 120%;
   transform: translateX(-112%) skewX(-14deg);
-  animation: rdb-stinger-bar 1.6s cubic-bezier(0.76, 0, 0.18, 1) forwards;
+  animation: rdb-stinger-bar 1.3s cubic-bezier(0.76, 0, 0.18, 1) forwards;
 }
 .rdb-stinger-bar--a {
   background: var(--rdb-crimson);
 }
 .rdb-stinger-bar--b {
   background: var(--rdb-teal);
-  animation-delay: 0.09s;
+  animation-delay: 0.06s;
 }
 .rdb-stinger-bar--c {
   background: var(--rdb-navy);
-  animation-delay: 0.18s;
+  animation-delay: 0.12s;
 }
 @keyframes rdb-stinger-bar {
   0% { transform: translateX(-112%) skewX(-14deg); }
-  30%, 62% { transform: translateX(0) skewX(-14deg); }
+  22%, 64% { transform: translateX(0) skewX(-14deg); }
   100% { transform: translateX(112%) skewX(-14deg); }
 }
 .rdb-stinger-text {
@@ -1003,7 +1015,7 @@
   align-items: center;
   gap: 0.6rem;
   opacity: 0;
-  animation: rdb-stinger-label 1.6s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+  animation: rdb-stinger-label 1.3s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
 }
 .rdb-stinger-kicker {
   padding: 0.25em 0.7em;
@@ -1029,7 +1041,7 @@
   height: clamp(4px, 0.6vw, 10px);
   background: var(--rdb-teal);
   transform-origin: left;
-  animation: rdb-stinger-rule 1.6s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+  animation: rdb-stinger-rule 1.3s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
 }
 @keyframes rdb-stinger-label {
   0%, 26% { opacity: 0; transform: translateX(-6vw); }
@@ -1039,6 +1051,14 @@
 @keyframes rdb-stinger-rule {
   0%, 30% { transform: scaleX(0); }
   48%, 100% { transform: scaleX(1); }
+}
+
+/* Configuracao com os ajustes do jogo na propria tela (6 ou 7 linhas) */
+.rdb-setup-rows--dense .rdb-opt {
+  padding-block: 0.45rem;
+}
+.rdb-setup-rows--dense .rdb-seg {
+  min-height: 2.2rem;
 }
 
 /* ---------- Vez de: quem joga agora (igual em todos os jogos) ---------- */

@@ -46,6 +46,29 @@ export const ScreenPerguntasEVerdades = lazy(() =>
     default: m.ScreenPerguntasEVerdades
   }))
 );
+/** Baixa de antemao o codigo da tela de um jogo (sem montar nada), para a partida abrir sem "carregando". */
+const GAME_SCREEN_LOADERS: Record<string, () => Promise<unknown>> = {
+  limite: () => import('../components/host/ScreenLimite'),
+  duvido: () => import('../components/host/ScreenDuvido'),
+  proibido: () => import('../components/host/ScreenProibido'),
+  nota: () => import('../components/host/ScreenNota'),
+  'tem-ou-nao-tem': () => import('../components/host/ScreenTemOuNaoTem'),
+  'perguntas-e-verdades': () => import('../components/host/ScreenPerguntasEVerdades'),
+  mimica: () => import('../components/host/ScreenMimica'),
+  'quem-sou-eu': () => import('../components/host/ScreenQuemSouEu'),
+  'onde-estou': () => import('../components/host/ScreenQuemSouEu'),
+  'mega-resenha': () => import('../components/host/ScreenMegaResenha'),
+  repetente: () => import('../components/host/ScreenRepetente'),
+  'respostas-sem-perguntas': () => import('../components/host/ScreenRespostasSemPerguntas'),
+  estadios: () => import('../components/host/ScreenEstadios'),
+  'como-eu-pinto': () => import('../components/host/ScreenComoEuPinto'),
+  'com-terra': () => import('../components/host/ScreenComTerra')
+};
+export function preloadGameScreen(gameId: string | null | undefined): void {
+  const load = gameId ? GAME_SCREEN_LOADERS[gameId] : undefined;
+  if (load) void load().catch(() => undefined);
+}
+
 // UX-07: o simulador de controles e ferramenta de desenvolvimento; so aparece em dev ou com ?dev na URL.
 export const SHOW_DEV_TOOLS = (() => {
   try {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { GameRoom } from '../../types/game';
 
@@ -41,12 +41,12 @@ export const PhaseStinger: React.FC<{ room: GameRoom }> = ({ room }) => {
   const [shown, setShown] = useState<{ key: string; label: string } | null>(null);
   const last = useRef<string | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!key || !label || key === last.current) return;
     last.current = key;
     if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
     setShown({ key, label });
-    const t = setTimeout(() => setShown((s) => (s?.key === key ? null : s)), 1700);
+    const t = setTimeout(() => setShown((s) => (s?.key === key ? null : s)), 1350);
     return () => clearTimeout(t);
   }, [key, label]);
 

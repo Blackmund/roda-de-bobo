@@ -106,8 +106,6 @@ const CT_MODE_NOTES: Record<CTMode, string[]> = {
 const DIFFICULTY_LIST: GameDifficulty[] = ['facil', 'medio', 'dificil', 'impossivel'];
 
 /** Jogos que tem ajustes exclusivos (abrem na janela "Mais ajustes deste jogo"). */
-const GAMES_WITH_SPECIFIC_RULES: GameId[] = ['limite', 'nota', 'tem-ou-nao-tem', 'proibido', 'duvido', 'perguntas-e-verdades'];
-
 /** DAD-05: de onde vem o conteudo das perguntas. */
 const CONTENT_SOURCES: Array<{ value: NonNullable<GameCustomConfig['contentSource']>; label: string; hint: string }> = [
   { value: 'auto', label: 'Misto', hint: 'Banco pronto + IA, sem repetir' },
@@ -154,21 +152,16 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
 
   const [isAllThemesExpanded, setIsAllThemesExpanded] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
-  const [isMoreOpen, setIsMoreOpen] = useState(false);
-  const hasSpecificRules = GAMES_WITH_SPECIFIC_RULES.includes(activeGame);
 
-  // Esc fecha a janela aberta
+  // Esc fecha a janela do tema
   useEffect(() => {
-    if (!isThemeOpen && !isMoreOpen) return;
+    if (!isThemeOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsThemeOpen(false);
-        setIsMoreOpen(false);
-      }
+      if (e.key === 'Escape') setIsThemeOpen(false);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [isThemeOpen, isMoreOpen]);
+  }, [isThemeOpen]);
 
   // As regras do programa sao o padrao de cada jogo; o host ajusta o que quiser nas linhas ao lado.
   const showPreset = getRulesetPreset(activeGame, 'show');
@@ -185,6 +178,91 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
       onChangeRounds(3);
     }
   }, [isPV, rounds, onChangeRounds]);
+
+  // Ajustes exclusivos de cada jogo, como linhas da propria tela (antes ficavam numa janela a parte).
+  type ExtraRow = { id: string; label: string; options: Array<{ id: string; label: string; on: boolean; pick: () => void }> };
+  const set = (patch: Partial<GameCustomConfig>) => () => onChangeCustomConfig((prev) => ({ ...prev, ...patch }));
+  const pickRow = <T extends string | number | boolean>(
+    id: string,
+    label: string,
+    current: T,
+    options: Array<[T, string, Partial<GameCustomConfig>]>
+  ): ExtraRow => ({
+    id,
+    label,
+    options: options.map(([value, text, patch]) => ({ id: String(value), label: text, on: current === value, pick: set(patch) }))
+  });
+  const extraRows: ExtraRow[] =
+    activeGame === 'limite'
+      ? [
+          pickRow('limite-cartas', 'Cartas de poder', !!customConfig.limiteEnablePowerCards, [
+            [true, 'Ligadas', { limiteEnablePowerCards: true }],
+            [false, 'Desligadas', { limiteEnablePowerCards: false }]
+          ]),
+          pickRow('limite-bonus', 'Bônus por cravar', limiteExactBonusFor(customConfig), [
+            [0, 'Sem bônus', { limiteExactBonus: 0 }],
+            [2, '2 pontos', { limiteExactBonus: 2 }],
+            [3, '3 pontos', { limiteExactBonus: 3 }]
+          ])
+        ]
+      : activeGame === 'nota'
+      ? [
+          pickRow('nota-escala', 'Escala da nota', `${customConfig.notaScaleMin ?? 1}-${customConfig.notaScaleMax ?? 10}`, [
+            ['1-5', '1 a 5', { notaScaleMin: 1, notaScaleMax: 5 }],
+            ['1-10', '1 a 10', { notaScaleMin: 1, notaScaleMax: 10 }],
+            ['0-10', '0 a 10', { notaScaleMin: 0, notaScaleMax: 10 }],
+            ['1-20', '1 a 20', { notaScaleMin: 1, notaScaleMax: 20 }]
+          ])
+        ]
+      : activeGame === 'tem-ou-nao-tem'
+      ? [
+          pickRow('tem-respostas', 'Painel', customConfig.temItemsCount, [
+            [5, 'Top 5', { temItemsCount: 5 }],
+            [6, 'Top 6', { temItemsCount: 6 }],
+            [8, 'Top 8', { temItemsCount: 8 }],
+            [10, 'Top 10', { temItemsCount: 10 }]
+          ]),
+          pickRow('tem-erros', 'Erros por equipe', customConfig.temMaxStrikes, [
+            [1, '1', { temMaxStrikes: 1 }],
+            [2, '2', { temMaxStrikes: 2 }],
+            [3, '3', { temMaxStrikes: 3 }]
+          ])
+        ]
+      : activeGame === 'proibido'
+      ? [
+          pickRow('proibido-cartas', 'Nº de cartas', customConfig.proibidoCardsCount, [
+            [3, '3', { proibidoCardsCount: 3 }],
+            [5, '5', { proibidoCardsCount: 5 }],
+            [7, '7', { proibidoCardsCount: 7 }],
+            [10, '10', { proibidoCardsCount: 10 }]
+          ]),
+          pickRow('proibido-proibidas', 'Nº de proibidas', customConfig.proibidoForbiddenCount, [
+            [3, '3', { proibidoForbiddenCount: 3 }],
+            [5, '5', { proibidoForbiddenCount: 5 }],
+            [6, '6', { proibidoForbiddenCount: 6 }]
+          ])
+        ]
+      : activeGame === 'duvido'
+      ? [
+          pickRow('duvido-lance', 'Lance inicial', customConfig.duvidoStartingBid, [
+            [1, '1 item', { duvidoStartingBid: 1 }],
+            [2, '2 itens', { duvidoStartingBid: 2 }],
+            [3, '3 itens', { duvidoStartingBid: 3 }]
+          ])
+        ]
+      : activeGame === 'perguntas-e-verdades'
+      ? [
+          pickRow('pv-baralho', 'Baralho', customConfig.pvDeckStyle || 'padrao', [
+            ['padrao', 'Padrão', { pvDeckStyle: 'padrao' }],
+            ['compacto', 'Compacto', { pvDeckStyle: 'compacto' }],
+            ['holografico', 'Holográfico', { pvDeckStyle: 'holografico' }]
+          ]),
+          pickRow('pv-cartas', 'Cartas', customConfig.pvDeckMode, [
+            ['assisted', 'Digital na TV', { pvDeckMode: 'assisted' }],
+            ['physical', 'Baralho físico', { pvDeckMode: 'physical' }]
+          ])
+        ]
+      : [];
 
   const isGeneralTheme = !theme || theme.trim().toLowerCase() === 'geral';
 
@@ -234,7 +312,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
         </aside>
 
         {/* ESCOLHAS: uma linha por decisao, rotulo a esquerda e opcoes a direita */}
-        <div className="rdb-setup-rows">
+        <div className={'rdb-setup-rows' + (extraRows.length > 0 ? ' rdb-setup-rows--dense' : '')}>
           {isCT && (
             <div className="rdb-opt" data-testid="ct-mode-selector">
               <span className="rdb-opt-label">Modo</span>
@@ -337,19 +415,18 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
           )}
 
-          {hasSpecificRules && (
-            <button
-              type="button"
-              data-testid="setup-more-settings-btn"
-              className="rdb-setup-more"
-              onClick={() => {
-                sounds.playTick();
-                setIsMoreOpen(true);
-              }}
-            >
-              Mais ajustes deste jogo
-            </button>
-          )}
+          {extraRows.map((row) => (
+            <div className="rdb-opt" key={row.id} data-testid={'setup-extra-' + row.id}>
+              <span className="rdb-opt-label">{row.label}</span>
+              <div className="rdb-opt-choices">
+                {row.options.map((o) => (
+                  <Seg key={o.id} testid={`setup-extra-${row.id}-${o.id}`} on={o.on} onClick={o.pick}>
+                    {o.label}
+                  </Seg>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -365,447 +442,6 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
             <div className="rdb-sheet-body">
               <ThemeSection isGeneralTheme={isGeneralTheme} theme={theme} onChangeTheme={onChangeTheme} onRollRandomTheme={onRollRandomTheme} isGeneratingThemes={isGeneratingThemes} onGenerateAiThemes={onGenerateAiThemes} setIsAllThemesExpanded={setIsAllThemesExpanded} isAllThemesExpanded={isAllThemesExpanded} dynamicThemes={dynamicThemes} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* JANELA: ajustes exclusivos do jogo */}
-      {isMoreOpen && hasSpecificRules && (
-        <div className="rdb-sheet-backdrop" data-testid="setup-more-sheet" onClick={() => setIsMoreOpen(false)}>
-          <div className="rdb-sheet" role="dialog" aria-modal="true" aria-label="Mais ajustes deste jogo" onClick={(e) => e.stopPropagation()}>
-            <div className="rdb-sheet-head">
-              <h3>Mais ajustes deste jogo</h3>
-              <button type="button" className="rdb-seg rdb-seg--action" data-testid="setup-more-close-btn" onClick={() => setIsMoreOpen(false)}>
-                Pronto
-              </button>
-            </div>
-            <div className="rdb-sheet-body">
-        <section className="border-2 border-white/15 bg-[#090b14] p-2 sm:p-2.5 space-y-1.5 shadow-lg">
-          <div className="flex items-center justify-between border-b border-white/10 pb-1">
-            <div className="flex items-center gap-1.5">
-              <Sliders size={14} className="text-[#17B8B8]" />
-              <h4 className="font-anton text-xs sm:text-sm text-white uppercase tracking-wider leading-none">
-                REGRAS ESPECÍFICAS DO JOGO
-              </h4>
-            </div>
-            <span className="text-[9px] font-mono-code text-slate-400">
-              Parâmetros exclusivos desta dinâmica
-            </span>
-          </div>
-
-          {/* JOGO DO LIMITE */}
-          {activeGame === 'limite' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div className="p-2 bg-black/70 border border-slate-800 flex items-center justify-between gap-2">
-                <div>
-                  <div className="font-anton text-xs text-white uppercase">
-                    4 Cartas Especiais de Poder
-                  </div>
-                  <div className="text-[9px] font-mono-code text-slate-400">
-                    Ligação para Universitário, Troca de Palpite, X2 e -1
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    sounds.playTick();
-                    onChangeCustomConfig((prev) => ({
-                      ...prev,
-                      limiteEnablePowerCards: !prev.limiteEnablePowerCards
-                    }));
-                  }}
-                  className={`px-2.5 py-1 font-anton text-[11px] uppercase tracking-wider border cursor-pointer transition-all ${
-                    customConfig.limiteEnablePowerCards
-                      ? 'border-emerald-400 bg-emerald-500/20 text-emerald-300'
-                      : 'border-slate-700 bg-slate-900 text-slate-400'
-                  }`}
-                >
-                  {customConfig.limiteEnablePowerCards ? '✓ ATIVADAS' : 'DESATIVADAS'}
-                </button>
-              </div>
-
-              <div className="p-2 bg-black/70 border border-slate-800 flex items-center justify-between gap-2" data-testid="limite-exact-bonus">
-                <div>
-                  <div className="font-anton text-xs text-amber-300 uppercase">Bônus por palpite exato</div>
-                  <div className="text-[9px] font-mono-code text-slate-400">
-                    Quanto vale cravar o número. No programa não há bônus.
-                  </div>
-                </div>
-                <div className="flex gap-1 shrink-0">
-                  {[0, 2, 3].map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      data-testid={'limite-exact-bonus-' + v}
-                      aria-pressed={limiteExactBonusFor(customConfig) === v}
-                      onClick={() => {
-                        sounds.playTick();
-                        onChangeCustomConfig((prev) => ({ ...prev, limiteExactBonus: v }));
-                      }}
-                      className="rdb-seg"
-                    >
-                      {v === 0 ? 'Sem bônus' : v + ' pontos'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* JOGO DA NOTA */}
-          {activeGame === 'nota' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div className="p-2 bg-black/70 border border-slate-800 flex flex-col justify-between gap-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-anton text-xs text-white uppercase">
-                    Escala da Roleta Numérica
-                  </span>
-                  <span className="text-[9px] font-mono-code text-cyan-300 font-bold">
-                    {customConfig.notaScaleMin ?? 1} a {customConfig.notaScaleMax ?? 10}
-                  </span>
-                </div>
-                <div className="grid grid-cols-4 gap-1">
-                  {[
-                    { min: 1, max: 5, label: '1 a 5' },
-                    { min: 1, max: 10, label: '1 a 10 (Padrão)' },
-                    { min: 0, max: 10, label: '0 a 10' },
-                    { min: 1, max: 20, label: '1 a 20' }
-                  ].map((sc) => {
-                    const active =
-                      (customConfig.notaScaleMin ?? 1) === sc.min &&
-                      customConfig.notaScaleMax === sc.max;
-                    return (
-                      <button
-                        key={sc.label}
-                        type="button"
-                        onClick={() => {
-                          sounds.playTick();
-                          onChangeCustomConfig((prev) => ({
-                            ...prev,
-                            notaScaleMin: sc.min,
-                            notaScaleMax: sc.max
-                          }));
-                        }}
-                        className={`py-0.5 px-1 text-[9px] font-mono-code font-bold uppercase border cursor-pointer text-center ${
-                          active
-                            ? 'border-cyan-400 bg-cyan-400 text-black font-black'
-                            : 'border-slate-800 bg-black/60 text-slate-300 hover:border-slate-600'
-                        }`}
-                      >
-                        {sc.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="p-2 bg-black/70 border border-slate-800 flex items-center justify-between gap-2">
-                <div>
-                  <div className="font-anton text-xs text-amber-300 uppercase">
-                    Pontuação da Rodada
-                  </div>
-                  <div className="text-[9px] font-mono-code text-slate-400">
-                    +1 ponto para quem acertar o número secreto; Narrador soma acertos
-                  </div>
-                </div>
-                <span className="px-2 py-0.5 bg-cyan-950 border border-cyan-400 text-cyan-300 font-anton text-[11px] uppercase shrink-0">
-                  +1 PT
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* TEM OU NÃO TEM */}
-          {activeGame === 'tem-ou-nao-tem' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div className="p-2 bg-black/70 border border-slate-800 flex flex-col justify-between gap-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-anton text-xs text-white uppercase">
-                    Respostas no Painel
-                  </span>
-                  <span className="text-[9px] font-mono-code text-cyan-300 font-bold">
-                    {getTemTotalRespondents(customConfig.temItemsCount)} Pontos Totais
-                  </span>
-                </div>
-                <div className="grid grid-cols-4 gap-1">
-                  {[5, 6, 8, 10].map((cnt) => {
-                    const isSelected = customConfig.temItemsCount === cnt;
-                    return (
-                      <button
-                        key={cnt}
-                        type="button"
-                        onClick={() => {
-                          sounds.playTick();
-                          onChangeCustomConfig((prev) => ({ ...prev, temItemsCount: cnt }));
-                        }}
-                        className={`py-0.5 px-1 text-[11px] font-anton uppercase border cursor-pointer text-center ${
-                          isSelected
-                            ? 'border-cyan-400 bg-cyan-400 text-black font-black'
-                            : 'border-slate-800 bg-black/60 text-slate-300 hover:border-slate-600'
-                        }`}
-                      >
-                        Top {cnt}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="p-2 bg-black/70 border border-slate-800 flex flex-col justify-between gap-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-anton text-xs text-white uppercase">
-                    Limite de Erros (Strikes X)
-                  </span>
-                  <span className="text-[9px] font-mono-code text-rose-300 font-bold">
-                    {customConfig.temMaxStrikes} Erros para passar a vez
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-1">
-                  {[1, 2, 3].map((st) => {
-                    const isSelected = customConfig.temMaxStrikes === st;
-                    return (
-                      <button
-                        key={st}
-                        type="button"
-                        onClick={() => {
-                          sounds.playTick();
-                          onChangeCustomConfig((prev) => ({ ...prev, temMaxStrikes: st }));
-                        }}
-                        className={`py-0.5 px-1 text-[11px] font-anton uppercase border cursor-pointer text-center ${
-                          isSelected
-                            ? 'border-rose-500 bg-rose-500 text-white font-black'
-                            : 'border-slate-800 bg-black/60 text-slate-300 hover:border-slate-600'
-                        }`}
-                      >
-                        {st} Strike{st > 1 ? 's' : ''}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* JOGO DO PROIBIDO */}
-          {activeGame === 'proibido' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div className="p-2 bg-black/70 border border-slate-800 flex flex-col justify-between gap-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-anton text-xs text-white uppercase">
-                    Cartas na Rodada
-                  </span>
-                  <span className="text-[9px] font-mono-code text-cyan-300 font-bold">
-                    {customConfig.proibidoCardsCount} Cartas
-                  </span>
-                </div>
-                <div className="grid grid-cols-4 gap-1">
-                  {[3, 5, 7, 10].map((cnt) => {
-                    const isSelected = customConfig.proibidoCardsCount === cnt;
-                    return (
-                      <button
-                        key={cnt}
-                        type="button"
-                        onClick={() => {
-                          sounds.playTick();
-                          onChangeCustomConfig((prev) => ({ ...prev, proibidoCardsCount: cnt }));
-                        }}
-                        className={`py-0.5 px-1 text-[11px] font-anton uppercase border cursor-pointer text-center ${
-                          isSelected
-                            ? 'border-cyan-400 bg-cyan-400 text-black font-black'
-                            : 'border-slate-800 bg-black/60 text-slate-300 hover:border-slate-600'
-                        }`}
-                      >
-                        {cnt} Cartas
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="p-2 bg-black/70 border border-slate-800 flex flex-col justify-between gap-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-anton text-xs text-white uppercase">
-                    Palavras Proibidas por Carta
-                  </span>
-                  <span className="text-[9px] font-mono-code text-rose-300 font-bold">
-                    {customConfig.proibidoForbiddenCount} Palavras
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-1">
-                  {[3, 5, 6].map((fc) => {
-                    const isSelected = customConfig.proibidoForbiddenCount === fc;
-                    return (
-                      <button
-                        key={fc}
-                        type="button"
-                        onClick={() => {
-                          sounds.playTick();
-                          onChangeCustomConfig((prev) => ({ ...prev, proibidoForbiddenCount: fc }));
-                        }}
-                        className={`py-0.5 px-1 text-[11px] font-anton uppercase border cursor-pointer text-center ${
-                          isSelected
-                            ? 'border-rose-500 bg-rose-500 text-white font-black'
-                            : 'border-slate-800 bg-black/60 text-slate-300 hover:border-slate-600'
-                        }`}
-                      >
-                        {fc} Proibidas
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* JOGO DO DUVIDO */}
-          {activeGame === 'duvido' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div className="p-2 bg-black/70 border border-slate-800 flex flex-col justify-between gap-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-anton text-xs text-white uppercase">
-                    Lance Inicial do Leilão
-                  </span>
-                  <span className="text-[9px] font-mono-code text-cyan-300 font-bold">
-                    Começa em {customConfig.duvidoStartingBid}
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-1">
-                  {[1, 2, 3].map((bid) => {
-                    const isSelected = customConfig.duvidoStartingBid === bid;
-                    return (
-                      <button
-                        key={bid}
-                        type="button"
-                        onClick={() => {
-                          sounds.playTick();
-                          onChangeCustomConfig((prev) => ({ ...prev, duvidoStartingBid: bid }));
-                        }}
-                        className={`py-0.5 px-1 text-[11px] font-anton uppercase border cursor-pointer text-center ${
-                          isSelected
-                            ? 'border-cyan-400 bg-cyan-400 text-black font-black'
-                            : 'border-slate-800 bg-black/60 text-slate-300 hover:border-slate-600'
-                        }`}
-                      >
-                        {bid} Item{bid > 1 ? 's' : ''}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="p-2 bg-black/70 border border-slate-800 flex items-center justify-between gap-2">
-                <div>
-                  <div className="font-anton text-xs text-white uppercase">
-                    Gabarito de Apoio ao Árbitro
-                  </div>
-                  <div className="text-[9px] font-mono-code text-slate-400">
-                    A IA gera uma lista detalhada de exemplos válidos para consulta durante as respostas
-                  </div>
-                </div>
-                <span className="px-2 py-0.5 bg-black/80 border border-slate-700 text-cyan-300 font-anton text-[11px] uppercase shrink-0">
-                  ✓ OFICIAL
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* PERGUNTAS E VERDADES */}
-          {activeGame === 'perguntas-e-verdades' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div className="p-2 bg-black/70 border border-slate-800 flex flex-col justify-between gap-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-anton text-xs text-white uppercase">
-                    Aparência do Baralho
-                  </span>
-                  <span className="text-[9px] font-mono-code text-cyan-300 font-bold">
-                    {customConfig.pvDeckStyle === 'compacto'
-                      ? 'Compacto'
-                      : customConfig.pvDeckStyle === 'holografico'
-                      ? 'Holográfico'
-                      : 'Padrão CazéTV'}
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-1">
-                  {[
-                    { id: 'padrao' as const, label: 'Padrão CazéTV' },
-                    { id: 'compacto' as const, label: 'Compacto' },
-                    { id: 'holografico' as const, label: 'Holográfico' }
-                  ].map((ds) => {
-                    const isSelected = (customConfig.pvDeckStyle || 'padrao') === ds.id;
-                    return (
-                      <button
-                        key={ds.id}
-                        type="button"
-                        onClick={() => {
-                          sounds.playTick();
-                          onChangeCustomConfig((prev) => ({ ...prev, pvDeckStyle: ds.id }));
-                        }}
-                        className={`py-1 px-1 text-[11px] font-anton uppercase border cursor-pointer text-center ${
-                          isSelected
-                            ? 'border-cyan-400 bg-cyan-400 text-black font-black shadow-sm'
-                            : 'border-slate-800 bg-black/60 text-slate-300 hover:border-slate-600'
-                        }`}
-                      >
-                        {ds.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="p-2 bg-black/70 border border-slate-800 flex flex-col justify-between gap-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-anton text-xs text-white uppercase">
-                    Modo de Cartas (8 Cartas)
-                  </span>
-                  <span className="text-[9px] font-mono-code text-cyan-300 font-bold">
-                    {customConfig.pvDeckMode === 'physical' ? 'Físico' : 'Digital'}
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-1">
-                  {[
-                    { id: 'assisted' as const, label: 'Digital na TV' },
-                    { id: 'physical' as const, label: 'Baralho Físico' }
-                  ].map((dm) => {
-                    const isSelected = customConfig.pvDeckMode === dm.id;
-                    return (
-                      <button
-                        key={dm.id}
-                        type="button"
-                        onClick={() => {
-                          sounds.playTick();
-                          onChangeCustomConfig((prev) => ({ ...prev, pvDeckMode: dm.id }));
-                        }}
-                        className={`py-1 px-1.5 text-xs font-anton uppercase border cursor-pointer text-center ${
-                          isSelected
-                            ? 'border-cyan-400 bg-cyan-400 text-black font-black'
-                            : 'border-slate-800 bg-black/60 text-slate-300 hover:border-slate-600'
-                        }`}
-                      >
-                        {dm.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="p-2 bg-black/70 border border-slate-800 flex items-center justify-between gap-2 sm:col-span-2">
-                <div>
-                  <div className="font-anton text-xs text-amber-300 uppercase">
-                    Fichas Iniciais
-                  </div>
-                  <div className="text-[9px] font-mono-code text-slate-400">
-                    Cada participante recebe 10 tokens para fazer perguntas e blefar
-                  </div>
-                </div>
-                <span className="px-2 py-0.5 bg-amber-400 text-black font-anton text-[11px] uppercase font-bold shrink-0">
-                  🪙 10 TOKENS
-                </span>
-              </div>
-            </div>
-          )}
-        </section>
             </div>
           </div>
         </div>

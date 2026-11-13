@@ -37,7 +37,7 @@ const SHOW_PRESETS: Partial<Record<GameId, RulesetPreset>> = {
     notes: [
       '10 rodadas; vence o palpite mais perto sem ultrapassar (se todos estouram, vence quem estourou menos)',
       '4 cartas de poder sorteadas, 1 por jogador, uso único',
-      'Sem bônus por cravar o número (dá para ligar em Mais ajustes)'
+      'Sem bônus por cravar o número (dá para ligar na linha Bônus por cravar)'
     ]
   },
   duvido: {
