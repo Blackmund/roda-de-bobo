@@ -23,6 +23,7 @@ import {
   verifyTruthDeclaration,
   dealValidRandomHand,
   validateCardPlacementInSlot,
+  validateCardMoveOrSwapInSlots,
   validateSuitAscendingOrder,
   checkMatchSeriesWin
 } from '../../utils/perguntasEVerdadesEngine';
@@ -185,6 +186,7 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
     card: PVCard;
     fromSlotIndex?: number;
   } | null>(null);
+  const [truthFailedThisTurn, setTruthFailedThisTurn] = useState(false);
 
   const maxPlayers = Math.min(6, Math.max(2, room.customConfig?.pvMaxPlayers || 6));
   const activePlayers = room.players.slice(0, maxPlayers);
@@ -284,16 +286,9 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
   };
 
   // =========================================================================
-  // DECK SETUP HANDLERS
+  // DECK SETUP HANDLERS (Cada jogador monta em seu próprio baralho de 52 cartas)
   // =========================================================================
   const cardsUsedByOtherPlayers = new Set<string>();
-  activePlayers.forEach((p, idx) => {
-    if (idx !== setupPlayerIndex) {
-      (pv.playerHands?.[p.id] || []).forEach((c) => {
-        if (c?.id) cardsUsedByOtherPlayers.add(c.id);
-      });
-    }
-  });
 
   const cardsInCurrentSlots = new Set<string>(
     setupSlots.filter((c): c is PVCard => Boolean(c)).map((c) => c.id)
@@ -304,15 +299,31 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
     targetIndex: number,
     sourceSlotIndex?: number
   ) => {
-    if (cardsUsedByOtherPlayers.has(card.id)) {
+    const validation = validateCardMoveOrSwapInSlots(
+      setupSlots,
+      targetIndex,
+      card,
+      sourceSlotIndex
+    );
+
+    if (!validation.valid) {
       sounds.playBuzzer();
-      setSetupRuleError('Esta carta já foi escolhida por outro jogador nesta rodada.');
+      setSetupRuleError(
+        validation.errorMessage ||
+          'Cartas do mesmo naipe devem estar em ordem crescente da esquerda para a direita!'
+      );
+      setConflictingSlotIdx(validation.conflictingSlotIndex ?? targetIndex);
       return;
     }
 
-    const workingSlots = [...setupSlots];
-    if (typeof sourceSlotIndex === 'number' && sourceSlotIndex >= 0 && sourceSlotIndex < 8) {
-      workingSlots[sourceSlotIndex] = null;
+    const workingSlots = Array.from({ length: 8 }, (_, idx) => setupSlots[idx] || null);
+    const displaced = workingSlots[targetIndex];
+    const hasSourceSlot =
+      typeof sourceSlotIndex === 'number' && sourceSlotIndex >= 0 && sourceSlotIndex < 8;
+
+    if (hasSourceSlot) {
+      if (sourceSlotIndex === targetIndex) return;
+      workingSlots[sourceSlotIndex] = displaced;
     } else {
       const existingIdx = workingSlots.findIndex((c) => c?.id === card.id);
       if (existingIdx !== -1) {
@@ -320,12 +331,21 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
       }
     }
 
-    // Freeform placement: player can organize their 8 cards in any order or sequence
     sounds.playFlip();
     workingSlots[targetIndex] = card;
     setSetupSlots(workingSlots);
     setSetupRuleError(null);
     setConflictingSlotIdx(null);
+
+    const nextEmptyAfter = workingSlots.findIndex((c, idx) => idx > targetIndex && c === null);
+    if (nextEmptyAfter !== -1) {
+      setSelectedSlotIdx(nextEmptyAfter);
+    } else {
+      const firstEmpty = workingSlots.findIndex((c) => c === null);
+      if (firstEmpty !== -1) {
+        setSelectedSlotIdx(firstEmpty);
+      }
+    }
   };
 
   const handleRemoveCardFromSlot = (slotIdx: number) => {
@@ -340,7 +360,7 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
 
   const handleFillRandomValidHandForCurrentPlayer = () => {
     sounds.playPowerup();
-    const randomHand = dealValidRandomHand(Array.from(cardsUsedByOtherPlayers));
+    const randomHand = dealValidRandomHand();
     setSetupSlots(randomHand);
     setSetupRuleError(null);
     setConflictingSlotIdx(null);
@@ -409,14 +429,11 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
       const hands = { ...prev.playerHands };
       const ready = { ...prev.handReady };
       const revealed = { ...prev.revealedCards };
-      let usedIds: string[] = [];
-
       activePlayers.forEach((p) => {
-        const dealt = dealValidRandomHand(usedIds);
+        const dealt = dealValidRandomHand();
         hands[p.id] = dealt;
         ready[p.id] = true;
         revealed[p.id] = new Array(8).fill(false);
-        usedIds = [...usedIds, ...dealt.map((c) => c.id)];
       });
 
       return {
@@ -589,6 +606,7 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
   const handleConfirmSequentialBid = (playerId: string) => {
     sounds.playSuccess();
     onUpdatePVState((prev) => {
+      const bidValue = prev.currentBids?.[playerId] ?? 0;
       const nextSubmitted = {
         ...prev.bidSubmitted,
         [playerId]: true
@@ -597,6 +615,10 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
       const nextIdx = Math.min(activePlayers.length - 1, currentIdx + 1);
       return {
         ...prev,
+        currentBids: {
+          ...prev.currentBids,
+          [playerId]: bidValue
+        },
         bidSubmitted: nextSubmitted,
         bettingPlayerIndex: nextIdx
       };
@@ -665,6 +687,8 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
   const handleAdvanceNextRoundWithRecharge = () => {
     sounds.playPowerup();
     setLastAnsweredBanner(null);
+    setTruthFailedThisTurn(false);
+    setActionMode('QUESTION');
     onUpdatePVState((prev) => {
       const recharged = applyRoundEndTokenRecharge(prev.tokens, prev.tokenAlertLight, 2);
       const currIdx = activePlayers.findIndex((p) => p.id === prev.activeTurnPlayerId);
@@ -741,6 +765,8 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
   const handleStartNextMatchRound = () => {
     sounds.playPowerup();
     setLastAnsweredBanner(null);
+    setTruthFailedThisTurn(false);
+    setActionMode('QUESTION');
     onUpdatePVState((prev) => {
       const nextMatchRound = (prev.matchRoundNumber || 1) + 1;
       const resetHands: PerguntasEVerdadesGameState['playerHands'] = {};
@@ -886,6 +912,7 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
 
     if (evaluation.status === 'CORRECT') {
       setShowTruthModal(false);
+      setTruthFailedThisTurn(false);
       onUpdatePVState((prev) => ({
         ...prev,
         lastTruthAttemptMessage: null
@@ -893,10 +920,11 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
       handleAwardRoundWinToPlayer(activeTurnPlayer.id, evaluation.message);
     } else {
       sounds.playBuzzer();
+      setTruthFailedThisTurn(true);
       onUpdatePVState((prev) => ({
         ...prev,
         lastTruthAttemptMessage: evaluation.message,
-        auctionTieMessage: evaluation.message
+        auctionTieMessage: null
       }));
       setShowTruthModal(false);
     }
@@ -998,5 +1026,5 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
   // ===========================================================================
   // FASE C & D: ESCOLHA DE AÇÃO, SPOTLIGHT DA PERGUNTA & DECLARAR A VERDADE
   // ===========================================================================
-  return <PVPlayingView tvWrapperClass={tvWrapperClass} pv={pv} handleStartNextMatchRound={handleStartNextMatchRound} totalMatchRounds={totalMatchRounds} matchRoundNumber={matchRoundNumber} activeTurnPlayer={activeTurnPlayer} formatTimer={formatTimer} onUpdatePVState={onUpdatePVState} renderPlayerRosterStrip={renderPlayerRosterStrip} room={room} setActionMode={setActionMode} actionMode={actionMode} targetOpponent={targetOpponent} activeQuestionObj={activeQuestionObj} formattedActiveQuestion={formattedActiveQuestion} handleTogglePosForQ1={handleTogglePosForQ1} handleSelectValueQ7={handleSelectValueQ7} handleSelectSuitQ8={handleSelectSuitQ8} handleRecordQuestionInLog={handleRecordQuestionInLog} lastAnsweredBanner={lastAnsweredBanner} handleAdvanceNextRoundWithRecharge={handleAdvanceNextRoundWithRecharge} handleSelectQuestion={handleSelectQuestion} handleRevealAllForPlayer={handleRevealAllForPlayer} handleToggleSingleCardReveal={handleToggleSingleCardReveal} truthFilledCount={truthFilledCount} handleClearTruthSlotsForTarget={handleClearTruthSlotsForTarget} currentTargetTruthSlots={currentTargetTruthSlots} truthSelectedSlotIdx={truthSelectedSlotIdx} truthDraggedCard={truthDraggedCard} handlePlaceCardInTruthSlot={handlePlaceCardInTruthSlot} setTruthDraggedCard={setTruthDraggedCard} setTruthSelectedSlotIdx={setTruthSelectedSlotIdx} handleRemoveCardFromTruthSlot={handleRemoveCardFromTruthSlot} cardsInCurrentTruthSlots={cardsInCurrentTruthSlots} handleConfirmTruthAttempt={handleConfirmTruthAttempt} setIsHistoryOpen={setIsHistoryOpen} isHistoryOpen={isHistoryOpen} setIsBenchOpen={setIsBenchOpen} isBenchOpen={isBenchOpen} setShowManualWinnerModal={setShowManualWinnerModal} setDeductionNotes={setDeductionNotes} deductionNotes={deductionNotes} showManualWinnerModal={showManualWinnerModal} activePlayers={activePlayers} handleAwardRoundWinToPlayer={handleAwardRoundWinToPlayer} />;
+  return <PVPlayingView tvWrapperClass={tvWrapperClass} pv={pv} handleStartNextMatchRound={handleStartNextMatchRound} totalMatchRounds={totalMatchRounds} matchRoundNumber={matchRoundNumber} activeTurnPlayer={activeTurnPlayer} formatTimer={formatTimer} onUpdatePVState={onUpdatePVState} renderPlayerRosterStrip={renderPlayerRosterStrip} room={room} setActionMode={setActionMode} actionMode={actionMode} targetOpponent={targetOpponent} activeQuestionObj={activeQuestionObj} formattedActiveQuestion={formattedActiveQuestion} handleTogglePosForQ1={handleTogglePosForQ1} handleSelectValueQ7={handleSelectValueQ7} handleSelectSuitQ8={handleSelectSuitQ8} handleRecordQuestionInLog={handleRecordQuestionInLog} lastAnsweredBanner={lastAnsweredBanner} truthFailedThisTurn={truthFailedThisTurn} handleAdvanceNextRoundWithRecharge={handleAdvanceNextRoundWithRecharge} handleSelectQuestion={handleSelectQuestion} handleRevealAllForPlayer={handleRevealAllForPlayer} handleToggleSingleCardReveal={handleToggleSingleCardReveal} truthFilledCount={truthFilledCount} handleClearTruthSlotsForTarget={handleClearTruthSlotsForTarget} currentTargetTruthSlots={currentTargetTruthSlots} truthSelectedSlotIdx={truthSelectedSlotIdx} truthDraggedCard={truthDraggedCard} handlePlaceCardInTruthSlot={handlePlaceCardInTruthSlot} setTruthDraggedCard={setTruthDraggedCard} setTruthSelectedSlotIdx={setTruthSelectedSlotIdx} handleRemoveCardFromTruthSlot={handleRemoveCardFromTruthSlot} cardsInCurrentTruthSlots={cardsInCurrentTruthSlots} handleConfirmTruthAttempt={handleConfirmTruthAttempt} setIsHistoryOpen={setIsHistoryOpen} isHistoryOpen={isHistoryOpen} setIsBenchOpen={setIsBenchOpen} isBenchOpen={isBenchOpen} setShowManualWinnerModal={setShowManualWinnerModal} setDeductionNotes={setDeductionNotes} deductionNotes={deductionNotes} showManualWinnerModal={showManualWinnerModal} activePlayers={activePlayers} handleAwardRoundWinToPlayer={handleAwardRoundWinToPlayer} />;
 };

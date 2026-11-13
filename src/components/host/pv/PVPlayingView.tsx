@@ -2,9 +2,9 @@ import type { Player } from '../../../types/game';
 import type { PVQuestionDefinition } from '../../../utils/perguntasEVerdadesEngine';
 import { ALL_CARD_VALUES, FULL_52_DECK } from './pvConstants';
 import { themeBadge } from '../../../utils/themeUtils';
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { GameRoom, PerguntasEVerdadesGameState, PVDeckStyle } from '../../../types/game';
-import { PlayingCardView } from '../../PlayingCardView';
+import { PlayingCardView, SuitPip, attachCardDragImage } from '../../PlayingCardView';
 import { OFFICIAL_11_QUESTIONS, SUIT_META, SUIT_ORDER, PVSuit, PVCard, PVCardValue, formatCardValueLabel } from '../../../utils/perguntasEVerdadesEngine';
 import { sounds } from '../../../utils/soundEffects';
 import { Clock, Pause, Play, Trophy, Eye, EyeOff, Coins, Send, History, ArrowRight, ArrowLeft, Info, Lock, Eraser, Target, HelpCircle, NotebookPen, X as XIcon } from 'lucide-react';
@@ -31,6 +31,7 @@ interface PVPlayingViewProps {
   handleSelectSuitQ8: (suit: PVSuit) => void;
   handleRecordQuestionInLog: () => void;
   lastAnsweredBanner: { question: string; answer: string; asker: string; target?: string; } | null;
+  truthFailedThisTurn: boolean;
   handleAdvanceNextRoundWithRecharge: () => void;
   handleSelectQuestion: (questionNumber: number) => void;
   handleRevealAllForPlayer: (playerId: string, reveal: boolean) => void;
@@ -79,6 +80,7 @@ export const PVPlayingView: React.FC<PVPlayingViewProps> = ({
   handleSelectSuitQ8,
   handleRecordQuestionInLog,
   lastAnsweredBanner,
+  truthFailedThisTurn,
   handleAdvanceNextRoundWithRecharge,
   handleSelectQuestion,
   handleRevealAllForPlayer,
@@ -108,6 +110,26 @@ export const PVPlayingView: React.FC<PVPlayingViewProps> = ({
   const deckStyle: PVDeckStyle = pv.deckStyle || room.customConfig?.pvDeckStyle || 'padrao';
   const targetHand = targetOpponent ? pv.playerHands[targetOpponent.id] || [] : [];
   const allOpen = targetOpponent ? (pv.revealedCards[targetOpponent.id] || []).every(Boolean) : false;
+  const turnActionDone = Boolean(lastAnsweredBanner) || truthFailedThisTurn;
+
+  const [truthDragOverSlotIdx, setTruthDragOverSlotIdx] = useState<number | null>(null);
+  const [truthJustPlacedIdx, setTruthJustPlacedIdx] = useState<number | null>(null);
+  const prevTruthIdsRef = useRef<string[]>(currentTargetTruthSlots.map((c) => c?.id || ''));
+
+  useEffect(() => {
+    const nextIds = currentTargetTruthSlots.map((c) => c?.id || '');
+    const changedIdx = nextIds.findIndex(
+      (id, idx) => Boolean(id) && id !== prevTruthIdsRef.current[idx]
+    );
+    prevTruthIdsRef.current = nextIds;
+    if (changedIdx !== -1) {
+      setTruthJustPlacedIdx(changedIdx);
+      const timer = window.setTimeout(() => {
+        setTruthJustPlacedIdx((cur) => (cur === changedIdx ? null : cur));
+      }, 240);
+      return () => window.clearTimeout(timer);
+    }
+  }, [currentTargetTruthSlots]);
 
   return (
     <div data-testid="screen-perguntas-e-verdades" className="rdb-pro">
@@ -351,6 +373,13 @@ export const PVPlayingView: React.FC<PVPlayingViewProps> = ({
                     <ArrowRight /> Concluir turno (+2 fichas)
                   </button>
                 </div>
+              ) : truthFailedThisTurn ? (
+                <div className="rdb-pv-banner is-bad">
+                  <span>{pv.lastTruthAttemptMessage || 'Palpite incorreto — turno encerrado.'}</span>
+                  <button type="button" className="rdb-btn rdb-pro-hit" onClick={handleAdvanceNextRoundWithRecharge}>
+                    <ArrowRight /> Concluir turno (+2 fichas)
+                  </button>
+                </div>
               ) : (
                 <button
                   type="button"
@@ -428,35 +457,80 @@ export const PVPlayingView: React.FC<PVPlayingViewProps> = ({
           {pv.lastTruthAttemptMessage && (
             <div data-testid="pv-truth-feedback-banner" className="rdb-pv-banner is-bad">
               <span>{pv.lastTruthAttemptMessage}</span>
-              <button
-                type="button"
-                className="rdb-lim-icon"
-                aria-label="Fechar"
-                onClick={() => onUpdatePVState((prev) => ({ ...prev, lastTruthAttemptMessage: null }))}
-              >
-                <XIcon size={16} />
-              </button>
+              {truthFailedThisTurn ? (
+                <button
+                  type="button"
+                  data-testid="pv-truth-finish-turn-btn"
+                  className="rdb-btn rdb-pro-hit"
+                  onClick={handleAdvanceNextRoundWithRecharge}
+                >
+                  <ArrowRight /> Concluir turno (+2 fichas)
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="rdb-lim-icon"
+                  aria-label="Fechar"
+                  onClick={() => onUpdatePVState((prev) => ({ ...prev, lastTruthAttemptMessage: null }))}
+                >
+                  <XIcon size={16} />
+                </button>
+              )}
             </div>
           )}
 
           <div className="rdb-pv-slots">
             {[0, 1, 2, 3, 4, 5, 6, 7].map((slotIdx) => {
               const card = currentTargetTruthSlots[slotIdx];
+              const isDraggingThis = Boolean(
+                truthDraggedCard && truthDraggedCard.fromSlotIndex === slotIdx
+              );
+              const isOver = truthDragOverSlotIdx === slotIdx && Boolean(truthDraggedCard);
+              const slotClass =
+                'rdb-pv-slot-wrap' +
+                (card ? ' has-card' : '') +
+                (isDraggingThis ? ' is-dragging' : '') +
+                (isOver ? ' is-drop-valid' : '') +
+                (truthJustPlacedIdx === slotIdx ? ' is-just-placed' : '');
+
               return (
                 <div
                   key={slotIdx}
                   data-testid={`pv-card-slot-${targetOpponent?.id}-${slotIdx + 1}`}
-                  onDragOver={(e) => e.preventDefault()}
+                  className={slotClass}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    if (truthDraggedCard) setTruthDragOverSlotIdx(slotIdx);
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (truthDraggedCard && e.dataTransfer) {
+                      e.dataTransfer.dropEffect = 'move';
+                      if (truthDragOverSlotIdx !== slotIdx) setTruthDragOverSlotIdx(slotIdx);
+                    }
+                  }}
+                  onDragLeave={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                      setTruthDragOverSlotIdx((cur) => (cur === slotIdx ? null : cur));
+                    }
+                  }}
                   onDrop={(e) => {
                     e.preventDefault();
+                    setTruthDragOverSlotIdx(null);
                     if (truthDraggedCard) {
                       handlePlaceCardInTruthSlot(truthDraggedCard.card, slotIdx, truthDraggedCard.fromSlotIndex);
                       setTruthDraggedCard(null);
                     }
                   }}
                   draggable={Boolean(card)}
-                  onDragStart={() => {
-                    if (card) setTruthDraggedCard({ card, fromSlotIndex: slotIdx });
+                  onDragStart={(e) => {
+                    if (!card) return;
+                    attachCardDragImage(e, card);
+                    setTruthDraggedCard({ card, fromSlotIndex: slotIdx });
+                  }}
+                  onDragEnd={() => {
+                    setTruthDraggedCard(null);
+                    setTruthDragOverSlotIdx(null);
                   }}
                 >
                   <PlayingCardView
@@ -480,20 +554,37 @@ export const PVPlayingView: React.FC<PVPlayingViewProps> = ({
               return (
                 <div key={suitKey} className="rdb-pv-suit">
                   <span className={'rdb-pv-suit-name' + (isRed ? ' is-red' : '')} data-tip={suitMeta.name}>
-                    {suitMeta.symbol}
+                    <SuitPip suit={suitKey} className="rdb-pv-pip is-deck" />
                   </span>
                   <div className="rdb-pv-suit-cards">
                     {suitCards.map((card) => {
                       const placedSlotIdx = cardsInCurrentTruthSlots.get(card.id);
                       const isPlaced = placedSlotIdx !== undefined;
+                      const isDraggingThis = Boolean(
+                        truthDraggedCard &&
+                          truthDraggedCard.card.id === card.id &&
+                          truthDraggedCard.fromSlotIndex === placedSlotIdx
+                      );
                       return (
                         <button
                           key={card.id}
                           type="button"
                           data-testid={`pv-truth-deck-card-${card.id}`}
-                          className={'rdb-pv-card' + (isRed ? ' is-red' : '') + (isPlaced ? ' is-placed' : '')}
+                          className={
+                            'rdb-pv-card' +
+                            (isRed ? ' is-red' : '') +
+                            (isPlaced ? ' is-placed' : '') +
+                            (isDraggingThis ? ' is-dragging' : '')
+                          }
                           draggable
-                          onDragStart={() => setTruthDraggedCard({ card, fromSlotIndex: placedSlotIdx })}
+                          onDragStart={(e) => {
+                            attachCardDragImage(e, card);
+                            setTruthDraggedCard({ card, fromSlotIndex: placedSlotIdx });
+                          }}
+                          onDragEnd={() => {
+                            setTruthDraggedCard(null);
+                            setTruthDragOverSlotIdx(null);
+                          }}
                           onClick={() => handlePlaceCardInTruthSlot(card, truthSelectedSlotIdx, placedSlotIdx)}
                         >
                           {card.label}
@@ -512,17 +603,28 @@ export const PVPlayingView: React.FC<PVPlayingViewProps> = ({
               <ArrowLeft /> Perguntas
             </button>
             <div className="rdb-pro-foot-end">
-              <button
-                type="button"
-                data-testid="pv-confirm-truth-declaration-btn"
-                className="rdb-btn rdb-pro-hit"
-                aria-disabled={truthFilledCount < 8}
-                data-tip={truthFilledCount < 8 ? `Faltam ${8 - truthFilledCount} cartas para palpitar` : 'Confirmar o palpite'}
-                style={truthFilledCount < 8 ? { opacity: 0.6 } : undefined}
-                onClick={handleConfirmTruthAttempt}
-              >
-                <Target /> Palpitar ({truthFilledCount}/8)
-              </button>
+              {turnActionDone ? (
+                <button
+                  type="button"
+                  data-testid="pv-finish-turn-btn"
+                  className="rdb-btn rdb-pro-hit"
+                  onClick={handleAdvanceNextRoundWithRecharge}
+                >
+                  <ArrowRight /> Concluir turno (+2 fichas)
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  data-testid="pv-confirm-truth-declaration-btn"
+                  className="rdb-btn rdb-pro-hit"
+                  aria-disabled={truthFilledCount < 8}
+                  data-tip={truthFilledCount < 8 ? `Faltam ${8 - truthFilledCount} cartas para palpitar` : 'Confirmar o palpite'}
+                  style={truthFilledCount < 8 ? { opacity: 0.6 } : undefined}
+                  onClick={handleConfirmTruthAttempt}
+                >
+                  <Target /> Palpitar ({truthFilledCount}/8)
+                </button>
+              )}
             </div>
           </footer>
         </div>

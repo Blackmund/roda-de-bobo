@@ -607,7 +607,11 @@ export function resolveTokenAuction(
     if (cleanBid > maxBid) maxBid = cleanBid;
   });
 
-  if (maxBid <= 0) {
+  const topBidders = entries
+    .filter(([, bid]) => Math.max(0, Math.round(bid || 0)) === maxBid)
+    .map(([pid]) => pid);
+
+  if (maxBid <= 0 && topBidders.length <= 1) {
     return {
       status: 'NO_BIDS',
       winnerPlayerId: null,
@@ -620,10 +624,6 @@ export function resolveTokenAuction(
       message: 'Todos apostaram 0 tokens.'
     };
   }
-
-  const topBidders = entries
-    .filter(([, bid]) => Math.max(0, Math.round(bid || 0)) === maxBid)
-    .map(([pid]) => pid);
 
   const updatedTokens = { ...playerTokens };
   const updatedAlerts = { ...currentAlerts };
@@ -778,6 +778,52 @@ export function validateCardPlacementInSlot(
         };
       }
     }
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Validates placing or swapping a card into targetSlotIndex during DECK_SETUP.
+ * If sourceSlotIndex is provided and targetSlotIndex is occupied, validates the swap in both directions.
+ */
+export function validateCardMoveOrSwapInSlots(
+  currentSlots: Array<PVCard | null | undefined>,
+  targetSlotIndex: number,
+  cardToPlace: PVCard,
+  sourceSlotIndex?: number
+): {
+  valid: boolean;
+  conflictingSlotIndex?: number;
+  errorMessage?: string;
+} {
+  const working: Array<PVCard | null | undefined> = Array.from(
+    { length: 8 },
+    (_, idx) => currentSlots[idx] || null
+  );
+
+  const hasSourceSlot =
+    typeof sourceSlotIndex === 'number' && sourceSlotIndex >= 0 && sourceSlotIndex < 8;
+  const displaced = working[targetSlotIndex] || null;
+
+  if (hasSourceSlot) {
+    if (sourceSlotIndex === targetSlotIndex) return { valid: true };
+    working[sourceSlotIndex] = displaced;
+  } else {
+    const existingIdx = working.findIndex((c) => c?.id === cardToPlace.id);
+    if (existingIdx !== -1) working[existingIdx] = null;
+  }
+  working[targetSlotIndex] = null;
+
+  const directCheck = validateCardPlacementInSlot(working, targetSlotIndex, cardToPlace);
+  if (!directCheck.valid) return directCheck;
+
+  if (hasSourceSlot && displaced && displaced.id !== cardToPlace.id) {
+    const afterPlace = [...working];
+    afterPlace[targetSlotIndex] = cardToPlace;
+    afterPlace[sourceSlotIndex] = null;
+    const displacedCheck = validateCardPlacementInSlot(afterPlace, sourceSlotIndex, displaced);
+    if (!displacedCheck.valid) return displacedCheck;
   }
 
   return { valid: true };

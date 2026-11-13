@@ -4,112 +4,97 @@ import { PVCard, PVSuit, formatCardValueLabel } from '../utils/perguntasEVerdade
 
 interface PlayingCardViewProps {
   card: PVCard | null | undefined;
-  styleMode?: PVDeckStyle; // 'padrao' (CazéTV Ilustrado) | 'compacto' | 'holografico'
+  styleMode?: PVDeckStyle; // 'padrao' (Roda de Bobo) | 'compacto' | 'holografico'
   className?: string;
   isConflict?: boolean;
   isSelected?: boolean;
-  isRevealed?: boolean; // If false (and not null), can show card back
+  isRevealed?: boolean;
   slotLabel?: string;
   onRemove?: () => void;
   onClick?: () => void;
   size?: 'sm' | 'md' | 'lg';
 }
 
-const SUIT_DATA: Record<PVSuit, { symbol: string; name: string; color: string; bgAccent: string }> = {
-  spades: { symbol: '♠', name: 'Espadas', color: '#00E5FF', bgAccent: 'from-cyan-950/80 to-[#0a101f]' },
-  hearts: { symbol: '♥', name: 'Copas', color: '#FF1E56', bgAccent: 'from-rose-950/80 to-[#190a12]' },
-  clubs: { symbol: '♣', name: 'Paus', color: '#10B981', bgAccent: 'from-emerald-950/80 to-[#071712]' },
-  diamonds: { symbol: '♦', name: 'Ouros', color: '#FBBF24', bgAccent: 'from-amber-950/80 to-[#191307]' }
+const SUIT_NAME: Record<PVSuit, string> = {
+  spades: 'Espadas',
+  hearts: 'Copas',
+  clubs: 'Paus',
+  diamonds: 'Ouros'
+};
+
+const SUIT_SYMBOL_CHAR: Record<PVSuit, string> = {
+  spades: '♠',
+  hearts: '♥',
+  clubs: '♣',
+  diamonds: '♦'
 };
 
 /**
- * Unique CazéTV style illustrated face motifs for card ranks.
+ * Attaches a crisp playing-card drag ghost image synchronously during HTML5 onDragStart
+ * so holding and dragging a card from the deck or slots shows the card under the cursor.
  */
-function renderCardCenterArtwork(val: number, suit: PVSuit, styleMode: PVDeckStyle) {
-  const isRed = suit === 'hearts' || suit === 'diamonds';
-  const suitInfo = SUIT_DATA[suit];
+export function attachCardDragImage(e: React.DragEvent, card: PVCard) {
+  if (typeof document === 'undefined' || !e.dataTransfer) return;
+  const isRed = card.suit === 'hearts' || card.suit === 'diamonds';
+  const ghost = document.createElement('div');
+  ghost.className = 'rdb-pv-drag-ghost' + (isRed ? ' is-red' : '');
 
-  if (styleMode === 'compacto') {
-    return (
-      <div className="flex flex-col items-center justify-center my-auto">
-        <span className="font-anton text-lg leading-none" style={{ color: suitInfo.color }}>
-          {formatCardValueLabel(val)}
-        </span>
-        <span className="text-xs leading-none mt-0.5" style={{ color: suitInfo.color }}>
-          {suitInfo.symbol}
-        </span>
-      </div>
-    );
+  const val = document.createElement('span');
+  val.className = 'rdb-pv-drag-ghost-val';
+  val.textContent = formatCardValueLabel(card.value);
+
+  const pip = document.createElement('span');
+  pip.className = 'rdb-pv-drag-ghost-pip';
+  pip.textContent = `${SUIT_SYMBOL_CHAR[card.suit]}\uFE0E`;
+
+  ghost.appendChild(val);
+  ghost.appendChild(pip);
+  document.body.appendChild(ghost);
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', card.id);
+  try {
+    e.dataTransfer.setDragImage(ghost, 36, 44);
+  } catch {
+    // Some headless browsers do not implement setDragImage
   }
-
-  // Holographic style motif
-  if (styleMode === 'holografico') {
-    return (
-      <div className="relative flex flex-col items-center justify-center my-auto w-full h-full">
-        {/* Hologram scanlines / glitch shimmer */}
-        <div className="absolute inset-0 bg-gradient-to-b from-cyan-400/10 via-fuchsia-500/10 to-amber-300/10 pointer-events-none mix-blend-screen" />
-        <div className="relative z-10 flex flex-col items-center">
-          <span
-            className="font-anton text-xl sm:text-2xl leading-none drop-shadow-[0_0_8px_rgba(0,229,255,0.8)]"
-            style={{
-              color: '#FFFFFF',
-              textShadow: '0 0 10px #00E5FF, 0 0 20px #FF007F'
-            }}
-          >
-            {formatCardValueLabel(val)}
-          </span>
-          <span
-            className="text-lg leading-none mt-0.5 filter drop-shadow-[0_0_6px_#FF007F]"
-            style={{ color: suitInfo.color }}
-          >
-            {suitInfo.symbol}
-          </span>
-          <span className="text-[8px] font-mono-code uppercase tracking-wider text-cyan-300 font-bold opacity-80 mt-0.5">
-            HOLOGRAM
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  // Padrão CazéTV Ilustrado (Vintage Cartoon Pop Art Card)
-  // Distinguish Face cards (A, J, Q, K / 1, 11, 12, 13) and Numbers (2..10)
-  const isFaceCard = val === 1 || val >= 11;
-
-  return (
-    <div className="relative flex flex-col items-center justify-center my-auto w-full px-1">
-      {/* Decorative center frame */}
-      <div
-        className={`w-full py-1 px-1 rounded flex flex-col items-center justify-center border ${
-          isRed ? 'border-rose-500/40 bg-rose-950/40' : 'border-cyan-500/40 bg-cyan-950/40'
-        }`}
-      >
-        {isFaceCard ? (
-          // Royal Cartoon Face Icon / Crown / Ace Badge
-          <div className="flex flex-col items-center">
-            <span className="text-sm sm:text-base leading-none">
-              {val === 1 ? '👑' : val === 11 ? '⚔️' : val === 12 ? '👸' : '🤴'}
-            </span>
-            <span className="font-anton text-base sm:text-lg leading-none mt-0.5" style={{ color: suitInfo.color }}>
-              {formatCardValueLabel(val)}
-            </span>
-          </div>
-        ) : (
-          // Pip grid / Cartoon numbers
-          <div className="flex flex-col items-center">
-            <span className="font-anton text-base sm:text-lg leading-none" style={{ color: suitInfo.color }}>
-              {formatCardValueLabel(val)}
-            </span>
-            <div className="flex items-center gap-0.5 text-xs sm:text-sm leading-none mt-0.5" style={{ color: suitInfo.color }}>
-              <span>{suitInfo.symbol}</span>
-              {val >= 7 && <span className="opacity-75">{suitInfo.symbol}</span>}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  window.requestAnimationFrame(() => {
+    window.setTimeout(() => {
+      if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+    }, 0);
+  });
 }
+
+export const SuitPip: React.FC<{ suit: PVSuit; className?: string }> = ({
+  suit,
+  className = 'rdb-pv-pip'
+}) => {
+  switch (suit) {
+    case 'hearts':
+      return (
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+        </svg>
+      );
+    case 'diamonds':
+      return (
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+          <path d="M12 2L21 12L12 22L3 12Z" />
+        </svg>
+      );
+    case 'spades':
+      return (
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+          <path d="M12 2C7 7 3.5 10.2 3.5 14a4.5 4.5 0 0 0 7.2 3.6c-.3 1.5-.9 2.9-2.2 3.9h7c-1.3-1-1.9-2.4-2.2-3.9A4.5 4.5 0 0 0 20.5 14C20.5 10.2 17 7 12 2z" />
+        </svg>
+      );
+    case 'clubs':
+      return (
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+          <path d="M12 3a4.2 4.2 0 0 0-3.1 7A4.3 4.3 0 0 0 3.5 14a4.3 4.3 0 0 0 7.2 3.2c-.3 1.5-.9 3-2.2 4.3h7c-1.3-1.3-1.9-2.8-2.2-4.3A4.3 4.3 0 0 0 20.5 14a4.3 4.3 0 0 0-5.4-4A4.2 4.2 0 0 0 12 3z" />
+        </svg>
+      );
+  }
+};
 
 export const PlayingCardView: React.FC<PlayingCardViewProps> = ({
   card,
@@ -119,162 +104,107 @@ export const PlayingCardView: React.FC<PlayingCardViewProps> = ({
   isSelected = false,
   slotLabel,
   onRemove,
-  onClick,
-  size = 'md'
+  onClick
 }) => {
-  const suitInfo = card ? SUIT_DATA[card.suit] : null;
-  const isRed = card?.suit === 'hearts' || card?.suit === 'diamonds';
-
-  // Empty Slot Styling
   if (!card) {
     return (
       <div
         onClick={onClick}
-        className={`h-20 sm:h-24 border-2 p-1 flex flex-col justify-between transition-all cursor-pointer relative select-none rounded ${
-          isConflict
-            ? 'border-rose-500 bg-rose-950 animate-pulse'
-            : isSelected
-            ? 'border-cyan-300 bg-cyan-950/60 shadow-[0_0_12px_rgba(0,229,255,0.4)]'
-            : 'border-dashed border-slate-700 bg-black/70 hover:border-cyan-400'
-        } ${className}`}
+        className={
+          'rdb-pv-cardbox is-empty' +
+          (isConflict ? ' is-conflict' : '') +
+          (isSelected ? ' is-selected' : '') +
+          (className ? ` ${className}` : '')
+        }
       >
-        <div className="flex items-center justify-between text-[9px] font-mono-code font-bold text-cyan-300">
-          <span>{slotLabel || 'SLOT'}</span>
+        <div className="rdb-pv-cardbox-top">
+          <span className="rdb-pv-cardbox-pos">{slotLabel || 'POS'}</span>
         </div>
-        <div className="my-auto text-center font-mono-code text-[10px] text-slate-500">
-          —
-        </div>
+        <div className="rdb-pv-cardbox-mid is-dash">—</div>
       </div>
     );
   }
 
-  // Holographic Deck Visuals
-  if (styleMode === 'holografico') {
+  const isRed = card.suit === 'hearts' || card.suit === 'diamonds';
+  const rankLabel = formatCardValueLabel(card.value);
+  const suitName = SUIT_NAME[card.suit];
+
+  if (styleMode === 'compacto') {
     return (
       <div
         onClick={onClick}
-        className={`h-20 sm:h-24 border-2 p-1 flex flex-col justify-between transition-all cursor-pointer relative select-none rounded bg-gradient-to-br from-[#0c142c] via-[#1a0b2e] to-[#0a1724] border-cyan-400/90 shadow-[0_0_15px_rgba(0,229,255,0.35)] overflow-hidden ${
-          isConflict ? 'border-rose-500 bg-rose-950 animate-pulse' : ''
-        } ${isSelected ? 'ring-2 ring-fuchsia-400 border-white' : ''} ${className}`}
+        className={
+          'rdb-pv-cardbox is-compact' +
+          (isRed ? ' is-red' : '') +
+          (isConflict ? ' is-conflict' : '') +
+          (isSelected ? ' is-selected' : '') +
+          (className ? ` ${className}` : '')
+        }
       >
-        {/* Hologram Rainbow Sheen Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-cyan-400/15 to-fuchsia-500/20 pointer-events-none mix-blend-screen" />
-
-        {/* Top Header: Rank + Suit + Remove Button */}
-        <div className="relative z-10 flex items-center justify-between text-[9px] font-mono-code font-bold">
-          <div className="flex items-center gap-1" style={{ color: suitInfo?.color }}>
-            <span className="font-anton text-xs">{formatCardValueLabel(card.value)}</span>
-            <span>{suitInfo?.symbol}</span>
-          </div>
-          {slotLabel && <span className="text-[8px] text-cyan-300/80">{slotLabel}</span>}
+        <div className="rdb-pv-cardbox-top">
+          <span className="rdb-pv-cardbox-pos">{slotLabel || 'POS'}</span>
           {onRemove && (
             <button
               type="button"
+              aria-label={`Remover ${rankLabel} de ${suitName}`}
               onClick={(e) => {
                 e.stopPropagation();
                 onRemove();
               }}
-              className="w-3.5 h-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold flex items-center justify-center cursor-pointer text-[10px] rounded-xs"
+              className="rdb-pv-cardbox-x"
             >
               ×
             </button>
           )}
         </div>
-
-        {/* Center Artwork */}
-        <div className="relative z-10 flex-1 flex items-center justify-center min-h-0">
-          {renderCardCenterArtwork(card.value, card.suit, 'holografico')}
-        </div>
-
-        {/* Bottom Corner Rank */}
-        <div className="relative z-10 flex items-center justify-between text-[8px] font-mono-code text-cyan-300/80">
-          <span>{suitInfo?.name}</span>
-          <span className="font-anton" style={{ color: suitInfo?.color }}>
-            {formatCardValueLabel(card.value)}
-          </span>
+        <div className="rdb-pv-cardbox-mid">
+          <span className="rdb-pv-cardbox-val">{rankLabel}</span>
+          <SuitPip suit={card.suit} className="rdb-pv-pip is-sm" />
         </div>
       </div>
     );
   }
 
-  // Padrão CazéTV Ilustrado (Full Card Representation)
-  if (styleMode === 'padrao') {
-    return (
-      <div
-        onClick={onClick}
-        className={`h-20 sm:h-24 border-2 p-1 flex flex-col justify-between transition-all cursor-pointer relative select-none rounded bg-[#0d1324] border-amber-400 shadow-[0_2px_10px_rgba(0,0,0,0.5)] ${
-          isConflict ? 'border-rose-500 bg-rose-950 animate-pulse' : ''
-        } ${isSelected ? 'border-cyan-300 ring-2 ring-cyan-400' : ''} ${className}`}
-      >
-        {/* Top Bar: Corner Index (Value + Suit) */}
-        <div className="flex items-center justify-between text-[10px] font-mono-code font-bold">
-          <div className="flex items-center gap-0.5" style={{ color: suitInfo?.color }}>
-            <span className="font-anton text-xs">{formatCardValueLabel(card.value)}</span>
-            <span>{suitInfo?.symbol}</span>
-          </div>
-          {slotLabel && <span className="text-[8px] text-slate-400">{slotLabel}</span>}
-          {onRemove && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemove();
-              }}
-              className="w-3.5 h-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold flex items-center justify-center cursor-pointer text-[10px] rounded-xs"
-            >
-              ×
-            </button>
-          )}
-        </div>
+  const isHolo = styleMode === 'holografico';
+  const isFace = card.value === 1 || card.value >= 11;
 
-        {/* Center CazéTV Illustrated Motif */}
-        <div className="flex-1 flex items-center justify-center min-h-0">
-          {renderCardCenterArtwork(card.value, card.suit, 'padrao')}
-        </div>
-
-        {/* Bottom Bar: Inverted Corner Index */}
-        <div className="flex items-center justify-between text-[8px] font-mono-code text-slate-400">
-          <span className="truncate max-w-[50px]">{suitInfo?.name}</span>
-          <div className="flex items-center gap-0.5" style={{ color: suitInfo?.color }}>
-            <span>{suitInfo?.symbol}</span>
-            <span className="font-anton text-[10px]">{formatCardValueLabel(card.value)}</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Compact View (Original Minimal View)
   return (
     <div
       onClick={onClick}
-      className={`h-16 sm:h-20 border-2 p-1 flex flex-col justify-between transition-all cursor-pointer relative select-none rounded ${
-        isConflict
-          ? 'border-rose-500 bg-rose-950 animate-pulse'
-          : isSelected
-          ? 'border-cyan-300 bg-cyan-950/60 shadow-[0_0_12px_rgba(0,229,255,0.4)]'
-          : 'border-amber-400 bg-[#0d1324]'
-      } ${className}`}
+      className={
+        'rdb-pv-cardbox' +
+        (isRed ? ' is-red' : '') +
+        (isFace ? ' is-face' : '') +
+        (isHolo ? ' is-holo' : '') +
+        (isConflict ? ' is-conflict' : '') +
+        (isSelected ? ' is-selected' : '') +
+        (className ? ` ${className}` : '')
+      }
     >
-      <div className="flex items-center justify-between text-[9px] font-mono-code font-bold text-cyan-300">
-        <span>{slotLabel || 'POS'}</span>
+      <div className="rdb-pv-cardbox-top">
+        <span className="rdb-pv-cardbox-pos">{slotLabel || 'POS'}</span>
         {onRemove && (
           <button
             type="button"
+            aria-label={`Remover ${rankLabel} de ${suitName}`}
             onClick={(e) => {
               e.stopPropagation();
               onRemove();
             }}
-            className="w-3.5 h-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold flex items-center justify-center cursor-pointer text-[10px] rounded-xs"
+            className="rdb-pv-cardbox-x"
           >
             ×
           </button>
         )}
       </div>
 
-      <div className={`text-center my-auto ${isRed ? 'text-rose-400' : 'text-cyan-200'}`}>
-        <div className="font-anton text-lg leading-none">{formatCardValueLabel(card.value)}</div>
-        <div className="text-xs leading-none mt-0.5">{suitInfo?.symbol}</div>
+      <div className="rdb-pv-cardbox-mid">
+        <span className="rdb-pv-cardbox-val">{rankLabel}</span>
+        <SuitPip suit={card.suit} className="rdb-pv-pip" />
+      </div>
+
+      <div className="rdb-pv-cardbox-foot">
+        <span>{suitName}</span>
       </div>
     </div>
   );

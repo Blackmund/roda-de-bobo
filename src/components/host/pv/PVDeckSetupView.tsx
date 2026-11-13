@@ -1,9 +1,14 @@
 import type { Player } from '../../../types/game';
 import { FULL_52_DECK } from './pvConstants';
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { GameRoom, PerguntasEVerdadesGameState, PVDeckStyle } from '../../../types/game';
-import { PlayingCardView } from '../../PlayingCardView';
-import { SUIT_META, SUIT_ORDER, PVCard } from '../../../utils/perguntasEVerdadesEngine';
+import { PlayingCardView, SuitPip, attachCardDragImage } from '../../PlayingCardView';
+import {
+  SUIT_META,
+  SUIT_ORDER,
+  PVCard,
+  validateCardMoveOrSwapInSlots
+} from '../../../utils/perguntasEVerdadesEngine';
 import { sounds } from '../../../utils/soundEffects';
 import { Check, Shuffle, Eraser, Info, FastForward } from 'lucide-react';
 import { PlayerMark } from '../../rdb/PlayerMark';
@@ -61,11 +66,28 @@ export const PVDeckSetupView: React.FC<PVDeckSetupViewProps> = ({
   setSetupRuleError,
   setConflictingSlotIdx,
   handleConfirmCurrentPlayerHand,
-  cardsInCurrentSlots,
-  cardsUsedByOtherPlayers
+  cardsInCurrentSlots
 }) => {
   const deckStyle: PVDeckStyle = pv.deckStyle || room.customConfig?.pvDeckStyle || 'padrao';
   const isLast = setupPlayerIndex >= activePlayers.length - 1;
+  const [dragOverSlotIdx, setDragOverSlotIdx] = useState<number | null>(null);
+  const [justPlacedSlotIdx, setJustPlacedSlotIdx] = useState<number | null>(null);
+  const prevSlotIdsRef = useRef<string[]>(setupSlots.map((c) => c?.id || ''));
+
+  useEffect(() => {
+    const nextIds = setupSlots.map((c) => c?.id || '');
+    const changedIdx = nextIds.findIndex(
+      (id, idx) => Boolean(id) && id !== prevSlotIdsRef.current[idx]
+    );
+    prevSlotIdsRef.current = nextIds;
+    if (changedIdx !== -1) {
+      setJustPlacedSlotIdx(changedIdx);
+      const timer = window.setTimeout(() => {
+        setJustPlacedSlotIdx((cur) => (cur === changedIdx ? null : cur));
+      }, 240);
+      return () => window.clearTimeout(timer);
+    }
+  }, [setupSlots]);
 
   return (
     <div data-testid="screen-perguntas-e-verdades" className="rdb-pro">
@@ -81,7 +103,7 @@ export const PVDeckSetupView: React.FC<PVDeckSetupViewProps> = ({
           <span
             className="rdb-lim-rule"
             tabIndex={0}
-            data-tip="Escolha 8 cartas em segredo, na ordem que quiser. Cartas do mesmo naipe precisam estar em ordem crescente."
+            data-tip="Escolha 8 cartas do seu baralho. Cartas do mesmo naipe precisam ficar em ordem crescente da esquerda para a direita."
           >
             <Info size={16} />
           </span>
@@ -111,21 +133,72 @@ export const PVDeckSetupView: React.FC<PVDeckSetupViewProps> = ({
         <div className="rdb-pv-slots">
           {[0, 1, 2, 3, 4, 5, 6, 7].map((slotIdx) => {
             const card = setupSlots[slotIdx];
+            const isDraggingThis = Boolean(
+              draggedCard && draggedCard.fromSlotIndex === slotIdx
+            );
+            const isOver = dragOverSlotIdx === slotIdx && Boolean(draggedCard);
+            const canDropHere =
+              isOver && draggedCard
+                ? validateCardMoveOrSwapInSlots(
+                    setupSlots,
+                    slotIdx,
+                    draggedCard.card,
+                    draggedCard.fromSlotIndex
+                  ).valid
+                : false;
+
+            const slotClass =
+              'rdb-pv-slot-wrap' +
+              (card ? ' has-card' : '') +
+              (isDraggingThis ? ' is-dragging' : '') +
+              (isOver ? (canDropHere ? ' is-drop-valid' : ' is-drop-invalid') : '') +
+              (justPlacedSlotIdx === slotIdx ? ' is-just-placed' : '') +
+              (conflictingSlotIdx === slotIdx ? ' is-conflict-wrap' : '');
+
             return (
               <div
                 key={slotIdx}
                 data-testid={`pv-setup-slot-${slotIdx + 1}`}
-                onDragOver={(e) => e.preventDefault()}
+                className={slotClass}
+                onDragEnter={(e) => {
+                  e.preventDefault();
+                  if (draggedCard) setDragOverSlotIdx(slotIdx);
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (draggedCard && e.dataTransfer) {
+                    const valid = validateCardMoveOrSwapInSlots(
+                      setupSlots,
+                      slotIdx,
+                      draggedCard.card,
+                      draggedCard.fromSlotIndex
+                    ).valid;
+                    e.dataTransfer.dropEffect = valid ? 'move' : 'none';
+                    if (dragOverSlotIdx !== slotIdx) setDragOverSlotIdx(slotIdx);
+                  }
+                }}
+                onDragLeave={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                    setDragOverSlotIdx((cur) => (cur === slotIdx ? null : cur));
+                  }
+                }}
                 onDrop={(e) => {
                   e.preventDefault();
+                  setDragOverSlotIdx(null);
                   if (draggedCard) {
                     attemptPlaceCardInSlot(draggedCard.card, slotIdx, draggedCard.fromSlotIndex);
                     setDraggedCard(null);
                   }
                 }}
                 draggable={Boolean(card)}
-                onDragStart={() => {
-                  if (card) setDraggedCard({ card, fromSlotIndex: slotIdx });
+                onDragStart={(e) => {
+                  if (!card) return;
+                  attachCardDragImage(e, card);
+                  setDraggedCard({ card, fromSlotIndex: slotIdx });
+                }}
+                onDragEnd={() => {
+                  setDraggedCard(null);
+                  setDragOverSlotIdx(null);
                 }}
               >
                 <PlayingCardView
@@ -144,7 +217,7 @@ export const PVDeckSetupView: React.FC<PVDeckSetupViewProps> = ({
 
         <div className="rdb-pv-deck rdb-pv-scroll">
           <div className="rdb-pro-label" style={{ position: 'static', alignSelf: 'flex-start' }}>
-            Baralho · clique para pôr na {selectedSlotIdx + 1}ª posição · {filledCount}/8
+            Baralho · clique ou arraste para a {selectedSlotIdx + 1}ª posição · {filledCount}/8
           </div>
           {SUIT_ORDER.map((suitKey) => {
             const suitMeta = SUIT_META[suitKey];
@@ -153,24 +226,42 @@ export const PVDeckSetupView: React.FC<PVDeckSetupViewProps> = ({
             return (
               <div key={suitKey} className="rdb-pv-suit">
                 <span className={'rdb-pv-suit-name' + (isRed ? ' is-red' : '')} data-tip={suitMeta.name}>
-                  {suitMeta.symbol}
+                  <SuitPip suit={suitKey} className="rdb-pv-pip is-deck" />
                 </span>
                 <div className="rdb-pv-suit-cards">
                   {suitCards.map((card) => {
-                    const disabled = cardsInCurrentSlots.has(card.id) || cardsUsedByOtherPlayers.has(card.id);
+                    const alreadyUsed = cardsInCurrentSlots.has(card.id);
+                    const validForSelected = alreadyUsed
+                      ? true
+                      : validateCardMoveOrSwapInSlots(setupSlots, selectedSlotIdx, card).valid;
+                    const isDraggingThis = Boolean(
+                      draggedCard && draggedCard.card.id === card.id && draggedCard.fromSlotIndex === undefined
+                    );
+
                     return (
                       <button
                         key={card.id}
                         type="button"
                         data-testid={`pv-deck-card-${card.id}`}
-                        className={'rdb-pv-card' + (isRed ? ' is-red' : '')}
-                        disabled={disabled}
-                        draggable={!disabled}
-                        onDragStart={() => {
-                          if (!disabled) setDraggedCard({ card });
+                        className={
+                          'rdb-pv-card' +
+                          (isRed ? ' is-red' : '') +
+                          (!alreadyUsed && !validForSelected ? ' is-blocked-for-slot' : '') +
+                          (isDraggingThis ? ' is-dragging' : '')
+                        }
+                        disabled={alreadyUsed}
+                        draggable={!alreadyUsed}
+                        onDragStart={(e) => {
+                          if (alreadyUsed) return;
+                          attachCardDragImage(e, card);
+                          setDraggedCard({ card });
+                        }}
+                        onDragEnd={() => {
+                          setDraggedCard(null);
+                          setDragOverSlotIdx(null);
                         }}
                         onClick={() => {
-                          if (!disabled) attemptPlaceCardInSlot(card, selectedSlotIdx);
+                          if (!alreadyUsed) attemptPlaceCardInSlot(card, selectedSlotIdx);
                         }}
                       >
                         {card.label}
