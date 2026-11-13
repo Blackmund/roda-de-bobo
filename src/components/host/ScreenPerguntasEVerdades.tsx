@@ -618,7 +618,7 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
           currentBids: {},
           bidSubmitted: {},
           bettingPlayerIndex: 0,
-          auctionTieMessage: `⚡ EMPATE NO MAIOR LANCE (${res.highestBid} FICHAS) ENTRE ${tiedNames.toUpperCase()}! Eles recuperaram as fichas + GANHARAM +2 FICHAS DE BÔNUS para desempatar!`
+          auctionTieMessage: `Empate no maior LANCE (${res.highestBid} FICHAS) ENTRE ${tiedNames.toUpperCase()}! Eles recuperaram as fichas + GANHARAM +2 FICHAS DE BÔNUS para desempatar!`
         };
       }
 
@@ -729,7 +729,7 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
         revealedCards: allRevealed,
         roundWinsByPlayer: updatedWins,
         winnerPlayerId: winnerId,
-        roundWinBannerMessage: `🏆 ${
+        roundWinBannerMessage: `${
           winPlayer?.name || 'Jogador'
         } DESCOBRIU AS 8 CARTAS E VENCEU A RODADA ${matchRoundNumber} DE ${totalMatchRounds}! (${
           updatedWins[winnerId]
@@ -922,12 +922,11 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
   // ===========================================================================
   const renderPlayerRosterStrip = () => {
     return (
-      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5 shrink-0">
+      <div className="rdb-pv-roster">
         {activePlayers.map((player) => {
           const isTurn = player.id === activeTurnPlayer?.id;
           const isTarget = player.id === targetOpponent?.id && !isTurn;
           const tokenVal = pv.tokens[player.id] ?? 10;
-          // Golden rule: <= 5 tokens triggers Pulsing Red LED
           const alertLightOn = Boolean(pv.tokenAlertLight?.[player.id]) || tokenVal <= 5;
 
           return (
@@ -940,55 +939,30 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
                   onUpdatePVState((prev) => ({ ...prev, targetOpponentId: player.id }));
                 }
               }}
-              className={`px-2.5 py-1 border transition-all flex items-center gap-1.5 cursor-pointer rounded-sm ${
-                isTurn
-                  ? 'border-cyan-300 bg-cyan-950/90 text-cyan-200 shadow-[0_0_12px_rgba(0,229,255,0.4)] scale-100 font-bold z-10'
-                  : isTarget
-                  ? 'border-rose-500/80 bg-rose-950/60 text-rose-200 scale-95 opacity-90'
-                  : 'border-slate-800 bg-black/60 text-slate-300 opacity-60 hover:opacity-100 scale-95'
-              }`}
+              className={'rdb-pv-chip' + (isTurn ? ' is-turn' : isTarget ? ' is-target' : '')}
+              data-tip={isTurn ? 'Jogador da vez' : isTarget ? 'Alvo das perguntas' : 'Clique para escolher como alvo'}
             >
-              <span className="text-base shrink-0"><PlayerMark p={player} /></span>
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span className="font-anton text-xs uppercase truncate max-w-[90px]">
-                  {player.name}
+              <PlayerMark p={player} />
+              <span>{player.name}</span>
+              {isTarget && <span className="rdb-pv-flag is-target">Alvo</span>}
+              {totalMatchRounds > 1 && (
+                <span
+                  data-testid={`pv-player-series-wins-${player.id}`}
+                  className="rdb-pv-flag is-wins"
+                  data-tip={`Vitórias na série: ${roundWinsByPlayer[player.id] || 0} de ${requiredWinsToWinMatch}`}
+                >
+                  {roundWinsByPlayer[player.id] || 0}/{requiredWinsToWinMatch}
                 </span>
-
-                {isTurn && (
-                  <span className="text-[8px] font-mono-code font-bold bg-cyan-400 text-black px-1 py-0.2 uppercase shrink-0">
-                    SUA VEZ
-                  </span>
-                )}
-
-                {isTarget && (
-                  <span className="text-[8px] font-mono-code font-bold bg-rose-600 text-white px-1 py-0.2 uppercase shrink-0">
-                    ALVO
-                  </span>
-                )}
-
-                {/* Placar de Vitórias da Série (Melhor de X) */}
-                {totalMatchRounds > 1 && (
-                  <span
-                    data-testid={`pv-player-series-wins-${player.id}`}
-                    className="text-[8px] font-mono-code font-bold bg-amber-400 text-black px-1 py-0.2 uppercase shrink-0"
-                    title={`Vitórias na série: ${roundWinsByPlayer[player.id] || 0} de ${requiredWinsToWinMatch} necessárias`}
-                  >
-                    🏆 {roundWinsByPlayer[player.id] || 0}/{requiredWinsToWinMatch}
-                  </span>
-                )}
-
-                {/* GOLDEN TOKEN RULE: NO NUMBER WHEN > 5 FICHAS! ONLY PULSING RED LED WHEN <= 5 FICHAS */}
-                {alertLightOn && (
-                  <div
-                    data-testid={`pv-token-alert-led-${player.id}`}
-                    className="flex items-center gap-0.5 px-1 py-0.2 bg-[#FFE600] text-black font-anton text-[8px] uppercase tracking-wider animate-pulse shadow-[0_0_10px_#FFE600] shrink-0"
-                    title="ALERTA OFICIAL: Jogador está com ≤ 5 fichas!"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-ping inline-block" />
-                    <span>⚡ ≤ 5</span>
-                  </div>
-                )}
-              </div>
+              )}
+              {alertLightOn && (
+                <span
+                  data-testid={`pv-token-alert-led-${player.id}`}
+                  className="rdb-pv-flag is-low"
+                  data-tip="Poucas fichas: 5 ou menos"
+                >
+                  ≤ 5
+                </span>
+              )}
             </div>
           );
         })}
