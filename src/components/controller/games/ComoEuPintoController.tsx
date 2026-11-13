@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Eraser, Eye, EyeOff, Pencil, Redo2, Trash2, Undo2 } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Eraser, Pencil, Redo2, Trash2, Undo2 } from 'lucide-react';
 import { GameRoom, Player } from '../../../types/game';
 import { DrawingCanvas } from '../../DrawingCanvas';
 import { sounds } from '../../../utils/soundEffects';
 import {
   PINTO_BRUSH_PRESETS,
   PINTO_COLORS,
+  PINTO_ASPECT,
   PINTO_PAPER_COLOR,
   addStroke as pintoAddStroke,
   clearDrawing as pintoClear,
@@ -38,13 +39,66 @@ export const ComoEuPintoController: React.FC<ComoEuPintoControllerProps> = ({
   const [tool, setTool] = useState<'pen' | 'eraser'>('pen');
   const [lineWidth, setLineWidth] = useState<number>(0.011);
   const [opacity, setOpacity] = useState<number>(1);
-  const [localWordHidden, setLocalWordHidden] = useState<boolean>(false);
-
   const c = room.activeGame === 'como-eu-pinto' ? room.comoEuPinto : undefined;
+  const isDrawerHere = !!c && (isSharedPad || player.id === c.drawerPlayerId);
 
+  // Palavra nova: aparece em tela cheia por alguns segundos e some sozinha (o tempo ja esta correndo).
+  const [intro, setIntro] = useState<string | null>(null);
+  const showWord = c?.phase === 'PLAYING' && isDrawerHere && !c?.padPassGate;
+  const introKey = showWord ? `${room.roundNumber}-${c?.drawerPlayerId}-${c?.currentIndex}` : '';
   useEffect(() => {
-    setLocalWordHidden(false);
-  }, [c?.currentIndex, c?.drawerPlayerId, room.roundNumber]);
+    if (!introKey || !c) return;
+    setIntro(c.words[c.currentIndex] || null);
+    sounds.playFlip();
+    const t = window.setTimeout(() => setIntro(null), 2200);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [introKey]);
+
+  // Avisos de tempo para quem desenha: a cada minuto, 30 s, 10 s (com contagem) e 3-2-1 na tela.
+  const [alert, setAlert] = useState<{ text: string; big?: boolean; id: number } | null>(null);
+  const lastSecRef = useRef<number | null>(null);
+  const secs = c?.timerSeconds ?? 0;
+  const timed = room.timerConfig > 0;
+  useEffect(() => {
+    if (!c || !isDrawerHere || !timed) return;
+    const prev = lastSecRef.current;
+    lastSecRef.current = secs;
+    if (c.phase !== 'PLAYING' || c.padPassGate || prev === null || secs >= prev) return;
+    const elapsed = room.timerConfig - secs;
+    const say = (text: string, big = false) => setAlert({ text, big, id: Date.now() });
+    if (secs <= 3 && secs > 0) {
+      sounds.playTick(secs);
+      say(String(secs), true);
+    } else if (secs === 10) {
+      sounds.playAlarm();
+      say('10 segundos');
+    } else if (secs < 10) {
+      sounds.playTick(secs);
+    } else if (secs === 30) {
+      sounds.playAlarm();
+      say('30 segundos');
+    } else if (elapsed > 0 && elapsed % 60 === 0) {
+      sounds.playPowerup();
+      say(elapsed === 60 ? 'Passou 1 minuto' : `Passaram ${elapsed / 60} minutos`);
+    }
+  }, [secs]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Tempo acabou: "Tempo!" na tela
+  const phaseRef = useRef(c?.phase);
+  useEffect(() => {
+    const before = phaseRef.current;
+    phaseRef.current = c?.phase;
+    if (before === 'PLAYING' && c && c.phase !== 'PLAYING' && isDrawerHere) {
+      sounds.playBuzzer();
+      setAlert({ text: 'Tempo!', big: true, id: Date.now() });
+    }
+  }, [c?.phase]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!alert) return;
+    const t = window.setTimeout(() => setAlert(null), alert.big ? 900 : 1600);
+    return () => window.clearTimeout(t);
+  }, [alert]);
 
   // Avisa a TV que o celular prancheta esta conectado na sala.
   // Dispara apos breve atraso para garantir que os canais de sincronizacao da sala pai ja montaram.
@@ -82,6 +136,18 @@ export const ComoEuPintoController: React.FC<ComoEuPintoControllerProps> = ({
 
   const content = (
     <div data-testid="controller-pinto-view" className="rdb-pad">
+      {intro && (
+        <div className="rdb-pad-intro" data-testid="controller-pinto-intro" onClick={() => setIntro(null)}>
+          <span>Desenhe</span>
+          <strong>{intro}</strong>
+          <small>Sem letras e sem números · toque para fechar</small>
+        </div>
+      )}
+      {alert && (
+        <div key={alert.id} className={'rdb-pad-alert' + (alert.big ? ' is-big' : '')} data-testid="controller-pinto-alert">
+          {alert.text}
+        </div>
+      )}
       <header className="rdb-pad-head">
         <div className="rdb-pad-head-left">
           <span className="rdb-pad-badge">
@@ -89,18 +155,8 @@ export const ComoEuPintoController: React.FC<ComoEuPintoControllerProps> = ({
           </span>
           {c.phase === 'PLAYING' && isDrawer && !c.padPassGate && (
             <strong data-testid="controller-pinto-word" className="rdb-pad-word">
-              {localWordHidden ? 'Palavra oculta' : c.words[c.currentIndex]}
+              {c.words[c.currentIndex]}
             </strong>
-          )}
-          {c.phase === 'PLAYING' && isDrawer && !c.padPassGate && (
-            <button
-              type="button"
-              aria-label={localWordHidden ? 'Mostrar palavra' : 'Ocultar palavra'}
-              onClick={() => setLocalWordHidden((v) => !v)}
-              className="rdb-pad-icon-btn"
-            >
-              {localWordHidden ? <Eye size={16} /> : <EyeOff size={16} />}
-            </button>
           )}
         </div>
         <div className="rdb-pad-head-right">
@@ -112,7 +168,7 @@ export const ComoEuPintoController: React.FC<ComoEuPintoControllerProps> = ({
           )}
           <span
             data-testid="controller-pinto-timer"
-            className={`rdb-pad-clock ${c.timerSeconds <= 10 && c.phase === 'PLAYING' ? 'is-hot' : ''}`}
+            className={`rdb-pad-clock is-big ${c.timerSeconds <= 10 && c.phase === 'PLAYING' ? 'is-hot' : ''} ${c.timerSeconds <= 30 && c.phase === 'PLAYING' ? 'is-warn' : ''}`}
           >
             {clockLabel}
           </span>
@@ -231,6 +287,7 @@ export const ComoEuPintoController: React.FC<ComoEuPintoControllerProps> = ({
               lineWidth={tool === 'eraser' ? Math.max(0.018, lineWidth * 1.4) : lineWidth}
               opacity={activeOpacity}
               backgroundColor={PINTO_PAPER_COLOR}
+              aspect={PINTO_ASPECT}
               onLiveStroke={(stroke) => update((prev) => setLiveStroke(prev, stroke))}
               onStroke={(stroke) => update((prev) => pintoAddStroke(prev, stroke))}
             />
@@ -328,6 +385,7 @@ export const ComoEuPintoController: React.FC<ComoEuPintoControllerProps> = ({
               liveStroke={c.liveStroke}
               editable={false}
               backgroundColor={PINTO_PAPER_COLOR}
+              aspect={PINTO_ASPECT}
             />
           </div>
         </section>
