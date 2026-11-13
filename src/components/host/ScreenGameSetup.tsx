@@ -185,11 +185,26 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
     const showRounds = getRulesetPreset(room.activeGame, 'show')?.rounds;
     return room.maxRounds && ([3, 5, 7, 10].includes(room.maxRounds) || room.maxRounds === showRounds) ? room.maxRounds : 5;
   });
-  const [customConfig, setCustomConfig] = useState<GameCustomConfig>({
-    ...DEFAULT_GAME_CUSTOM_CONFIG,
-    ...(room.customConfig || {}),
-    autoRandomSubtheme: true
+  const [customConfig, setCustomConfig] = useState<GameCustomConfig>(() => {
+    const savedSource = typeof window !== 'undefined' ? localStorage.getItem('rb_content_source') : null;
+    const globalSource =
+      savedSource === 'auto' || savedSource === 'bank' || savedSource === 'ai'
+        ? savedSource
+        : room.customConfig?.contentSource || DEFAULT_GAME_CUSTOM_CONFIG.contentSource;
+    return {
+      ...DEFAULT_GAME_CUSTOM_CONFIG,
+      ...(room.customConfig || {}),
+      contentSource: globalSource,
+      autoRandomSubtheme: true
+    };
   });
+
+  useEffect(() => {
+    const nextSource = room.customConfig?.contentSource;
+    if (nextSource && nextSource !== customConfig.contentSource) {
+      setCustomConfig((prev) => ({ ...prev, contentSource: nextSource }));
+    }
+  }, [room.customConfig?.contentSource, customConfig.contentSource]);
 
   const [showMissingPlayersWarning, setShowMissingPlayersWarning] = useState(false);
   // UX-03: limites de jogadores por jogo (GAME_LIMITS)

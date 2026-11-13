@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { ArrowLeft, RotateCcw, X, ChevronDown, Volume2, VolumeX, QrCode, History, Trophy, Settings, Copy, Check, Sparkles, Tv, Smartphone, KeyRound, Users, Menu } from '../rdb/rdbIcons';
 import { RdbLogo } from '../rdb/RdbLogo';
 import { isCazeFamily, nextTheme as nextThemeOf, themeBadge, cazeArtSrc } from '../../utils/themeUtils';
-import { GameRoom, VisualTheme, TeamId } from '../../types/game';
+import { GameRoom, VisualTheme, TeamId, GameCustomConfig } from '../../types/game';
 import { sounds } from '../../utils/soundEffects';
 import { DynamicQRCode } from '../DynamicQRCode';
 import { GlobalStats } from '../GlobalStats';
@@ -35,6 +35,8 @@ interface WindowWrapperViewProps {
   handleToggleMute: () => void;
   muted: boolean;
   onSetVisualTheme: ((theme: VisualTheme) => void) | undefined;
+  contentSource: NonNullable<GameCustomConfig['contentSource']>;
+  onSetContentSource: ((source: NonNullable<GameCustomConfig['contentSource']>) => void) | undefined;
   onToggleTvMode: (() => void) | undefined;
   isTvMode: boolean;
   onSwitchToControllerMode: (() => void) | undefined;
@@ -83,6 +85,8 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
   handleToggleMute,
   muted,
   onSetVisualTheme,
+  contentSource,
+  onSetContentSource,
   onToggleTvMode,
   isTvMode,
   onSwitchToControllerMode,
@@ -614,6 +618,8 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
                   <WindowMenuPanel
                     visualTheme={visualTheme}
                     onSetVisualTheme={onSetVisualTheme}
+                    contentSource={contentSource}
+                    onSetContentSource={onSetContentSource}
                     muted={muted}
                     handleToggleMute={handleToggleMute}
                     setClearedMemoryNotice={setClearedMemoryNotice}

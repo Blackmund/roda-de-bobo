@@ -215,6 +215,25 @@ export default function App() {
     }));
   };
 
+  type ContentSource = NonNullable<GameCustomConfig['contentSource']>;
+  const [contentSource, setContentSource] = useState<ContentSource>(() => {
+    const saved = localStorage.getItem('rb_content_source');
+    if (saved === 'auto' || saved === 'bank' || saved === 'ai') return saved;
+    return 'auto';
+  });
+
+  const handleSetContentSource = (source: ContentSource) => {
+    setContentSource(source);
+    localStorage.setItem('rb_content_source', source);
+    broadcastState((prev) => ({
+      ...prev,
+      customConfig: {
+        ...(prev.customConfig || DEFAULT_GAME_CUSTOM_CONFIG),
+        contentSource: source
+      }
+    }));
+  };
+
   useEffect(() => {
     if (typeof document !== 'undefined') {
       document.documentElement.setAttribute('data-theme', visualTheme);
@@ -363,12 +382,12 @@ export default function App() {
   useEffect(() => {
     if (room.screen === 'game-over') {
       sounds.playFanfare();
-      confetti({ particleCount: 120, spread: 90, origin: { y: 0.5 } });
-      const secondBurst = window.setTimeout(() => {
-        confetti({ particleCount: 70, angle: 60, spread: 65, origin: { x: 0.15, y: 0.6 } });
-        confetti({ particleCount: 70, angle: 120, spread: 65, origin: { x: 0.85, y: 0.6 } });
-      }, 450);
-      return () => clearTimeout(secondBurst);
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        confetti({ particleCount: 48, spread: 65, ticks: 90,
+          colors: ['#17b8b8', '#e6194b', '#f5f2eb'],
+          origin: { y: 0.4 }, disableForReducedMotion: true });
+      }
+      return () => { confetti.reset(); };
     } else {
       setShareFeedback({ status: 'idle' });
       setIsCompareModalOpen(false);
@@ -417,7 +436,8 @@ export default function App() {
         ...DEFAULT_GAME_CUSTOM_CONFIG,
         ...(room.customConfig || {}),
         difficulty: effectiveDifficulty as any,
-        ...(customConfigOverride || {})
+        ...(customConfigOverride || {}),
+        contentSource
       };
 
       const generated = await generateRoundContent(
@@ -715,6 +735,8 @@ export default function App() {
         onResetStats={handleResetSessionStats}
         visualTheme={visualTheme}
         onSetVisualTheme={handleSetVisualTheme}
+        contentSource={contentSource}
+        onSetContentSource={handleSetContentSource}
         onOpenJoinRoomModal={() => setIsJoinRoomOpen(true)}
         isLoadingRound={isLoadingRound}
         onAddPlayer={addLobbyPlayer}
@@ -915,7 +937,7 @@ export default function App() {
                     maxRounds: cfg.rounds,
                     difficulty: cfg.difficulty,
                     connectionMode: cfg.connectionMode,
-                    customConfig: cfg.customConfig
+                    customConfig: { ...cfg.customConfig, contentSource }
                   }));
                 }}
                 onStartDirectly={(cfg) => {
@@ -927,7 +949,7 @@ export default function App() {
                       maxRounds: cfg.rounds,
                       difficulty: cfg.difficulty,
                       connectionMode: cfg.connectionMode,
-                      customConfig: cfg.customConfig
+                      customConfig: { ...cfg.customConfig, contentSource }
                     }));
                     if (cfg.connectionMode === 'multi') {
                       setViewMode('controller');
@@ -998,3 +1020,4 @@ export default function App() {
     </div>
   );
 }
+

@@ -9,8 +9,8 @@ import { sounds } from '../../../utils/soundEffects';
  * - `ai`: so conteudo gerado pela IA (cai no banco se a IA estiver fora do ar).
  */
 const OPTIONS: Array<{ value: NonNullable<GameCustomConfig['contentSource']>; label: string; hint: string }> = [
-  { value: 'auto', label: 'MISTO', hint: 'Banco pronto + IA, sem repetir' },
-  { value: 'bank', label: 'SÓ BANCO PRONTO', hint: 'Itens do programa e revisados; não chama a IA' },
+  { value: 'auto', label: 'MISTO', hint: 'Banco de perguntas + IA, sem repetir' },
+  { value: 'bank', label: 'BANCO DE PERGUNTAS', hint: 'Só perguntas do acervo, sem chamar a IA' },
   { value: 'ai', label: 'SÓ IA', hint: 'Conteúdo novo gerado na hora' }
 ];
 

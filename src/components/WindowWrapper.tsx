@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { RodaDeBoboOfficialBadge } from './RodaIcons';
 import { isCazeFamily, nextTheme as nextThemeOf, themeBadge, cazeArtSrc } from '../utils/themeUtils';
-import { GameRoom, GameId, VisualTheme, TeamId } from '../types/game';
+import { GameRoom, GameId, VisualTheme, TeamId, GameCustomConfig } from '../types/game';
 import { getResumableMatchScore } from '../utils/sessionPersistence';
 import { sounds } from '../utils/soundEffects';
 import { DynamicQRCode } from './DynamicQRCode';
@@ -74,6 +74,8 @@ interface WindowWrapperProps {
   varActiveFlash?: boolean;
   visualTheme?: VisualTheme;
   onSetVisualTheme?: (theme: VisualTheme) => void;
+  contentSource?: NonNullable<GameCustomConfig['contentSource']>;
+  onSetContentSource?: (source: NonNullable<GameCustomConfig['contentSource']>) => void;
   onOpenJoinRoomModal?: () => void;
   isLoadingRound?: boolean;
   onAddPlayer?: (options: {
@@ -110,6 +112,8 @@ const WindowWrapperComponent: React.FC<WindowWrapperProps> = ({
   varActiveFlash = false,
   visualTheme = 'neon',
   onSetVisualTheme,
+  contentSource = 'auto',
+  onSetContentSource,
   onOpenJoinRoomModal,
   isLoadingRound = false,
   onAddPlayer,
@@ -241,7 +245,7 @@ const WindowWrapperComponent: React.FC<WindowWrapperProps> = ({
     }
   };
 
-  return <WindowWrapperView windowContainerRef={windowContainerRef} varActiveFlash={varActiveFlash} visualTheme={visualTheme} className={className} showBackButton={showBackButton} onBack={onBack} handleRequestBack={handleRequestBack} room={room} title={title} onOpenJoinRoomModal={onOpenJoinRoomModal} setActiveDockModal={setActiveDockModal} activeDockModal={activeDockModal} onUndoVar={onUndoVar} canUndoVar={canUndoVar} resumableRoom={resumableRoom} onResumeGame={onResumeGame} openResumeOverlay={openResumeOverlay} scheduleCloseResumeOverlay={scheduleCloseResumeOverlay} isResumeHoverOpen={isResumeHoverOpen} handleToggleMute={handleToggleMute} muted={muted} onSetVisualTheme={onSetVisualTheme} onToggleTvMode={onToggleTvMode} isTvMode={isTvMode} onSwitchToControllerMode={onSwitchToControllerMode} canCloseScreen={canCloseScreen} handleRequestClose={handleRequestClose} resumableGameTitle={resumableGameTitle} resumableRoundText={resumableRoundText} resumableScores={resumableScores} setIsResumeHoverOpen={setIsResumeHoverOpen} onDismissResume={onDismissResume} contentScrollRef={contentScrollRef} children={children} playUrl={playUrl} handleCopyPlayUrl={handleCopyPlayUrl} copiedUrl={copiedUrl} onAddPlayer={onAddPlayer} onRemovePlayer={onRemovePlayer} onResetStats={onResetStats} setClearedMemoryNotice={setClearedMemoryNotice} clearedMemoryNotice={clearedMemoryNotice} isExitConfirmOpen={isExitConfirmOpen} setIsExitConfirmOpen={setIsExitConfirmOpen} handleConfirmExit={handleConfirmExit} />;
+  return <WindowWrapperView windowContainerRef={windowContainerRef} varActiveFlash={varActiveFlash} visualTheme={visualTheme} className={className} showBackButton={showBackButton} onBack={onBack} handleRequestBack={handleRequestBack} room={room} title={title} onOpenJoinRoomModal={onOpenJoinRoomModal} setActiveDockModal={setActiveDockModal} activeDockModal={activeDockModal} onUndoVar={onUndoVar} canUndoVar={canUndoVar} resumableRoom={resumableRoom} onResumeGame={onResumeGame} openResumeOverlay={openResumeOverlay} scheduleCloseResumeOverlay={scheduleCloseResumeOverlay} isResumeHoverOpen={isResumeHoverOpen} handleToggleMute={handleToggleMute} muted={muted} onSetVisualTheme={onSetVisualTheme} contentSource={contentSource} onSetContentSource={onSetContentSource} onToggleTvMode={onToggleTvMode} isTvMode={isTvMode} onSwitchToControllerMode={onSwitchToControllerMode} canCloseScreen={canCloseScreen} handleRequestClose={handleRequestClose} resumableGameTitle={resumableGameTitle} resumableRoundText={resumableRoundText} resumableScores={resumableScores} setIsResumeHoverOpen={setIsResumeHoverOpen} onDismissResume={onDismissResume} contentScrollRef={contentScrollRef} children={children} playUrl={playUrl} handleCopyPlayUrl={handleCopyPlayUrl} copiedUrl={copiedUrl} onAddPlayer={onAddPlayer} onRemovePlayer={onRemovePlayer} onResetStats={onResetStats} setClearedMemoryNotice={setClearedMemoryNotice} clearedMemoryNotice={clearedMemoryNotice} isExitConfirmOpen={isExitConfirmOpen} setIsExitConfirmOpen={setIsExitConfirmOpen} handleConfirmExit={handleConfirmExit} />;
 };
 
 export const WindowWrapper = React.memo(WindowWrapperComponent);

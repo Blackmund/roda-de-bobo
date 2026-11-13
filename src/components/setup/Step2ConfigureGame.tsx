@@ -106,12 +106,6 @@ const CT_MODE_NOTES: Record<CTMode, string[]> = {
 const DIFFICULTY_LIST: GameDifficulty[] = ['facil', 'medio', 'dificil', 'impossivel'];
 
 /** Jogos que tem ajustes exclusivos (abrem na janela "Mais ajustes deste jogo"). */
-/** DAD-05: de onde vem o conteudo das perguntas. */
-const CONTENT_SOURCES: Array<{ value: NonNullable<GameCustomConfig['contentSource']>; label: string; hint: string }> = [
-  { value: 'auto', label: 'Misto', hint: 'Banco pronto + IA, sem repetir' },
-  { value: 'bank', label: 'Só banco pronto', hint: 'Itens do programa e revisados; não chama a IA' },
-  { value: 'ai', label: 'Só IA', hint: 'Conteúdo novo gerado na hora' }
-];
 
 
 export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(({
@@ -395,25 +389,6 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
               ))}
             </div>
           </div>
-
-          {(!usesLocalContent(activeGame) || activeGame === 'onde-estou') && !isPV && (
-            <div className="rdb-opt" data-testid="content-source-selector">
-              <span className="rdb-opt-label">Perguntas</span>
-              <div className="rdb-opt-choices">
-                {CONTENT_SOURCES.map((o) => (
-                  <Seg
-                    key={o.value}
-                    testid={'content-source-btn-' + o.value}
-                    on={(customConfig.contentSource ?? 'auto') === o.value}
-                    onClick={() => onChangeCustomConfig((prev) => ({ ...prev, contentSource: o.value }))}
-                    title={o.hint}
-                  >
-                    {o.label}
-                  </Seg>
-                ))}
-              </div>
-            </div>
-          )}
 
           {extraRows.map((row) => (
             <div className="rdb-opt" key={row.id} data-testid={'setup-extra-' + row.id}>

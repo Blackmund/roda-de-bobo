@@ -1,12 +1,22 @@
 import React from 'react';
-import { RotateCcw, Volume2, VolumeX, Check, Sparkles } from '../rdb/rdbIcons';
-import { VisualTheme } from '../../types/game';
+import { RotateCcw, Volume2, VolumeX, Check, Sparkles, Settings } from '../rdb/rdbIcons';
+import { VisualTheme, GameCustomConfig } from '../../types/game';
 import { sounds } from '../../utils/soundEffects';
 import { clearUsedRoundSignatures } from '../../utils/aiGameGenerator';
+
+type ContentSource = NonNullable<GameCustomConfig['contentSource']>;
+
+const CONTENT_SOURCE_OPTIONS: Array<{ value: ContentSource; label: string; hint: string }> = [
+  { value: 'auto', label: 'MISTO', hint: 'Banco de perguntas + IA, sem repetir' },
+  { value: 'bank', label: 'BANCO DE PERGUNTAS', hint: 'Só perguntas do acervo, sem chamar a IA' },
+  { value: 'ai', label: 'SÓ IA', hint: 'Perguntas inéditas geradas na hora' }
+];
 
 interface WindowMenuPanelProps {
   visualTheme: VisualTheme;
   onSetVisualTheme: ((theme: VisualTheme) => void) | undefined;
+  contentSource: ContentSource;
+  onSetContentSource: ((source: ContentSource) => void) | undefined;
   muted: boolean;
   handleToggleMute: () => void;
   setClearedMemoryNotice: React.Dispatch<React.SetStateAction<boolean>>;
@@ -16,11 +26,14 @@ interface WindowMenuPanelProps {
 export const WindowMenuPanel: React.FC<WindowMenuPanelProps> = ({
   visualTheme,
   onSetVisualTheme,
+  contentSource,
+  onSetContentSource,
   muted,
   handleToggleMute,
   setClearedMemoryNotice,
   clearedMemoryNotice
 }) => {
+  const activeSourceOption = CONTENT_SOURCE_OPTIONS.find((o) => o.value === contentSource) || CONTENT_SOURCE_OPTIONS[0];
   return (
                 <div className="space-y-4">
                   {/* Seção 1: Seletor de Modo Visual (4 Temas em Grid Horizontal que verticaliza conforme a tela diminui) */}
@@ -213,7 +226,62 @@ export const WindowMenuPanel: React.FC<WindowMenuPanelProps> = ({
                     </div>
                   </div>
 
-                  {/* Seção 2: Linha Horizontal de Áudio e Memória de IA (Grid 2 Colunas no Desktop) */}
+                  {/* Seção 2: Origem das Perguntas (vale para todos os jogos) */}
+                  <div className="bg-white/[0.03] border border-white/10 p-3.5 sm:p-4 space-y-3" data-testid="global-content-source-panel">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-cyan-950/70 border border-cyan-400/50 text-[#17B8B8]">
+                          <Settings size={16} />
+                        </div>
+                        <div>
+                          <h3 className="font-anton text-sm sm:text-base uppercase tracking-wider text-white leading-none">
+                            ORIGEM DAS PERGUNTAS
+                          </h3>
+                          <p className="text-[11px] text-slate-400 font-mono-code mt-0.5">
+                            Define de onde vêm as perguntas em todos os jogos
+                          </p>
+                        </div>
+                      </div>
+                      <span className="px-2.5 py-0.5 text-[10px] font-mono-code font-bold uppercase bg-[#17B8B8] text-black">
+                        {activeSourceOption.label}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                      {CONTENT_SOURCE_OPTIONS.map((o) => {
+                        const active = contentSource === o.value;
+                        return (
+                          <button
+                            key={o.value}
+                            type="button"
+                            data-testid={'content-source-btn-' + o.value}
+                            aria-pressed={active}
+                            onClick={() => {
+                              sounds.playTick();
+                              onSetContentSource?.(o.value);
+                            }}
+                            className={`p-3 border text-left flex flex-col justify-between transition-all cursor-pointer ${
+                              active
+                                ? 'border-[#17B8B8] bg-[#17B8B8]/15 ring-2 ring-[#17B8B8]'
+                                : 'border-white/10 bg-black/40 hover:border-[#17B8B8]/60 hover:bg-white/[0.04]'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className={`font-anton text-sm uppercase tracking-wide ${active ? 'text-[#17B8B8]' : 'text-white'}`}>
+                                {o.label}
+                              </span>
+                              {active && <Check size={14} className="text-[#17B8B8] shrink-0" />}
+                            </div>
+                            <p className="mt-2 pt-2 border-t border-white/10 text-[11px] font-mono-code text-slate-300 leading-snug">
+                              {o.hint}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Seção 3: Linha Horizontal de Áudio e Memória de IA (Grid 2 Colunas no Desktop) */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {/* Painel de Áudio */}
                     <div className="bg-white/[0.03] border border-white/10 p-3.5 flex flex-col justify-between gap-3">

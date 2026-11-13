@@ -49,10 +49,10 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
               {SHOW_DEV_TOOLS && room.roundSource && room.activeGame !== 'com-terra' && (
                 <div
                   data-testid="round-source-badge"
-                  title={room.roundSource === 'ai' ? 'Conteúdo desta rodada gerado pela IA (Gemini)' : 'Conteúdo desta rodada vem do banco pronto do jogo'}
-                  className="pointer-events-none absolute left-1.5 bottom-0.5 z-10 rounded border border-white/15 bg-black/50 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-300"
+                  title={room.roundSource === 'ai' ? 'Conteúdo desta rodada gerado pela IA (Gemini)' : 'Conteúdo desta rodada vem do banco de perguntas do jogo'}
+                  className="pointer-events-none self-end shrink-0 border border-white/15 px-2 py-1 font-mono text-xs uppercase tracking-wider text-slate-300"
                 >
-                  {room.roundSource === 'ai' ? '🤖 IA' : '📚 Banco pronto'}
+                  {room.roundSource === 'ai' ? 'Conteúdo: IA' : 'Conteúdo: banco'}
                 </div>
               )}
               {room.activeGame && TURN_BAR_GAMES.includes(room.activeGame) && (
