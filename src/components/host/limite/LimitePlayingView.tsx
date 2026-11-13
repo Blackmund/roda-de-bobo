@@ -109,27 +109,45 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
     setRevealLanded(false);
     setRevealSettled(false);
 
-    const durationMs = 1850;
-    const holdAfterLandMs = 650;
     const decimals = Number.isInteger(exactValue) ? 0 : (exactValue.toString().split('.')[1]?.length ?? 1);
+    const isIntegerSuspense = decimals === 0 && Math.abs(exactValue) >= 6;
+    const tailSteps = isIntegerSuspense ? Math.min(4, Math.max(3, Math.round(Math.abs(exactValue) * 0.05))) : 0;
+    const sign = exactValue < 0 ? -1 : 1;
+    const fastTarget = isIntegerSuspense ? exactValue - sign * tailSteps : exactValue;
+    const fastDurationMs = isIntegerSuspense ? 1050 : 2000;
+    const tailDurationMs = isIntegerSuspense ? 1350 : 0;
+    const totalDurationMs = fastDurationMs + tailDurationMs;
+    const holdAfterLandMs = 600;
     let rafId = 0;
     let settleTimer = 0;
     const startTime = performance.now();
 
     const step = (now: number) => {
-      const progress = Math.min(1, (now - startTime) / durationMs);
-      // Começa muito rápido e desacelera bem devagar nos últimos números para dar suspense
-      const eased = 1 - Math.pow(1 - progress, 5);
-      const current = exactValue * eased;
-      const rounded = decimals === 0 ? Math.round(current) : Number(current.toFixed(decimals));
+      const elapsed = now - startTime;
 
-      if (progress >= 1) {
+      if (elapsed >= totalDurationMs) {
         setAnimatedValue(exactValue);
         setRevealLanded(true);
         settleTimer = window.setTimeout(() => setRevealSettled(true), holdAfterLandMs);
         return;
       }
-      setAnimatedValue(rounded);
+
+      if (isIntegerSuspense && elapsed >= fastDurationMs) {
+        // Reta final: passa pelos últimos números cada vez mais devagar antes de cravar no exato
+        const tailProgress = (elapsed - fastDurationMs) / tailDurationMs;
+        const tailCount = Math.max(1, tailSteps - 1);
+        const stepIndex = Math.min(
+          tailCount - 1,
+          Math.floor(Math.pow(tailProgress, 0.62) * tailCount)
+        );
+        setAnimatedValue(fastTarget + sign * (stepIndex + 1));
+      } else {
+        const fastProgress = Math.min(1, elapsed / fastDurationMs);
+        const eased = 1 - Math.pow(1 - fastProgress, 3);
+        const current = fastTarget * eased;
+        setAnimatedValue(decimals === 0 ? Math.round(current) : Number(current.toFixed(decimals)));
+      }
+
       rafId = requestAnimationFrame(step);
     };
 
