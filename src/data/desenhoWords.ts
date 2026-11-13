@@ -5,6 +5,8 @@
  * ações e símbolos do futebol. Palavra do piloto do programa: Benfica (águia); `origem: 'programa'` marca o que foi
  * citado no programa (analise/perguntas/perguntas.json). O resto é lista autoral.
  */
+
+import { relatedToAny } from '../utils/similarText';
 export interface DesenhoWord {
   palavra: string;
   categoria: string;
@@ -167,15 +169,24 @@ function shuffle<T>(items: T[], rng: () => number): T[] {
 export function drawDesenhoWords(count: number, used: Set<string> = new Set(), rng: () => number = Math.random): DesenhoWord[] {
   let pool = DESENHO_WORDS.filter((x) => !used.has(normalizeDesenhoWord(x.palavra)));
   if (pool.length < count) pool = [...DESENHO_WORDS];
+  // prefere palavras que nao lembrem as ja usadas (mantem o banco todo se faltar opcao)
+  const usedList = Array.from(used);
+  const notNear = pool.filter((x) => !relatedToAny(x.palavra, usedList));
+  if (notNear.length >= count * 2) pool = notNear;
   const shuffled = shuffle(pool, rng);
+  const pickedTexts = (list: Array<{ palavra: string }>) => list.map((p) => p.palavra);
   const picked: DesenhoWord[] = [];
   const cats = new Set<string>();
   for (const x of shuffled) {
     if (picked.length >= count) break;
-    if (!cats.has(x.categoria)) {
+    if (!cats.has(x.categoria) && !relatedToAny(x.palavra, pickedTexts(picked))) {
       picked.push(x);
       cats.add(x.categoria);
     }
+  }
+  for (const x of shuffled) {
+    if (picked.length >= count) break;
+    if (!picked.includes(x) && !relatedToAny(x.palavra, pickedTexts(picked))) picked.push(x);
   }
   for (const x of shuffled) {
     if (picked.length >= count) break;

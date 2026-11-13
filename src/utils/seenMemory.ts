@@ -13,6 +13,8 @@
  * Sem localStorage (modo privado, teste), funciona so em memoria.
  */
 
+import { rememberRecent, isNearRecent, isRelated } from './similarText';
+
 const SEEN_KEY = 'rb_seen_v1';
 const RECENT_KEY = 'rb_seen_recent_v1';
 export const SEEN_MAX = 30000;
@@ -223,14 +225,26 @@ export function contentKeys(gameId: string, data: any): string[] {
   return [];
 }
 
+/** Textos curtos que identificam o tema da rodada, para comparar com os parecidos (palavra-alvo, categoria). */
+function themeTexts(gameId: string, data: any): string[] {
+  if (gameId === 'proibido' && Array.isArray(data)) return data.map((c: any) => String(c?.palavra_alvo ?? '')).filter(Boolean);
+  if (gameId === 'duvido' && data?.categoria_secreta) return [String(data.categoria_secreta)];
+  return [];
+}
+
 export function markContentSeen(gameId: string, data: any): void {
   for (const k of contentKeys(gameId, data)) markSeen(k);
+  for (const t of themeTexts(gameId, data)) rememberRecent(gameId, t);
 }
 
 /** Algum item da rodada ja foi visto (ou e quase igual a um recente)? Proibido: so palavra-alvo repetida conta (sem fuzzy). */
 export function contentRepeated(gameId: string, data: any): boolean {
   const keys = contentKeys(gameId, data);
   if (keys.length === 0) return false;
-  if (gameId === 'proibido') return keys.some((k) => isSeen(k));
+  if (gameId === 'proibido' || gameId === 'duvido') {
+    const themes = themeTexts(gameId, data);
+    const among = themes.some((t, i) => themes.some((u, j) => i < j && isRelated(t, u)));
+    return keys.some((k) => isSeen(k)) || among || themes.some((t) => isNearRecent(gameId, t));
+  }
   return keys.some((k) => looksRepeated(k));
 }

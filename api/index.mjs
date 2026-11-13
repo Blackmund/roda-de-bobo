@@ -78083,6 +78083,65 @@ Retorne APENAS um JSON v\xE1lido no formato:
 }
 `;
 
+// src/utils/similarText.ts
+var STOP = /* @__PURE__ */ new Set([
+  "de",
+  "do",
+  "da",
+  "dos",
+  "das",
+  "e",
+  "o",
+  "a",
+  "os",
+  "as",
+  "um",
+  "uma",
+  "em",
+  "no",
+  "na",
+  "nos",
+  "nas",
+  "para",
+  "por",
+  "com",
+  "sem",
+  "ao",
+  "aos",
+  "que",
+  "qual",
+  "quais",
+  "ou"
+]);
+function plain(text) {
+  return String(text ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+}
+function keyTokens(text) {
+  return plain(text).split(" ").filter((t2) => t2 && !STOP.has(t2)).map((t2) => t2.length > 3 && t2.endsWith("s") ? t2.slice(0, -1) : t2);
+}
+function isRelated(a, b) {
+  const pa = plain(a);
+  const pb = plain(b);
+  if (!pa || !pb) return false;
+  if (pa === pb) return true;
+  const ta = keyTokens(a);
+  const tb = keyTokens(b);
+  if (ta.length === 0 || tb.length === 0) return false;
+  const [small, big] = ta.length <= tb.length ? [ta, tb] : [tb, ta];
+  if (small.every((t2) => big.includes(t2))) return true;
+  if (ta.some((x2) => x2.length >= 4 && tb.includes(x2))) return true;
+  for (const x2 of ta) {
+    for (const y of tb) {
+      const [s2, l] = x2.length <= y.length ? [x2, y] : [y, x2];
+      if (s2.length >= 5 && l.startsWith(s2) && l.length - s2.length <= 4) return true;
+    }
+  }
+  const ca = pa.replace(/ /g, "");
+  const cb = pb.replace(/ /g, "");
+  const [cs, cl] = ca.length <= cb.length ? [ca, cb] : [cb, ca];
+  return cs.length >= 5 && cl.includes(cs);
+}
+
 // server.ts
 var PERMISSIVE_SAFETY_SETTINGS = [
   {
@@ -78998,6 +79057,10 @@ ${buildTemOuNaoTemPrompt(
       for (const card of parsed) {
         const target = sanitizeCleanGameText(String(card?.palavra_alvo || "")).toUpperCase();
         if (!target || seenInBatch.has(target) || blockedTargets.has(target)) {
+          continue;
+        }
+        const nearUsed = (Array.isArray(excludeProibidoWords) ? excludeProibidoWords : []).some((w) => isRelated(target, String(w || "")));
+        if (nearUsed || Array.from(seenInBatch).some((w) => isRelated(target, w))) {
           continue;
         }
         seenInBatch.add(target);

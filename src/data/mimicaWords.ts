@@ -6,6 +6,8 @@
  * - `origem: 'autoral'`: lista própria do projeto, escrita para o formato (mímica de 3 palavras em 1min30).
  *   São palavras comuns, sem o objetivo de reproduzir o conteúdo exato do programa.
  */
+
+import { relatedToAny } from '../utils/similarText';
 export interface MimicaWord {
   palavra: string;
   categoria: string;
@@ -324,14 +326,24 @@ export function drawMimicaWords(count: number, options: DrawMimicaOptions = {}):
     (m) => !used.has(normalizeMimicaWord(m.palavra)) && (!options.difficulty || m.dificuldade !== 'dificil' || options.difficulty === 'dificil')
   );
   if (pool.length < count) pool = [...MIMICA_WORDS];
+  // prefere palavras que nao lembrem as ja usadas (mantem o banco todo se faltar opcao)
+  const usedList = Array.from(used);
+  const notNear = pool.filter((x) => !relatedToAny(x.palavra, usedList));
+  if (notNear.length >= count * 2) pool = notNear;
   const shuffled = shuffle(pool, rng);
+  const pickedTexts = (list: Array<{ palavra: string }>) => list.map((p) => p.palavra);
   const picked: MimicaWord[] = [];
   const cats = new Set<string>();
   for (const m of shuffled) {
     if (picked.length >= count) break;
     if (cats.has(m.categoria) && shuffled.some((o) => !cats.has(o.categoria) && !picked.includes(o))) continue;
+    if (relatedToAny(m.palavra, pickedTexts(picked))) continue;
     picked.push(m);
     cats.add(m.categoria);
+  }
+  for (const m of shuffled) {
+    if (picked.length >= count) break;
+    if (!picked.includes(m)) picked.push(m);
   }
   return picked;
 }
