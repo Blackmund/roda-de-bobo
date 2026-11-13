@@ -1,16 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
-import {
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-  Eraser,
-  Eye,
-  EyeOff,
-  Infinity as InfinityIcon,
-  RotateCcw,
-  Undo2
-} from 'lucide-react';
+import { ArrowRight, Check, Clock, Eraser, Eye, EyeOff, Infinity as InfinityIcon, Info, RotateCcw, Swords, Undo2, X as XIcon } from 'lucide-react';
 import { ComoEuPintoState, DrawStroke, GameRoom } from '../../types/game';
 import { sounds } from '../../utils/soundEffects';
 import { isShowRuleset } from '../../config/rulesets';
@@ -88,122 +78,95 @@ export const ScreenComoEuPinto: React.FC<ScreenComoEuPintoProps> = ({ room, onUp
     });
   };
 
+  const clock = free ? 'Livre' : fmt(st.timerSeconds);
+  const clockHot = !free && st.timerSeconds <= 10 && st.phase === 'PLAYING';
+
   return (
-    <div data-testid="pinto-screen" className="gap-2 h-full flex flex-col min-h-0 overflow-y-auto">
-      <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 border border-white/10 bg-[#07080d]/95 px-2 py-1.5">
-        <div className="flex flex-wrap items-center gap-2 min-w-0">
-          <span className="font-anton text-sm md:text-base text-white uppercase tracking-wider">🎨 COMO EU PINTO</span>
-          <span className={`px-2 py-0.5 border font-mono-code text-[10px] font-bold uppercase ${teamMeta.borderClass}`}>
-            {teamMeta.equipeLabel} · {teamName}
-          </span>
+    <div data-testid="pinto-screen" className="rdb-pro">
+      <header className="rdb-lim-bar">
+        <span className="rdb-lim-title">
+          Como eu pinto
+          <span className="rdb-lim-round">{teamName}</span>
           {isShow && (
-            <span
-              data-testid="pinto-show-ruleset-chip"
-              className="px-2 py-0.5 border border-amber-400/60 bg-amber-950/40 text-amber-200 font-mono-code text-[10px] font-bold uppercase"
-            >
-              📺 Programa · sem letras nem números
+            <span data-testid="pinto-show-ruleset-chip" className="rdb-nota-scale" data-tip="Regras do programa: sem letras nem números">
+              programa
             </span>
           )}
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
+        </span>
+        <span className="rdb-lim-rule" tabIndex={0} data-tip="Quem desenha não pode escrever letras ou números nem falar da palavra. Quando o tempo acaba, a dupla rival tenta as palavras que faltaram.">
+          <Info size={16} />
+        </span>
+        <div className="rdb-lim-tools">
+          <span data-testid="pinto-timer-display" className={'rdb-lim-timer' + (clockHot ? ' is-hot' : '')} data-tip={free ? 'Sem limite de tempo' : 'Tempo da rodada'}>
+            {free ? <InfinityIcon size={16} /> : <Clock size={16} />}
+            {clock}
+          </span>
           <button
             type="button"
             data-testid="pinto-toggle-word-btn"
+            className={'rdb-lim-icon' + (st.wordHidden ? ' is-on' : '')}
+            aria-pressed={st.wordHidden}
+            aria-label={st.wordHidden ? 'Mostrar a palavra' : 'Ocultar a palavra'}
+            data-tip={st.wordHidden ? 'Mostrar a palavra na TV' : 'Ocultar a palavra na TV'}
             onClick={() => {
               sounds.playFlip();
               onUpdatePintoState((prev) => ({ ...prev, wordHidden: !prev.wordHidden }));
             }}
-            className="px-2 py-1 border border-amber-400/60 bg-amber-950/60 text-amber-200 font-mono-code text-[10px] font-bold uppercase flex items-center gap-1 cursor-pointer"
           >
-            {st.wordHidden ? <Eye size={12} /> : <EyeOff size={12} />}
-            {st.wordHidden ? 'MOSTRAR PALAVRA' : 'OCULTAR PALAVRA'}
+            {st.wordHidden ? <Eye size={16} /> : <EyeOff size={16} />}
           </button>
-          <div className="border border-[#E6194B]/70 bg-[#07080d] px-2.5 py-0.5 flex items-center gap-1.5">
-            <Clock size={13} className="text-rose-400" />
-            <div
-              data-testid="pinto-timer-display"
-              className={`font-anton text-base md:text-lg leading-none ${
-                free ? 'text-[#17B8B8]' : st.timerSeconds <= 10 ? 'text-[#E6194B]' : 'text-[#F5F2EB]'
-              }`}
-            >
-              {free ? (
-                <span className="flex items-center gap-1 text-xs">
-                  <InfinityIcon className="w-3.5 h-3.5" />
-                  LIVRE
-                </span>
-              ) : (
-                fmt(st.timerSeconds)
-              )}
-            </div>
-          </div>
         </div>
-      </div>
-
-      <div className="shrink-0 grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <div className="border border-cyan-400/60 bg-cyan-950/30 px-3 py-1.5">
-          <div className="font-mono-code text-[10px] text-cyan-300 uppercase font-bold">🎨 Desenha</div>
-          <div data-testid="pinto-drawer-name" className="font-anton text-lg text-white uppercase leading-tight">
-            {drawer?.name || '—'}
-          </div>
-          <div className="font-mono-code text-[10px] text-slate-300">Sem letras, sem números, sem falar</div>
-        </div>
-        <div className="border border-amber-400/60 bg-amber-950/30 px-3 py-1.5">
-          <div className="font-mono-code text-[10px] text-amber-300 uppercase font-bold">🔎 Adivinha</div>
-          <div data-testid="pinto-guesser-name" className="font-anton text-lg text-white uppercase leading-tight">
-            {guesser?.name || '—'}
-          </div>
-          <div className="font-mono-code text-[10px] text-slate-300">Olha o desenho e chuta a palavra</div>
-        </div>
-      </div>
+      </header>
+      <span className="sr-only">
+        <span data-testid="pinto-drawer-name">{drawer?.name || '—'}</span>
+        <span data-testid="pinto-guesser-name">{guesser?.name || '—'}</span>
+      </span>
 
       {st.phase === 'READY' && (
-        <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-3 border border-white/10 bg-black/40 p-4 text-center">
-          <div className="font-anton text-2xl text-white uppercase">Rodada pronta · {st.words.length} palavras</div>
-          <p className="font-mono-code text-xs text-slate-300 max-w-xl">
-            {drawer?.name} desenha a palavra; {guesser?.name} adivinha. Quem desenha não pode escrever letras ou números
-            nem falar da palavra. Quando o tempo acabar, a dupla rival tenta as palavras que faltarem.
+        <section className="rdb-pro-ready">
+          <h2>{st.words.length} palavras</h2>
+          <p>
+            {drawer?.name} desenha e {guesser?.name} adivinha. Sem letras, sem números e sem falar da palavra. Quando o tempo acabar, a dupla rival tenta as que faltarem.
           </p>
-          <button
-            type="button"
-            data-testid="pinto-start-btn"
-            onClick={start}
-            className="px-6 py-2.5 border-2 border-[#E6194B] bg-[#E6194B] hover:bg-rose-500 text-white font-anton text-sm uppercase tracking-wider cursor-pointer"
-          >
-            {free ? '▶ COMEÇAR' : `▶ INICIAR CRONÔMETRO (${room.timerConfig}S)`}
+          <button type="button" data-testid="pinto-start-btn" className="rdb-btn rdb-setup-start" onClick={start}>
+            {free ? 'Começar' : `Iniciar cronômetro (${room.timerConfig}s)`}
           </button>
-        </div>
+        </section>
       )}
 
       {st.phase === 'PLAYING' && (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between font-mono-code text-[11px] text-slate-300 uppercase">
-            <span>
-              Palavra {Math.min(hits + 1, st.words.length)} de {st.words.length}
-            </span>
-            <span data-testid="pinto-score">
-              ✅ {hits} acertos · +{pts.draw} pts nesta rodada
-            </span>
-          </div>
-          <div className="shrink-0 border-2 border-cyan-400/50 bg-[#07080d] px-3 py-2 text-center">
-            {st.wordHidden ? (
-              <span className="font-anton text-2xl text-slate-500 uppercase">🙈 PALAVRA OCULTA</span>
-            ) : (
-              <span data-testid="pinto-current-word" className="font-anton text-3xl md:text-4xl text-[#F5F2EB] uppercase">
-                {st.words[st.currentIndex]}
-              </span>
-            )}
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-full" style={{ maxWidth: "calc(44vh * 4 / 3)" }}>
-              <DrawingCanvas
-                testId="pinto-canvas"
-                strokes={st.strokes}
-                editable
-                color={color}
-                onStroke={onStroke}
-              />
+        <>
+          <div className="rdb-pro-progress">
+            <div className="rdb-pro-dots">
+              {st.words.map((_, i) => (
+                <i key={i} className={st.outcomes[i] === 'correct' ? 'is-hit' : i === st.currentIndex ? 'is-now' : ''}>
+                  {st.outcomes[i] === 'correct' ? <Check size={14} strokeWidth={4} /> : i + 1}
+                </i>
+              ))}
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-2">
+            <div className="rdb-pro-counts" data-testid="pinto-score">
+              <span data-tip="Acertos">
+                <Check size={16} /> {hits}
+              </span>
+              <span data-tip="Pontos nesta rodada">+{pts.draw}</span>
+            </div>
+          </div>
+
+          <section className="rdb-word is-slim">
+            {st.wordHidden ? (
+              <span className="rdb-word-hidden">Palavra oculta</span>
+            ) : (
+              <div data-testid="pinto-current-word" className="rdb-word-text">
+                {st.words[st.currentIndex]}
+              </div>
+            )}
+          </section>
+
+          <div className="rdb-pinto-board">
+            <div className="rdb-pinto-canvas">
+              <DrawingCanvas testId="pinto-canvas" strokes={st.strokes} editable color={color} onStroke={onStroke} />
+            </div>
+            <div className="rdb-pinto-tools">
               {PINTO_COLORS.map((c) => (
                 <button
                   key={c}
@@ -212,141 +175,120 @@ export const ScreenComoEuPinto: React.FC<ScreenComoEuPintoProps> = ({ room, onUp
                   data-testid={`pinto-color-${c.slice(1)}`}
                   onClick={() => setColor(c)}
                   style={{ backgroundColor: c }}
-                  className={`w-7 h-7 border-2 cursor-pointer ${color === c ? 'border-white scale-110' : 'border-black/60'}`}
+                  className={color === c ? 'is-on' : ''}
                 />
               ))}
-              <button
-                type="button"
-                data-testid="pinto-undo-btn"
-                onClick={() => onUpdatePintoState((prev) => undoStroke(prev))}
-                className="px-2.5 py-1 border border-white/25 text-slate-200 hover:bg-white/10 font-anton text-xs uppercase flex items-center gap-1 cursor-pointer"
-              >
-                <Undo2 size={14} /> DESFAZER
+              <button type="button" data-testid="pinto-undo-btn" className="rdb-lim-icon" aria-label="Desfazer" data-tip="Desfazer o último traço" onClick={() => onUpdatePintoState((prev) => undoStroke(prev))}>
+                <Undo2 size={16} />
               </button>
-              <button
-                type="button"
-                data-testid="pinto-clear-btn"
-                onClick={() => onUpdatePintoState((prev) => clearDrawing(prev))}
-                className="px-2.5 py-1 border border-white/25 text-slate-200 hover:bg-white/10 font-anton text-xs uppercase flex items-center gap-1 cursor-pointer"
-              >
-                <Eraser size={14} /> LIMPAR
+              <button type="button" data-testid="pinto-clear-btn" className="rdb-lim-icon" aria-label="Limpar" data-tip="Limpar o desenho" onClick={() => onUpdatePintoState((prev) => clearDrawing(prev))}>
+                <Eraser size={16} />
               </button>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-2">
-            <button
-              type="button"
-              data-testid="pinto-hit-btn"
-              onClick={hit}
-              className="px-5 py-2 border-2 border-emerald-400 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-anton text-xs md:text-sm uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
-            >
-              <CheckCircle2 size={16} /> ACERTOU (+1)
+
+          <footer className="rdb-pro-foot">
+            <button type="button" data-testid="pinto-hit-btn" className="rdb-btn rdb-pro-hit" onClick={hit}>
+              <Check size={20} strokeWidth={3} /> Acertou (+1)
             </button>
             <button
               type="button"
               data-testid="pinto-skip-btn"
+              className="rdb-btn"
               disabled={openCount <= 1}
               onClick={() => {
                 sounds.playFlip();
                 onUpdatePintoState((prev) => skipWord(prev));
               }}
-              className="px-3.5 py-2 border border-white/20 bg-white/[0.04] hover:bg-white/10 disabled:opacity-40 text-slate-200 font-anton text-xs md:text-sm uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
             >
-              <RotateCcw size={14} /> PULAR
+              <RotateCcw /> Pular
             </button>
-            <button
-              type="button"
-              data-testid="pinto-end-btn"
-              onClick={() => {
-                sounds.playFlip();
-                onUpdatePintoState((prev) => endDrawing(prev));
-              }}
-              className="ml-auto px-3.5 py-2 border border-rose-400/60 bg-rose-950/60 hover:bg-rose-500 text-rose-200 hover:text-white font-anton text-xs md:text-sm uppercase tracking-wider cursor-pointer"
-            >
-              ENCERRAR TEMPO
-            </button>
-          </div>
-        </div>
+            <div className="rdb-pro-foot-end">
+              <button
+                type="button"
+                data-testid="pinto-end-btn"
+                className="rdb-btn"
+                onClick={() => {
+                  sounds.playFlip();
+                  onUpdatePintoState((prev) => endDrawing(prev));
+                }}
+              >
+                Encerrar tempo
+              </button>
+            </div>
+          </footer>
+        </>
       )}
 
       {st.phase === 'STEAL' && (
-        <div data-testid="pinto-steal" className="flex-1 min-h-0 flex flex-col gap-2 border border-amber-400/50 bg-amber-950/20 p-3">
-          <div className="text-center">
-            <div className="font-anton text-2xl text-amber-200 uppercase">
-              Tempo esgotado! {rivalMeta?.equipeLabel} · {rivalName} pode roubar
-            </div>
-            <div className="font-mono-code text-xs text-slate-300">
-              A dupla rival palpita as palavras que faltaram (1 ponto cada). Marque as que ela acertou.
-            </div>
+        <section data-testid="pinto-steal" className="rdb-pro-sum">
+          <div className="rdb-pro-sum-head">
+            <span className="rdb-lim-round">Tempo esgotado</span>
+            <h2>
+              {rivalName} <small>pode roubar</small>
+            </h2>
+            <p>A dupla rival palpita as palavras que faltaram (1 ponto cada). Marque as que ela acertou.</p>
           </div>
-          <ul className="space-y-1.5">
+          <div className="rdb-pro-sum-grid">
             {st.words.map((w, i) =>
               st.outcomes[i] === 'pending' ? (
-                <li key={i} className="flex items-center justify-between gap-2 border border-white/15 px-3 py-1.5">
-                  <span className="font-anton text-lg text-white uppercase">{w}</span>
+                <div key={i} className="rdb-pro-sum-card">
+                  <span className="rdb-pro-sum-top">
+                    <strong>{w}</strong>
+                  </span>
                   <button
                     type="button"
                     data-testid={`pinto-steal-${i}`}
+                    className="rdb-btn rdb-pro-hit"
                     onClick={() => {
                       sounds.playSuccess();
                       onUpdatePintoState((prev) => stealWord(prev, i));
                     }}
-                    className="px-3 py-1 border border-emerald-400 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-anton text-xs uppercase cursor-pointer"
                   >
-                    ✅ A RIVAL ACERTOU
+                    <Check /> A rival acertou
                   </button>
-                </li>
+                </div>
               ) : null
             )}
-          </ul>
-          <div className="mt-auto flex justify-center">
-            <button
-              type="button"
-              data-testid="pinto-finish-steal-btn"
-              onClick={() => onUpdatePintoState((prev) => finishSteal(prev))}
-              className="px-5 py-2 border border-white/30 text-slate-100 hover:bg-white/10 font-anton text-sm uppercase tracking-wider cursor-pointer"
-            >
-              FINALIZAR ROUBO
+          </div>
+          <div className="rdb-pro-sum-foot">
+            <span />
+            <button type="button" data-testid="pinto-finish-steal-btn" className="rdb-btn rdb-setup-start" onClick={() => onUpdatePintoState((prev) => finishSteal(prev))}>
+              Finalizar o roubo
+              <ArrowRight />
             </button>
           </div>
-        </div>
+        </section>
       )}
 
       {st.phase === 'SUMMARY' && (
-        <div data-testid="pinto-summary" className="flex-1 min-h-0 flex flex-col gap-2 border border-white/10 bg-black/40 p-3">
-          <div className="font-anton text-2xl text-white uppercase text-center">
-            {teamName.toUpperCase()} +{pts.draw}
-            {st.rivalTeam ? ` · ${rivalName.toUpperCase()} +${pts.rival}` : ''}
+        <section data-testid="pinto-summary" className="rdb-pro-sum">
+          <div className="rdb-pro-sum-head">
+            <span className="rdb-lim-round">Fim da rodada</span>
+            <h2>
+              {teamName} +{pts.draw}
+              {st.rivalTeam ? <small> · {rivalName} +{pts.rival}</small> : null}
+            </h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="rdb-pinto-thumbs">
             {st.words.map((w, i) => (
-              <div key={i} className="border border-white/10 p-1.5 space-y-1">
+              <div key={i} className={'rdb-pinto-thumb' + (st.outcomes[i] === 'correct' ? ' is-hit' : st.outcomes[i] === 'stolen' ? ' is-stolen' : '')}>
                 <DrawingCanvas testId={`pinto-thumb-${i}`} strokes={st.drawings[i] ?? []} aspect={4 / 3} />
-                <div
-                  className={`font-mono-code text-xs uppercase text-center ${
-                    st.outcomes[i] === 'correct'
-                      ? 'text-emerald-300'
-                      : st.outcomes[i] === 'stolen'
-                      ? 'text-amber-300'
-                      : 'text-slate-500'
-                  }`}
-                >
-                  {st.outcomes[i] === 'correct' ? '✅' : st.outcomes[i] === 'stolen' ? '🏴‍☠️ roubada' : '✖'} {w}
-                </div>
+                <span>
+                  {st.outcomes[i] === 'correct' ? <Check size={16} strokeWidth={4} /> : st.outcomes[i] === 'stolen' ? <Swords size={16} /> : <XIcon size={16} strokeWidth={4} />} {w}
+                  {st.outcomes[i] === 'stolen' ? ' (roubada)' : ''}
+                </span>
               </div>
             ))}
           </div>
-          <div className="mt-auto flex justify-center">
-            <button
-              type="button"
-              data-testid="pinto-next-round-btn"
-              onClick={onNextRound}
-              className="px-6 py-2.5 border-2 border-cyan-400 bg-cyan-400 hover:bg-cyan-300 text-black font-anton text-sm uppercase tracking-wider flex items-center gap-2 cursor-pointer"
-            >
-              CONFIRMAR PONTOS E AVANÇAR <ArrowRight size={16} />
+          <div className="rdb-pro-sum-foot">
+            <span />
+            <button type="button" data-testid="pinto-next-round-btn" className="rdb-btn rdb-setup-start" onClick={onNextRound}>
+              Confirmar pontos e avançar
+              <ArrowRight />
             </button>
           </div>
-        </div>
+        </section>
       )}
     </div>
   );
