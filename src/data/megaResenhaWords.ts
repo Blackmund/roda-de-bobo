@@ -5,6 +5,8 @@
  *   conferir no vídeo.
  * - `origem: 'autoral'`: lista própria, de palavras concretas que dá para sugerir com dicas de uma palavra só.
  */
+
+import { relatedToAny } from '../utils/similarText';
 export interface MegaResenhaWord {
   palavra: string;
   categoria: string;
@@ -230,15 +232,24 @@ export function drawMegaResenhaWords(
 ): MegaResenhaWord[] {
   let pool = MEGA_RESENHA_WORDS.filter((m) => !used.has(norm(m.palavra)));
   if (pool.length < count) pool = [...MEGA_RESENHA_WORDS];
+  // prefere palavras que nao lembrem as ja usadas (mantem o banco todo se faltar opcao)
+  const usedList = Array.from(used);
+  const notNear = pool.filter((x) => !relatedToAny(x.palavra, usedList));
+  if (notNear.length >= count * 2) pool = notNear;
   const shuffled = shuffle(pool, rng);
+  const pickedTexts = (list: Array<{ palavra: string }>) => list.map((p) => p.palavra);
   const picked: MegaResenhaWord[] = [];
   const cats = new Set<string>();
   for (const m of shuffled) {
     if (picked.length >= count) break;
-    if (!cats.has(m.categoria)) {
+    if (!cats.has(m.categoria) && !relatedToAny(m.palavra, pickedTexts(picked))) {
       picked.push(m);
       cats.add(m.categoria);
     }
+  }
+  for (const m of shuffled) {
+    if (picked.length >= count) break;
+    if (!picked.includes(m) && !relatedToAny(m.palavra, pickedTexts(picked))) picked.push(m);
   }
   for (const m of shuffled) {
     if (picked.length >= count) break;

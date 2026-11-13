@@ -858,6 +858,7 @@ import {
   LIMITE_BANKS_BY_CATEGORY,
   DUVIDO_BANKS_BY_CATEGORY
 } from '../data/categoryBanks';
+import { pickDistinct, recentTexts, rememberRecent, isNearRecent } from './similarText';
 
 
 // ============================================================================
@@ -1082,7 +1083,10 @@ function drawFallbackRound(
       .filter((c) => !unusedSet.has(c))
       .sort((a, b) => seenOrderOf(a) - seenOrderOf(b));
     const shuffled = [...fisherYatesShuffle(unusedCards), ...restOldestFirst];
-    const selected = shuffled.slice(0, customConfig.proibidoCardsCount).map((c) => ({
+    // Sem palavras parecidas: nem entre as cartas da rodada, nem com as das rodadas recentes ("Deserto" e "Deserto do Saara").
+    const recentTargets = [...recentTexts('proibido'), ...usedProibidoWords.slice(-60)];
+    const distinct = pickDistinct(shuffled, customConfig.proibidoCardsCount, (c) => c.palavra_alvo, recentTargets);
+    const selected = distinct.map((c) => ({
       palavra_alvo: c.palavra_alvo,
       palavras_proibidas: ensureStrictForbiddenWordsCount(
         c.palavra_alvo,
@@ -1092,6 +1096,7 @@ function drawFallbackRound(
       )
     }));
     registerUsedProibidoWords(selected.map((c) => c.palavra_alvo));
+    selected.forEach((c) => rememberRecent('proibido', c.palavra_alvo));
     const sig = `${category}-proibido-${selected.map((c) => c.palavra_alvo).join(',')}`;
     registerUsedSignature(sig);
     return { data: selected, signature: sig };
@@ -1168,10 +1173,11 @@ function drawFallbackRound(
   const picked = pickUnused(
     duvidoPool,
     (it) => `${category}-duvido-${it.categoria_secreta}`,
-    (it) => !usedQuestionsTracker.has(it.categoria_secreta),
+    (it) => !usedQuestionsTracker.has(it.categoria_secreta) && !isNearRecent('duvido', it.categoria_secreta),
     (it) => `duvido ${sanitizeCleanGameText(it.categoria_secreta, 'duvido')}`
   );
   registerUsedSignature(picked.item.categoria_secreta);
+  rememberRecent('duvido', picked.item.categoria_secreta);
   return {
     data: {
       ...picked.item,

@@ -46,6 +46,7 @@ import {
   buildTemOuNaoTemPrompt,
   type TemOuNaoTemQuestion
 } from './src/utils/temOuNaoTemGoldenDatabase.ts';
+import { isRelated } from './src/utils/similarText.ts';
 interface ServerSubAngleDefinition {
   id: number;
   label: string;
@@ -1253,6 +1254,10 @@ ${buildTemOuNaoTemPrompt(
       for (const card of parsed) {
         const target = sanitizeCleanGameText(String(card?.palavra_alvo || '')).toUpperCase();
         if (!target || seenInBatch.has(target) || blockedTargets.has(target)) {
+          continue;
+        }
+        const nearUsed = (Array.isArray(excludeProibidoWords) ? excludeProibidoWords : []).some((w) => isRelated(target, String(w || '')));
+        if (nearUsed || Array.from(seenInBatch).some((w) => isRelated(target, w))) {
           continue;
         }
         seenInBatch.add(target);
