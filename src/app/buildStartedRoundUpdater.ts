@@ -423,7 +423,7 @@ export const buildStartedRoundUpdater = ({
             .map((sig) => (sig as string).slice(3));
           const letter = drawLetter(usedLetters, mergedCustomConfig.adedanhaExcludedLetters ?? ADEDANHA_LETRAS_EXCLUIDAS_PADRAO);
           const cats = mergedCustomConfig.adedanhaCategories?.length ? mergedCustomConfig.adedanhaCategories : ADEDANHA_PADRAO;
-          adedanhaState = buildAdedanhaState(nextMatchPlayers, cats, letter, effectiveTimer);
+          adedanhaState = buildAdedanhaState(nextMatchPlayers, cats, letter, effectiveTimer, mergedCustomConfig.adedanhaStopRule || 'first');
           extraSignature = 'ad:' + letter;
         }
 

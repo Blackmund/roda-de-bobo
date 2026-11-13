@@ -14,7 +14,10 @@ import {
   submitAnswers,
   tickAdedanha,
   verdictOf,
-  ADEDANHA_STOP_GRACE_MS
+  ADEDANHA_STOP_GRACE_MS,
+  ADEDANHA_SPIN_MS,
+  requestStop,
+  playerCanStop
 } from '../utils/adedanhaEngine.ts';
 import { ADEDANHA_LETRAS_EXCLUIDAS_PADRAO } from '../data/adedanhaCategorias.ts';
 import { GAME_LIMITS } from '../config/gameLimits.ts';
@@ -44,14 +47,14 @@ test('Adedanha: comeca com a letra ignorando acento e maiusculas', () => {
 
 test('Adedanha: STOP abre a janela e o relogio leva para a validacao', () => {
   let s = writing();
-  assert.equal(s.endsAt, 61000);
+  assert.equal(s.endsAt, 1000 + ADEDANHA_SPIN_MS + 60000);
   s = submitAnswers(s, 'a', ['Paula', 'Pato', 'Preto']);
   s = callStop(s, 'a', 5000);
   assert.equal(s.phase, 'STOPPING');
   assert.equal(tickAdedanha(s, 5000 + ADEDANHA_STOP_GRACE_MS - 1).phase, 'STOPPING');
   assert.equal(tickAdedanha(s, 5000 + ADEDANHA_STOP_GRACE_MS).phase, 'VOTING');
   // fim do tempo vira STOP automatico
-  assert.equal(tickAdedanha(writing(), 61000).phase, 'STOPPING');
+  assert.equal(tickAdedanha(writing(), 1000 + ADEDANHA_SPIN_MS + 60000).phase, 'STOPPING');
 });
 
 test('Adedanha: 10 unica, 5 repetida, 0 vazia/outra letra/recusada; diretor vence os votos', () => {
@@ -88,4 +91,16 @@ test('Adedanha: a ultima categoria leva ao resumo com os pontos gravados', () =>
 test('Adedanha: 2 a 12 jogadores, individual e conteudo local', () => {
   assert.deepEqual([GAME_LIMITS.adedanha.min, GAME_LIMITS.adedanha.max, GAME_LIMITS.adedanha.teamsRequired], [2, 12, false]);
   assert.equal(usesLocalContent('adedanha'), true);
+});
+
+test('Adedanha: quem pode pedir STOP (primeiro, maioria, so o diretor, ninguem)', () => {
+  const mk = (rule: any) => startWriting(buildAdedanhaState(players, ['Nome'], 'P', 60, rule), 0);
+  assert.equal(requestStop(mk('first'), 'a', 5).phase, 'STOPPING');
+  let m = requestStop(mk('majority'), 'a', 5);
+  assert.equal(m.phase, 'WRITING');
+  m = requestStop(m, 'b', 6);
+  assert.equal(m.phase, 'STOPPING');
+  assert.equal(playerCanStop(mk('host')), false);
+  assert.equal(requestStop(mk('host'), 'a').phase, 'WRITING');
+  assert.equal(requestStop(mk('none'), 'a').phase, 'WRITING');
 });

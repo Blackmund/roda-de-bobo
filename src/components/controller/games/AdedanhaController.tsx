@@ -4,7 +4,9 @@ import type { AdedanhaState, GameRoom, Player } from '../../../types/game';
 import { sounds } from '../../../utils/soundEffects';
 import {
   allFilled,
-  callStop,
+  playerCanStop,
+  requestStop,
+  stopVotesCount,
   castVote,
   categoryResult,
   nextCategory,
@@ -15,7 +17,7 @@ import {
   submitAnswers,
   voteKey
 } from '../../../utils/adedanhaEngine';
-import { useAdedanhaDriver, useNow } from '../../adedanha/useAdedanhaDriver';
+import { useAdedanhaDriver, useLetterSpin, useNow } from '../../adedanha/useAdedanhaDriver';
 
 interface AdedanhaControllerProps {
   room: GameRoom;
@@ -55,6 +57,7 @@ export const AdedanhaController: React.FC<AdedanhaControllerProps> = ({ room, pl
   );
   useAdedanhaDriver(ad, updateAd, isLeader);
   const now = useNow(ad?.phase === 'WRITING' || ad?.phase === 'STOPPING');
+  const spin = useLetterSpin(ad);
 
   const send = useCallback(
     (answers: string[]) => {
@@ -135,7 +138,9 @@ export const AdedanhaController: React.FC<AdedanhaControllerProps> = ({ room, pl
     body = (
       <>
         <div className="rdb-adc-top">
-          <span className="rdb-adc-letter" data-testid="adc-letter">{ad.letter}</span>
+          <span className={'rdb-adc-letter' + (spin.spinning ? ' is-spin' : '')} data-testid="adc-letter">
+            <span key={spin.letter + spin.spinning}>{spin.letter}</span>
+          </span>
           <span className={'rdb-adc-time' + (left !== null && left <= 10 ? ' is-hot' : '')}>
             {locked ? `STOP! ${left ?? 0}s` : left === null ? 'Sem tempo' : `${left}s`}
           </span>
@@ -153,7 +158,7 @@ export const AdedanhaController: React.FC<AdedanhaControllerProps> = ({ room, pl
                   <input
                     data-testid={`adc-input-${i}`}
                     value={v}
-                    disabled={locked}
+                    disabled={locked || spin.spinning}
                     autoComplete="off"
                     autoCapitalize="words"
                     placeholder={`${ad.letter}…`}
@@ -168,20 +173,30 @@ export const AdedanhaController: React.FC<AdedanhaControllerProps> = ({ room, pl
             })}
           </div>
         )}
-        {playing && !locked && (
+        {playing && !locked && playerCanStop(ad) && (
           <button
             type="button"
             data-testid="adc-stop"
             className="rdb-adc-stop"
-            disabled={!full}
+            disabled={!full || Boolean(ad.stopVotes?.[player.id])}
             onClick={() => {
               sounds.playBuzzer();
               sentRef.current = values;
-              updateAd((prev) => callStop(submitAnswers(prev, player.id, values), player.id));
+              updateAd((prev) => requestStop(submitAnswers(prev, player.id, values), player.id));
             }}
           >
-            <Hand size={20} /> {full ? 'STOP!' : `Preencha tudo para o STOP (${values.filter((x) => x.trim()).length}/${ad.categories.length})`}
+            <Hand size={20} />{' '}
+            {!full
+              ? `Preencha tudo para o STOP (${values.filter((x) => x.trim()).length}/${ad.categories.length})`
+              : ad.stopRule === 'majority'
+              ? ad.stopVotes?.[player.id]
+                ? `STOP pedido · ${stopVotesCount(ad)}/${ad.playerIds.length}`
+                : `Pedir STOP (${stopVotesCount(ad)}/${ad.playerIds.length})`
+              : 'STOP!'}
           </button>
+        )}
+        {playing && !locked && !playerCanStop(ad) && (
+          <p className="rdb-adc-muted">{ad.stopRule === 'host' ? 'Só o diretor pode pedir STOP nesta partida.' : 'A rodada para quando o tempo acabar.'}</p>
         )}
         {locked && (
           <p className="rdb-adc-muted" data-testid="adc-sent">
