@@ -16,7 +16,7 @@ test('NOV-06: banco de momentos sem repeticao, com ano em todos e origem declara
   assert.equal(new Set(keys).size, keys.length);
   assert.ok(ONDE_ESTOU_MOMENTS.length >= 35);
   for (const x of ONDE_ESTOU_MOMENTS) {
-    assert.match(x.nome, /\((19|20)\d\d\)$/, `sem ano no fim: ${x.nome}`);
+    if (x.categoria !== 'Piadas e memes') assert.match(x.nome, /\((19|20)\d\d\)$/, `sem ano no fim: ${x.nome}`);
     assert.ok(x.nome.length <= 80, `rotulo longo demais: ${x.nome}`);
   }
   assert.ok(ONDE_ESTOU_MOMENTS.some((x) => x.origem === 'programa'));

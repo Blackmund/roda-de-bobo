@@ -49,6 +49,7 @@ export function buildQuemSouEuState(
     playerId: p.id,
     identity: identities[i % identities.length].nome,
     category: identities[i % identities.length].categoria,
+    ...(identities[i % identities.length].imagem ? { image: identities[i % identities.length].imagem, imageCredit: identities[i % identities.length].credito } : {}),
     status: 'searching',
     questions: 0,
     wrongGuesses: 0
