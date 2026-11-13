@@ -4283,3 +4283,79 @@
 @media (prefers-reduced-motion: reduce) {
   .rdb-ade-letter > span, .rdb-adc-letter > span { animation: none !important; }
 }
+
+/* ---------- Adedanha v3: letra no centro, categorias embaixo, sorteio em tela cheia ---------- */
+.rdb-ade-stage { flex-direction: column; justify-content: center; gap: clamp(0.8rem, 3vh, 1.6rem); }
+.rdb-ade-stage .rdb-ade-letter { width: clamp(7rem, 26vh, 13rem); font-size: clamp(5rem, 20vh, 10rem); }
+.rdb-ade-letter.is-waiting { background: transparent; color: var(--rdb-ink-2); border-style: dashed; animation: none; }
+.rdb-ade-stage .rdb-ade-cats { justify-content: center; max-width: 60rem; }
+.rdb-ade-stage .rdb-ade-cats span { border-color: rgba(245, 242, 235, 0.25); background: var(--rdb-navy-2); }
+
+.rdb-draw {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 46%, rgba(23, 184, 184, 0.35), rgba(11, 18, 48, 0.94) 55%);
+  animation: rdb-draw-in 0.25s ease both;
+}
+.rdb-draw-rays {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 220vmax;
+  height: 220vmax;
+  transform: translate(-50%, -50%);
+  background: repeating-conic-gradient(from 0deg, rgba(23, 184, 184, 0.28) 0deg 7deg, transparent 7deg 22deg);
+  -webkit-mask: radial-gradient(circle, #000 0 12%, transparent 45%);
+  mask: radial-gradient(circle, #000 0 12%, transparent 45%);
+  animation: rdb-draw-rays 6s linear infinite;
+}
+.rdb-draw-frame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(11rem, 40vmin, 22rem);
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--rdb-navy);
+  border: 0.6rem solid var(--rdb-cream);
+  box-shadow: 0 0 0 0.35rem var(--rdb-teal), 0 0 4rem rgba(23, 184, 184, 0.7);
+}
+.rdb-draw-letter {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(8rem, 30vmin, 17rem);
+  line-height: 1;
+  color: var(--rdb-teal);
+}
+.rdb-draw.is-spin .rdb-draw-letter { animation: rdb-draw-tick 0.12s linear; filter: blur(2px); }
+.rdb-draw.is-land .rdb-draw-letter { animation: rdb-draw-land 0.55s cubic-bezier(0.3, 1.7, 0.5, 1); color: var(--rdb-cream); filter: none; }
+.rdb-draw.is-land .rdb-draw-frame { background: var(--rdb-teal); }
+.rdb-draw.is-land .rdb-draw-letter { color: var(--rdb-navy); }
+.rdb-draw.is-leave { animation: rdb-draw-out 0.5s ease forwards; }
+.rdb-draw.is-leave .rdb-draw-frame { animation: rdb-draw-fly 0.5s cubic-bezier(0.6, 0, 0.8, 0.4) forwards; }
+.rdb-draw-caption {
+  position: relative;
+  padding: 0.3rem 1rem;
+  background: var(--rdb-cream);
+  color: var(--rdb-navy);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.rdb-draw.is-compact .rdb-draw-frame { width: 12rem; border-width: 0.4rem; }
+.rdb-draw.is-compact .rdb-draw-letter { font-size: 9rem; }
+@keyframes rdb-draw-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rdb-draw-out { to { opacity: 0; } }
+@keyframes rdb-draw-rays { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes rdb-draw-tick { from { transform: translateY(-45%); } to { transform: none; } }
+@keyframes rdb-draw-land { 0% { transform: scale(1.6); } 100% { transform: none; } }
+@keyframes rdb-draw-fly { to { transform: translateY(-12vh) scale(0.5); opacity: 0.2; } }
+@media (prefers-reduced-motion: reduce) {
+  .rdb-draw, .rdb-draw-rays, .rdb-draw-letter, .rdb-draw-frame { animation: none !important; filter: none !important; }
+}

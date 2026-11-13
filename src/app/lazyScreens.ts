@@ -73,14 +73,7 @@ export function preloadGameScreen(gameId: string | null | undefined): void {
   if (load) void load().catch(() => undefined);
 }
 
-// UX-07: o simulador de controles e ferramenta de desenvolvimento; so aparece em dev ou com ?dev na URL.
-export const SHOW_DEV_TOOLS = (() => {
-  try {
-    return Boolean(import.meta.env.DEV) || new URLSearchParams(window.location.search).has('dev');
-  } catch {
-    return false;
-  }
-})();
+// UX-07: o simulador de controles agora liga pelo menu (modo dev): ver app/devMode.ts
 
 export const DevControlsDrawer = lazy(() =>
   import('../components/dev/DevControlsDrawer').then((m) => ({ default: m.DevControlsDrawer }))

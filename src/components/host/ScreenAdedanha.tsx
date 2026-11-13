@@ -14,6 +14,7 @@ import {
 } from '../../utils/adedanhaEngine';
 import { useAdedanhaDriver, useLetterSpin, useNow } from '../adedanha/useAdedanhaDriver';
 import { PlayerMark } from '../rdb/PlayerMark';
+import { LetterDrawOverlay } from '../adedanha/LetterDrawOverlay';
 
 interface ScreenAdedanhaProps {
   room: GameRoom;
@@ -97,19 +98,15 @@ export const ScreenAdedanha: React.FC<ScreenAdedanhaProps> = ({ room, onUpdateAd
     return (
       <div data-testid="screen-adedanha" className="rdb-pro rdb-ade">
         {bar}
+        <LetterDrawOverlay letter={spin.letter} spinning={spin.spinning} />
         <div className="rdb-ade-stage">
-          <div className={'rdb-ade-letter' + (ad.phase === 'READY' ? ' is-hidden' : '') + (spin.spinning ? ' is-spin' : '')} data-testid="ad-letter">
-            {ad.phase === 'READY' ? '?' : <span key={spin.letter + spin.spinning}>{spin.letter}</span>}
+          <div className={'rdb-ade-letter' + (ad.phase === 'READY' ? ' is-hidden' : '') + (spin.spinning ? ' is-waiting' : '')} data-testid="ad-letter">
+            {ad.phase === 'READY' || spin.spinning ? '?' : <span key={ad.letter}>{ad.letter}</span>}
           </div>
-          <div className="rdb-ade-side">
-            <span className="rdb-pro-label" style={{ position: 'static', alignSelf: 'flex-start' }}>
-              {ad.categories.length} categorias
-            </span>
-            <div className="rdb-ade-cats">
-              {ad.categories.map((c) => (
-                <span key={c}>{c}</span>
-              ))}
-            </div>
+          <div className="rdb-ade-cats" data-tip={`${ad.categories.length} categorias`}>
+            {ad.categories.map((c) => (
+              <span key={c}>{c}</span>
+            ))}
           </div>
         </div>
 

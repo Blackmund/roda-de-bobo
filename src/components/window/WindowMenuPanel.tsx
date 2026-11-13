@@ -3,6 +3,7 @@ import { RotateCcw, Volume2, VolumeX, Check, Sparkles, Settings } from '../rdb/r
 import { VisualTheme, GameCustomConfig } from '../../types/game';
 import { sounds } from '../../utils/soundEffects';
 import { clearUsedRoundSignatures } from '../../utils/aiGameGenerator';
+import { setDevMode, useDevMode } from '../../app/devMode';
 
 type ContentSource = NonNullable<GameCustomConfig['contentSource']>;
 
@@ -22,6 +23,44 @@ interface WindowMenuPanelProps {
   setClearedMemoryNotice: React.Dispatch<React.SetStateAction<boolean>>;
   clearedMemoryNotice: boolean;
 }
+
+const DevModePanel: React.FC = () => {
+  const on = useDevMode();
+  return (
+    <div className="bg-white/[0.03] border border-white/10 p-3.5 flex flex-col justify-between gap-3" data-testid="dev-mode-panel">
+      <div>
+        <div className="flex items-center justify-between">
+          <div className="font-anton text-sm uppercase text-[#17B8B8] flex items-center gap-1.5">
+            <Settings size={15} className="text-[#17B8B8]" />
+            <span>Modo desenvolvedor</span>
+          </div>
+          <span className="text-[9px] font-mono-code font-bold uppercase px-2 py-0.5 bg-black/60 border border-white/10 text-slate-300">
+            {on ? 'Ligado' : 'Desligado'}
+          </span>
+        </div>
+        <p className="text-[11px] text-slate-400 font-mono-code mt-1">
+          Mostra o simulador de controles (botão no canto) e de onde veio o conteúdo da rodada. Vale só neste aparelho.
+        </p>
+      </div>
+      <div className="pt-1 border-t border-white/10">
+        <button
+          type="button"
+          data-testid="dev-mode-toggle"
+          aria-pressed={on}
+          onClick={() => {
+            sounds.playTick();
+            setDevMode(!on);
+          }}
+          className={`w-full py-2 px-3 font-anton text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            on ? 'bg-[#17B8B8] text-black' : 'bg-white/[0.06] hover:bg-white/15 text-white border border-white/15'
+          }`}
+        >
+          {on ? 'Desligar modo dev' : 'Ligar modo dev'}
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export const WindowMenuPanel: React.FC<WindowMenuPanelProps> = ({
   visualTheme,
@@ -334,6 +373,9 @@ export const WindowMenuPanel: React.FC<WindowMenuPanelProps> = ({
                         </button>
                       </div>
                     </div>
+
+                    {/* Modo desenvolvedor: simulador de controles e selo de origem do conteudo */}
+                    <DevModePanel />
 
                     {/* Painel de Memória IA */}
                     <div className="bg-white/[0.03] border border-white/10 p-3.5 flex flex-col justify-between gap-3">
