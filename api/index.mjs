@@ -79035,6 +79035,81 @@ REGRA OBRIGAT\xD3RIA: N\xC3O repita o nome do tema antes de dois-pontos (NUNCA e
     return res.status(200).json({ subthemes: null, fallback: true, error: err?.message });
   }
 });
+app.post("/api/duvido-check", async (req, res) => {
+  const { category = "", ruleTip = "", examples = [], answer = "" } = req.body || {};
+  const cleanAnswer = String(answer || "").trim();
+  const cleanCategory = String(category || "").trim();
+  if (!cleanAnswer || !cleanCategory) {
+    return res.status(400).json({ valid: null, verdict: "uncertain", explanation: "Informe a resposta para checar." });
+  }
+  const normalize = (s2) => s2.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+  const normAnswer = normalize(cleanAnswer);
+  if (Array.isArray(examples) && normAnswer.length >= 2) {
+    const matched = examples.find((ex) => {
+      if (typeof ex !== "string") return false;
+      const normEx = normalize(ex);
+      return normEx === normAnswer || normAnswer.length >= 4 && normEx.includes(normAnswer);
+    });
+    if (matched) {
+      return res.status(200).json({
+        valid: true,
+        verdict: "valid",
+        explanation: `V\xE1lido \u2014 consta no gabarito (${matched}).`,
+        source: "local"
+      });
+    }
+  }
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey.trim() === "") {
+    return res.status(200).json({
+      valid: null,
+      verdict: "uncertain",
+      explanation: "Sem gabarito local e IA indispon\xEDvel \u2014 o \xE1rbitro decide.",
+      fallback: true
+    });
+  }
+  try {
+    const ai = new GoogleGenAI2({ apiKey, httpOptions: { headers: { "User-Agent": "aistudio-build" } } });
+    const response = await generateContentWithFallback(ai, {
+      contents: `Voc\xEA \xE9 o \xE1rbitro factual do party game brasileiro "Jogo do Duvido".
+Categoria da rodada: "${cleanCategory}"
+${ruleTip ? `Regra/crit\xE9rio da rodada: "${String(ruleTip).trim()}"` : ""}
+Resposta falada pelo jogador: "${cleanAnswer}"
+
+Verifique com rigor factual se "${cleanAnswer}" pertence \xE0 categoria "${cleanCategory}" seguindo a regra da rodada.
+Considere erros pequenos de grafia/fon\xE9tica como v\xE1lidos se ficar claro a quem/o qu\xEA o jogador se referiu.
+Responda em portugu\xEAs do Brasil, de forma direta e curta (1 frase de at\xE9 140 caracteres) explicando o porqu\xEA.`,
+      config: {
+        temperature: 0.1,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            verdict: { type: Type.STRING, enum: ["valid", "invalid", "uncertain"] },
+            explanation: { type: Type.STRING }
+          },
+          required: ["verdict", "explanation"]
+        }
+      }
+    });
+    const parsed = JSON.parse(response.text || "{}");
+    const verdict = parsed.verdict === "valid" || parsed.verdict === "invalid" ? parsed.verdict : "uncertain";
+    return res.status(200).json({
+      valid: verdict === "valid" ? true : verdict === "invalid" ? false : null,
+      verdict,
+      explanation: sanitizeCleanGameText(String(parsed.explanation || "")) || "O \xE1rbitro decide.",
+      source: "ai"
+    });
+  } catch (err) {
+    return res.status(200).json({
+      valid: null,
+      verdict: "uncertain",
+      explanation: "N\xE3o foi poss\xEDvel consultar a IA agora \u2014 o \xE1rbitro decide.",
+      fallback: true,
+      error: err?.message
+    });
+  }
+});
 app.post("/api/onde-estou-moments", async (req, res) => {
   const { theme: rawTheme, count: rawCount, exclude = [] } = req.body || {};
   const theme = String(rawTheme || "").trim();

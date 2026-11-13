@@ -8,6 +8,7 @@ import { ActiveTurnBanner } from '../ActiveTurnBanner';
 import { TEAM_META, getActiveTeamIds, getNextTeamId } from '../../utils/teamUtils';
 import confetti from 'canvas-confetti';
 import { Check, Clock, XCircle, ArrowRight, RotateCcw, Infinity, Minus, Eye, EyeOff, Info, Lightbulb, ListChecks, Scale, Siren, X as XIcon } from 'lucide-react';
+import { DuvidoAnswerCheck, type DuvidoCheckVerdict } from './duvido/DuvidoAnswerCheck';
 
 interface ScreenDuvidoProps {
   room: GameRoom;
@@ -44,11 +45,19 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
   const duvido = room.duvido;
   const [freeBidInput, setFreeBidInput] = useState<string>('');
   const [showTvAnswers, setShowTvAnswers] = useState<boolean>(false);
+  const [checkQuery, setCheckQuery] = useState<string>('');
+  const [checkResult, setCheckResult] = useState<DuvidoCheckVerdict | null>(null);
 
   // Automatically keep answers hidden by default when round/category/phase changes
   useEffect(() => {
     setShowTvAnswers(false);
   }, [duvido?.roundData?.categoria_secreta, duvido?.phase]);
+
+  // Clear check state only when the category/round changes (keep it across EXECUTION -> RESULT)
+  useEffect(() => {
+    setCheckQuery('');
+    setCheckResult(null);
+  }, [duvido?.roundData?.categoria_secreta]);
 
   const activeTeamIds = getActiveTeamIds(room);
 
@@ -268,21 +277,6 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
     });
   };
 
-  const handleRotateDuvidoPlayer = () => {
-    onUpdateDuvidoState((prev) => {
-      const targetTeam = prev.phase === 'EXECUTION' ? prev.challengedTeam || prev.activeTurnTeam : prev.activeTurnTeam;
-      const teamMembers = room.players.filter((p) => p.team === targetTeam);
-      if (teamMembers.length <= 1) return prev;
-      const curId = prev.activePlayerId || prev.negotiators?.[targetTeam] || teamMembers[0]?.id;
-      const curIdx = teamMembers.findIndex((p) => p.id === curId);
-      const nextMember = teamMembers[(curIdx + 1) % teamMembers.length];
-      return {
-        ...prev,
-        activePlayerId: nextMember?.id
-      };
-    });
-  };
-
   const phase = duvido.phase;
   const inAuction = phase === 'AUCTION' || phase === 'BLINDFOLD' || phase === 'SECRET_CATEGORY';
   const category = sanitizeCleanGameText(duvido.roundData.categoria_secreta, 'duvido');
@@ -373,7 +367,6 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
       <div className="rdb-tem-turn">
         <ActiveTurnBanner
           room={room}
-          onRotateActivePlayer={handleRotateDuvidoPlayer}
           onSelectActiveTeam={(nextTeam) =>
             onUpdateDuvidoState((prev) => ({
               ...prev,
@@ -414,7 +407,10 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
               <span className="rdb-duv-bid-label">
                 {duvido.currentBid > 0 ? `Lance de ${teamLabel(duvido.currentBidTeam as TeamId)}` : 'Nenhum lance ainda'}
               </span>
-              <div data-testid="duvido-current-bid-display" className="rdb-duv-bid-value">
+              <div
+                data-testid="duvido-current-bid-display"
+                className={'rdb-duv-bid-value' + (duvido.currentBid > 0 ? '' : ' is-text')}
+              >
                 {duvido.currentBid > 0 ? (
                   <>
                     {duvido.currentBid} <small>itens</small>
@@ -506,6 +502,17 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
               </div>
             )}
 
+            <DuvidoAnswerCheck
+              category={category}
+              ruleTip={duvido.roundData.dica_arbitro}
+              examples={duvido.roundData.exemplos_validos}
+              query={checkQuery}
+              onChangeQuery={setCheckQuery}
+              result={checkResult}
+              onResult={setCheckResult}
+              compact
+            />
+
             <div className="rdb-pro-foot rdb-duv-actions">
               <button type="button" data-testid="duvido-add-valid-btn" className="rdb-btn rdb-pro-hit" onClick={handleManualAddValid}>
                 <Check size={20} strokeWidth={3} /> +1 item válido
@@ -557,6 +564,16 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
               {teamLabel(duvido.resultWinnerTeam as TeamId)} <small>leva o ponto</small>
             </h2>
             <p>{duvido.resultReason}</p>
+
+            <DuvidoAnswerCheck
+              category={category}
+              ruleTip={duvido.roundData.dica_arbitro}
+              examples={duvido.roundData.exemplos_validos}
+              query={checkQuery}
+              onChangeQuery={setCheckQuery}
+              result={checkResult}
+              onResult={setCheckResult}
+            />
 
             <div className="rdb-tem-strip rdb-duv-pick">
               {activeTeamIds.map((teamKey) => {
