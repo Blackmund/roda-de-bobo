@@ -816,3 +816,401 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Proibido ---------- */
+.rdb-pro {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  color: var(--rdb-cream);
+  font-family: var(--rdb-heavy);
+}
+.rdb-pro.is-foul {
+  outline: 4px solid var(--rdb-crimson);
+  outline-offset: -4px;
+  background: rgba(230, 25, 75, 0.12);
+}
+.rdb-pro-ready {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+}
+.rdb-pro-ready h2,
+.rdb-pro-masked h2 {
+  margin: 0;
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(2.6rem, 8vh, 5rem);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.rdb-pro-ready p,
+.rdb-pro-masked p {
+  max-width: 36rem;
+  margin: 0;
+  color: var(--rdb-ink-2);
+  font-weight: 700;
+  font-size: 1.1rem;
+  line-height: 1.35;
+}
+.rdb-pro-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+.rdb-pro-dots {
+  display: flex;
+  gap: 0.4rem;
+}
+.rdb-pro-dots i {
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.3);
+  color: var(--rdb-ink-2);
+  font-style: normal;
+  font-weight: 900;
+  font-size: 0.9rem;
+}
+.rdb-pro-dots i.is-now {
+  border-color: var(--rdb-teal);
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-pro-dots i.is-hit {
+  border-color: var(--rdb-teal);
+  color: var(--rdb-teal);
+}
+.rdb-pro-dots i.is-foul {
+  border-color: var(--rdb-crimson);
+  color: var(--rdb-crimson);
+}
+.rdb-pro-dots i.is-skip {
+  border-color: var(--rdb-amber);
+  color: var(--rdb-amber);
+}
+.rdb-pro-counts {
+  display: flex;
+  gap: 1rem;
+  font-weight: 900;
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+.rdb-pro-counts span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: help;
+}
+.rdb-pro-counts span:nth-child(1) {
+  color: var(--rdb-teal);
+}
+.rdb-pro-counts span:nth-child(2) {
+  color: var(--rdb-crimson);
+}
+.rdb-pro-counts span:nth-child(3) {
+  color: var(--rdb-amber);
+}
+.rdb-pro-card {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 0.8rem;
+}
+.rdb-pro-target {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: 1.5rem 1rem 1rem;
+  background: var(--rdb-crimson);
+  color: var(--rdb-cream);
+  text-align: center;
+  overflow: hidden;
+}
+.rdb-pro-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0.25em 0.8em;
+  background: var(--rdb-cream);
+  color: var(--rdb-navy);
+  font-weight: 900;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.rdb-pro-label.is-bad {
+  background: var(--rdb-crimson);
+  color: #fff;
+}
+.rdb-pro-target-word {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(2.6rem, 6.6vw, 7.5rem);
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+.rdb-pro-forbidden {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: 0.3rem;
+  min-height: 0;
+  padding: 1.8rem 1rem 0.6rem;
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.28);
+  background: var(--rdb-navy-2);
+  text-align: center;
+}
+.rdb-pro-word {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(1.3rem, min(5.2vh, 3vw), 3.4rem);
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+.rdb-pro-masked {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  border: var(--rdb-line) solid var(--rdb-amber);
+  text-align: center;
+}
+.rdb-pro-note {
+  align-self: center;
+  flex-shrink: 0;
+  padding: 0.3em 1em;
+  background: var(--rdb-amber);
+  color: var(--rdb-navy);
+  font-weight: 900;
+  font-size: 0.9rem;
+}
+.rdb-pro-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+.rdb-pro-foot .rdb-btn {
+  height: 3rem;
+  font-size: 1rem;
+}
+.rdb-pro-hit {
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-pro-hit:hover {
+  background: var(--rdb-cream);
+  border-color: var(--rdb-cream);
+}
+.rdb-pro-foot-end {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+.rdb-pro-foot [data-tip]::after {
+  top: auto;
+  bottom: calc(100% + 0.45rem);
+}
+.rdb-pro-radical {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 12rem;
+}
+.rdb-pro-radical input {
+  height: 2.2rem;
+  padding: 0 0.6rem;
+  background: var(--rdb-navy);
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.3);
+  color: var(--rdb-cream);
+  font-family: var(--rdb-heavy);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.rdb-pro-radical input:focus {
+  outline: none;
+  border-color: var(--rdb-teal);
+}
+.rdb-pro-radical span {
+  position: absolute;
+  bottom: calc(100% + 0.2rem);
+  right: 0;
+  width: max-content;
+  max-width: 18rem;
+  padding: 0.25em 0.6em;
+  background: var(--rdb-navy);
+  border: 1px solid rgba(245, 242, 235, 0.3);
+  font-weight: 800;
+  font-size: 0.75rem;
+}
+.rdb-pro-radical span.is-warn {
+  color: #ff7d98;
+}
+.rdb-pro-radical span.is-ok {
+  color: var(--rdb-teal);
+}
+
+/* resumo */
+.rdb-pro-sum {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.rdb-pro-sum-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+  text-align: center;
+}
+.rdb-pro-sum-head h2 {
+  margin: 0;
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(2.4rem, 7vh, 4.4rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+.rdb-pro-sum-head h2 small {
+  color: var(--rdb-ink-2);
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 0.35em;
+  letter-spacing: 0.06em;
+}
+.rdb-pro-sum-head p {
+  margin: 0;
+  color: var(--rdb-ink-2);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.rdb-pro-sum-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+  align-content: center;
+  gap: 0.6rem;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.rdb-pro-sum-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 6rem;
+  padding: 0.7rem 0.9rem;
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.25);
+  background: var(--rdb-navy-2);
+  color: var(--rdb-cream);
+  text-align: left;
+  cursor: pointer;
+}
+.rdb-pro-sum-card.is-hit {
+  border-color: var(--rdb-teal);
+  background: rgba(23, 184, 184, 0.12);
+}
+.rdb-pro-sum-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.rdb-pro-sum-top strong {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.4rem, 3.4vh, 2.2rem);
+  line-height: 1;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+.rdb-pro-sum-mark {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  background: var(--rdb-crimson);
+  color: #fff;
+}
+.rdb-pro-sum-card.is-hit .rdb-pro-sum-mark {
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-pro-sum-words {
+  color: var(--rdb-ink-2);
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+.rdb-pro-sum-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+.rdb-pro-next {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.rdb-pro-next span {
+  color: var(--rdb-ink-2);
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.rdb-pro-next strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1.2rem;
+}
+.rdb-pro-next em {
+  color: var(--rdb-ink-2);
+  font-style: normal;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.rdb-pro-sum-foot .rdb-btn {
+  height: auto;
+  min-height: 3rem;
+  padding-block: 0.4rem;
+}
+@media (max-width: 899px) {
+  .rdb-pro-card {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .rdb-pro-foot-end {
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+}

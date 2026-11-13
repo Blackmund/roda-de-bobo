@@ -11,7 +11,7 @@ export const RadicalCheck: React.FC<{ cardWords: string[] }> = ({ cardWords }) =
   const typed = spoken.trim().length >= 3;
 
   return (
-    <div data-testid="proibido-radical-check" className="flex flex-col gap-0.5 min-w-[150px]">
+    <div data-testid="proibido-radical-check" className="rdb-pro-radical">
       <input
         type="text"
         value={spoken}
@@ -19,21 +19,18 @@ export const RadicalCheck: React.FC<{ cardWords: string[] }> = ({ cardWords }) =
         placeholder="Checar palavra dita"
         aria-label="Checar palavra dita (radical)"
         autoComplete="off"
-        className="px-2 py-1 bg-[#07080d] border border-white/20 text-[11px] text-white focus:outline-none focus:border-sky-400"
+        title={`Radicais da carta: ${radicalList(cardWords).join(' · ')}`}
       />
       {typed && (
         <span
           data-testid="proibido-radical-result"
-          className={`text-[10px] font-mono-code font-bold ${hits.length ? 'text-rose-300' : 'text-emerald-300'}`}
+          className={hits.length ? 'is-warn' : 'is-ok'}
         >
           {hits.length
-            ? `⚠️ parece o radical de ${hits.map((h) => h.cardWord).join(', ')} — o juiz decide`
-            : '✅ nada suspeito (o juiz decide)'}
+            ? `Parece o radical de ${hits.map((h) => h.cardWord).join(', ')}. O juiz decide.`
+            : 'Nada suspeito. O juiz decide.'}
         </span>
       )}
-      <span className="text-[9px] font-mono-code text-slate-500 truncate" title="Radicais aproximados da carta">
-        Radicais: {radicalList(cardWords).join(' · ')}
-      </span>
     </div>
   );
 };

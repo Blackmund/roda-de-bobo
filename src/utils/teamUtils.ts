@@ -366,7 +366,7 @@ export function resolveCurrentTurnSpotlight(room: GameRoom): TurnSpotlightDescri
         proibido.phase === 'READY'
           ? `${activePlayer?.name || 'O Orador'} vai dar dicas para ${partnerNames || 'a equipe'} adivinhar, sem falar as palavras proibidas.`
           : proibido.phase === 'SUMMARY'
-          ? 'Tempo encerrado! Revise as cartas acertadas e confirme os pontos.'
+          ? 'Rodada encerrada. Revise as cartas e confirme os pontos.'
           : `${activePlayer?.name || 'Orador'} descreve a palavra-alvo e ${partnerNames || 'a equipe'} adivinha.`,
       teammates,
       nextInQueueLabel: refereePlayer
