@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
-import { ArrowRight, Clock, Infinity as InfinityIcon } from 'lucide-react';
+import { ArrowRight, Check, Clock, Infinity as InfinityIcon, Info, Pencil, Scale, X as XIcon } from 'lucide-react';
 import { GameRoom, RepetenteGameState } from '../../types/game';
 import { sounds } from '../../utils/soundEffects';
 import { isShowRuleset } from '../../config/rulesets';
@@ -83,91 +83,69 @@ export const ScreenRepetente: React.FC<ScreenRepetenteProps> = ({ room, onUpdate
     onUpdateRepetenteState((prev) => toggleRepetenteOverride(prev, groupId));
   };
 
+  const clock = free ? 'Livre' : fmt(rep.timerSeconds);
+  const clockHot = !free && rep.timerSeconds <= 10 && rep.phase === 'WRITING';
+  const groupName = (g: { team?: any }) => (g.team ? room.teams[g.team as keyof typeof room.teams]?.name || TEAM_META[g.team as keyof typeof TEAM_META].defaultName : 'Dupla');
+
   return (
-    <div data-testid="rep-screen" className="gap-2 h-full flex flex-col min-h-0 overflow-y-auto">
-      <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 border border-white/10 bg-[#07080d]/95 px-2 py-1.5">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-anton text-sm md:text-base text-white uppercase tracking-wider">🖍️ REPETENTE</span>
+    <div data-testid="rep-screen" className="rdb-pro">
+      <header className="rdb-lim-bar">
+        <span className="rdb-lim-title">
+          Repetente
           {isShow && (
-            <span
-              data-testid="rep-show-ruleset-chip"
-              className="px-2 py-0.5 border border-amber-400/60 bg-amber-950/40 text-amber-200 font-mono-code text-[10px] font-bold uppercase"
-            >
-              📺 Programa · só uma dupla combina = 2 pontos
+            <span data-testid="rep-show-ruleset-chip" className="rdb-nota-scale" data-tip="Regras do programa: se só uma dupla combina, ela leva 2 pontos">
+              programa
             </span>
           )}
+        </span>
+        <span className="rdb-lim-rule" tabIndex={0} data-tip="Cada um escreve, em segredo, a primeira palavra que vier à cabeça para o tema. Se a sua for igual à do parceiro, a dupla pontua. Dá para escrever no celular ou aqui, passando o teclado.">
+          <Info size={16} />
+        </span>
+        <div className="rdb-lim-tools">
+          <span data-testid="rep-timer-display" className={'rdb-lim-timer' + (clockHot ? ' is-hot' : '')} data-tip={free ? 'Sem limite de tempo' : 'Tempo para escrever'}>
+            {free ? <InfinityIcon size={16} /> : <Clock size={16} />}
+            {clock}
+          </span>
         </div>
-        <div className="border border-[#E6194B]/70 bg-[#07080d] px-2.5 py-0.5 flex items-center gap-1.5">
-          <Clock size={13} className="text-rose-400" />
-          <div
-            data-testid="rep-timer-display"
-            className={`font-anton text-base md:text-lg leading-none ${
-              free ? 'text-[#17B8B8]' : rep.timerSeconds <= 10 ? 'text-[#E6194B]' : 'text-[#F5F2EB]'
-            }`}
-          >
-            {free ? (
-              <span className="flex items-center gap-1 text-xs">
-                <InfinityIcon className="w-3.5 h-3.5" />
-                LIVRE
-              </span>
-            ) : (
-              fmt(rep.timerSeconds)
-            )}
-          </div>
-        </div>
-      </div>
+      </header>
 
-      <div className="shrink-0 border-2 border-cyan-400/50 bg-[#07080d] px-4 py-3 text-center">
-        <div className="font-mono-code text-[10px] text-cyan-300 uppercase font-bold">
-          Tema · {rep.category} · escreva UMA palavra e combine com o seu parceiro
-        </div>
-        <div data-testid="rep-theme" className="font-anton text-2xl md:text-4xl text-[#F5F2EB] uppercase leading-tight">
+      <section className="rdb-rep-theme">
+        <span className="rdb-pro-label">{rep.category}</span>
+        <h2 data-testid="rep-theme" className="rdb-rep-theme-text">
           {rep.theme}
-        </div>
-      </div>
+        </h2>
+        <p>Escreva UMA palavra e combine com o seu parceiro.</p>
+      </section>
 
       {rep.phase === 'READY' && (
-        <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-3 border border-white/10 bg-black/40 p-4 text-center">
-          <p className="font-mono-code text-xs text-slate-300 max-w-xl">
-            Cada jogador escreve, em segredo, a primeira palavra que vier à cabeça para o tema. Se a sua palavra for igual
-            à do parceiro, a dupla pontua. Dá para escrever no celular ou aqui na TV, passando o teclado.
-          </p>
-          <button
-            type="button"
-            data-testid="rep-start-btn"
-            onClick={start}
-            className="px-6 py-2.5 border-2 border-[#E6194B] bg-[#E6194B] hover:bg-rose-500 text-white font-anton text-sm uppercase tracking-wider cursor-pointer"
-          >
-            {free ? '▶ COMEÇAR' : `▶ VALENDO (${room.timerConfig}S)`}
+        <section className="rdb-pro-ready">
+          <p>Cada jogador escreve, em segredo, a primeira palavra que vier à cabeça. Se a sua for igual à do parceiro, a dupla pontua.</p>
+          <button type="button" data-testid="rep-start-btn" className="rdb-btn rdb-setup-start" onClick={start}>
+            {free ? 'Começar' : `Valendo (${room.timerConfig}s)`}
           </button>
-        </div>
+        </section>
       )}
 
       {rep.phase === 'WRITING' && (
-        <div className="flex-1 min-h-0 flex flex-col gap-2">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <>
+          <div className="rdb-rep-groups">
             {rep.groups.map((g) => {
               const meta = g.team ? TEAM_META[g.team] : null;
               return (
-                <div key={g.id} className={`border bg-[#07080d] p-2 space-y-1.5 ${meta?.borderClass ?? 'border-white/20'}`}>
-                  <div className="font-mono-code text-[10px] uppercase font-bold text-slate-300">
-                    {meta ? `${meta.equipeLabel} · ${room.teams[g.team!]?.name || meta.defaultName}` : 'Dupla cooperativa'}
-                  </div>
+                <div key={g.id} className="rdb-rep-group" style={{ ['--team' as string]: meta?.hex || '#17b8b8' }}>
+                  <span className="rdb-rep-group-name">{groupName(g)}</span>
                   {g.playerIds.map((pid) => {
                     const sent = (rep.answers[pid] ?? '').trim().length > 0;
                     return (
-                      <div key={pid} data-testid={`rep-player-${pid}`} className="flex items-center gap-2">
-                        <span className="font-anton text-sm text-white uppercase w-32 truncate shrink-0">
+                      <div key={pid} data-testid={`rep-player-${pid}`} className="rdb-rep-row">
+                        <span className="rdb-rep-who">
                           {avatarOf(pid)} {nameOf(pid)}
                         </span>
-                        <span
-                          data-testid={`rep-status-${pid}`}
-                          className={`font-mono-code text-[10px] uppercase font-bold ${sent ? 'text-emerald-300' : 'text-amber-300'}`}
-                        >
-                          {sent ? '✅ escreveu' : '✍️ escrevendo'}
+                        <span data-testid={`rep-status-${pid}`} className={'rdb-rep-state' + (sent ? ' is-ok' : '')} data-tip={sent ? 'Já escreveu' : 'Ainda escrevendo'}>
+                          {sent ? <Check size={16} strokeWidth={4} /> : <Pencil size={16} />}
                         </span>
                         <form
-                          className="flex flex-1 gap-1 min-w-0"
+                          className="rdb-rep-form"
                           onSubmit={(e) => {
                             e.preventDefault();
                             send(pid);
@@ -177,17 +155,13 @@ export const ScreenRepetente: React.FC<ScreenRepetenteProps> = ({ room, onUpdate
                             data-testid={`rep-input-${pid}`}
                             type="password"
                             autoComplete="off"
+                            aria-label={`Palavra de ${nameOf(pid)}`}
                             value={drafts[pid] || ''}
                             onChange={(e) => setDrafts((d) => ({ ...d, [pid]: e.target.value }))}
-                            placeholder="escrever aqui (oculto)"
-                            className="flex-1 min-w-0 bg-black border border-white/20 px-2 py-1 text-xs font-mono-code text-white placeholder:text-slate-600"
+                            placeholder="escreva (oculto)"
                           />
-                          <button
-                            type="submit"
-                            data-testid={`rep-send-${pid}`}
-                            className="px-2 py-1 border border-cyan-400/70 text-cyan-200 hover:bg-cyan-400 hover:text-black font-anton text-[11px] uppercase cursor-pointer"
-                          >
-                            OK
+                          <button type="submit" data-testid={`rep-send-${pid}`} aria-label="Guardar a palavra" data-tip="Guardar a palavra">
+                            <Check size={16} />
                           </button>
                         </form>
                       </div>
@@ -197,86 +171,64 @@ export const ScreenRepetente: React.FC<ScreenRepetenteProps> = ({ room, onUpdate
               );
             })}
           </div>
-          <div className="flex justify-center mt-auto pt-2">
-            <button
-              type="button"
-              data-testid="rep-reveal-btn"
-              onClick={reveal}
-              className={`px-6 py-2.5 border-2 font-anton text-sm uppercase tracking-wider cursor-pointer ${
-                done
-                  ? 'border-emerald-400 bg-emerald-500 text-slate-950 hover:bg-emerald-400'
-                  : 'border-white/30 bg-white/5 text-slate-200 hover:bg-white/10'
-              }`}
-            >
-              {done ? '🎬 REVELAR AS PALAVRAS' : 'REVELAR MESMO ASSIM'}
-            </button>
-          </div>
-        </div>
+          <footer className="rdb-pro-foot">
+            <div className="rdb-pro-foot-end">
+              <button type="button" data-testid="rep-reveal-btn" className={'rdb-btn' + (done ? ' rdb-pro-hit' : '')} onClick={reveal}>
+                {done ? 'Revelar as palavras' : 'Revelar mesmo assim'}
+              </button>
+            </div>
+          </footer>
+        </>
       )}
 
       {rep.phase === 'REVEAL' && rep.result && (
-        <div data-testid="rep-reveal" className="flex-1 min-h-0 flex flex-col gap-2">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <section data-testid="rep-reveal" className="rdb-pro-sum">
+          <div className="rdb-rep-groups is-reveal">
             {rep.groups.map((g) => {
               const res = rep.result!.groups.find((x) => x.groupId === g.id)!;
               const meta = g.team ? TEAM_META[g.team] : null;
               return (
-                <div
-                  key={g.id}
-                  data-testid={`rep-group-${g.id}`}
-                  className={`border p-2 space-y-1.5 ${
-                    res.matched ? 'border-emerald-400/70 bg-emerald-950/30' : 'border-white/15 bg-[#07080d]'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono-code text-[10px] uppercase font-bold text-slate-300">
-                      {meta ? `${meta.equipeLabel} · ${room.teams[g.team!]?.name || meta.defaultName}` : 'Dupla cooperativa'}
-                    </span>
-                    <span
-                      data-testid={`rep-points-${g.id}`}
-                      className={`font-anton text-lg ${res.matched ? 'text-emerald-300' : 'text-slate-500'}`}
-                    >
+                <div key={g.id} data-testid={`rep-group-${g.id}`} className={'rdb-rep-group' + (res.matched ? ' is-match' : '')} style={{ ['--team' as string]: meta?.hex || '#17b8b8' }}>
+                  <span className="rdb-rep-group-head">
+                    <span className="rdb-rep-group-name">{groupName(g)}</span>
+                    <span data-testid={`rep-points-${g.id}`} className="rdb-rep-pts">
                       {res.matched ? `+${res.points}` : '0'}
                     </span>
-                  </div>
+                  </span>
                   {g.playerIds.map((pid) => (
-                    <div key={pid} className="flex items-center justify-between gap-2">
-                      <span className="font-anton text-sm text-white uppercase truncate">
+                    <div key={pid} className="rdb-rep-row is-word">
+                      <span className="rdb-rep-who">
                         {avatarOf(pid)} {nameOf(pid)}
                       </span>
-                      <span data-testid={`rep-word-${pid}`} className="font-anton text-xl text-[#F5F2EB] uppercase">
-                        {rep.answers[pid] || '—'}
-                      </span>
+                      <strong data-testid={`rep-word-${pid}`}>{rep.answers[pid] || '—'}</strong>
                     </div>
                   ))}
-                  <div className="flex items-center justify-between">
-                    <span className="font-anton text-sm uppercase">
-                      {res.matched ? (res.overruled ? '⚖️ COMBINOU (JUIZ)' : '✅ COMBINOU!') : '✖ NÃO COMBINOU'}
-                    </span>
-                    <button
-                      type="button"
-                      data-testid={`rep-overrule-${g.id}`}
-                      onClick={() => overrule(g.id)}
-                      className="px-2 py-0.5 border border-sky-400/60 text-sky-200 hover:bg-sky-400 hover:text-black text-[10px] font-mono-code cursor-pointer"
-                    >
-                      ⚖️ {res.overruled ? 'DESFAZER' : 'JUIZ ACEITA'}
+                  <span className="rdb-rep-verdict">
+                    {res.matched ? (
+                      <>
+                        <Check size={18} strokeWidth={4} /> {res.overruled ? 'Combinou (juiz)' : 'Combinou!'}
+                      </>
+                    ) : (
+                      <>
+                        <XIcon size={18} strokeWidth={4} /> Não combinou
+                      </>
+                    )}
+                    <button type="button" data-testid={`rep-overrule-${g.id}`} className="rdb-btn" onClick={() => overrule(g.id)} data-tip={res.overruled ? 'Desfazer a decisão do juiz' : 'O juiz aceita: contam como combinadas'}>
+                      <Scale /> {res.overruled ? 'Desfazer' : 'Juiz aceita'}
                     </button>
-                  </div>
+                  </span>
                 </div>
               );
             })}
           </div>
-          <div className="mt-auto flex justify-center pt-2">
-            <button
-              type="button"
-              data-testid="rep-next-round-btn"
-              onClick={onNextRound}
-              className="px-6 py-2.5 border-2 border-cyan-400 bg-cyan-400 hover:bg-cyan-300 text-black font-anton text-sm uppercase tracking-wider flex items-center gap-2 cursor-pointer"
-            >
-              CONFIRMAR PONTOS E AVANÇAR <ArrowRight size={16} />
+          <div className="rdb-pro-sum-foot">
+            <span />
+            <button type="button" data-testid="rep-next-round-btn" className="rdb-btn rdb-setup-start" onClick={onNextRound}>
+              Confirmar pontos e avançar
+              <ArrowRight />
             </button>
           </div>
-        </div>
+        </section>
       )}
     </div>
   );

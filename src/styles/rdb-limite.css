@@ -1840,3 +1840,304 @@
   min-height: 1.8rem;
   flex-shrink: 0;
 }
+
+/* ---------- Repetente, Respostas, Estádios, Como eu pinto ---------- */
+.rdb-rep-theme {
+  position: relative;
+  flex-shrink: 0;
+  padding: 1.8rem 1rem 0.8rem;
+  border: var(--rdb-line) solid var(--rdb-teal);
+  text-align: center;
+}
+.rdb-rep-theme .rdb-pro-label {
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-rep-theme-text {
+  margin: 0;
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 6vh, 4rem);
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+.rdb-rep-theme p {
+  margin: 0.3rem 0 0;
+  color: var(--rdb-ink-2);
+  font-weight: 700;
+}
+.rdb-rep-groups {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+  grid-auto-rows: minmax(0, 14rem);
+  align-content: center;
+  gap: 0.7rem;
+}
+.rdb-rep-group {
+  --team: var(--rdb-teal);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.8rem 0.9rem;
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.25);
+  border-top: 0.35rem solid var(--team);
+  background: var(--rdb-navy-2);
+}
+.rdb-rep-group.is-match {
+  border-color: var(--rdb-teal);
+  background: rgba(23, 184, 184, 0.12);
+}
+.rdb-rep-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.rdb-rep-group-name {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--team);
+}
+.rdb-rep-pts {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: 2rem;
+  line-height: 1;
+}
+.rdb-rep-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.rdb-rep-who {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 9rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.rdb-rep-state {
+  display: grid;
+  place-items: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  color: var(--rdb-amber);
+  cursor: help;
+}
+.rdb-rep-state.is-ok {
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-rep-form {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 0.3rem;
+}
+.rdb-rep-form input {
+  flex: 1;
+  min-width: 0;
+  height: 2.4rem;
+  padding: 0 0.6rem;
+  background: var(--rdb-navy);
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.3);
+  color: var(--rdb-cream);
+  font-family: var(--rdb-heavy);
+  font-weight: 700;
+}
+.rdb-rep-form input:focus {
+  outline: none;
+  border-color: var(--rdb-teal);
+}
+.rdb-rep-form button {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  background: var(--rdb-teal);
+  border: 0;
+  color: var(--rdb-navy);
+  cursor: pointer;
+}
+.rdb-rep-row.is-word {
+  justify-content: space-between;
+}
+.rdb-rep-row.is-word strong {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.5rem, 4vh, 2.4rem);
+  text-transform: uppercase;
+}
+.rdb-rep-verdict {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.rdb-rep-verdict .rdb-btn {
+  margin-left: auto;
+  height: 2.2rem;
+  font-size: 0.85rem;
+}
+.rdb-rsp-step {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+.rdb-rsp-step h2 {
+  margin: 0;
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 6vh, 3.6rem);
+  text-transform: uppercase;
+}
+.rdb-rsp-step p {
+  margin: 0;
+  color: var(--rdb-ink-2);
+  font-weight: 700;
+}
+.rdb-est-clues {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+.rdb-est-clue {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0 0.9rem 0 0;
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.18);
+  color: var(--rdb-ink-2);
+}
+.rdb-est-clue.is-open {
+  border-color: var(--rdb-teal);
+  background: rgba(23, 184, 184, 0.1);
+  color: var(--rdb-cream);
+}
+.rdb-est-clue-n {
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  min-width: 3rem;
+  background: rgba(245, 242, 235, 0.14);
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: 1.4rem;
+}
+.rdb-est-clue.is-open .rdb-est-clue-n {
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.rdb-est-clue-text {
+  font-weight: 800;
+  font-size: clamp(1.1rem, 2.6vh, 1.7rem);
+  line-height: 1.2;
+}
+.rdb-est-photo {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.rdb-est-photo img {
+  max-height: 11rem;
+  object-fit: cover;
+}
+.rdb-est-attempts {
+  color: var(--rdb-ink-2);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+.rdb-pinto-board {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.rdb-pinto-canvas {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+.rdb-pinto-canvas > * {
+  flex: none;
+  height: 100%;
+  width: auto !important;
+  max-width: 100%;
+}
+.rdb-pinto-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+.rdb-pinto-tools > button:not(.rdb-lim-icon) {
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 2px solid var(--rdb-navy);
+  outline: 1px solid rgba(245, 242, 235, 0.35);
+  cursor: pointer;
+}
+.rdb-pinto-tools > button.is-on {
+  outline: 3px solid var(--rdb-cream);
+}
+.rdb-pinto-thumbs {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  align-content: center;
+  gap: 0.7rem;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.rdb-pinto-thumb {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  border: var(--rdb-line) solid rgba(245, 242, 235, 0.25);
+  background: var(--rdb-navy-2);
+}
+.rdb-pinto-thumb.is-hit {
+  border-color: var(--rdb-teal);
+}
+.rdb-pinto-thumb.is-stolen {
+  border-color: var(--rdb-amber);
+}
+.rdb-pinto-thumb > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.rdb-word.is-slim {
+  flex: 0 0 auto;
+  min-height: 0;
+  padding: 0.4rem 1rem;
+}
+.rdb-word.is-slim .rdb-word-text {
+  font-size: clamp(1.8rem, 5vh, 3rem);
+}
