@@ -167,9 +167,11 @@ export default function App() {
     return () => window.clearTimeout(t);
   }, []);
 
+  const isPadRoute = Boolean(parsedQuery.isPadMode);
   const isPlayRoute =
     window.location.pathname.startsWith('/play') ||
     Boolean(parsedQuery.joinCode) ||
+    isPadRoute ||
     urlParams.get('mode') === 'play' ||
     urlParams.get('mode') === 'controller' ||
     parsedQuery.requestedMode === 'multi';
@@ -636,25 +638,30 @@ export default function App() {
         <div className="bg-[#090b14] border-b border-rose-500/40 p-2 flex flex-wrap items-center justify-between gap-1.5 text-xs">
           <div className="flex items-center gap-2 min-w-0">
             <span className="font-mono-code text-cyan-300 font-bold uppercase truncate">
-              📱 CONTROLE MOBILE (SALA: {room.roomId})
+              {isPadRoute
+                ? `PRANCHETA · SALA ${room.roomId}`
+                : `CONTROLE MOBILE (SALA: ${room.roomId})`}
             </span>
             {renderConnectionBadge()}
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              onClick={() => setViewMode('host')}
-              className="px-2 py-0.5 border border-cyan-400 bg-cyan-950 text-cyan-200 font-mono-code flex items-center gap-1 cursor-pointer"
-            >
-              <Tv size={12} />
-              Ver Tela da TV
-            </button>
-          </div>
+          {!isPadRoute && (
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={() => setViewMode('host')}
+                className="px-2 py-0.5 border border-cyan-400 bg-cyan-950 text-cyan-200 font-mono-code flex items-center gap-1 cursor-pointer"
+              >
+                <Tv size={12} />
+                Ver Tela da TV
+              </button>
+            </div>
+          )}
         </div>
 
         <ControllerView
           room={room}
           currentPlayerId={currentUserId}
           connectionStatus={connectionStatus}
+          isPadMode={isPadRoute}
           onRegisterPlayer={registerPlayer}
           onUpdateRoom={broadcastState}
           onSwitchToHostMode={() => setViewMode('host')}

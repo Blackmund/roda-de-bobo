@@ -103,6 +103,7 @@ interface ControllerViewProps {
   room: GameRoom;
   currentPlayerId: string;
   connectionStatus?: 'Connected' | 'Reconnecting' | 'Offline';
+  isPadMode?: boolean;
   onRegisterPlayer: (
     name: string,
     avatar?: string,
@@ -127,6 +128,7 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
   room,
   currentPlayerId,
   connectionStatus = 'Connected',
+  isPadMode = false,
   onRegisterPlayer,
   onUpdateRoom,
   onSwitchToHostMode,
@@ -154,7 +156,7 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
   const [selectedSwapTarget2, setSelectedSwapTarget2] = useState<string>('');
   const [selectedSwapTarget, setSelectedSwapTarget] = useState<string>('');
   const [repetenteDraft, setRepetenteDraft] = useState<string>('');
-  const [pintoColor, setPintoColor] = useState<string>('#F5F2EB');
+  const [pintoColor, setPintoColor] = useState<string>('#0A0B1E');
 
   // Reset secret guess input state when round or question changes
   useEffect(() => {
@@ -442,6 +444,55 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
   // --- MODO 2: CONTROLE CENTRAL / MESTRE DA SALA (1 Celular no Sofá controlando a TV inteira) ---
   if (isMasterRemoteMode) {
     return <MasterRemoteController room={room} setIsMasterRemoteMode={setIsMasterRemoteMode} renderMobileTurnSpotlightBanner={renderMobileTurnSpotlightBanner} renderMobileTimerBanner={renderMobileTimerBanner} onUpdateRoom={onUpdateRoom} setHoldingSecret={setHoldingSecret} holdingSecret={holdingSecret} />;
+  }
+
+  // Modo "1 Celular como Prancheta" (?pad=1): conecta direto na sala sem exigir cadastro de jogador.
+  if (isPadMode) {
+    if (room.activeGame === 'como-eu-pinto' && room.comoEuPinto) {
+      const drawerPlayer =
+        room.players.find((p) => p.id === room.comoEuPinto?.drawerPlayerId) || room.players[0];
+      if (drawerPlayer) {
+        return (
+          <ComoEuPintoController
+            room={room}
+            player={drawerPlayer}
+            onUpdateRoom={onUpdateRoom}
+            wrapIfMultiMode={(content) => content}
+            pintoColor={pintoColor}
+            setPintoColor={setPintoColor}
+            isSharedPad={true}
+          />
+        );
+      }
+    }
+
+    return (
+      <div
+        data-testid="controller-pad-waiting"
+        className="min-h-[calc(100dvh-44px)] bg-[#0a0b1e] text-[#f5f2eb] p-6 flex flex-col items-center justify-center text-center gap-4"
+      >
+        <div className="border-2 border-[#17b8b8] bg-[#10122b] p-6 max-w-sm w-full space-y-3">
+          <span className="inline-block bg-[#17b8b8] text-[#0a0b1e] px-2.5 py-1 text-xs font-extrabold uppercase tracking-wider">
+            Prancheta conectada · Sala {room.roomId}
+          </span>
+          <h2 className="font-anton text-2xl uppercase tracking-wide m-0">
+            Aguardando o jogo começar na TV
+          </h2>
+          <p className="text-xs text-[#b9bdd4] m-0">
+            Assim que a partida de Como eu pinto iniciar na TV, a folha de desenho vai abrir aqui automaticamente.
+          </p>
+          {onForceSync && (
+            <button
+              type="button"
+              onClick={onForceSync}
+              className="w-full py-2.5 border-2 border-[#17b8b8] bg-[#0a0b1e] text-[#f5f2eb] text-xs font-extrabold uppercase tracking-wider cursor-pointer"
+            >
+              Sincronizar agora
+            </button>
+          )}
+        </div>
+      </div>
+    );
   }
 
   // If player not registered yet or chose to switch player/leave

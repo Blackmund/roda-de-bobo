@@ -338,6 +338,8 @@ export interface DrawStroke {
   color: string;
   /** espessura relativa a largura da area (ex.: 0.008) */
   width: number;
+  /** opacidade do traco (0.15 a 1.0, padrao 1) */
+  opacity?: number;
 }
 
 // COM TERRA (poliminos com furo vazado; 3 modos: arquiteto, diabo, fronteiras). Motor em utils/comTerraEngine.ts
@@ -403,9 +405,21 @@ export interface ComTerraState {
   seed: number;
 }
 
+export type PintoPlayMode = 'pad' | 'tv';
+
 export interface ComoEuPintoState {
   /** STEAL = acabou o tempo e a dupla rival tenta as palavras que faltam */
   phase: 'READY' | 'PLAYING' | 'STEAL' | 'SUMMARY';
+  /** No modo local: 'pad' (1 celular como prancheta, estilo Gartic TV) ou 'tv' (so pela TV) */
+  inputMode?: PintoPlayMode;
+  /** Quando true na TV (modo 'tv'), pede para todos fecharem os olhos antes de mostrar a palavra */
+  tvRevealGate?: boolean;
+  /** Quando true na prancheta unica ('pad'), pede para passar o celular antes de mostrar a palavra */
+  padPassGate?: boolean;
+  /** Indica se a prancheta unica conectou a sala */
+  padConnected?: boolean;
+  /** Traco em andamento enviado ao vivo antes de soltar o dedo */
+  liveStroke?: DrawStroke | null;
   words: string[];
   currentIndex: number;
   /** 'correct' = a dupla que desenha acertou; 'stolen' = a dupla rival roubou */
@@ -419,6 +433,8 @@ export interface ComoEuPintoState {
   timerActive: boolean;
   /** desenho da palavra atual */
   strokes: DrawStroke[];
+  /** pilha de refazer do desenho atual */
+  redoStrokes?: DrawStroke[];
   /** desenhos ja feitos, um por palavra (para o resumo) */
   drawings: DrawStroke[][];
   wordHidden?: boolean;

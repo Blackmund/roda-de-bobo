@@ -24,6 +24,7 @@ export interface ParsedJoinQueryParams {
   requestedMode: ConnectionMode | null;
   shouldOpenQuickJoin: boolean;
   isControllerView: boolean;
+  isPadMode?: boolean;
 }
 
 export type AuthoritativeRoomEvent =
@@ -294,9 +295,11 @@ export function parseRoomQueryParams(search: string): ParsedJoinQueryParams {
   const rawRoom = params.get('room');
   const rawMode = (params.get('mode') || '').toLowerCase();
   const rawRole = (params.get('role') || '').toLowerCase();
+  const rawPad = (params.get('pad') || '').toLowerCase();
 
   const joinCode = rawJoin ? sanitizeRoomCode(rawJoin) : null;
   const roomCode = rawRoom ? sanitizeRoomCode(rawRoom) : joinCode;
+  const isPadMode = rawPad === '1' || rawPad === 'true' || rawMode === 'pad';
 
   // If a join code is present or role=client, it is ALWAYS a client controller
   const hasJoinParam = Boolean(joinCode && joinCode.length >= 3);
@@ -315,6 +318,7 @@ export function parseRoomQueryParams(search: string): ParsedJoinQueryParams {
   const isControllerView =
     hasJoinParam ||
     rawRole === 'client' ||
+    isPadMode ||
     rawMode === 'controller' ||
     rawMode === 'play' ||
     rawMode === 'multi';
@@ -323,8 +327,9 @@ export function parseRoomQueryParams(search: string): ParsedJoinQueryParams {
     joinCode: joinCode && joinCode.length >= 3 ? joinCode : null,
     roomCode: roomCode && roomCode.length >= 3 ? roomCode : null,
     requestedMode,
-    shouldOpenQuickJoin: hasJoinParam,
-    isControllerView
+    shouldOpenQuickJoin: hasJoinParam && !isPadMode,
+    isControllerView,
+    isPadMode
   };
 }
 

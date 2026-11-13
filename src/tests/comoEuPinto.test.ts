@@ -6,18 +6,24 @@ import {
   addStroke,
   buildComoEuPintoState,
   clearDrawing,
+  dismissPadPassGate,
+  dismissTvWordReveal,
   endDrawing,
   finishSteal,
   markDrawn,
   pickPintoPair,
   pintoRoundPoints,
+  redoStroke,
   remainingWords,
   sanitizeStroke,
+  setLiveStroke,
   skipWord,
+  startPintoWithMode,
   stealWord,
   tickPintoTimer,
   undoStroke
 } from '../utils/comoEuPintoEngine.ts';
+import { parseRoomQueryParams } from '../utils/multiplayerRoomEngine.ts';
 import { DESENHO_WORDS, drawDesenhoWords, normalizeDesenhoWord } from '../data/desenhoWords.ts';
 import { GAME_LIMITS } from '../config/gameLimits.ts';
 import { usesLocalContent } from '../config/localGames.ts';
@@ -138,4 +144,64 @@ test('NOV-07: banco sem repeticao, sem palavras com numero e limites em equipes'
   assert.equal(drawDesenhoWords(3, new Set(keys)).length, 3);
   assert.deepEqual([GAME_LIMITS['como-eu-pinto'].min, GAME_LIMITS['como-eu-pinto'].max, GAME_LIMITS['como-eu-pinto'].teamsRequired], [2, 8, true]);
   assert.equal(usesLocalContent('como-eu-pinto'), true);
+});
+
+test('NOV-07: prancheta ao vivo, opacidade, refazer e gates de protecao do tema', () => {
+  const sOp = sanitizeStroke({ points: [[0.2, 0.3]], color: '#0A0B1E', width: 0.011, opacity: 0.45 })!;
+  assert.equal(sOp.opacity, 0.45);
+
+  // Live stroke e redoStack
+  let st = playing();
+  st = setLiveStroke(st, stroke(4));
+  assert.equal(st.liveStroke?.points.length, 4);
+  st = addStroke(st, stroke(4));
+  assert.equal(st.liveStroke, null);
+  assert.equal(st.strokes.length, 1);
+  st = undoStroke(st);
+  assert.equal(st.strokes.length, 0);
+  assert.equal(st.redoStrokes?.length, 1);
+  st = redoStroke(st);
+  assert.equal(st.strokes.length, 1);
+  assert.equal(st.redoStrokes?.length, 0);
+
+  // Modo Local: "So pela TV" protege palavra com olhos fechados antes de cada palavra
+  let tv = startPintoWithMode(
+    buildComoEuPintoState({ words: ['a', 'b', 'c'], drawTeam: 'A', drawerPlayerId: 'd', timerSeconds: 120 }),
+    'tv',
+    true,
+    true
+  );
+  assert.equal(tv.phase, 'PLAYING');
+  assert.equal(tv.inputMode, 'tv');
+  assert.equal(tv.tvRevealGate, true);
+  assert.equal(tv.wordHidden, true);
+  assert.equal(tv.timerActive, false);
+  tv = dismissTvWordReveal(tv, true);
+  assert.equal(tv.tvRevealGate, false);
+  assert.equal(tv.timerActive, true);
+  tv = markDrawn(tv);
+  assert.equal(tv.tvRevealGate, true);
+  assert.equal(tv.timerActive, false);
+
+  // Modo Local: "1 Celular como Prancheta" trava tela para passar o celular antes de revelar
+  let pad = startPintoWithMode(
+    buildComoEuPintoState({ words: ['a', 'b', 'c'], drawTeam: 'A', drawerPlayerId: 'd', timerSeconds: 120 }),
+    'pad',
+    true,
+    true
+  );
+  assert.equal(pad.inputMode, 'pad');
+  assert.equal(pad.padPassGate, true);
+  assert.equal(pad.wordHidden, true);
+  assert.equal(pad.timerActive, false);
+  pad = dismissPadPassGate(pad, true);
+  assert.equal(pad.padPassGate, false);
+  assert.equal(pad.timerActive, true);
+
+  // Query param ?pad=1 entra direto como prancheta sem QuickJoin
+  const parsedPad = parseRoomQueryParams('?join=ABCD23&role=client&pad=1');
+  assert.equal(parsedPad.joinCode, 'ABCD23');
+  assert.equal(parsedPad.isControllerView, true);
+  assert.equal(parsedPad.isPadMode, true);
+  assert.equal(parsedPad.shouldOpenQuickJoin, false);
 });

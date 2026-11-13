@@ -1,7 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Eraser, Eye, EyeOff, Pencil, Redo2, Trash2, Undo2 } from 'lucide-react';
 import { GameRoom, Player } from '../../../types/game';
 import { DrawingCanvas } from '../../DrawingCanvas';
-import { PINTO_COLORS, addStroke as pintoAddStroke, clearDrawing as pintoClear, undoStroke as pintoUndo } from '../../../utils/comoEuPintoEngine';
+import { sounds } from '../../../utils/soundEffects';
+import {
+  PINTO_BRUSH_PRESETS,
+  PINTO_COLORS,
+  PINTO_PAPER_COLOR,
+  addStroke as pintoAddStroke,
+  clearDrawing as pintoClear,
+  dismissPadPassGate,
+  pintoRoundPoints,
+  redoStroke as pintoRedo,
+  setLiveStroke,
+  undoStroke as pintoUndo
+} from '../../../utils/comoEuPintoEngine';
 
 interface ComoEuPintoControllerProps {
   room: GameRoom;
@@ -10,6 +23,7 @@ interface ComoEuPintoControllerProps {
   wrapIfMultiMode: (...args: any[]) => any;
   pintoColor: string;
   setPintoColor: React.Dispatch<React.SetStateAction<string>>;
+  isSharedPad?: boolean;
 }
 
 export const ComoEuPintoController: React.FC<ComoEuPintoControllerProps> = ({
@@ -18,83 +32,333 @@ export const ComoEuPintoController: React.FC<ComoEuPintoControllerProps> = ({
   onUpdateRoom,
   wrapIfMultiMode,
   pintoColor,
-  setPintoColor
+  setPintoColor,
+  isSharedPad = false
 }) => {
-  // Mantem o estreitamento de tipos que o bloco tinha dentro do componente original.
-  if (!(room.activeGame === 'como-eu-pinto' && room.comoEuPinto)) return null;
+  const [tool, setTool] = useState<'pen' | 'eraser'>('pen');
+  const [lineWidth, setLineWidth] = useState<number>(0.011);
+  const [opacity, setOpacity] = useState<number>(1);
+  const [localWordHidden, setLocalWordHidden] = useState<boolean>(false);
 
-    const c = room.comoEuPinto;
-    const isDrawer = player.id === c.drawerPlayerId;
-    const canDraw = isDrawer && c.phase === 'PLAYING';
-    const mm = Math.floor(c.timerSeconds / 60);
-    const ss = String(c.timerSeconds % 60).padStart(2, '0');
-    const update = (fn: (prev: NonNullable<GameRoom['comoEuPinto']>) => NonNullable<GameRoom['comoEuPinto']>) =>
-      onUpdateRoom((prev) => ({ ...prev, comoEuPinto: prev.comoEuPinto ? fn(prev.comoEuPinto) : undefined }));
-    return wrapIfMultiMode(
-      <div
-        data-testid="controller-pinto-view"
-        className="min-h-screen bg-[#07080d] p-3 flex flex-col gap-3 max-w-md mx-auto text-white"
-      >
-        <div className="flex items-center justify-between">
-          <span className="font-anton text-lg uppercase">🎨 Como eu pinto</span>
-          <span className="font-anton text-lg">{room.timerConfig === 0 ? 'LIVRE' : mm + ':' + ss}</span>
+  const c = room.activeGame === 'como-eu-pinto' ? room.comoEuPinto : undefined;
+
+  useEffect(() => {
+    setLocalWordHidden(false);
+  }, [c?.currentIndex, c?.drawerPlayerId, room.roundNumber]);
+
+  // Avisa a TV que o celular prancheta esta conectado na sala.
+  // Dispara apos breve atraso para garantir que os canais de sincronizacao da sala pai ja montaram.
+  useEffect(() => {
+    if (!isSharedPad || !c || c.padConnected || (room.players?.length || 0) === 0) return;
+    const ping = () => {
+      onUpdateRoom((prev) => ({
+        ...prev,
+        comoEuPinto: prev.comoEuPinto ? { ...prev.comoEuPinto, padConnected: true } : undefined
+      }));
+    };
+    const t1 = window.setTimeout(ping, 220);
+    const t2 = window.setTimeout(ping, 1200);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [isSharedPad, c?.padConnected, room.players?.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!(room.activeGame === 'como-eu-pinto' && c)) return null;
+
+  const isDrawer = isSharedPad || player.id === c.drawerPlayerId;
+  const drawer = room.players.find((p) => p.id === c.drawerPlayerId);
+  const guesser = room.players.find((p) => p.id === c.guesserPlayerId);
+  const mm = Math.floor(c.timerSeconds / 60);
+  const ss = String(c.timerSeconds % 60).padStart(2, '0');
+  const clockLabel = room.timerConfig === 0 ? 'LIVRE' : `${mm}:${ss}`;
+  const update = (fn: (prev: NonNullable<GameRoom['comoEuPinto']>) => NonNullable<GameRoom['comoEuPinto']>) =>
+    onUpdateRoom((prev) => ({ ...prev, comoEuPinto: prev.comoEuPinto ? fn(prev.comoEuPinto) : undefined }));
+
+  const activeColor = tool === 'eraser' ? PINTO_PAPER_COLOR : pintoColor;
+  const activeOpacity = tool === 'eraser' ? 1 : opacity;
+  const wordPos = `${Math.min(c.currentIndex + 1, c.words.length)}/${Math.max(1, c.words.length)}`;
+  const pts = pintoRoundPoints(c);
+
+  const content = (
+    <div data-testid="controller-pinto-view" className="rdb-pad">
+      <header className="rdb-pad-head">
+        <div className="rdb-pad-head-left">
+          <span className="rdb-pad-badge">
+            {isDrawer ? `Palavra ${wordPos}` : 'Espelho ao vivo'}
+          </span>
+          {c.phase === 'PLAYING' && isDrawer && !c.padPassGate && (
+            <strong data-testid="controller-pinto-word" className="rdb-pad-word">
+              {localWordHidden ? 'Palavra oculta' : c.words[c.currentIndex]}
+            </strong>
+          )}
+          {c.phase === 'PLAYING' && isDrawer && !c.padPassGate && (
+            <button
+              type="button"
+              aria-label={localWordHidden ? 'Mostrar palavra' : 'Ocultar palavra'}
+              onClick={() => setLocalWordHidden((v) => !v)}
+              className="rdb-pad-icon-btn"
+            >
+              {localWordHidden ? <Eye size={16} /> : <EyeOff size={16} />}
+            </button>
+          )}
         </div>
-        {isDrawer ? (
-          <div className="border-2 border-cyan-400/60 bg-black p-2 text-center">
-            <div className="font-mono-code text-[10px] text-cyan-300 uppercase font-bold">
-              Desenhe (sem letras nem números, sem falar)
-            </div>
-            <div data-testid="controller-pinto-word" className="font-anton text-3xl uppercase leading-tight break-words">
-              {c.phase === 'PLAYING' ? (c.wordHidden ? '🙈' : c.words[c.currentIndex]) : c.phase === 'READY' ? 'Aguarde o início' : 'Tempo encerrado'}
-            </div>
+        <div className="rdb-pad-head-right">
+          {drawer && (
+            <span className="rdb-pad-who">
+              {drawer.name}
+              {guesser ? ` -> ${guesser.name}` : ''}
+            </span>
+          )}
+          <span
+            data-testid="controller-pinto-timer"
+            className={`rdb-pad-clock ${c.timerSeconds <= 10 && c.phase === 'PLAYING' ? 'is-hot' : ''}`}
+          >
+            {clockLabel}
+          </span>
+        </div>
+      </header>
+
+      {c.phase === 'READY' && (
+        <section data-testid="controller-pinto-ready" className="rdb-pad-gate">
+          <div className="rdb-pad-gate-box">
+            <span className="rdb-pad-badge">Como eu pinto · Rodada {room.roundNumber}</span>
+            <h2>
+              {isDrawer
+                ? `${drawer?.name || 'Você'} vai desenhar agora`
+                : `${drawer?.name || 'Desenhista'} vai desenhar`}
+            </h2>
+            <p>
+              {isSharedPad
+                ? 'Esta é a prancheta da sala. Assim que a rodada começar na TV, só quem desenha pode olhar para o celular.'
+                : isDrawer
+                ? `Suas ${c.words.length} palavras secretas aparecem aqui ao começar. A TV mostra só o seu traço em tempo real.`
+                : `${guesser?.name || 'Sua dupla'} adivinha olhando a TV.`}
+            </p>
+            <div className="rdb-pad-status">Aguardando o início na TV...</div>
           </div>
-        ) : (
-          <div className="border border-white/15 bg-black/50 p-2 text-center font-mono-code text-xs text-slate-300">
-            {player.id === c.guesserPlayerId
-              ? 'Olhe o desenho e chute a palavra em voz alta!'
-              : 'Acompanhe o desenho. Você pode olhar, mas não pode ajudar.'}
+        </section>
+      )}
+
+      {c.phase === 'PLAYING' && isSharedPad && c.padPassGate && (
+        <section data-testid="controller-pinto-pass-gate" className="rdb-pad-gate">
+          <div className="rdb-pad-gate-box is-focus">
+            <span className="rdb-pad-badge">Proteção do tema</span>
+            <h2>Passe o celular para {drawer?.name || 'quem vai desenhar'}</h2>
+            <p>
+              Só <strong>{drawer?.name || 'o desenhista'}</strong> pode olhar a tela agora para ver a palavra secreta e começar a desenhar.
+            </p>
+            <button
+              type="button"
+              data-testid="controller-pinto-unlock-btn"
+              onClick={() => {
+                sounds.playPowerup();
+                update((prev) => dismissPadPassGate(prev, room.timerConfig > 0));
+              }}
+              className="rdb-pad-cta"
+            >
+              Ver palavra e desenhar
+            </button>
           </div>
-        )}
-        <DrawingCanvas
-          testId="controller-pinto-canvas"
-          strokes={c.strokes}
-          editable={canDraw}
-          color={pintoColor}
-          onStroke={(stroke) => update((prev) => pintoAddStroke(prev, stroke))}
-        />
-        {canDraw && (
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {PINTO_COLORS.map((col) => (
-              <button
-                key={col}
-                type="button"
-                aria-label={'Cor ' + col}
-                onClick={() => setPintoColor(col)}
-                style={{ backgroundColor: col }}
-                className={'w-8 h-8 border-2 cursor-pointer ' + (pintoColor === col ? 'border-white scale-110' : 'border-black/60')}
-              />
-            ))}
+        </section>
+      )}
+
+      {c.phase === 'PLAYING' && (!isSharedPad || !c.padPassGate) && isDrawer && (
+        <div className="rdb-pad-studio">
+          <div className="rdb-pad-dock-left" role="toolbar" aria-label="Ferramentas de desenho">
+            <button
+              type="button"
+              data-testid="controller-pinto-pen"
+              aria-label="Lápis"
+              aria-pressed={tool === 'pen'}
+              onClick={() => setTool('pen')}
+              className={`rdb-pad-tool ${tool === 'pen' ? 'is-on' : ''}`}
+            >
+              <Pencil size={18} />
+            </button>
+            <button
+              type="button"
+              data-testid="controller-pinto-eraser"
+              aria-label="Borracha"
+              aria-pressed={tool === 'eraser'}
+              onClick={() => setTool('eraser')}
+              className={`rdb-pad-tool ${tool === 'eraser' ? 'is-on' : ''}`}
+            >
+              <Eraser size={18} />
+            </button>
             <button
               type="button"
               data-testid="controller-pinto-undo"
+              aria-label="Desfazer"
+              disabled={c.strokes.length === 0}
               onClick={() => update((prev) => pintoUndo(prev))}
-              className="px-3 py-1.5 border border-white/25 text-slate-200 font-anton text-xs uppercase cursor-pointer"
+              className="rdb-pad-tool"
             >
-              Desfazer
+              <Undo2 size={18} />
+            </button>
+            <button
+              type="button"
+              data-testid="controller-pinto-redo"
+              aria-label="Refazer"
+              disabled={(c.redoStrokes?.length || 0) === 0}
+              onClick={() => update((prev) => pintoRedo(prev))}
+              className="rdb-pad-tool"
+            >
+              <Redo2 size={18} />
             </button>
             <button
               type="button"
               data-testid="controller-pinto-clear"
-              onClick={() => update((prev) => pintoClear(prev))}
-              className="px-3 py-1.5 border border-white/25 text-slate-200 font-anton text-xs uppercase cursor-pointer"
+              aria-label="Limpar folha"
+              disabled={c.strokes.length === 0}
+              onClick={() => {
+                sounds.playFlip();
+                update((prev) => pintoClear(prev));
+              }}
+              className="rdb-pad-tool is-danger"
             >
-              Limpar
+              <Trash2 size={18} />
             </button>
           </div>
-        )}
-        <div className="font-mono-code text-[11px] text-slate-300 text-center">
-          Quem confirma acerto, pulo e roubo é o diretor na TV.
+
+          <div className="rdb-pad-sheet">
+            <DrawingCanvas
+              testId="controller-pinto-canvas"
+              strokes={c.strokes}
+              liveStroke={c.liveStroke}
+              editable={true}
+              color={activeColor}
+              lineWidth={tool === 'eraser' ? Math.max(0.018, lineWidth * 1.4) : lineWidth}
+              opacity={activeOpacity}
+              backgroundColor={PINTO_PAPER_COLOR}
+              onLiveStroke={(stroke) => update((prev) => setLiveStroke(prev, stroke))}
+              onStroke={(stroke) => update((prev) => pintoAddStroke(prev, stroke))}
+            />
+          </div>
+
+          <div className="rdb-pad-dock-right">
+            <div className="rdb-pad-preview" aria-label="Cor e tamanho atual">
+              <span
+                className="rdb-pad-preview-dot"
+                style={{
+                  backgroundColor: activeColor,
+                  opacity: activeOpacity,
+                  width: `${Math.max(8, Math.min(28, lineWidth * 1000))}px`,
+                  height: `${Math.max(8, Math.min(28, lineWidth * 1000))}px`,
+                  border: activeColor === '#FFFFFF' ? '1px solid #0a0b1e' : 'none'
+                }}
+              />
+            </div>
+            <div className="rdb-pad-presets" role="group" aria-label="Espessura rápida">
+              {PINTO_BRUSH_PRESETS.map((preset) => {
+                const isActive = Math.abs(lineWidth - preset.width) < 0.0025;
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    aria-pressed={isActive}
+                    onClick={() => setLineWidth(preset.width)}
+                    className={`rdb-pad-preset ${isActive ? 'is-on' : ''}`}
+                  >
+                    {preset.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="rdb-pad-swatches" role="group" aria-label="Cores">
+              {PINTO_COLORS.map((col) => {
+                const isSelected = tool === 'pen' && pintoColor === col;
+                return (
+                  <button
+                    key={col}
+                    type="button"
+                    aria-label={`Cor ${col}`}
+                    aria-pressed={isSelected}
+                    onClick={() => {
+                      setTool('pen');
+                      setPintoColor(col);
+                    }}
+                    style={{ backgroundColor: col }}
+                    className={`rdb-pad-swatch ${isSelected ? 'is-on' : ''}`}
+                  />
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="rdb-pad-dock-bottom">
+            <label className="rdb-pad-slider">
+              <span>Espessura</span>
+              <input
+                type="range"
+                min={0.003}
+                max={0.032}
+                step={0.001}
+                value={lineWidth}
+                onChange={(e) => setLineWidth(Number(e.target.value))}
+              />
+            </label>
+            <label className="rdb-pad-slider">
+              <span>Opacidade</span>
+              <input
+                type="range"
+                min={0.2}
+                max={1}
+                step={0.05}
+                value={opacity}
+                onChange={(e) => setOpacity(Number(e.target.value))}
+              />
+            </label>
+            <span className="rdb-pad-hint">Acertos e pulos na TV</span>
+          </div>
         </div>
-      </div>
-    );
-  };
+      )}
+
+      {c.phase === 'PLAYING' && !isDrawer && !isSharedPad && (
+        <section className="rdb-pad-watch">
+          <div className="rdb-pad-watch-msg">
+            {player.id === c.guesserPlayerId
+              ? 'Sua dupla está desenhando! Olhe e fale seu palpite em voz alta.'
+              : `${drawer?.name || 'Desenhista'} está desenhando ao vivo. Aguarde a sua vez ou a chance de roubo.`}
+          </div>
+          <div className="rdb-pad-sheet is-watch">
+            <DrawingCanvas
+              testId="controller-pinto-canvas"
+              strokes={c.strokes}
+              liveStroke={c.liveStroke}
+              editable={false}
+              backgroundColor={PINTO_PAPER_COLOR}
+            />
+          </div>
+        </section>
+      )}
+
+      {c.phase === 'STEAL' && (
+        <section className="rdb-pad-gate">
+          <div className="rdb-pad-gate-box">
+            <span className="rdb-pad-badge">Tempo esgotado</span>
+            <h2>Roubo da dupla rival na TV</h2>
+            <p>
+              A dupla rival tenta adivinhar as palavras restantes em voz alta. O anfitrião confirma na TV.
+            </p>
+          </div>
+        </section>
+      )}
+
+      {c.phase === 'SUMMARY' && (
+        <section className="rdb-pad-gate">
+          <div className="rdb-pad-gate-box">
+            <span className="rdb-pad-badge">Fim da rodada</span>
+            <h2>+{pts.draw} pontos na rodada</h2>
+            {c.rivalTeam && (
+              <p>Pontos de roubo da rival: +{pts.rival}</p>
+            )}
+            <div className="rdb-pad-status">Veja os desenhos revelados na TV.</div>
+          </div>
+        </section>
+      )}
+    </div>
+  );
+
+  return isSharedPad ? content : wrapIfMultiMode(content);
+};

@@ -659,13 +659,27 @@ export function resolveCurrentTurnSpotlight(room: GameRoom): TurnSpotlightDescri
       };
     }
     const drawer = byId(c.drawerPlayerId);
+    const instruction =
+      c.phase === 'READY'
+        ? room.connectionMode === 'local'
+          ? 'Escolha jogar com 1 celular como prancheta (estilo Gartic TV) ou só pela TV.'
+          : READY_TEXT
+        : c.phase === 'SUMMARY'
+        ? DONE_TEXT
+        : c.tvRevealGate
+        ? `Todos fechem os olhos para ${drawer?.name || 'quem desenha'} ver a palavra.`
+        : c.padPassGate
+        ? `Passe o celular da prancheta para ${drawer?.name || 'quem desenha'} iniciar.`
+        : c.inputMode === 'pad'
+        ? `${drawer?.name || 'Quem desenha'} desenha no celular enquanto a TV mostra ao vivo.`
+        : `${drawer?.name || 'Quem desenha'} desenha sem letras e sem números.`;
     return duo(
       c.drawTeam,
       drawer,
       byId(c.guesserPlayerId),
       'Adivinha',
       'Desenha',
-      c.phase === 'READY' ? READY_TEXT : c.phase === 'SUMMARY' ? DONE_TEXT : `${drawer?.name || 'Quem desenha'} desenha sem letras e sem números.`
+      instruction
     );
   }
 

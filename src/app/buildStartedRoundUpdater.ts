@@ -390,13 +390,21 @@ export const buildStartedRoundUpdater = ({
           // NOV-07: quem desenha e quem adivinha revezam dentro da equipe; a rival (so com 3+ jogadores) rouba no fim.
           const words = (Array.isArray(data) ? data : []).map((x: unknown) => String(x));
           const pair = pickPintoPair(nextMatchPlayers, startingTeam, prev.roundNumber, activeTeamIds.length);
+          const preservedInputMode =
+            prev.connectionMode !== 'local'
+              ? 'pad'
+              : prev.roundNumber > 1 && prev.comoEuPinto?.inputMode
+              ? prev.comoEuPinto.inputMode
+              : undefined;
           pintoState = buildComoEuPintoState({
             words,
             drawTeam: startingTeam,
             rivalTeam: nextMatchPlayers.length > 2 ? opposingTeam : undefined,
             drawerPlayerId: pair.drawerPlayerId,
             guesserPlayerId: pair.guesserPlayerId,
-            timerSeconds: effectiveTimer
+            timerSeconds: effectiveTimer,
+            inputMode: preservedInputMode,
+            padConnected: Boolean(prev.comoEuPinto?.padConnected)
           });
         }
 
