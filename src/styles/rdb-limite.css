@@ -275,6 +275,13 @@
   font-size: clamp(0.95rem, 1.45vw, 1.5rem);
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(16px) scale(0.92);
+  transition: opacity 260ms ease-out, transform 340ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rdb-lim-unit.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 .rdb-lim-value {
   font-family: 'Anton', 'Impact', sans-serif;
@@ -282,6 +289,20 @@
   line-height: 0.88;
   color: var(--rdb-amber);
   font-variant-numeric: tabular-nums;
+}
+.rdb-lim-value.is-landed {
+  animation: rdb-lim-value-land 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes rdb-lim-value-land {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 .rdb-lim-fact {
   display: inline-flex;
@@ -297,6 +318,22 @@
   font-weight: 600;
   font-size: 0.86rem;
   line-height: 1.35;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 280ms ease-out 110ms, transform 320ms cubic-bezier(0.22, 1, 0.36, 1) 110ms;
+}
+.rdb-lim-fact.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rdb-lim-unit,
+  .rdb-lim-fact {
+    transition: none;
+  }
+  .rdb-lim-value.is-landed {
+    animation: none;
+  }
 }
 .rdb-lim-countdown {
   display: flex;

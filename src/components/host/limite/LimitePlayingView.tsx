@@ -4,7 +4,7 @@ import {
   computeLimiteWinnerPoints,
   LIMITE_POWER_CARD_META
 } from '../ScreenLimite';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { GameRoom, LimiteGameState, LimitePowerCardType, Player } from '../../../types/game';
 import { sounds } from '../../../utils/soundEffects';
@@ -79,6 +79,55 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
   const unitText = formatLimiteExpectedUnitLabel(limite.roundData.unidade).replace(/^RESPONDA EM:\s*/i, '');
   const questionText = sanitizeCleanGameText(limite.roundData.pergunta, 'limite');
   const questionLen = questionText.length <= 50 ? 'xs' : questionText.length <= 80 ? 's' : questionText.length <= 105 ? 'm' : questionText.length <= 130 ? 'l' : 'xl';
+  const exactValue = limite.roundData.valor_exato;
+  const [animatedValue, setAnimatedValue] = useState<number>(exactValue);
+  const [revealLanded, setRevealLanded] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!scoring) {
+      setAnimatedValue(0);
+      setRevealLanded(false);
+      return;
+    }
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion || exactValue === 0) {
+      setAnimatedValue(exactValue);
+      setRevealLanded(true);
+      return;
+    }
+
+    setAnimatedValue(0);
+    setRevealLanded(false);
+
+    const durationMs = 1150;
+    const decimals = Number.isInteger(exactValue) ? 0 : (exactValue.toString().split('.')[1]?.length ?? 1);
+    let rafId = 0;
+    const startTime = performance.now();
+
+    const step = (now: number) => {
+      const progress = Math.min(1, (now - startTime) / durationMs);
+      // Começa muito rápido e desacelera forte ao se aproximar do número exato
+      const eased = 1 - Math.pow(1 - progress, 4);
+      const current = exactValue * eased;
+      const rounded = decimals === 0 ? Math.round(current) : Number(current.toFixed(decimals));
+
+      if (progress >= 1) {
+        setAnimatedValue(exactValue);
+        setRevealLanded(true);
+        return;
+      }
+      setAnimatedValue(rounded);
+      rafId = requestAnimationFrame(step);
+    };
+
+    rafId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafId);
+  }, [scoring, exactValue, room.roundNumber]);
 
   return (
     <div className="rdb-lim" data-testid="limite-main-stage-container">
@@ -174,15 +223,24 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
           {scoring ? (
             <>
               <div className="rdb-lim-answer-row">
-                <div data-testid="limite-exact-value-display" className="rdb-lim-value">
-                  {limite.roundData.valor_exato.toLocaleString('pt-BR')}
+                <div
+                  data-testid="limite-exact-value-display"
+                  className={'rdb-lim-value' + (revealLanded ? ' is-landed' : '')}
+                >
+                  {animatedValue.toLocaleString('pt-BR')}
                 </div>
-                <span data-testid="limite-unit-badge" className="rdb-lim-unit">
+                <span
+                  data-testid="limite-unit-badge"
+                  className={'rdb-lim-unit' + (revealLanded ? ' is-visible' : '')}
+                >
                   {unitText}
                 </span>
               </div>
               {limite.roundData.curiosidade_explicacao && (
-                <p data-testid="limite-curiosity-card" className="rdb-lim-fact">
+                <p
+                  data-testid="limite-curiosity-card"
+                  className={'rdb-lim-fact' + (revealLanded ? ' is-visible' : '')}
+                >
                   <span>{limite.roundData.curiosidade_explicacao}</span>
                 </p>
               )}
