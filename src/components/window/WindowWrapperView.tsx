@@ -107,6 +107,8 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
   setIsExitConfirmOpen,
   handleConfirmExit
 }) => {
+  const isInGame = Boolean(room?.activeGame && room.screen !== 'lobby' && room.screen !== 'mode-select');
+
   return (
     <div
       ref={windowContainerRef}
@@ -130,8 +132,8 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
         </div>
       )}
 
-      {/* Barra de janela, como a do programa: marca, sala e jogadores a esquerda; som, menu e os 3 botoes de janela a direita */}
-      <div className="rdb-bar">
+      {/* Barra de janela: enxuta e achatada dentro de jogo; completa no lobby */}
+      <div className={`rdb-bar${isInGame ? ' is-compact' : ''}`}>
         <div className="rdb-bar-group">
           {showBackButton && onBack ? (
             <button
@@ -148,12 +150,12 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
 
           <RdbLogo variant="inline" className="rdb-bar-logo" />
 
-          {room?.activeGame && room.screen !== 'lobby' && room.screen !== 'mode-select' && (
+          {isInGame && (
             <span className="rdb-bar-title rdb-hide-md">{title.replace(/^RODA DE BOBO\s*[—-]\s*/i, '')}</span>
           )}
 
-          {/* No catalogo: entrar numa sala pelo codigo. Em jogo: conectar celulares (QR) */}
-          {room?.screen === 'lobby' || room?.screen === 'mode-select' ? (
+          {/* No catalogo: entrar numa sala pelo codigo. Em jogo: QR Code mora dentro do Menu */}
+          {(room?.screen === 'lobby' || room?.screen === 'mode-select') && (
             <button
               type="button"
               data-testid="dock-qr-btn"
@@ -172,29 +174,9 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
               <KeyRound />
               <span className="rdb-hide-md">Entrar na sala</span>
             </button>
-          ) : (
-            <button
-              type="button"
-              data-testid="dock-qr-btn"
-              aria-pressed={activeDockModal === 'qr'}
-              onClick={() => {
-                sounds.playTick();
-                setActiveDockModal((prev) => (prev === 'qr' ? null : 'qr'));
-              }}
-              className="rdb-btn cursor-pointer"
-              title="Conectar celulares pelo QR Code"
-              aria-label="Conectar celulares"
-            >
-              <QrCode />
-              <span className="rdb-hide-md">
-                {room?.connectionMode && room.connectionMode !== 'local'
-                  ? `Sala ${room.roomId} · ${room.players.filter((p) => p.connected !== false).length || 0} on`
-                  : 'Celulares'}
-              </span>
-            </button>
           )}
 
-          {room && (
+          {room && !isInGame && (
             <button
               type="button"
               data-testid="header-players-badge-btn"
@@ -213,7 +195,7 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
             </button>
           )}
 
-          {onUndoVar && (
+          {onUndoVar && (!isInGame || canUndoVar) && (
             <button
               type="button"
               data-testid="var-undo-btn"
@@ -259,7 +241,7 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
             {muted ? <VolumeX /> : <Volume2 />}
           </button>
 
-          {onToggleTvMode && (
+          {!isInGame && onToggleTvMode && (
             <button
               type="button"
               data-testid="toggle-tv-mode-btn"
@@ -276,7 +258,7 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
             </button>
           )}
 
-          {onSwitchToControllerMode && (
+          {!isInGame && onSwitchToControllerMode && (
             <button
               type="button"
               onClick={() => {
@@ -308,35 +290,41 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
             <span className="rdb-hide-md">Menu</span>
           </button>
 
-          <div data-testid="window-decorative-controls" className="rdb-winctl">
-            <span data-testid="window-minimize-btn" aria-hidden="true" className="rdb-hide-sm">
-              <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                <rect x="1" y="8" width="10" height="2.4" fill="currentColor" />
-              </svg>
-            </span>
-            <span data-testid="window-recenter-btn" aria-hidden="true" className="rdb-hide-sm">
-              <svg viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                <path d="M5 2.5H11.5V9" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
-                <rect x="2.5" y="5" width="6.5" height="6.5" stroke="currentColor" strokeWidth="2" />
-              </svg>
-            </span>
-            {canCloseScreen ? (
-              <button
-                type="button"
-                data-testid="window-close-btn"
-                onClick={handleRequestClose}
-                title="Fechar tela atual"
-                aria-label="Fechar tela atual"
-                className="rdb-winctl-close cursor-pointer"
-              >
-                <X strokeWidth={4} />
-              </button>
-            ) : (
-              <span data-testid="window-close-btn" aria-hidden="true" className="rdb-winctl-close rdb-hide-sm">
-                <X strokeWidth={4} />
-              </span>
-            )}
-          </div>
+          {(!isInGame || canCloseScreen) && (
+            <div data-testid="window-decorative-controls" className="rdb-winctl">
+              {!isInGame && (
+                <>
+                  <span data-testid="window-minimize-btn" aria-hidden="true" className="rdb-hide-sm">
+                    <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <rect x="1" y="8" width="10" height="2.4" fill="currentColor" />
+                    </svg>
+                  </span>
+                  <span data-testid="window-recenter-btn" aria-hidden="true" className="rdb-hide-sm">
+                    <svg viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                      <path d="M5 2.5H11.5V9" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
+                      <rect x="2.5" y="5" width="6.5" height="6.5" stroke="currentColor" strokeWidth="2" />
+                    </svg>
+                  </span>
+                </>
+              )}
+              {canCloseScreen ? (
+                <button
+                  type="button"
+                  data-testid="window-close-btn"
+                  onClick={handleRequestClose}
+                  title="Fechar tela atual"
+                  aria-label="Fechar tela atual"
+                  className="rdb-winctl-close cursor-pointer"
+                >
+                  <X strokeWidth={4} />
+                </button>
+              ) : (
+                <span data-testid="window-close-btn" aria-hidden="true" className="rdb-winctl-close rdb-hide-sm">
+                  <X strokeWidth={4} />
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Hover Overlay Panel for Resume Game */}
@@ -469,7 +457,7 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
                         : 'bg-white/[0.04] text-slate-300 hover:text-white'
                     }`}
                   >
-                    📱 QR Code (Celular)
+                    QR Code
                   </button>
                   <button
                     type="button"
@@ -481,7 +469,7 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
                         : 'bg-white/[0.04] text-slate-300 hover:text-white'
                     }`}
                   >
-                    👥 Jogadores ({room?.players.length || 0})
+                    Jogadores ({room?.players.length || 0})
                   </button>
                   <button
                     type="button"
@@ -492,7 +480,7 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
                         : 'bg-white/[0.04] text-slate-300 hover:text-white'
                     }`}
                   >
-                    📜 Histórico
+                    Histórico
                   </button>
                   <button
                     type="button"
@@ -504,7 +492,7 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
                         : 'bg-white/[0.04] text-amber-300 hover:text-white'
                     }`}
                   >
-                    🏆 Ranking
+                    Ranking
                   </button>
                   <button
                     type="button"
@@ -516,7 +504,7 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
                         : 'bg-white/[0.04] text-slate-300 hover:text-white'
                     }`}
                   >
-                    ⚙️ Configuração
+                    Configuração
                   </button>
                 </div>
 
@@ -584,7 +572,55 @@ export const WindowWrapperView: React.FC<WindowWrapperViewProps> = ({
                 />
               )}
 
-              {activeDockModal === 'config' && <WindowMenuPanel visualTheme={visualTheme} onSetVisualTheme={onSetVisualTheme} muted={muted} handleToggleMute={handleToggleMute} setClearedMemoryNotice={setClearedMemoryNotice} clearedMemoryNotice={clearedMemoryNotice} />}
+              {activeDockModal === 'config' && (
+                <div className="space-y-4">
+                  {(onToggleTvMode || onSwitchToControllerMode) && (
+                    <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-3">
+                      {onToggleTvMode && (
+                        <button
+                          type="button"
+                          data-testid="toggle-tv-mode-btn"
+                          aria-pressed={isTvMode}
+                          onClick={() => {
+                            sounds.playTick();
+                            onToggleTvMode();
+                          }}
+                          className={`px-3 py-1.5 font-anton text-xs uppercase tracking-wider flex items-center gap-1.5 border cursor-pointer transition-colors ${
+                            isTvMode
+                              ? 'bg-[#17B8B8] text-black border-[#17B8B8]'
+                              : 'bg-white/[0.04] text-slate-200 border-white/15 hover:border-[#17B8B8]'
+                          }`}
+                        >
+                          <Tv size={14} />
+                          <span>Modo TV {isTvMode ? '(Ativo)' : ''}</span>
+                        </button>
+                      )}
+                      {onSwitchToControllerMode && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            sounds.playTick();
+                            setActiveDockModal(null);
+                            onSwitchToControllerMode();
+                          }}
+                          className="px-3 py-1.5 font-anton text-xs uppercase tracking-wider flex items-center gap-1.5 border border-white/15 bg-white/[0.04] text-slate-200 hover:border-[#17B8B8] cursor-pointer transition-colors"
+                        >
+                          <Smartphone size={14} />
+                          <span>Ver como controle no celular</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  <WindowMenuPanel
+                    visualTheme={visualTheme}
+                    onSetVisualTheme={onSetVisualTheme}
+                    muted={muted}
+                    handleToggleMute={handleToggleMute}
+                    setClearedMemoryNotice={setClearedMemoryNotice}
+                    clearedMemoryNotice={clearedMemoryNotice}
+                  />
+                </div>
+              )}
             </div>
           </div>,
           document.body

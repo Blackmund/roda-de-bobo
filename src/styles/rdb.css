@@ -34,6 +34,10 @@
   border-bottom: var(--rdb-line) solid var(--rdb-crimson);
   user-select: none;
 }
+.rdb-bar.is-compact {
+  --rdb-bar-h: clamp(34px, 2.7vw, 48px);
+  --rdb-fs-bar: clamp(11px, 0.8vw, 15px);
+}
 .rdb-bar-group {
   display: flex;
   align-items: center;

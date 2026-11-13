@@ -342,22 +342,50 @@
   transform: translateY(0);
 }
 
-/* Etapa 1 da revelação: só o número gigante, sozinho no meio. O resto entra quando ele assenta. */
+/* Etapa 1 da revelação: só o número gigante, centralizado na tela. O resto entra quando ele assenta. */
+.rdb-lim-bar {
+  max-height: 5rem;
+  overflow: hidden;
+  transition: max-height 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 320ms ease-out 180ms,
+    padding 420ms cubic-bezier(0.22, 1, 0.36, 1), border-width 420ms ease-out;
+}
 .rdb-lim-players,
 .rdb-lim-foot {
+  max-height: 45vh;
+  overflow: hidden;
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 360ms ease-out 260ms, transform 460ms cubic-bezier(0.22, 1, 0.36, 1) 260ms;
+  transition: max-height 520ms cubic-bezier(0.22, 1, 0.36, 1), opacity 360ms ease-out 260ms,
+    transform 460ms cubic-bezier(0.22, 1, 0.36, 1) 260ms;
 }
 .rdb-lim-foot {
-  transition-delay: 420ms;
+  transition-delay: 0ms, 420ms, 420ms;
+}
+.rdb-lim.is-reveal-stage,
+.rdb-lim.is-countdown-stage {
+  gap: 0;
+}
+.rdb-lim.is-reveal-stage .rdb-lim-bar,
+.rdb-lim.is-countdown-stage .rdb-lim-bar {
+  max-height: 0;
+  padding-bottom: 0;
+  border-bottom-width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: none;
 }
 .rdb-lim.is-reveal-stage .rdb-lim-players,
-.rdb-lim.is-reveal-stage .rdb-lim-foot {
+.rdb-lim.is-reveal-stage .rdb-lim-foot,
+.rdb-lim.is-countdown-stage .rdb-lim-players {
+  max-height: 0;
   opacity: 0;
   transform: translateY(18px);
   pointer-events: none;
   transition: none;
+}
+.rdb-lim.is-countdown-stage .rdb-lim-question,
+.rdb-lim.is-countdown-stage .rdb-lim-cat {
+  display: none;
 }
 .rdb-lim.is-reveal-stage .rdb-lim-stage.is-scoring {
   gap: 0;
@@ -392,13 +420,15 @@
   .rdb-lim-unit,
   .rdb-lim-fact,
   .rdb-lim-value,
+  .rdb-lim-bar,
   .rdb-lim-players,
   .rdb-lim-foot,
   .rdb-lim-stage.is-scoring,
   .rdb-lim-stage.is-scoring .rdb-lim-question {
     transition: none;
   }
-  .rdb-lim-value.is-landed {
+  .rdb-lim-value.is-landed,
+  .rdb-lim-count {
     animation: none;
   }
 }
@@ -406,20 +436,32 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 0.65rem;
 }
 .rdb-lim-count-label {
   color: var(--rdb-ink-2);
-  font-weight: 800;
-  font-size: 1rem;
-  letter-spacing: 0.08em;
+  font-weight: 900;
+  font-size: clamp(1rem, 1.5vw, 1.4rem);
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 .rdb-lim-count {
   font-family: 'Anton', 'Impact', sans-serif;
-  font-size: clamp(5rem, 16vh, 11rem);
-  line-height: 0.9;
+  font-size: clamp(7rem, min(42vh, 22vw), 22rem);
+  line-height: 0.88;
   color: var(--rdb-crimson);
+  animation: rdb-lim-count-pop 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes rdb-lim-count-pop {
+  0% {
+    opacity: 0.2;
+    transform: scale(1.28);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 .rdb-lim-wait {
   font-family: 'Anton', 'Impact', sans-serif;

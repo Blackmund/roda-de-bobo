@@ -708,11 +708,11 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
     const draftsSnapshot = tvDraftGuesses;
     setTvDraftGuesses({});
     setEditingSecretPlayers({});
-    // Launch dramatic 5-second countdown with beeps
+    // Launch dramatic 3-second countdown with beeps
     onUpdateLimiteState((prev) => ({
       ...mergeDraftGuesses(prev, draftsSnapshot),
       timerActive: false,
-      revealCountdown: 5
+      revealCountdown: 3
     }));
   };
 

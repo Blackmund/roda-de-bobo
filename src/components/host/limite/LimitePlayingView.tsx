@@ -109,7 +109,7 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
     setRevealLanded(false);
     setRevealSettled(false);
 
-    const durationMs = 1150;
+    const durationMs = 1850;
     const holdAfterLandMs = 650;
     const decimals = Number.isInteger(exactValue) ? 0 : (exactValue.toString().split('.')[1]?.length ?? 1);
     let rafId = 0;
@@ -118,8 +118,8 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
 
     const step = (now: number) => {
       const progress = Math.min(1, (now - startTime) / durationMs);
-      // Começa muito rápido e desacelera forte ao se aproximar do número exato
-      const eased = 1 - Math.pow(1 - progress, 4);
+      // Começa muito rápido e desacelera bem devagar nos últimos números para dar suspense
+      const eased = 1 - Math.pow(1 - progress, 5);
       const current = exactValue * eased;
       const rounded = decimals === 0 ? Math.round(current) : Number(current.toFixed(decimals));
 
@@ -140,9 +140,16 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
     };
   }, [scoring, exactValue, room.roundNumber]);
 
+  const isCountdownStage = !scoring && countdown;
+  const isRevealStage = scoring && !revealSettled;
+
   return (
     <div
-      className={'rdb-lim' + (scoring && !revealSettled ? ' is-reveal-stage' : '')}
+      className={
+        'rdb-lim' +
+        (isCountdownStage ? ' is-countdown-stage' : '') +
+        (isRevealStage ? ' is-reveal-stage' : '')
+      }
       data-testid="limite-main-stage-container"
     >
       {/* Barra: o essencial aparece, o resto vira icone com dica ao passar o mouse */}
@@ -262,7 +269,11 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
           ) : countdown ? (
             <div data-testid="limite-reveal-countdown-overlay" className="rdb-lim-countdown">
               <span className="rdb-lim-count-label">Revelando em</span>
-              <span data-testid="limite-reveal-countdown-number" className="rdb-lim-count">
+              <span
+                key={limite.revealCountdown}
+                data-testid="limite-reveal-countdown-number"
+                className="rdb-lim-count"
+              >
                 {limite.revealCountdown}
               </span>
             </div>
