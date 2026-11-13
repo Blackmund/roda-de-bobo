@@ -82,11 +82,14 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
   const exactValue = limite.roundData.valor_exato;
   const [animatedValue, setAnimatedValue] = useState<number>(exactValue);
   const [revealLanded, setRevealLanded] = useState<boolean>(false);
+  // Etapa 1: só o número gigante contando no centro. Etapa 2 (settled): ele encolhe e o resto entra no layout.
+  const [revealSettled, setRevealSettled] = useState<boolean>(false);
 
   useEffect(() => {
     if (!scoring) {
       setAnimatedValue(0);
       setRevealLanded(false);
+      setRevealSettled(false);
       return;
     }
 
@@ -98,15 +101,19 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
     if (prefersReducedMotion || exactValue === 0) {
       setAnimatedValue(exactValue);
       setRevealLanded(true);
+      setRevealSettled(true);
       return;
     }
 
     setAnimatedValue(0);
     setRevealLanded(false);
+    setRevealSettled(false);
 
     const durationMs = 1150;
+    const holdAfterLandMs = 650;
     const decimals = Number.isInteger(exactValue) ? 0 : (exactValue.toString().split('.')[1]?.length ?? 1);
     let rafId = 0;
+    let settleTimer = 0;
     const startTime = performance.now();
 
     const step = (now: number) => {
@@ -119,6 +126,7 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
       if (progress >= 1) {
         setAnimatedValue(exactValue);
         setRevealLanded(true);
+        settleTimer = window.setTimeout(() => setRevealSettled(true), holdAfterLandMs);
         return;
       }
       setAnimatedValue(rounded);
@@ -126,11 +134,17 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
     };
 
     rafId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(rafId);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.clearTimeout(settleTimer);
+    };
   }, [scoring, exactValue, room.roundNumber]);
 
   return (
-    <div className="rdb-lim" data-testid="limite-main-stage-container">
+    <div
+      className={'rdb-lim' + (scoring && !revealSettled ? ' is-reveal-stage' : '')}
+      data-testid="limite-main-stage-container"
+    >
       {/* Barra: o essencial aparece, o resto vira icone com dica ao passar o mouse */}
       <header className="rdb-lim-bar">
         <span className="rdb-lim-title">
@@ -231,7 +245,7 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
                 </div>
                 <span
                   data-testid="limite-unit-badge"
-                  className={'rdb-lim-unit' + (revealLanded ? ' is-visible' : '')}
+                  className={'rdb-lim-unit' + (revealSettled ? ' is-visible' : '')}
                 >
                   {unitText}
                 </span>
@@ -239,7 +253,7 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
               {limite.roundData.curiosidade_explicacao && (
                 <p
                   data-testid="limite-curiosity-card"
-                  className={'rdb-lim-fact' + (revealLanded ? ' is-visible' : '')}
+                  className={'rdb-lim-fact' + (revealSettled ? ' is-visible' : '')}
                 >
                   <span>{limite.roundData.curiosidade_explicacao}</span>
                 </p>

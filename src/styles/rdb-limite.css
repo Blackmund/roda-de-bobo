@@ -206,6 +206,7 @@
 }
 .rdb-lim-stage.is-scoring {
   gap: 1.1rem;
+  transition: gap 520ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .rdb-lim-stage.is-scoring .rdb-lim-question {
   font-size: clamp(0.88rem, 1.25vw, 1.3rem);
@@ -213,6 +214,11 @@
   margin-bottom: 0.75rem;
   color: var(--rdb-ink-2);
   -webkit-line-clamp: 4;
+  max-height: 9rem;
+  opacity: 1;
+  transform: translateY(0);
+  transition: max-height 560ms cubic-bezier(0.22, 1, 0.36, 1), margin 560ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 380ms ease-out 140ms, transform 460ms cubic-bezier(0.22, 1, 0.36, 1) 140ms;
 }
 .rdb-lim-cat {
   padding: 0.2em 0.8em;
@@ -275,9 +281,13 @@
   font-size: clamp(0.95rem, 1.45vw, 1.5rem);
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 24rem;
   opacity: 0;
   transform: translateY(16px) scale(0.92);
-  transition: opacity 260ms ease-out, transform 340ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: max-width 520ms cubic-bezier(0.22, 1, 0.36, 1), padding 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 300ms ease-out 200ms, transform 420ms cubic-bezier(0.22, 1, 0.36, 1) 200ms;
 }
 .rdb-lim-unit.is-visible {
   opacity: 1;
@@ -289,6 +299,7 @@
   line-height: 0.88;
   color: var(--rdb-amber);
   font-variant-numeric: tabular-nums;
+  transition: font-size 640ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .rdb-lim-value.is-landed {
   animation: rdb-lim-value-land 260ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -309,6 +320,7 @@
   align-items: center;
   justify-content: center;
   max-width: 38rem;
+  max-height: 6rem;
   margin: 0.85rem 0 0;
   padding: 0.35rem 0.8rem;
   border: 1px solid rgba(245, 242, 235, 0.14);
@@ -318,17 +330,72 @@
   font-weight: 600;
   font-size: 0.86rem;
   line-height: 1.35;
+  overflow: hidden;
   opacity: 0;
   transform: translateY(10px);
-  transition: opacity 280ms ease-out 110ms, transform 320ms cubic-bezier(0.22, 1, 0.36, 1) 110ms;
+  transition: max-height 520ms cubic-bezier(0.22, 1, 0.36, 1), margin 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    padding 520ms cubic-bezier(0.22, 1, 0.36, 1), opacity 320ms ease-out 340ms,
+    transform 380ms cubic-bezier(0.22, 1, 0.36, 1) 340ms;
 }
 .rdb-lim-fact.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* Etapa 1 da revelação: só o número gigante, sozinho no meio. O resto entra quando ele assenta. */
+.rdb-lim-players,
+.rdb-lim-foot {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 360ms ease-out 260ms, transform 460ms cubic-bezier(0.22, 1, 0.36, 1) 260ms;
+}
+.rdb-lim-foot {
+  transition-delay: 420ms;
+}
+.rdb-lim.is-reveal-stage .rdb-lim-players,
+.rdb-lim.is-reveal-stage .rdb-lim-foot {
+  opacity: 0;
+  transform: translateY(18px);
+  pointer-events: none;
+  transition: none;
+}
+.rdb-lim.is-reveal-stage .rdb-lim-stage.is-scoring {
+  gap: 0;
+}
+.rdb-lim.is-reveal-stage .rdb-lim-stage.is-scoring .rdb-lim-question {
+  max-height: 0;
+  margin-bottom: 0;
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: none;
+}
+.rdb-lim.is-reveal-stage .rdb-lim-unit {
+  max-width: 0;
+  padding-inline: 0;
+  transition: none;
+}
+.rdb-lim.is-reveal-stage .rdb-lim-answer-row {
+  gap: 0;
+}
+.rdb-lim.is-reveal-stage .rdb-lim-fact {
+  max-height: 0;
+  margin-top: 0;
+  padding-block: 0;
+  border-width: 0;
+  transition: none;
+}
+.rdb-lim.is-reveal-stage .rdb-lim-value {
+  font-size: clamp(8rem, min(54vh, 26vw), 30rem);
+  transition: none;
+}
 @media (prefers-reduced-motion: reduce) {
   .rdb-lim-unit,
-  .rdb-lim-fact {
+  .rdb-lim-fact,
+  .rdb-lim-value,
+  .rdb-lim-players,
+  .rdb-lim-foot,
+  .rdb-lim-stage.is-scoring,
+  .rdb-lim-stage.is-scoring .rdb-lim-question {
     transition: none;
   }
   .rdb-lim-value.is-landed {
