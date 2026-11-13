@@ -105,7 +105,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                 winningTeamKey !== 'EMPATE' ? winningTeamName : 'Empate entre Equipes';
               const collectiveMembersLabel =
                 winningTeamPlayers.length > 0
-                  ? winningTeamPlayers.map((p) => `$<PlayerMark p={p} /> ${p.name}`).join(' & ')
+                  ? winningTeamPlayers.map((p) => p.name).join(' & ')
                   : 'Equipe em Conjunto';
               const displayHighlightScore = isIndividualMatch ? mvp.score : maxTeamScore;
               const avgPointsPerRoundDisplay =
@@ -287,9 +287,11 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="w-12 h-12 border border-amber-300 bg-amber-500/20 flex items-center justify-center text-2xl relative shrink-0">
                             <span>
-                              {isIndividualMatch
-                                ? topWinningPlayer?.avatar || mvp.avatar
-                                : '🤝'}
+                              {isIndividualMatch ? (
+                                <PlayerMark p={topWinningPlayer || { name: mvp.name }} />
+                              ) : (
+                                <PlayerMark p={{ name: 'Equipe' }} />
+                              )}
                             </span>
                             <span className="absolute -top-1.5 -right-1.5 bg-amber-400 text-black p-0.5 border border-black">
                               <Crown size={11} className="fill-black" />

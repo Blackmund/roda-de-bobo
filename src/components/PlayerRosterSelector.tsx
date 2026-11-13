@@ -134,7 +134,7 @@ export const PlayerRosterSelector: React.FC<PlayerRosterSelectorProps> = ({
     if (isIndividualMode) {
       const randomPlayer = players[Math.floor(Math.random() * players.length)];
       setStarterDrawBanner(
-        `🪙 SORTEIO DE QUEM COMEÇA: $<PlayerMark p={randomPlayer} /> ${randomPlayer.name.toUpperCase()} INICIA A PARTIDA!`
+        `SORTEIO DE QUEM COMEÇA: ${randomPlayer.name.toUpperCase()} INICIA A PARTIDA!`
       );
     } else {
       const pickedTeamId = activeTeamIds[Math.floor(Math.random() * activeTeamIds.length)];

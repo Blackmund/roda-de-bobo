@@ -949,6 +949,11 @@ export default function App() {
               className="w-full h-full flex-1 min-h-0"
             >
               <ScreenRules
+                extraScoring={
+                  room.activeGame === 'limite' && limiteExactBonusFor(room.customConfig) > 0
+                    ? `Bônus ligado: cravar o número exato vale ${limiteExactBonusFor(room.customConfig)} pontos.`
+                    : null
+                }
                 gameId={room.activeGame}
                 isTvMode={isTvMode}
                 players={room.players}

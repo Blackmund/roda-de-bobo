@@ -8,6 +8,7 @@ interface ScreenRulesProps {
   players: Player[];
   onBack: () => void;
   onStartRound: () => void;
+  extraScoring?: string | null;
   onAddPlayer: (options: {
     id?: string;
     name: string;
@@ -25,7 +26,8 @@ export const ScreenRules: React.FC<ScreenRulesProps> = ({
   gameId,
   players,
   onBack,
-  onStartRound
+  onStartRound,
+  extraScoring
 }) => {
   return (
     <Step5GameTutorial
@@ -33,6 +35,7 @@ export const ScreenRules: React.FC<ScreenRulesProps> = ({
       players={players}
       onBack={onBack}
       onStartGameNow={onStartRound}
+      extraScoring={extraScoring}
     />
   );
 };

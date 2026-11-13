@@ -306,7 +306,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
                 ))}
               </ul>
             ) : (
-              <p className="rdb-setup-notes">Ajuste o ritmo ao lado do jeito que a roda preferir.</p>
+              <p className="rdb-setup-notes">Ajuste o ritmo do jeito que a roda preferir.</p>
             )}
           </div>
         </aside>

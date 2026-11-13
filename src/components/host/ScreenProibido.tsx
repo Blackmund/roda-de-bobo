@@ -535,8 +535,8 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
             </p>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none flex items-start">
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] sm:grid-cols-[repeat(auto-fit,minmax(210px,1fr))] gap-2.5 max-w-5xl mx-auto w-full py-1">
+          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none flex">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] sm:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3 max-w-6xl m-auto w-full py-1">
               {proibido.cards.map((card, idx) => {
                 const outcome = proibido.cardOutcomes[idx];
                 const isScored = outcome === 'correct';
@@ -574,7 +574,7 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
                   >
                     <div className="flex items-start justify-between gap-1.5 w-full">
                       <div className="min-w-0 flex-1">
-                        <div className="font-anton text-base sm:text-lg uppercase text-white leading-tight break-words">
+                        <div className="font-anton text-xl sm:text-2xl lg:text-3xl uppercase text-white leading-tight break-words">
                           {card.palavra_alvo}
                         </div>
                         <div className="text-[10px] sm:text-[11px] font-mono-code uppercase mt-0.5">
@@ -595,7 +595,7 @@ export const ScreenProibido: React.FC<ScreenProibidoProps> = ({
                       <span className="text-[8px] sm:text-[9px] font-mono-code text-slate-400 uppercase block tracking-wider leading-none mb-1 font-semibold">
                         Proibidas:
                       </span>
-                      <div className="text-[9.5px] sm:text-[10px] font-mono-code text-slate-300 leading-snug space-y-0.5">
+                      <div className="text-xs sm:text-sm font-mono-code text-slate-300 leading-snug space-y-0.5">
                         <div className="text-slate-300">
                           {cardForbiddenWords.slice(0, 3).join(' • ')}
                         </div>

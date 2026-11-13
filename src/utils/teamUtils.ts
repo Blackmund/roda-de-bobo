@@ -623,6 +623,31 @@ export function resolveCurrentTurnSpotlight(room: GameRoom): TurnSpotlightDescri
     );
   }
 
+  // COM TERRA
+  if (gameId === 'com-terra' && room.comTerra) {
+    const ct = room.comTerra;
+    if (ct.phase === 'PICK' || ct.phase === 'SABOTAGE') {
+      return solo(
+        null,
+        ct.phase === 'PICK' ? 'Fase 1 · escolha da peça' : 'Fase 2 · sabotagem',
+        ct.phase === 'PICK'
+          ? 'Cada um escolhe uma peça na loja, sem testar no mapa.'
+          : 'Cada um planta uma árvore ou põe uma ficha no mapa de todos.',
+        { activeTeamName: 'Todos jogam', flagLabel: 'Agora' }
+      );
+    }
+    if (ct.phase === 'SUMMARY') return solo(null, 'Fim da partida', DONE_TEXT, { activeTeamName: 'Resultado', flagLabel: 'Agora' });
+    const p = byId(ct.queue[ct.turnIdx]);
+    const piece = p ? ct.hand[p.id] : undefined;
+    return solo(
+      p,
+      ct.phase === 'PLACE' ? 'Fase 3 · colocação' : piece ? 'Posiciona a peça' : 'Escolhe na loja',
+      piece
+        ? `${p?.name || 'O jogador'} encaixa a peça ${piece.size} no tabuleiro.`
+        : `${p?.name || 'O jogador'} pega uma peça na loja, sem testar antes.`
+    );
+  }
+
   // COMO EU PINTO
   if (gameId === 'como-eu-pinto' && room.comoEuPinto) {
     const c = room.comoEuPinto;
