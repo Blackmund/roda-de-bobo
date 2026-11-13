@@ -9,7 +9,7 @@ import { createPortal } from 'react-dom';
 import { GameRoom, LimiteGameState, LimitePowerCardType, Player } from '../../../types/game';
 import { sounds } from '../../../utils/soundEffects';
 import { sanitizeCleanGameText } from '../../../utils/aiGameGenerator';
-import { PhoneCall, ArrowRight, RotateCcw, Zap, X, Clock, Infinity as InfinityIcon, Info, Mic, Smartphone, Lightbulb } from 'lucide-react';
+import { PhoneCall, ArrowRight, RotateCcw, Zap, X, Clock, Infinity as InfinityIcon, Info, Mic, Smartphone } from 'lucide-react';
 import { LimitePlayerGuessCard } from './LimitePlayerGuessCard';
 import { PlayerMark } from '../../rdb/PlayerMark';
 
@@ -181,7 +181,6 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
               </div>
               {limite.roundData.curiosidade_explicacao && (
                 <p data-testid="limite-curiosity-card" className="rdb-lim-fact">
-                  <Lightbulb size={14} aria-hidden="true" />
                   <span>{limite.roundData.curiosidade_explicacao}</span>
                 </p>
               )}
