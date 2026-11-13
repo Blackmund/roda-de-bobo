@@ -352,6 +352,29 @@ const ComTerra = () => (
   </Svg>
 );
 
+const Adedanha = () => (
+  <Svg label="Adedanha">
+    {/* folha com as categorias */}
+    <rect x="58" y="36" width="140" height="132" fill={CREAM} stroke={NAVY} strokeWidth="5" />
+    {[62, 88, 114, 140].map((y, i) => (
+      <g key={y}>
+        <rect x="72" y={y} width="38" height="9" fill={NAVY} opacity="0.85" />
+        <rect x="118" y={y} width={i === 3 ? 30 : 64} height="9" fill={i === 1 ? CRIMSON : TEAL} />
+      </g>
+    ))}
+    {/* a letra sorteada */}
+    <g className="rdbv-q1">
+      <rect x="200" y="28" width="62" height="62" fill={TEAL} stroke={NAVY} strokeWidth="5" />
+      <text x="231" y="79" textAnchor="middle" fontFamily={ANTON} fontSize="50" fill={NAVY}>P</text>
+    </g>
+    {/* placa de STOP */}
+    <g className="rdbv-chip">
+      <polygon points="222,106 248,106 266,124 266,150 248,168 222,168 204,150 204,124" fill={CRIMSON} stroke={NAVY} strokeWidth="5" />
+      <text x="235" y="144" textAnchor="middle" fontFamily={ANTON} fontSize="20" fill={CREAM}>STOP</text>
+    </g>
+  </Svg>
+);
+
 const VIGNETTES: Partial<Record<GameId, React.FC>> = {
   limite: Limite,
   duvido: Duvido,
@@ -367,7 +390,8 @@ const VIGNETTES: Partial<Record<GameId, React.FC>> = {
   mimica: Mimica,
   repetente: Repetente,
   'respostas-sem-perguntas': Respostas,
-  'com-terra': ComTerra
+  'com-terra': ComTerra,
+  adedanha: Adedanha
 };
 
 /** Dado do "Sortear jogo surpresa". */

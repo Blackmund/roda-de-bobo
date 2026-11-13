@@ -49,7 +49,8 @@ const GAME_TITLES: Record<GameId, string> = {
   estadios: 'ESTÁDIOS',
   'como-eu-pinto': 'COMO EU PINTO',
   'onde-estou': 'ONDE ESTOU',
-  'com-terra': 'COM TERRA'
+  'com-terra': 'COM TERRA',
+  adedanha: 'ADEDANHA'
 };
 
 interface WindowWrapperProps {

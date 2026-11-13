@@ -2,7 +2,7 @@ import React from 'react';
 import { Suspense } from 'react';
 import { motion } from 'motion/react';
 import { GameId, GameRoom, GameHistoryEntry } from '../types/game';
-import { SHOW_DEV_TOOLS, ScreenLimite, ScreenDuvido, ScreenComoEuPinto, ScreenEstadios, ScreenComTerra, ScreenRespostasSemPerguntas, ScreenRepetente, ScreenMegaResenha, ScreenQuemSouEu, ScreenMimica, ScreenProibido, ScreenNota, ScreenTemOuNaoTem, ScreenPerguntasEVerdades } from './lazyScreens';
+import { SHOW_DEV_TOOLS, ScreenLimite, ScreenDuvido, ScreenComoEuPinto, ScreenEstadios, ScreenAdedanha, ScreenComTerra, ScreenRespostasSemPerguntas, ScreenRepetente, ScreenMegaResenha, ScreenQuemSouEu, ScreenMimica, ScreenProibido, ScreenNota, ScreenTemOuNaoTem, ScreenPerguntasEVerdades } from './lazyScreens';
 import { updateFixedPlayersAfterMatch } from '../utils/fixedPlayers';
 import { buildMatchMVPSnapshot } from '../utils/sessionPersistence';
 import { applyPVMatchResult } from '../utils/perguntasEVerdadesEngine';
@@ -128,6 +128,18 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
                     broadcastState((prev) => ({
                       ...prev,
                       comTerra: prev.comTerra ? updater(prev.comTerra) : undefined
+                    }))
+                  }
+                  onNextRound={handleNextRound}
+                />
+              )}
+              {room.activeGame === 'adedanha' && (
+                <ScreenAdedanha
+                  room={room}
+                  onUpdateAdedanhaState={(updater) =>
+                    broadcastState((prev) => ({
+                      ...prev,
+                      adedanha: prev.adedanha ? updater(prev.adedanha) : undefined
                     }))
                   }
                   onNextRound={handleNextRound}

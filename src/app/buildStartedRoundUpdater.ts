@@ -1,6 +1,6 @@
 import type { GenerateRoundResponse } from '../utils/aiGameGenerator';
 import type { GameRoom } from '../types/game';
-import { GameId, GameCustomConfig, DEFAULT_GAME_CUSTOM_CONFIG, LimiteGameState, DuvidoGameState, ProibidoGameState, MimicaGameState, QuemSouEuGameState, MegaResenhaGameState, RepetenteGameState, RespostasSemPerguntasState, EstadiosGameState, ComTerraState, ComoEuPintoState, NotaGameState, TemOuNaoTemGameState, PerguntasEVerdadesGameState, TeamId, Player } from '../types/game';
+import { GameId, GameCustomConfig, DEFAULT_GAME_CUSTOM_CONFIG, LimiteGameState, DuvidoGameState, ProibidoGameState, MimicaGameState, QuemSouEuGameState, MegaResenhaGameState, RepetenteGameState, RespostasSemPerguntasState, EstadiosGameState, AdedanhaState, ComTerraState, ComoEuPintoState, NotaGameState, TemOuNaoTemGameState, PerguntasEVerdadesGameState, TeamId, Player } from '../types/game';
 import { getActiveTeamIds, getTeamCount, getNextTeamId, normalizePlayersToTeamCount } from '../utils/teamUtils';
 import { normalizeTemVotesTo100 } from '../utils/aiGameGenerator';
 import { buildMimicaState, pickMimicaPair } from '../utils/mimicaEngine';
@@ -10,6 +10,8 @@ import { buildMegaResenhaState } from '../utils/megaResenhaEngine';
 import { buildRepetenteGroups, buildRepetenteState } from '../utils/repetenteEngine';
 import { buildRespostasState } from '../utils/respostasEngine';
 import { buildEstadiosState } from '../utils/estadiosEngine';
+import { buildAdedanhaState, drawLetter } from '../utils/adedanhaEngine';
+import { ADEDANHA_PADRAO, ADEDANHA_LETRAS_EXCLUIDAS_PADRAO } from '../data/adedanhaCategorias';
 import { buildComTerraState } from '../utils/comTerraEngine';
 import { buildComoEuPintoState, pickPintoPair } from '../utils/comoEuPintoEngine';
 import { drawEstadio, normalizeEstadioKey } from '../data/estadiosBank';
@@ -61,6 +63,7 @@ export const buildStartedRoundUpdater = ({
         let repetenteState: RepetenteGameState | undefined = undefined;
         let respostasState: RespostasSemPerguntasState | undefined = undefined;
         let estadiosState: EstadiosGameState | undefined = undefined;
+        let adedanhaState: AdedanhaState | undefined = undefined;
         let comTerraState: ComTerraState | undefined = undefined;
         let pintoState: ComoEuPintoState | undefined = undefined;
         let extraSignature = '';
@@ -413,6 +416,17 @@ export const buildStartedRoundUpdater = ({
           comTerraState = buildComTerraState(mergedCustomConfig.ctMode || 'arquiteto', nextMatchPlayers, effectiveMaxRounds);
         }
 
+        if (gameId === 'adedanha') {
+          // Uma letra por rodada, sem repetir as ja usadas na partida; categorias e letras excluidas vem da configuracao.
+          const usedLetters = (prev.usedRoundSignatures || [])
+            .filter((sig) => typeof sig === 'string' && sig.startsWith('ad:'))
+            .map((sig) => (sig as string).slice(3));
+          const letter = drawLetter(usedLetters, mergedCustomConfig.adedanhaExcludedLetters ?? ADEDANHA_LETRAS_EXCLUIDAS_PADRAO);
+          const cats = mergedCustomConfig.adedanhaCategories?.length ? mergedCustomConfig.adedanhaCategories : ADEDANHA_PADRAO;
+          adedanhaState = buildAdedanhaState(nextMatchPlayers, cats, letter, effectiveTimer);
+          extraSignature = 'ad:' + letter;
+        }
+
         if (gameId === 'estadios') {
           // NOV-06: um estadio por rodada (sem repetir na sessao); quem comeca roda a cada rodada.
           const usedStadiums = new Set<string>();
@@ -533,6 +547,7 @@ export const buildStartedRoundUpdater = ({
           repetente: repetenteState,
           respostasSemPerguntas: respostasState,
           estadios: estadiosState,
+          adedanha: adedanhaState,
           comTerra: comTerraState,
           comoEuPinto: pintoState,
           nota: notaState,

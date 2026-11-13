@@ -31,6 +31,7 @@ export const GAME_LIMITS: Record<GameId, GameLimits> = {
   'respostas-sem-perguntas': { min: 2, max: 8, recommended: 4, teamsRequired: false },
   estadios: { min: 2, max: 8, recommended: 4, teamsRequired: false },
   'com-terra': { min: 2, max: 4, recommended: 4, teamsRequired: false },
+  adedanha: { min: 2, max: 12, recommended: 5, teamsRequired: false },
   'como-eu-pinto': { min: 2, max: 8, recommended: 4, teamsRequired: true },
   'tem-ou-nao-tem': { min: 2, max: 8, recommended: 4, teamsRequired: true },
   'perguntas-e-verdades': {

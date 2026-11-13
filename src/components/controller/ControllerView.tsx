@@ -79,6 +79,7 @@ import {
 import { checkAnswerFuzzyMatch } from '../../utils/fuzzyMatch';
 import { repetenteWriters, submitRepetenteAnswer } from '../../utils/repetenteEngine';
 import { currentValue as respostasValue, pickPosition as respostasPick } from '../../utils/respostasEngine';
+import { AdedanhaController } from './games/AdedanhaController';
 import { estadiosCluesShown, estadiosValue } from '../../utils/estadiosEngine';
 import { DrawingCanvas } from '../DrawingCanvas';
 import { PINTO_COLORS, addStroke as pintoAddStroke, clearDrawing as pintoClear, undoStroke as pintoUndo } from '../../utils/comoEuPintoEngine';
@@ -641,6 +642,11 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
   // Com Terra no celular: loja, pre-escolha, posicionamento e confirmacao em dois passos.
   if (room.activeGame === 'com-terra' && room.comTerra) {
     return <ComTerraController room={room} player={player} onUpdateRoom={onUpdateRoom} onNextRound={onNextRound} />;
+  }
+
+  // Adedanha no celular: escrever, STOP e votar.
+  if (room.activeGame === 'adedanha' && room.adedanha) {
+    return <AdedanhaController room={room} player={player} onUpdateRoom={onUpdateRoom} wrapIfMultiMode={wrapIfMultiMode} />;
   }
 
   // NOV-06: Estadios no celular (somente leitura): pistas liberadas e de quem e a vez; o diretor julga na TV.
