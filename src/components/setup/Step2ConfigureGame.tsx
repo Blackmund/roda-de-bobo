@@ -189,7 +189,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
   }, [isPV, rounds, onChangeRounds]);
 
   // Ajustes exclusivos de cada jogo, como linhas da propria tela (antes ficavam numa janela a parte).
-  type ExtraRow = { id: string; label: string; options: Array<{ id: string; label: string; on: boolean; pick: () => void }> };
+  type ExtraRow = { id: string; label: string; select?: boolean; options: Array<{ id: string; label: string; on: boolean; pick: () => void }> };
   const set = (patch: Partial<GameCustomConfig>) => () => onChangeCustomConfig((prev) => ({ ...prev, ...patch }));
   const pickRow = <T extends string | number | boolean>(
     id: string,
@@ -273,12 +273,12 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
         ]
       : activeGame === 'adedanha'
       ? [
-          pickRow('ad-stop', 'Quem pede STOP', customConfig.adedanhaStopRule || 'first', [
+          { select: true, ...pickRow('ad-stop', 'Quem pede STOP', customConfig.adedanhaStopRule || 'first', [
             ['first', 'Quem terminar primeiro', { adedanhaStopRule: 'first' }],
             ['majority', 'A maioria', { adedanhaStopRule: 'majority' }],
             ['host', 'Só o diretor', { adedanhaStopRule: 'host' }],
             ['none', 'Ninguém (só o tempo)', { adedanhaStopRule: 'none' }]
-          ]),
+          ]) },
           pickRow('ad-letras', 'Letras difíceis', (customConfig.adedanhaExcludedLetters ?? ADEDANHA_LETRAS_EXCLUIDAS_PADRAO).length > 0, [
             [true, 'Fora (K, W, Y, X, Q)', { adedanhaExcludedLetters: ADEDANHA_LETRAS_EXCLUIDAS_PADRAO }],
             [false, 'Todas as letras', { adedanhaExcludedLetters: [] }]
@@ -418,11 +418,6 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
                 <button type="button" className="rdb-seg" aria-label="Mais uma rodada" data-testid="ad-rounds-plus" disabled={rounds >= 30} onClick={() => onChangeRounds(Math.min(30, rounds + 1))}>
                   +
                 </button>
-                {[3, 5, 8, 12].map((n) => (
-                  <Seg key={n} testid={`rounds-btn-${n}`} on={rounds === n} onClick={() => onChangeRounds(n)}>
-                    {n}
-                  </Seg>
-                ))}
               </div>
             </div>
           ) : (
@@ -448,6 +443,22 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
           {extraRows.map((row) => (
             <div className="rdb-opt" key={row.id} data-testid={'setup-extra-' + row.id}>
               <span className="rdb-opt-label">{row.label}</span>
+              {row.select ? (
+                <div className="rdb-opt-choices">
+                  <select
+                    className="rdb-select"
+                    data-testid={`setup-extra-${row.id}-select`}
+                    value={row.options.find((o) => o.on)?.id ?? row.options[0]?.id}
+                    onChange={(e) => row.options.find((o) => o.id === e.target.value)?.pick()}
+                  >
+                    {row.options.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
               <div className="rdb-opt-choices">
                 {row.options.map((o) => (
                   <Seg key={o.id} testid={`setup-extra-${row.id}-${o.id}`} on={o.on} onClick={o.pick}>
@@ -455,6 +466,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
                   </Seg>
                 ))}
               </div>
+              )}
             </div>
           ))}
         </div>

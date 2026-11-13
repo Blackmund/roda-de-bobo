@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AdedanhaState } from '../../types/game';
-import { ADEDANHA_SPIN_MS, tickAdedanha } from '../../utils/adedanhaEngine';
+import { ADEDANHA_SPIN_MS, startWriting, tickAdedanha } from '../../utils/adedanhaEngine';
 
 /**
  * Relogio da Adedanha: roda em UM aparelho so (a TV, ou o celular do lider no modo so celulares).
@@ -12,6 +12,13 @@ export function useAdedanhaDriver(
   enabled: boolean
 ) {
   const phase = state?.phase;
+  // Rodada nova: a letra comeca a ser sorteada sozinha, logo depois da vinheta da rodada.
+  useEffect(() => {
+    if (!enabled || phase !== 'READY') return;
+    const t = window.setTimeout(() => update((prev) => (prev.phase === 'READY' ? startWriting(prev) : prev)), 1500);
+    return () => window.clearTimeout(t);
+  }, [enabled, phase, update]);
+
   useEffect(() => {
     if (!enabled || (phase !== 'WRITING' && phase !== 'STOPPING')) return;
     const id = window.setInterval(() => {
