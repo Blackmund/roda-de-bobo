@@ -139,6 +139,8 @@ export interface DuvidoGameState {
   blindfoldConfirmed: { A: boolean; B: boolean; C?: boolean; D?: boolean };
   currentBid: number;
   currentBidTeam: TeamId | null;
+  teamBids?: Partial<Record<TeamId, number>>;
+  lastBidDelta?: number;
   activeTurnTeam: TeamId;
   activePlayerId?: string;
   timerSeconds: number;

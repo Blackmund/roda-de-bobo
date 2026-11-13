@@ -1,18 +1,20 @@
-import { themeBadge } from '../../utils/themeUtils';
 import React, { useEffect, useState } from 'react';
 import { GameRoom, DuvidoGameState, TeamId } from '../../types/game';
 import { sounds } from '../../utils/soundEffects';
 import { isShowRuleset, DUVIDO_SHOW_THEMES, DUVIDO_SHOW_WIN_TARGET } from '../../config/rulesets';
 import { generateRoundContent, generateThemeStrictFallbackRound, sanitizeCleanGameText } from '../../utils/aiGameGenerator';
-import { ActiveTurnBanner } from '../ActiveTurnBanner';
 import { TEAM_META, getActiveTeamIds, getNextTeamId } from '../../utils/teamUtils';
 import confetti from 'canvas-confetti';
 import { Check, Clock, XCircle, ArrowRight, RotateCcw, Infinity, Minus, Eye, EyeOff, Info, Lightbulb, ListChecks, Scale, Siren, X as XIcon } from 'lucide-react';
 import { DuvidoAnswerCheck, type DuvidoCheckVerdict } from './duvido/DuvidoAnswerCheck';
 
+export type DuvidoLayoutVariant = 'a' | 'b';
+
 interface ScreenDuvidoProps {
   room: GameRoom;
   isTvMode?: boolean;
+  layoutVariant?: DuvidoLayoutVariant;
+  onSwitchPreviewLayout?: (next: DuvidoLayoutVariant) => void;
   onUpdateDuvidoState: (updater: (prev: DuvidoGameState) => DuvidoGameState) => void;
   onNextRound: () => void;
   onRerollTheme?: () => void;
@@ -35,9 +37,25 @@ export function contestDuvidoResult(prev: DuvidoGameState): DuvidoGameState {
   };
 }
 
+function resolveDefaultLayoutVariant(): DuvidoLayoutVariant {
+  if (typeof window === 'undefined') return 'a';
+  const param = new URLSearchParams(window.location.search).get('duvido');
+  if (param === 'b') return 'b';
+  if (window.location.pathname.replace(/\/+$/, '') === '/duvido-b') return 'b';
+  return 'a';
+}
+
+function joinNamesPt(names: string[]): string {
+  if (names.length === 0) return '';
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} e ${names[1]}`;
+  return `${names.slice(0, -1).join(', ')} e ${names[names.length - 1]}`;
+}
+
 export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
   room,
-  isTvMode = false,
+  layoutVariant,
+  onSwitchPreviewLayout,
   onUpdateDuvidoState,
   onNextRound,
   onRerollTheme
@@ -48,12 +66,12 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
   const [checkQuery, setCheckQuery] = useState<string>('');
   const [checkResult, setCheckResult] = useState<DuvidoCheckVerdict | null>(null);
 
-  // Automatically keep answers hidden by default when round/category/phase changes
+  const variant: DuvidoLayoutVariant = layoutVariant || resolveDefaultLayoutVariant();
+
   useEffect(() => {
     setShowTvAnswers(false);
   }, [duvido?.roundData?.categoria_secreta, duvido?.phase]);
 
-  // Clear check state only when the category/round changes (keep it across EXECUTION -> RESULT)
   useEffect(() => {
     setCheckQuery('');
     setCheckResult(null);
@@ -61,7 +79,6 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
 
   const activeTeamIds = getActiveTeamIds(room);
 
-  // Timer countdown during EXECUTION phase — strictly disabled when room.timerConfig === 0
   useEffect(() => {
     if (
       room.timerConfig === 0 ||
@@ -139,6 +156,8 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
           },
           currentBid: 0,
           currentBidTeam: null,
+          teamBids: {},
+          lastBidDelta: undefined,
           validCount: 0,
           timerActive: false,
           timerSeconds: room.timerConfig
@@ -171,6 +190,8 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
         },
         currentBid: 0,
         currentBidTeam: null,
+        teamBids: {},
+        lastBidDelta: undefined,
         validCount: 0,
         timerActive: false,
         timerSeconds: room.timerConfig
@@ -246,12 +267,18 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
     sounds.playPowerup();
     setFreeBidInput('');
     onUpdateDuvidoState((prev) => {
+      const delta = cleanAmount - prev.currentBid;
       const nextTurnTeam = getNextTeamId(prev.activeTurnTeam, activeTeamIds);
       return {
         ...prev,
         phase: 'AUCTION',
         currentBid: cleanAmount,
         currentBidTeam: prev.activeTurnTeam,
+        teamBids: {
+          ...(prev.teamBids || {}),
+          [prev.activeTurnTeam]: cleanAmount
+        },
+        lastBidDelta: delta,
         activeTurnTeam: nextTurnTeam
       };
     });
@@ -281,13 +308,370 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
   const inAuction = phase === 'AUCTION' || phase === 'BLINDFOLD' || phase === 'SECRET_CATEGORY';
   const category = sanitizeCleanGameText(duvido.roundData.categoria_secreta, 'duvido');
   const show = isShowRuleset(room.customConfig);
-  const clock = room.timerConfig === 0 ? 'Livre' : `${String(Math.floor(duvido.timerSeconds / 60)).padStart(2, '0')}:${String(duvido.timerSeconds % 60).padStart(2, '0')}`;
+  const clock =
+    room.timerConfig === 0
+      ? 'Livre'
+      : `${String(Math.floor(duvido.timerSeconds / 60)).padStart(2, '0')}:${String(duvido.timerSeconds % 60).padStart(2, '0')}`;
   const clockHot = room.timerConfig !== 0 && duvido.timerSeconds <= 10 && duvido.timerActive;
   const teamLabel = (tId: TeamId) => room.teams[tId]?.name || TEAM_META[tId].defaultName;
+  const teamMembers = (tId: TeamId) =>
+    joinNamesPt(room.players.filter((p) => p.team === tId).map((p) => p.name));
+
+  const teamBids: Partial<Record<TeamId, number>> = {
+    ...(duvido.teamBids || {}),
+    ...(duvido.currentBidTeam && duvido.currentBid > 0 ? { [duvido.currentBidTeam]: duvido.currentBid } : {})
+  };
+
+  const activePlayersStr = teamMembers(duvido.activeTurnTeam);
+  const lastBidDelta = duvido.lastBidDelta && duvido.lastBidDelta > 0 ? duvido.lastBidDelta : duvido.currentBid;
+
+  const auctionPrompt =
+    duvido.currentBid > 0 && duvido.currentBidTeam ? (
+      <>
+        <strong>{teamLabel(duvido.currentBidTeam)}</strong> botou{' '}
+        <em className="rdb-duv-delta">+{lastBidDelta}</em> (total {duvido.currentBid}).{' '}
+        <span>
+          Sua vez, <strong>{teamLabel(duvido.activeTurnTeam)}</strong>
+          {activePlayersStr ? ` (${activePlayersStr})` : ''}: aumenta ou duvida?
+        </span>
+      </>
+    ) : (
+      <>
+        Começa com <strong>{teamLabel(duvido.activeTurnTeam)}</strong>
+        {activePlayersStr ? ` (${activePlayersStr})` : ''}: quantos itens vocês garantem citar?
+      </>
+    );
+
+  const renderThemeHero = (split: boolean) => (
+    <section
+      data-testid="duvido-theme-banner"
+      className={'rdb-duv-hero' + (split ? ' is-split' : '')}
+    >
+      <span className="rdb-pro-label">Tema</span>
+      <h2
+        data-testid="duvido-secret-category-title"
+        className="rdb-duv-category"
+        data-len={category.length > 75 ? 'l' : category.length > 42 ? 'm' : 's'}
+      >
+        {category}
+      </h2>
+      <div className="rdb-duv-meta">
+        {duvido.roundData.total_itens_possiveis > 0 && (
+          <span
+            data-testid="duvido-total-items-badge"
+            className="rdb-duv-cap"
+            data-tip="Quantidade aproximada de itens que existem no tema"
+          >
+            <ListChecks size={16} /> até ~{duvido.roundData.total_itens_possiveis}
+          </span>
+        )}
+        {duvido.roundData.dica_arbitro && (
+          <span data-testid="duvido-referee-tip" className="rdb-duv-tip">
+            <Lightbulb size={16} /> {duvido.roundData.dica_arbitro}
+          </span>
+        )}
+      </div>
+    </section>
+  );
+
+  const renderTeamBidCards = (stack: boolean) => (
+    <div
+      data-testid="duvido-current-bid-display"
+      className={'rdb-duv-team-bids' + (stack ? ' is-stack' : '')}
+    >
+      {activeTeamIds.map((tId) => {
+        const meta = TEAM_META[tId];
+        const isTurn =
+          (inAuction && duvido.activeTurnTeam === tId) ||
+          (phase === 'EXECUTION' && duvido.challengedTeam === tId);
+        const isHoldingHighest = duvido.currentBidTeam === tId && duvido.currentBid > 0;
+        const bidAmount = teamBids[tId] ?? 0;
+        const membersStr = teamMembers(tId);
+        const stateText =
+          phase === 'EXECUTION'
+            ? duvido.challengedTeam === tId
+              ? 'Na berlinda'
+              : 'Fiscaliza'
+            : isTurn
+            ? 'Sua vez'
+            : isHoldingHighest
+            ? 'Último lance'
+            : '';
+
+        return (
+          <button
+            key={tId}
+            type="button"
+            disabled={!inAuction}
+            onClick={() => {
+              if (!inAuction || duvido.activeTurnTeam === tId) return;
+              sounds.playTick();
+              onUpdateDuvidoState((prev) => ({
+                ...prev,
+                activeTurnTeam: tId,
+                activePlayerId: undefined
+              }));
+            }}
+            className={
+              'rdb-duv-tcard' +
+              (isTurn ? ' is-turn' : '') +
+              (isHoldingHighest ? ' is-leader' : '')
+            }
+            style={{ ['--team' as string]: meta.hex }}
+            aria-label={`${teamLabel(tId)}: lance ${bidAmount > 0 ? bidAmount : 'nenhum'}`}
+          >
+            <div className="rdb-duv-tcard-info">
+              <div className="rdb-duv-tcard-top">
+                <span className="rdb-duv-tcard-name">{teamLabel(tId)}</span>
+                {stateText && <span className="rdb-duv-state">{stateText}</span>}
+              </div>
+              {membersStr && <span className="rdb-duv-tcard-members">{membersStr}</span>}
+            </div>
+            <div className="rdb-duv-tcard-num">
+              {isHoldingHighest && lastBidDelta > 0 && inAuction && (
+                <span className="rdb-duv-tcard-delta">+{lastBidDelta}</span>
+              )}
+              <strong className={bidAmount > 0 ? '' : 'is-empty'}>
+                {bidAmount > 0 ? bidAmount : '—'}
+              </strong>
+              <small>{bidAmount === 1 ? 'item' : bidAmount > 1 ? 'itens' : 'sem lance'}</small>
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  const renderAuctionControls = (vertical: boolean) => (
+    <div className={'rdb-duv-bidbar' + (vertical ? ' is-vertical' : '')}>
+      <div className="rdb-duv-quick">
+        <button
+          type="button"
+          data-testid="duvido-bid-plus-1-btn"
+          className="rdb-btn"
+          onClick={() => handleHostBid(duvido.currentBid + 1)}
+        >
+          +1 <small>({duvido.currentBid + 1})</small>
+        </button>
+        <button
+          type="button"
+          data-testid="duvido-bid-plus-2-btn"
+          className="rdb-btn"
+          onClick={() => handleHostBid(duvido.currentBid + 2)}
+        >
+          +2 <small>({duvido.currentBid + 2})</small>
+        </button>
+        <button
+          type="button"
+          data-testid="duvido-bid-plus-3-btn"
+          className="rdb-btn"
+          onClick={() => handleHostBid(duvido.currentBid + 3)}
+        >
+          +3 <small>({duvido.currentBid + 3})</small>
+        </button>
+        <div className="rdb-duv-free">
+          <input
+            type="number"
+            data-testid="duvido-free-bid-input"
+            aria-label="Valor do lance"
+            min={duvido.currentBid + 1}
+            value={freeBidInput}
+            onChange={(e) => setFreeBidInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && freeBidInput) handleHostBid(Number(freeBidInput));
+            }}
+            placeholder={`Ex: ${Math.max(5, duvido.currentBid + 4)}`}
+          />
+          <button
+            type="button"
+            data-testid="duvido-free-bid-submit-btn"
+            className="rdb-btn"
+            onClick={() => handleHostBid(Number(freeBidInput))}
+            disabled={!freeBidInput || Number(freeBidInput) <= duvido.currentBid}
+          >
+            Apostar
+          </button>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        data-testid="duvido-call-btn"
+        className="rdb-btn rdb-duv-call"
+        onClick={handleHostCallDuvido}
+        disabled={duvido.currentBid <= 0}
+      >
+        <Siren size={18} />
+        <span>Duvido!</span>
+        <small>
+          {duvido.currentBid > 0
+            ? `${teamLabel(duvido.currentBidTeam as TeamId)} cita ${duvido.currentBid}`
+            : 'faça um lance'}
+        </small>
+      </button>
+    </div>
+  );
+
+  const renderExecutionBlock = (stack: boolean) => (
+    <div className={'rdb-duv-exec-wrap' + (stack ? ' is-stack' : '')}>
+      <div className={'rdb-duv-exec' + (stack ? ' is-stack' : '')}>
+        <div className="rdb-duv-panel">
+          <span className="rdb-duv-panel-label">
+            {room.timerConfig === 0 ? <Infinity size={15} /> : <Clock size={15} />} Tempo
+          </span>
+          <div data-testid="duvido-timer-display" className={'rdb-duv-panel-value' + (clockHot ? ' is-hot' : '')}>
+            {clock}
+          </div>
+          {room.timerConfig > 0 && !duvido.timerActive && (
+            <button type="button" className="rdb-btn" onClick={handleStartTimer}>
+              Disparar ({room.timerConfig}s)
+            </button>
+          )}
+        </div>
+        <div className="rdb-duv-panel is-count">
+          <span className="rdb-duv-panel-label">Itens citados</span>
+          <div data-testid="duvido-valid-counter" className="rdb-duv-panel-value">
+            {duvido.validCount} <small>/ {duvido.currentBid}</small>
+          </div>
+          <span className="rdb-duv-panel-sub">
+            {teamLabel(duvido.challengedTeam as TeamId)} na berlinda
+          </span>
+        </div>
+      </div>
+
+      {showTvAnswers && (
+        <div data-testid="duvido-tv-answers-list" className="rdb-duv-answers">
+          {duvido.roundData.exemplos_validos?.slice(0, 20).map((ex, idx) => (
+            <span key={idx}>{ex}</span>
+          ))}
+        </div>
+      )}
+
+      <DuvidoAnswerCheck
+        category={category}
+        ruleTip={duvido.roundData.dica_arbitro}
+        examples={duvido.roundData.exemplos_validos}
+        query={checkQuery}
+        onChangeQuery={setCheckQuery}
+        result={checkResult}
+        onResult={setCheckResult}
+        compact
+      />
+
+      <div className="rdb-pro-foot rdb-duv-actions">
+        <button type="button" data-testid="duvido-add-valid-btn" className="rdb-btn rdb-pro-hit" onClick={handleManualAddValid}>
+          <Check size={20} strokeWidth={3} /> +1 item válido
+        </button>
+        {room.timerConfig > 0 && (
+          <button
+            type="button"
+            data-testid="duvido-undo-valid-btn"
+            className="rdb-btn"
+            onClick={handleManualDecrementValid}
+            disabled={duvido.validCount <= 0}
+            data-tip="Desfazer um clique sem querer"
+          >
+            <Minus /> 1
+          </button>
+        )}
+        <div className="rdb-pro-foot-end">
+          {room.timerConfig > 0 ? (
+            <button
+              type="button"
+              data-testid="duvido-give-up-btn"
+              className="rdb-btn rdb-tem-strike"
+              data-tip="Encerrar: o ponto vai para quem gritou Duvido"
+              onClick={() =>
+                handleManualInvalidOrGiveUp('TEMPO ENCERRADO / DESISTÊNCIA! Ponto para a equipe que gritou Duvido.')
+              }
+            >
+              <XCircle /> Desistiu
+            </button>
+          ) : (
+            <button
+              type="button"
+              data-testid="duvido-invalid-item-btn"
+              className="rdb-btn rdb-tem-strike"
+              data-tip="Item inválido ou repetido: fim da rodada, ponto para quem gritou Duvido"
+              onClick={() =>
+                handleManualInvalidOrGiveUp('ITEM INVÁLIDO OU REPETIDO! Ponto para a equipe que gritou Duvido.')
+              }
+            >
+              <XCircle /> Item inválido
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderResultBlock = () => (
+    <div className="rdb-duv-result">
+      <span className="rdb-lim-round">Resultado</span>
+      <h2>
+        {teamLabel(duvido.resultWinnerTeam as TeamId)} <small>leva o ponto</small>
+      </h2>
+      <p>{duvido.resultReason}</p>
+
+      <DuvidoAnswerCheck
+        category={category}
+        ruleTip={duvido.roundData.dica_arbitro}
+        examples={duvido.roundData.exemplos_validos}
+        query={checkQuery}
+        onChangeQuery={setCheckQuery}
+        result={checkResult}
+        onResult={setCheckResult}
+      />
+
+      <div className="rdb-tem-strip rdb-duv-pick">
+        {activeTeamIds.map((teamKey) => {
+          const isSelected = duvido.resultWinnerTeam === teamKey;
+          return (
+            <button
+              key={teamKey}
+              type="button"
+              data-testid={`duvido-select-winner-${teamKey}`}
+              aria-pressed={isSelected}
+              className={'rdb-pro-sum-card' + (isSelected ? ' is-hit' : '')}
+              onClick={() => {
+                sounds.playTick();
+                onUpdateDuvidoState((prev) => ({ ...prev, resultWinnerTeam: teamKey }));
+              }}
+            >
+              <span className="rdb-pro-sum-top">
+                <strong>{teamLabel(teamKey)}</strong>
+                <span className="rdb-pro-sum-mark">
+                  {isSelected ? <Check size={18} strokeWidth={4} /> : <XIcon size={18} strokeWidth={4} />}
+                </span>
+              </span>
+              <span className="rdb-pro-sum-words">{isSelected ? '+1 ponto' : 'sem ponto'}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="rdb-duv-result-foot">
+        {duvido.challengedTeam && duvido.resultWinnerTeam !== duvido.challengedTeam && (
+          <button
+            type="button"
+            data-testid="duvido-contest-btn"
+            className="rdb-btn"
+            data-tip="O juiz aceita: a equipe desafiada volta a tentar, com a contagem preservada"
+            onClick={handleContestResult}
+          >
+            <Scale /> Contestar
+          </button>
+        )}
+        <button type="button" data-testid="duvido-confirm-points-btn" className="rdb-btn rdb-setup-start" onClick={onNextRound}>
+          Confirmar pontos e avançar
+          <ArrowRight />
+        </button>
+      </div>
+    </div>
+  );
 
   return (
-    <div className={'rdb-duv' + (phase === 'EXECUTION' ? ' is-exec' : '')}>
-      {/* Barra: o essencial aparece, o resto vira icone com dica */}
+    <div className={`rdb-duv rdb-duv--${variant}`} data-duvido-layout={variant}>
       <header className="rdb-lim-bar">
         <span className="rdb-lim-title">
           Duvido
@@ -308,7 +692,34 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
         >
           <Info size={16} />
         </span>
+
+        {/* Placar discreto na barra superior, liberando os cards para os lances */}
+        <div className="rdb-duv-score-pill" aria-label="Placar da partida">
+          {activeTeamIds.map((tId, idx) => (
+            <React.Fragment key={tId}>
+              {idx > 0 && <span className="rdb-duv-score-sep">×</span>}
+              <span className="rdb-duv-score-item" style={{ ['--team' as string]: TEAM_META[tId].hex }}>
+                <i className="rdb-duv-score-dot" />
+                {teamLabel(tId)}: <strong>{room.teams[tId]?.score || 0}</strong>
+              </span>
+            </React.Fragment>
+          ))}
+        </div>
+
         <div className="rdb-lim-tools">
+          {onSwitchPreviewLayout && (
+            <button
+              type="button"
+              className="rdb-duv-layout-switch"
+              onClick={() => {
+                sounds.playTick();
+                onSwitchPreviewLayout(variant === 'a' ? 'b' : 'a');
+              }}
+              title="Alternar entre Versão A e Versão B"
+            >
+              {variant === 'a' ? 'Ver Versão B →' : '← Ver Versão A'}
+            </button>
+          )}
           {phase === 'EXECUTION' && (
             <button
               type="button"
@@ -340,284 +751,43 @@ export const ScreenDuvido: React.FC<ScreenDuvidoProps> = ({
         </div>
       </header>
 
-      {/* O tema da rodada: o que importa para quem aposta */}
-      {phase !== 'RESULT' && (
-        <section data-testid="duvido-theme-banner" className="rdb-duv-theme">
-          <span className="rdb-pro-label">Tema</span>
-          <h2 data-testid="duvido-secret-category-title" className="rdb-duv-category" data-len={category.length > 70 ? 'l' : category.length > 40 ? 'm' : 's'}>
-            {category}
-          </h2>
-          <div className="rdb-duv-meta">
-            {duvido.roundData.total_itens_possiveis > 0 && (
-              <span data-testid="duvido-total-items-badge" data-tip="Quantidade aproximada de itens que existem no tema">
-                <ListChecks size={16} /> até ~{duvido.roundData.total_itens_possiveis}
-              </span>
-            )}
-            {duvido.roundData.dica_arbitro && (
-              <span data-testid="duvido-referee-tip" className="rdb-duv-tip">
-                <Lightbulb size={16} /> {duvido.roundData.dica_arbitro}
-              </span>
+      {phase === 'RESULT' ? (
+        renderResultBlock()
+      ) : variant === 'b' ? (
+        <div className="rdb-duv-split">
+          {renderThemeHero(true)}
+          <div className="rdb-duv-rail">
+            {inAuction ? (
+              <>
+                {renderTeamBidCards(true)}
+                <div className="rdb-duv-prompt" data-testid="duvido-auction-prompt">
+                  {auctionPrompt}
+                </div>
+                {renderAuctionControls(true)}
+              </>
+            ) : (
+              renderExecutionBlock(true)
             )}
           </div>
-        </section>
+        </div>
+      ) : (
+        <div className="rdb-duv-flow-a">
+          {renderThemeHero(false)}
+          <div className="rdb-duv-dock">
+            {inAuction ? (
+              <>
+                <div className="rdb-duv-prompt" data-testid="duvido-auction-prompt">
+                  {auctionPrompt}
+                </div>
+                {renderTeamBidCards(false)}
+                {renderAuctionControls(false)}
+              </>
+            ) : (
+              renderExecutionBlock(false)
+            )}
+          </div>
+        </div>
       )}
-
-      {/* Placar das equipes */}
-      <div className="rdb-tem-strip rdb-duv-teams">
-        {activeTeamIds.map((tId) => {
-          const meta = TEAM_META[tId];
-          const isTurn = (phase === 'AUCTION' && duvido.activeTurnTeam === tId) || (phase === 'EXECUTION' && duvido.challengedTeam === tId);
-          const state = phase === 'EXECUTION' ? (duvido.challengedTeam === tId ? 'Na berlinda' : 'Fiscaliza') : isTurn ? 'Aposta agora' : '';
-          return (
-            <div
-              key={tId}
-              className={'rdb-tem-team is-strip' + (isTurn ? ' is-turn' : '')}
-              style={{ ['--team' as string]: meta.hex }}
-              aria-label={`${teamLabel(tId)}: ${room.teams[tId]?.score || 0} pontos`}
-            >
-              <span className="rdb-tem-team-name">{teamLabel(tId)}</span>
-              {state && <span className="rdb-duv-state">{state}</span>}
-              <span className="rdb-tem-team-pts">
-                {room.teams[tId]?.score || 0}
-                <small>pts</small>
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="rdb-tem-turn">
-        <ActiveTurnBanner
-          room={room}
-          onSelectActiveTeam={(nextTeam) =>
-            onUpdateDuvidoState((prev) => ({
-              ...prev,
-              activeTurnTeam: nextTeam,
-              activePlayerId: undefined
-            }))
-          }
-        />
-      </div>
-
-      <div className="rdb-duv-stage">
-        {/* Fase 1: leilao */}
-        {inAuction && (
-          <>
-            <div className="rdb-duv-bid">
-              <span className="rdb-duv-bid-label">
-                {duvido.currentBid > 0 ? `Lance de ${teamLabel(duvido.currentBidTeam as TeamId)}: tem que citar` : 'Nenhum lance ainda'}
-              </span>
-              <div
-                data-testid="duvido-current-bid-display"
-                className={'rdb-duv-bid-value' + (duvido.currentBid > 0 ? '' : ' is-text')}
-              >
-                {duvido.currentBid > 0 ? (
-                  <>
-                    {duvido.currentBid} <small>itens</small>
-                  </>
-                ) : (
-                  'Faça o lance inicial'
-                )}
-              </div>
-            </div>
-
-            <div className="rdb-duv-controls">
-              <div className="rdb-duv-free">
-                <input
-                  type="number"
-                  data-testid="duvido-free-bid-input"
-                  aria-label="Valor do lance"
-                  min={duvido.currentBid + 1}
-                  value={freeBidInput}
-                  onChange={(e) => setFreeBidInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && freeBidInput) handleHostBid(Number(freeBidInput));
-                  }}
-                  placeholder={`Ex: ${Math.max(5, duvido.currentBid + 3)}`}
-                />
-                <button
-                  type="button"
-                  data-testid="duvido-free-bid-submit-btn"
-                  className="rdb-btn"
-                  onClick={() => handleHostBid(Number(freeBidInput))}
-                  disabled={!freeBidInput || Number(freeBidInput) <= duvido.currentBid}
-                >
-                  Apostar
-                </button>
-              </div>
-              <button type="button" data-testid="duvido-bid-plus-1-btn" className="rdb-btn" onClick={() => handleHostBid(duvido.currentBid + 1)}>
-                +1 <small>({duvido.currentBid + 1})</small>
-              </button>
-              <button type="button" data-testid="duvido-bid-plus-2-btn" className="rdb-btn" onClick={() => handleHostBid(duvido.currentBid + 2)}>
-                +2 <small>({duvido.currentBid + 2})</small>
-              </button>
-            
-              <button
-                type="button"
-                data-testid="duvido-call-btn"
-                className="rdb-btn rdb-duv-call"
-                data-tip={duvido.currentBid > 0 ? `${teamLabel(duvido.currentBidTeam as TeamId)} tem que citar ${duvido.currentBid}` : 'Faça um lance primeiro'}
-                onClick={handleHostCallDuvido}
-                disabled={duvido.currentBid <= 0}
-              >
-                <Siren /> Duvido!
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* Fase 2: execucao */}
-        {phase === 'EXECUTION' && (
-          <>
-            <div className="rdb-duv-exec">
-              <div className="rdb-duv-panel">
-                <span className="rdb-duv-panel-label">
-                  {room.timerConfig === 0 ? <Infinity size={16} /> : <Clock size={16} />} Tempo
-                </span>
-                <div data-testid="duvido-timer-display" className={'rdb-duv-panel-value' + (clockHot ? ' is-hot' : '')}>
-                  {clock}
-                </div>
-                {room.timerConfig > 0 && !duvido.timerActive && (
-                  <button type="button" className="rdb-btn" onClick={handleStartTimer}>
-                    Disparar ({room.timerConfig}s)
-                  </button>
-                )}
-              </div>
-              <div className="rdb-duv-panel is-count">
-                <span className="rdb-duv-panel-label">Itens citados</span>
-                <div data-testid="duvido-valid-counter" className="rdb-duv-panel-value">
-                  {duvido.validCount} <small>/ {duvido.currentBid}</small>
-                </div>
-                <span className="rdb-duv-panel-sub">{teamLabel(duvido.challengedTeam as TeamId)} na berlinda</span>
-              </div>
-            </div>
-
-            {showTvAnswers && (
-              <div data-testid="duvido-tv-answers-list" className="rdb-duv-answers">
-                {duvido.roundData.exemplos_validos?.slice(0, 20).map((ex, idx) => (
-                  <span key={idx}>{ex}</span>
-                ))}
-              </div>
-            )}
-
-            <DuvidoAnswerCheck
-              category={category}
-              ruleTip={duvido.roundData.dica_arbitro}
-              examples={duvido.roundData.exemplos_validos}
-              query={checkQuery}
-              onChangeQuery={setCheckQuery}
-              result={checkResult}
-              onResult={setCheckResult}
-              compact
-            />
-
-            <div className="rdb-pro-foot rdb-duv-actions">
-              <button type="button" data-testid="duvido-add-valid-btn" className="rdb-btn rdb-pro-hit" onClick={handleManualAddValid}>
-                <Check size={20} strokeWidth={3} /> +1 item válido
-              </button>
-              {room.timerConfig > 0 && (
-                <button
-                  type="button"
-                  data-testid="duvido-undo-valid-btn"
-                  className="rdb-btn"
-                  onClick={handleManualDecrementValid}
-                  disabled={duvido.validCount <= 0}
-                  data-tip="Desfazer um clique sem querer"
-                >
-                  <Minus /> 1
-                </button>
-              )}
-              <div className="rdb-pro-foot-end">
-                {room.timerConfig > 0 ? (
-                  <button
-                    type="button"
-                    data-testid="duvido-give-up-btn"
-                    className="rdb-btn rdb-tem-strike"
-                    data-tip="Encerrar: o ponto vai para quem gritou Duvido"
-                    onClick={() => handleManualInvalidOrGiveUp('TEMPO ENCERRADO / DESISTÊNCIA! Ponto para a equipe que gritou Duvido.')}
-                  >
-                    <XCircle /> Desistiu
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    data-testid="duvido-invalid-item-btn"
-                    className="rdb-btn rdb-tem-strike"
-                    data-tip="Item inválido ou repetido: fim da rodada, ponto para quem gritou Duvido"
-                    onClick={() => handleManualInvalidOrGiveUp('ITEM INVÁLIDO OU REPETIDO! Ponto para a equipe que gritou Duvido.')}
-                  >
-                    <XCircle /> Item inválido
-                  </button>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Fase 3: resultado */}
-        {phase === 'RESULT' && (
-          <div className="rdb-duv-result">
-            <span className="rdb-lim-round">Resultado</span>
-            <h2>
-              {teamLabel(duvido.resultWinnerTeam as TeamId)} <small>leva o ponto</small>
-            </h2>
-            <p>{duvido.resultReason}</p>
-
-            <DuvidoAnswerCheck
-              category={category}
-              ruleTip={duvido.roundData.dica_arbitro}
-              examples={duvido.roundData.exemplos_validos}
-              query={checkQuery}
-              onChangeQuery={setCheckQuery}
-              result={checkResult}
-              onResult={setCheckResult}
-            />
-
-            <div className="rdb-tem-strip rdb-duv-pick">
-              {activeTeamIds.map((teamKey) => {
-                const isSelected = duvido.resultWinnerTeam === teamKey;
-                return (
-                  <button
-                    key={teamKey}
-                    type="button"
-                    data-testid={`duvido-select-winner-${teamKey}`}
-                    aria-pressed={isSelected}
-                    className={'rdb-pro-sum-card' + (isSelected ? ' is-hit' : '')}
-                    onClick={() => {
-                      sounds.playTick();
-                      onUpdateDuvidoState((prev) => ({ ...prev, resultWinnerTeam: teamKey }));
-                    }}
-                  >
-                    <span className="rdb-pro-sum-top">
-                      <strong>{teamLabel(teamKey)}</strong>
-                      <span className="rdb-pro-sum-mark">{isSelected ? <Check size={18} strokeWidth={4} /> : <XIcon size={18} strokeWidth={4} />}</span>
-                    </span>
-                    <span className="rdb-pro-sum-words">{isSelected ? '+1 ponto' : 'sem ponto'}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="rdb-duv-result-foot">
-              {duvido.challengedTeam && duvido.resultWinnerTeam !== duvido.challengedTeam && (
-                <button
-                  type="button"
-                  data-testid="duvido-contest-btn"
-                  className="rdb-btn"
-                  data-tip="O juiz aceita: a equipe desafiada volta a tentar, com a contagem preservada"
-                  onClick={handleContestResult}
-                >
-                  <Scale /> Contestar
-                </button>
-              )}
-              <button type="button" data-testid="duvido-confirm-points-btn" className="rdb-btn rdb-setup-start" onClick={onNextRound}>
-                Confirmar pontos e avançar
-                <ArrowRight />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 };
