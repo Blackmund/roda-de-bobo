@@ -174,7 +174,7 @@ export const ScreenMobileJoin: React.FC<ScreenMobileJoinProps> = ({
                 className="px-2 py-0.5 rounded-full border border-cyan-400/50 bg-cyan-950/60 hover:bg-cyan-400 hover:text-black text-cyan-300 text-[10px] font-mono-code font-bold uppercase cursor-pointer transition-colors"
                 title="Forçar sincronização com a TV"
               >
-                🔄 Sincronizar
+                Sincronizar
               </button>
             )}
             <span
@@ -185,7 +185,7 @@ export const ScreenMobileJoin: React.FC<ScreenMobileJoinProps> = ({
                   : 'bg-amber-950/70 border-amber-500/50 text-amber-300 animate-pulse'
               }`}
             >
-              {isOnline ? `🟢 Conectado à Sala ${roomCode}!` : `🔄 Buscando sala ${roomCode}...`}
+              {isOnline ? `Conectado à Sala ${roomCode}!` : `Buscando sala ${roomCode}...`}
             </span>
           </div>
         </header>
@@ -216,7 +216,7 @@ export const ScreenMobileJoin: React.FC<ScreenMobileJoinProps> = ({
               onClick={handlePasteCode}
               className="text-xs font-mono-code font-bold text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer flex items-center gap-1"
             >
-              <span>📋 {pasteFeedback || 'Colar código'}</span>
+              <span>{pasteFeedback || 'Colar código'}</span>
             </button>
           </div>
 
@@ -354,7 +354,7 @@ export const ScreenMobileJoin: React.FC<ScreenMobileJoinProps> = ({
                   : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-white'
               }`}
             >
-              <span>🙋‍♂️ Entrar como Jogador</span>
+              <span>Entrar como Jogador</span>
             </button>
 
             <button
@@ -370,7 +370,7 @@ export const ScreenMobileJoin: React.FC<ScreenMobileJoinProps> = ({
                   : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-white'
               }`}
             >
-              <span>🎮 Controle Mestre (VIP Host)</span>
+              <span>Controle Mestre (VIP Host)</span>
             </button>
           </div>
         </div>
@@ -380,7 +380,7 @@ export const ScreenMobileJoin: React.FC<ScreenMobileJoinProps> = ({
             data-testid="mobile-join-error"
             className="p-3 rounded-xl bg-rose-950/80 border border-rose-500/70 text-rose-200 text-xs font-mono-code font-bold text-center"
           >
-            ⚠️ {errorMessage}
+            {errorMessage}
           </div>
         )}
 
