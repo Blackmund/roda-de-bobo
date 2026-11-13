@@ -266,3 +266,102 @@ test('Team Drag Flow & QR Mobile Direct Connect: no "Mover" button, dedicated mo
   onSwitchToQrFromPlayers();
   assert.equal(activeTab, 'qr', 'Must switch directly to QR Code tab when requested');
 });
+
+test('Turn Spotlight Engine: Perguntas e Verdades tracks setup, auction betting/reveal, turn, and victory', () => {
+  const room = createDefaultRoom('PVSPOT', 'host-1');
+  room.players = makePlayers(2);
+  const [p1, p2] = room.players;
+  room.screen = 'playing';
+  room.activeGame = 'perguntas-e-verdades';
+  room.perguntasEVerdades = {
+    phase: 'DECK_SETUP',
+    deckMode: 'assisted',
+    auctionRound: 1,
+    activeTurnPlayerId: p1.id,
+    targetOpponentId: p2.id,
+    auctionWinnerId: null,
+    auctionWinningBid: 0,
+    auctionTieMessage: null,
+    auctionRevealPending: false,
+    auctionOutcomeType: null,
+    tokens: { [p1.id]: 10, [p2.id]: 10 },
+    tokenAlertLight: { [p1.id]: false, [p2.id]: false },
+    currentBids: {},
+    bidSubmitted: {},
+    playerHands: { [p1.id]: [], [p2.id]: [] },
+    handReady: { [p1.id]: false, [p2.id]: false },
+    revealedCards: { [p1.id]: [], [p2.id]: [] },
+    selectedQuestionNumber: 1,
+    selectedPositionsQ1: [1, 3, 6],
+    selectedValueQ7: 7,
+    selectedSuitQ8: 'spades',
+    questionHistory: [],
+    truthGuessValues: [0, 0, 0, 0, 0, 0, 0, 0],
+    savedTruthSlotsByTarget: {},
+    tokenTimerConfig: 30,
+    turnTimerConfig: 300,
+    timerSeconds: 30,
+    timerActive: false,
+    winnerPlayerId: null,
+    winReason: null,
+    setupPlayerIndex: 1,
+    bettingPlayerIndex: 0
+  };
+
+  // 1. DECK_SETUP tracks setupPlayerIndex without showing an interrogation target
+  const setupSpot = resolveCurrentTurnSpotlight(room);
+  assert.ok(setupSpot);
+  assert.equal(setupSpot.flagLabel, 'Montagem');
+  assert.equal(setupSpot.activePlayer?.id, p2.id);
+  assert.equal(setupSpot.secondaryPlayer, null);
+
+  // 2. TOKEN_AUCTION sequential betting tracks bettingPlayerIndex and hides target
+  room.perguntasEVerdades.phase = 'TOKEN_AUCTION';
+  room.perguntasEVerdades.bettingPlayerIndex = 1;
+  room.perguntasEVerdades.bidSubmitted = { [p1.id]: true, [p2.id]: false };
+  const bettingSpot = resolveCurrentTurnSpotlight(room);
+  assert.ok(bettingSpot);
+  assert.equal(bettingSpot.flagLabel, 'Aposta');
+  assert.equal(bettingSpot.activePlayer?.id, p2.id);
+  assert.equal(bettingSpot.secondaryPlayer, null);
+
+  // 3. TOKEN_AUCTION ready to reveal hides winner until clicked
+  room.perguntasEVerdades.bidSubmitted = { [p1.id]: true, [p2.id]: true };
+  const readySpot = resolveCurrentTurnSpotlight(room);
+  assert.ok(readySpot);
+  assert.equal(readySpot.flagLabel, 'Leilão');
+  assert.equal(readySpot.activePlayer, null);
+  assert.equal(readySpot.roleBadge, 'Pronto para revelar');
+
+  // 4. TOKEN_AUCTION after clicking Revelar resultado shows revealed winner
+  room.perguntasEVerdades.auctionRevealPending = true;
+  room.perguntasEVerdades.auctionOutcomeType = 'WIN';
+  room.perguntasEVerdades.auctionWinnerId = p2.id;
+  room.perguntasEVerdades.activeTurnPlayerId = p2.id;
+  room.perguntasEVerdades.targetOpponentId = p1.id;
+  room.perguntasEVerdades.auctionWinningBid = 4;
+  const revealedSpot = resolveCurrentTurnSpotlight(room);
+  assert.ok(revealedSpot);
+  assert.equal(revealedSpot.flagLabel, 'Venceu');
+  assert.equal(revealedSpot.activePlayer?.id, p2.id);
+  assert.equal(revealedSpot.secondaryPlayer?.id, p1.id);
+  assert.ok(revealedSpot.roleBadge.includes('4 fichas'));
+
+  // 5. PLAYER_ACTION displays the active investigator and target
+  room.perguntasEVerdades.phase = 'PLAYER_ACTION';
+  room.perguntasEVerdades.auctionRevealPending = false;
+  const actionSpot = resolveCurrentTurnSpotlight(room);
+  assert.ok(actionSpot);
+  assert.equal(actionSpot.flagLabel, 'Vez de');
+  assert.equal(actionSpot.activePlayer?.id, p2.id);
+  assert.equal(actionSpot.secondaryPlayer?.id, p1.id);
+
+  // 6. VICTORY displays the round winner
+  room.perguntasEVerdades.phase = 'VICTORY';
+  room.perguntasEVerdades.winnerPlayerId = p2.id;
+  const victorySpot = resolveCurrentTurnSpotlight(room);
+  assert.ok(victorySpot);
+  assert.equal(victorySpot.flagLabel, 'Vencedor');
+  assert.equal(victorySpot.activePlayer?.id, p2.id);
+  assert.equal(victorySpot.secondaryPlayer, null);
+});

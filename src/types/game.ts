@@ -566,6 +566,8 @@ export interface PerguntasEVerdadesGameState {
   totalMatchRounds?: number;
   roundWinsByPlayer?: Record<string, number>;
   roundWinBannerMessage?: string | null;
+  auctionRevealPending?: boolean;
+  auctionOutcomeType?: 'WIN' | 'NO_BIDS' | null;
 }
 
 export interface GameCustomConfig {

@@ -672,12 +672,92 @@ export function resolveCurrentTurnSpotlight(room: GameRoom): TurnSpotlightDescri
   // 6. PERGUNTAS E VERDADES
   if (gameId === 'perguntas-e-verdades' && room.perguntasEVerdades) {
     const pv = room.perguntasEVerdades;
+    const playerCount = Math.max(1, players.length);
     const activePlayer =
       players.find((p) => p.id === pv.activeTurnPlayerId) || players[0] || null;
     const targetPlayer =
-      players.find((p) => p.id === pv.targetOpponentId) ||
+      players.find((p) => p.id === pv.targetOpponentId && p.id !== activePlayer?.id) ||
       players.find((p) => p.id !== activePlayer?.id) ||
       null;
+
+    if (pv.phase === 'DECK_SETUP') {
+      const setupIdx = Math.min(Math.max(0, pv.setupPlayerIndex ?? 0), playerCount - 1);
+      const setupPlayer = players[setupIdx] || players[0] || null;
+      return solo(
+        setupPlayer,
+        `Preparação da mão (${setupIdx + 1}/${playerCount})`,
+        'Monte suas 8 cartas em ordem crescente por naipe.',
+        { flagLabel: 'Montagem' }
+      );
+    }
+
+    if (pv.phase === 'TOKEN_AUCTION') {
+      if (pv.auctionRevealPending) {
+        const winner =
+          players.find((p) => p.id === (pv.auctionWinnerId || pv.activeTurnPlayerId)) ||
+          activePlayer;
+        const winnerTarget =
+          players.find((p) => p.id === pv.targetOpponentId && p.id !== winner?.id) ||
+          players.find((p) => p.id !== winner?.id) ||
+          null;
+        const bidLabel =
+          pv.auctionOutcomeType === 'NO_BIDS'
+            ? 'Sem lances · Vez definida'
+            : `Ganhou o leilão (${pv.auctionWinningBid} ${pv.auctionWinningBid === 1 ? 'ficha' : 'fichas'})`;
+        return {
+          gameId,
+          isTeamGame: false,
+          activeTeamId: null,
+          activeTeamName: 'Dedução Individual',
+          activeTeamMeta: null,
+          activePlayer: winner,
+          secondaryPlayer: winnerTarget,
+          secondaryRoleLabel: winnerTarget ? 'Alvo' : null,
+          roleBadge: bidLabel,
+          headline: winner ? `VENCEU O LEILÃO: ${winner.name.toUpperCase()}` : 'RESULTADO DO LEILÃO',
+          actionInstruction: `${winner?.name || 'O vencedor'} conquistou a vez de perguntar!`,
+          teammates: [],
+          nextInQueueLabel: winnerTarget ? `Alvo: ${winnerTarget.name}` : null,
+          canRotatePlayer: false,
+          flagLabel: 'Venceu'
+        };
+      }
+
+      const allBidsSubmitted =
+        players.length > 0 && players.every((p) => Boolean(pv.bidSubmitted?.[p.id]));
+      if (allBidsSubmitted) {
+        return solo(
+          null,
+          'Pronto para revelar',
+          'Todas as apostas registradas. Clique em Revelar resultado.',
+          {
+            activeTeamName: 'Apostas fechadas',
+            flagLabel: 'Leilão',
+            headline: 'APOSTAS REGISTRADAS'
+          }
+        );
+      }
+
+      const betIdx = Math.min(Math.max(0, pv.bettingPlayerIndex ?? 0), playerCount - 1);
+      const bidder = players[betIdx] || players[0] || null;
+      return solo(
+        bidder,
+        `Leilão de fichas (${betIdx + 1}/${playerCount})`,
+        `${bidder?.name || 'Jogador'} aposta suas fichas em segredo.`,
+        { flagLabel: 'Aposta' }
+      );
+    }
+
+    if (pv.phase === 'VICTORY' || pv.phase === 'FINISHED') {
+      const winner =
+        players.find((p) => p.id === pv.winnerPlayerId) || activePlayer;
+      return solo(
+        winner,
+        'Venceu a rodada',
+        'Cartas reveladas! Confirme para avançar.',
+        { flagLabel: 'Vencedor' }
+      );
+    }
 
     return {
       gameId,
@@ -687,27 +767,16 @@ export function resolveCurrentTurnSpotlight(room: GameRoom): TurnSpotlightDescri
       activeTeamMeta: null,
       activePlayer,
       secondaryPlayer: targetPlayer,
-      secondaryRoleLabel: '🎯 ALVO DA PERGUNTA',
-      roleBadge:
-        pv.phase === 'DECK_SETUP'
-          ? '🃏 PREPARAÇÃO DE MÃO'
-          : pv.phase === 'TOKEN_AUCTION'
-          ? '🪙 LEILÃO DE TOKENS'
-          : '🔍 INVESTIGADOR DA VEZ',
+      secondaryRoleLabel: targetPlayer ? 'Alvo' : null,
+      roleBadge: 'Investigador',
       headline: activePlayer
-        ? `VEZ DE AGIR: ${activePlayer.name.toUpperCase()}`
+        ? `VEZ DE: ${activePlayer.name.toUpperCase()}`
         : 'PERGUNTAS E VERDADES',
-      actionInstruction:
-        pv.phase === 'VICTORY' || pv.phase === 'FINISHED'
-          ? 'Fim do confronto. Confirme e avance para a próxima rodada da série.'
-          : pv.phase === 'DECK_SETUP'
-          ? 'Cada jogador registra suas 8 cartas secretas em ordem crescente por naipe.'
-          : pv.phase === 'TOKEN_AUCTION'
-          ? 'Apostem seus tokens em segredo para conquistar o direito de perguntar!'
-          : `${activePlayer?.name || 'O jogador da vez'} escolhe uma das 11 perguntas oficiais ou Declara a Verdade!`,
+      actionInstruction: 'Escolha 1 das 11 perguntas oficiais ou declare a verdade.',
       teammates: [],
       nextInQueueLabel: targetPlayer ? `Respondendo: ${targetPlayer.name}` : null,
-      canRotatePlayer: players.length > 1 && pv.phase === 'PLAYER_ACTION'
+      canRotatePlayer: false,
+      flagLabel: 'Vez de'
     };
   }
 

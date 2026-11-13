@@ -626,10 +626,10 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
   };
 
   const handleResolveAuctionOnTV = () => {
-    sounds.playPowerup();
     onUpdatePVState((prev) => {
       const res = resolveTokenAuction(prev.tokens, prev.currentBids, prev.tokenAlertLight);
       if (res.status === 'TIE') {
+        sounds.playPowerup();
         const tiedNames = res.tiedPlayerIds
           .map((id) => activePlayers.find((p) => p.id === id)?.name || id)
           .join(' & ');
@@ -640,11 +640,15 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
           currentBids: {},
           bidSubmitted: {},
           bettingPlayerIndex: 0,
+          auctionRevealPending: false,
+          auctionOutcomeType: null,
+          auctionWinnerId: null,
           auctionTieMessage: `Empate no maior LANCE (${res.highestBid} FICHAS) ENTRE ${tiedNames.toUpperCase()}! Eles recuperaram as fichas + GANHARAM +2 FICHAS DE BÔNUS para desempatar!`
         };
       }
 
       if (res.status === 'NO_BIDS') {
+        sounds.playPowerup();
         const nextIdx =
           (activePlayers.findIndex((p) => p.id === prev.activeTurnPlayerId) + 1) %
           Math.max(1, activePlayers.length);
@@ -653,17 +657,19 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
           activePlayers.find((p) => p.id !== fallbackWinner)?.id || activePlayers[0]?.id || null;
         return {
           ...prev,
-          phase: 'PLAYER_ACTION',
+          phase: 'TOKEN_AUCTION',
+          auctionRevealPending: true,
+          auctionOutcomeType: 'NO_BIDS',
           activeTurnPlayerId: fallbackWinner,
           targetOpponentId: defaultOpponent,
           auctionWinnerId: fallbackWinner,
           auctionWinningBid: 0,
-          auctionTieMessage: 'Nenhuma ficha apostada — vez da mesa.',
-          timerSeconds: prev.turnTimerConfig,
-          timerActive: prev.turnTimerConfig > 0
+          auctionTieMessage: null,
+          timerActive: false
         };
       }
 
+      sounds.playSuccess();
       const winnerId = res.winnerPlayerId || activePlayers[0]?.id || '';
       const defaultOpponent =
         activePlayers.find((p) => p.id !== winnerId)?.id || activePlayers[0]?.id || null;
@@ -672,16 +678,29 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
         ...prev,
         tokens: res.updatedTokens,
         tokenAlertLight: res.updatedAlertLights,
-        phase: 'PLAYER_ACTION',
+        phase: 'TOKEN_AUCTION',
+        auctionRevealPending: true,
+        auctionOutcomeType: 'WIN',
         activeTurnPlayerId: winnerId,
         targetOpponentId: defaultOpponent,
         auctionWinnerId: winnerId,
         auctionWinningBid: res.highestBid,
         auctionTieMessage: null,
-        timerSeconds: prev.turnTimerConfig,
-        timerActive: prev.turnTimerConfig > 0
+        timerActive: false
       };
     });
+  };
+
+  const handleStartWinnerTurnAfterReveal = () => {
+    sounds.playSuccess();
+    onUpdatePVState((prev) => ({
+      ...prev,
+      phase: 'PLAYER_ACTION',
+      auctionRevealPending: false,
+      auctionOutcomeType: null,
+      timerSeconds: prev.turnTimerConfig,
+      timerActive: prev.turnTimerConfig > 0
+    }));
   };
 
   const handleAdvanceNextRoundWithRecharge = () => {
@@ -705,6 +724,10 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
         currentBids: {},
         bidSubmitted: {},
         bettingPlayerIndex: 0,
+        auctionWinnerId: null,
+        auctionWinningBid: 0,
+        auctionRevealPending: false,
+        auctionOutcomeType: null,
         auctionTieMessage: null,
         activeTurnPlayerId: nextPlayerId,
         targetOpponentId: nextOpponentId,
@@ -796,6 +819,11 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
         tokenAlertLight: resetAlerts,
         currentBids: {},
         bidSubmitted: {},
+        bettingPlayerIndex: 0,
+        auctionWinnerId: null,
+        auctionWinningBid: 0,
+        auctionRevealPending: false,
+        auctionOutcomeType: null,
         questionHistory: [],
         truthGuessValues: [0, 0, 0, 0, 0, 0, 0, 0],
         savedTruthSlotsByTarget: {},
@@ -949,26 +977,45 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
   // GOLDEN TOKEN RULE: NO TEXT/NUMBER when > 5 tokens! ONLY PULSING RED LED when <= 5 tokens!
   // ===========================================================================
   const renderPlayerRosterStrip = () => {
+    const isPreRevealAuction = pv.phase === 'TOKEN_AUCTION' && !pv.auctionRevealPending;
+    const allBidsDone =
+      activePlayers.length > 0 && activePlayers.every((p) => Boolean(pv.bidSubmitted?.[p.id]));
+    const currentBidderId = activePlayers[pv.bettingPlayerIndex ?? 0]?.id;
+
     return (
       <div className="rdb-pv-roster">
         {activePlayers.map((player) => {
-          const isTurn = player.id === activeTurnPlayer?.id;
-          const isTarget = player.id === targetOpponent?.id && !isTurn;
+          const isTurn = isPreRevealAuction
+            ? !allBidsDone && player.id === currentBidderId
+            : player.id === activeTurnPlayer?.id;
+          const isTarget = !isPreRevealAuction && player.id === targetOpponent?.id && !isTurn;
           const tokenVal = pv.tokens[player.id] ?? 10;
           const alertLightOn = Boolean(pv.tokenAlertLight?.[player.id]) || tokenVal <= 5;
+          const canSelectTarget = pv.phase !== 'TOKEN_AUCTION' && !isTurn;
 
           return (
             <div
               key={player.id}
               data-testid={`pv-player-card-${player.id}`}
               onClick={() => {
+                if (!canSelectTarget) return;
                 sounds.playTick();
-                if (!isTurn) {
-                  onUpdatePVState((prev) => ({ ...prev, targetOpponentId: player.id }));
-                }
+                onUpdatePVState((prev) => ({ ...prev, targetOpponentId: player.id }));
               }}
               className={'rdb-pv-chip' + (isTurn ? ' is-turn' : isTarget ? ' is-target' : '')}
-              data-tip={isTurn ? 'Jogador da vez' : isTarget ? 'Alvo das perguntas' : 'Clique para escolher como alvo'}
+              data-tip={
+                isPreRevealAuction
+                  ? isTurn
+                    ? 'Apostando agora'
+                    : pv.bidSubmitted?.[player.id]
+                    ? 'Aposta registrada'
+                    : 'Aguardando vez de apostar'
+                  : isTurn
+                  ? 'Jogador da vez'
+                  : isTarget
+                  ? 'Alvo das perguntas'
+                  : 'Clique para escolher como alvo'
+              }
             >
               <PlayerMark p={player} />
               <span>{player.name}</span>
@@ -1020,7 +1067,7 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
     const currentSelectedBid = pv.currentBids?.[currentBiddingPlayer?.id] ?? 0;
     const maxTokensForBiddingPlayer = pv.tokens?.[currentBiddingPlayer?.id] ?? 10;
 
-    return <PVIntroView tvWrapperClass={tvWrapperClass} totalMatchRounds={totalMatchRounds} matchRoundNumber={matchRoundNumber} pv={pv} formatTimer={formatTimer} renderPlayerRosterStrip={renderPlayerRosterStrip} maxTokensForBiddingPlayer={maxTokensForBiddingPlayer} room={room} onUpdatePVState={onUpdatePVState} allBidsSubmitted={allBidsSubmitted} bettingIdx={bettingIdx} activePlayers={activePlayers} currentBiddingPlayer={currentBiddingPlayer} currentSelectedBid={currentSelectedBid} handleSetQuickTokenBidOnTV={handleSetQuickTokenBidOnTV} handleConfirmSequentialBid={handleConfirmSequentialBid} handleResolveAuctionOnTV={handleResolveAuctionOnTV} />;
+    return <PVIntroView tvWrapperClass={tvWrapperClass} totalMatchRounds={totalMatchRounds} matchRoundNumber={matchRoundNumber} pv={pv} formatTimer={formatTimer} renderPlayerRosterStrip={renderPlayerRosterStrip} maxTokensForBiddingPlayer={maxTokensForBiddingPlayer} room={room} onUpdatePVState={onUpdatePVState} allBidsSubmitted={allBidsSubmitted} bettingIdx={bettingIdx} activePlayers={activePlayers} currentBiddingPlayer={currentBiddingPlayer} currentSelectedBid={currentSelectedBid} handleSetQuickTokenBidOnTV={handleSetQuickTokenBidOnTV} handleConfirmSequentialBid={handleConfirmSequentialBid} handleResolveAuctionOnTV={handleResolveAuctionOnTV} handleStartWinnerTurnAfterReveal={handleStartWinnerTurnAfterReveal} />;
   }
 
   // ===========================================================================

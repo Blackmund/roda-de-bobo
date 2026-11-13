@@ -2,7 +2,7 @@ import type { Player } from '../../../types/game';
 import React from 'react';
 import { GameRoom, PerguntasEVerdadesGameState } from '../../../types/game';
 import { sounds } from '../../../utils/soundEffects';
-import { Clock, Lock, Info, RefreshCw, Coins } from 'lucide-react';
+import { Clock, Lock, Info, RefreshCw, Coins, ArrowRight } from 'lucide-react';
 import { PlayerMark } from '../../rdb/PlayerMark';
 
 interface PVIntroViewProps {
@@ -23,6 +23,7 @@ interface PVIntroViewProps {
   handleSetQuickTokenBidOnTV: (playerId: string, amount: number) => void;
   handleConfirmSequentialBid: (playerId: string) => void;
   handleResolveAuctionOnTV: () => void;
+  handleStartWinnerTurnAfterReveal: () => void;
 }
 
 export const PVIntroView: React.FC<PVIntroViewProps> = ({
@@ -40,8 +41,15 @@ export const PVIntroView: React.FC<PVIntroViewProps> = ({
   currentSelectedBid,
   handleSetQuickTokenBidOnTV,
   handleConfirmSequentialBid,
-  handleResolveAuctionOnTV
+  handleResolveAuctionOnTV,
+  handleStartWinnerTurnAfterReveal
 }) => {
+  const revealedWinner =
+    activePlayers.find((p) => p.id === (pv.auctionWinnerId || pv.activeTurnPlayerId)) ||
+    activePlayers[0];
+  const revealedTarget =
+    activePlayers.find((p) => p.id === pv.targetOpponentId && p.id !== revealedWinner?.id) ||
+    activePlayers.find((p) => p.id !== revealedWinner?.id);
   return (
     <div data-testid="screen-perguntas-e-verdades" className="rdb-pro">
       <header data-testid="pv-auction-only-header" className="rdb-lim-bar">
@@ -95,7 +103,38 @@ export const PVIntroView: React.FC<PVIntroViewProps> = ({
       )}
 
       <div className="rdb-pv-bid-center">
-        {!allBidsSubmitted ? (
+        {pv.auctionRevealPending && revealedWinner ? (
+          <div
+            data-testid="pv-auction-winner-reveal"
+            className="rdb-pv-bid-center"
+            style={{ width: '100%' }}
+          >
+            <span className="rdb-pro-label" style={{ position: 'static' }}>
+              {pv.auctionOutcomeType === 'NO_BIDS'
+                ? 'Nenhuma ficha apostada · Vez definida'
+                : `Venceu o leilão com ${pv.auctionWinningBid} ${
+                    pv.auctionWinningBid === 1 ? 'ficha' : 'fichas'
+                  }`}
+            </span>
+            <div className="rdb-pv-bid-who">
+              <PlayerMark p={revealedWinner} />
+              <span>{revealedWinner.name} ganhou a vez!</span>
+            </div>
+            {revealedTarget && (
+              <p className="rdb-lim-rule-note" style={{ margin: 0 }}>
+                Alvo da vez: <strong>{revealedTarget.name}</strong>
+              </p>
+            )}
+            <button
+              type="button"
+              data-testid="pv-start-winner-turn-btn"
+              className="rdb-btn rdb-setup-start"
+              onClick={handleStartWinnerTurnAfterReveal}
+            >
+              Iniciar turno de {revealedWinner.name} <ArrowRight />
+            </button>
+          </div>
+        ) : !allBidsSubmitted ? (
           <div data-testid="pv-sequential-bidding-card" className="rdb-pv-bid-center" style={{ width: '100%' }}>
             <span className="rdb-pro-label" style={{ position: 'static' }}>
               Aposta secreta {bettingIdx + 1} de {activePlayers.length} · reserva {maxTokensForBiddingPlayer} fichas
