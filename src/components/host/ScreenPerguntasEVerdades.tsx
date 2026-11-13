@@ -320,12 +320,27 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
       }
     }
 
-    // Freeform placement: player can organize their 8 cards in any order or sequence
-    sounds.playFlip();
     workingSlots[targetIndex] = card;
+
+    // Regra do jogo: no mesmo naipe os numeros so podem crescer da esquerda para a direita (naipes diferentes se misturam).
+    // Uma carta que quebra isso nao entra na posicao.
+    const order = validateSuitAscendingOrder(workingSlots as PVCard[]);
+    if (!order.valid) {
+      sounds.playBuzzer();
+      setSetupRuleError(
+        `Mesmo naipe só em ordem crescente: o ${card.label} não cabe na ${targetIndex + 1}ª posição.`
+      );
+      setConflictingSlotIdx(targetIndex);
+      return;
+    }
+    sounds.playFlip();
     setSetupSlots(workingSlots);
     setSetupRuleError(null);
     setConflictingSlotIdx(null);
+    // a selecao anda para a proxima posicao vazia, para montar a mao em sequencia
+    const nextEmpty = workingSlots.findIndex((x, i) => i > targetIndex && x === null);
+    const anyEmpty = nextEmpty !== -1 ? nextEmpty : workingSlots.findIndex((x) => x === null);
+    if (anyEmpty !== -1) setSelectedSlotIdx(anyEmpty);
   };
 
   const handleRemoveCardFromSlot = (slotIdx: number) => {

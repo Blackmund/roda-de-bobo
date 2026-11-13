@@ -22,6 +22,13 @@ const SUIT_DATA: Record<PVSuit, { symbol: string; name: string; color: string; b
   diamonds: { symbol: '♦', name: 'Ouros', color: '#FBBF24', bgAccent: 'from-amber-950/80 to-[#191307]' }
 };
 
+const PADRAO_TONE: Record<PVSuit, string> = {
+  spades: 'var(--rdb-cream, #F5F2EB)',
+  clubs: 'var(--rdb-teal, #17B8B8)',
+  hearts: 'var(--rdb-crimson, #E6194B)',
+  diamonds: 'var(--rdb-amber, #F4B11E)'
+};
+
 /**
  * Unique CazéTV style illustrated face motifs for card ranks.
  */
@@ -125,24 +132,15 @@ export const PlayingCardView: React.FC<PlayingCardViewProps> = ({
   const suitInfo = card ? SUIT_DATA[card.suit] : null;
   const isRed = card?.suit === 'hearts' || card?.suit === 'diamonds';
 
-  // Empty Slot Styling
+  // Posicao vazia
   if (!card) {
     return (
       <div
         onClick={onClick}
-        className={`h-20 sm:h-24 border-2 p-1 flex flex-col justify-between transition-all cursor-pointer relative select-none rounded ${
-          isConflict
-            ? 'border-rose-500 bg-rose-950 animate-pulse'
-            : isSelected
-            ? 'border-cyan-300 bg-cyan-950/60 shadow-[0_0_12px_rgba(0,229,255,0.4)]'
-            : 'border-dashed border-slate-700 bg-black/70 hover:border-cyan-400'
-        } ${className}`}
+        className={'rdb-pcard is-empty' + (isConflict ? ' is-conflict' : '') + (isSelected ? ' is-selected' : '') + (className ? ' ' + className : '')}
       >
-        <div className="flex items-center justify-between text-[9px] font-mono-code font-bold text-cyan-300">
-          <span>{slotLabel || 'SLOT'}</span>
-        </div>
-        <div className="my-auto text-center font-mono-code text-[10px] text-slate-500">
-          —
+        <div className="rdb-pcard-top">
+          <span>{slotLabel ? slotLabel.replace(/s*POSs*$/i, '') : ''}</span>
         </div>
       </div>
     );
@@ -197,49 +195,32 @@ export const PlayingCardView: React.FC<PlayingCardViewProps> = ({
     );
   }
 
-  // Padrão CazéTV Ilustrado (Full Card Representation)
+  // Padrao: carta limpa na identidade do site (fundo navy, borda e numero na cor do naipe, um unico simbolo).
   if (styleMode === 'padrao') {
+    const tone = PADRAO_TONE[card.suit];
     return (
       <div
         onClick={onClick}
-        className={`h-20 sm:h-24 border-2 p-1 flex flex-col justify-between transition-all cursor-pointer relative select-none rounded bg-[#0d1324] border-amber-400 shadow-[0_2px_10px_rgba(0,0,0,0.5)] ${
-          isConflict ? 'border-rose-500 bg-rose-950 animate-pulse' : ''
-        } ${isSelected ? 'border-cyan-300 ring-2 ring-cyan-400' : ''} ${className}`}
+        className={'rdb-pcard' + (isConflict ? ' is-conflict' : '') + (isSelected ? ' is-selected' : '') + (className ? ' ' + className : '')}
+        style={{ '--tone': tone } as React.CSSProperties}
       >
-        {/* Top Bar: Corner Index (Value + Suit) */}
-        <div className="flex items-center justify-between text-[10px] font-mono-code font-bold">
-          <div className="flex items-center gap-0.5" style={{ color: suitInfo?.color }}>
-            <span className="font-anton text-xs">{formatCardValueLabel(card.value)}</span>
-            <span>{suitInfo?.symbol}</span>
-          </div>
-          {slotLabel && <span className="text-[8px] text-slate-400">{slotLabel}</span>}
+        <div className="rdb-pcard-top">
+          <span>{slotLabel ? slotLabel.replace(/s*POSs*$/i, '') : ''}</span>
           {onRemove && (
             <button
               type="button"
+              aria-label="Tirar a carta"
               onClick={(e) => {
                 e.stopPropagation();
                 onRemove();
               }}
-              className="w-3.5 h-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold flex items-center justify-center cursor-pointer text-[10px] rounded-xs"
             >
               ×
             </button>
           )}
         </div>
-
-        {/* Center CazéTV Illustrated Motif */}
-        <div className="flex-1 flex items-center justify-center min-h-0">
-          {renderCardCenterArtwork(card.value, card.suit, 'padrao')}
-        </div>
-
-        {/* Bottom Bar: Inverted Corner Index */}
-        <div className="flex items-center justify-between text-[8px] font-mono-code text-slate-400">
-          <span className="truncate max-w-[50px]">{suitInfo?.name}</span>
-          <div className="flex items-center gap-0.5" style={{ color: suitInfo?.color }}>
-            <span>{suitInfo?.symbol}</span>
-            <span className="font-anton text-[10px]">{formatCardValueLabel(card.value)}</span>
-          </div>
-        </div>
+        <div className="rdb-pcard-rank">{formatCardValueLabel(card.value)}</div>
+        <div className="rdb-pcard-suit" title={suitInfo?.name}>{suitInfo?.symbol}</div>
       </div>
     );
   }

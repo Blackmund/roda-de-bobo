@@ -64,6 +64,7 @@ export const PVDeckSetupView: React.FC<PVDeckSetupViewProps> = ({
   cardsInCurrentSlots,
   cardsUsedByOtherPlayers
 }) => {
+  const [overIdx, setOverIdx] = React.useState<number | null>(null);
   const deckStyle: PVDeckStyle = pv.deckStyle || room.customConfig?.pvDeckStyle || 'padrao';
   const isLast = setupPlayerIndex >= activePlayers.length - 1;
 
@@ -115,9 +116,19 @@ export const PVDeckSetupView: React.FC<PVDeckSetupViewProps> = ({
               <div
                 key={slotIdx}
                 data-testid={`pv-setup-slot-${slotIdx + 1}`}
-                onDragOver={(e) => e.preventDefault()}
+                className={'rdb-pv-slot' + (draggedCard?.fromSlotIndex === slotIdx ? ' is-dragging' : '') + (overIdx === slotIdx ? ' is-over' : '')}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (overIdx !== slotIdx) setOverIdx(slotIdx);
+                }}
+                onDragLeave={() => setOverIdx((cur) => (cur === slotIdx ? null : cur))}
+                onDragEnd={() => {
+                  setOverIdx(null);
+                  setDraggedCard(null);
+                }}
                 onDrop={(e) => {
                   e.preventDefault();
+                  setOverIdx(null);
                   if (draggedCard) {
                     attemptPlaceCardInSlot(draggedCard.card, slotIdx, draggedCard.fromSlotIndex);
                     setDraggedCard(null);
