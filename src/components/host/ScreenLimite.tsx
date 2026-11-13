@@ -440,11 +440,6 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
           const nextCount = prev.revealCountdown - 1;
           if (nextCount <= 0) {
             sounds.playSuccess();
-            confetti({
-              particleCount: 90,
-              spread: 80,
-              origin: { y: 0.5 }
-            });
             return evaluateLimiteRoundReveal({
               ...prev,
               timerActive: false,
@@ -681,11 +676,6 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
     setEditingSecretPlayers({});
     setDrumrolling(false);
     sounds.playSuccess();
-    confetti({
-      particleCount: 90,
-      spread: 80,
-      origin: { y: 0.5 }
-    });
     onUpdateLimiteState((prev) =>
       evaluateLimiteRoundReveal({
         ...mergeDraftGuesses(prev, draftsSnapshot),

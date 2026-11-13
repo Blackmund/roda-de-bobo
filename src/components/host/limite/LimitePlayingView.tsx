@@ -329,18 +329,20 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
       </section>
 
       {/* A unica acao principal da tela */}
-      <footer className="rdb-lim-foot">
-        {scoring ? (
-          <button type="button" data-testid="limite-next-round-btn" className="rdb-btn rdb-setup-start" onClick={onNextRound}>
-            Confirmar pontos e avançar
-            <ArrowRight />
-          </button>
-        ) : (
-          <button type="button" data-testid="limite-reveal-answer-btn" className="rdb-btn rdb-setup-start" onClick={handleTriggerReveal}>
-            {limite.revealCountdown ? 'Revelar agora' : 'Revelar a resposta'}
-          </button>
-        )}
-      </footer>
+      {!isCountdownStage && (
+        <footer className="rdb-lim-foot">
+          {scoring ? (
+            <button type="button" data-testid="limite-next-round-btn" className="rdb-btn rdb-setup-start" onClick={onNextRound}>
+              Confirmar pontos e avançar
+              <ArrowRight />
+            </button>
+          ) : (
+            <button type="button" data-testid="limite-reveal-answer-btn" className="rdb-btn rdb-setup-start" onClick={handleTriggerReveal}>
+              Revelar a resposta
+            </button>
+          )}
+        </footer>
+      )}
 
       {/* Standardized z-[999] Power Cards Modal */}
       {isPowerModalOpen &&

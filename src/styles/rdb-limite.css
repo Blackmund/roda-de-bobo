@@ -376,7 +376,8 @@
 }
 .rdb-lim.is-reveal-stage .rdb-lim-players,
 .rdb-lim.is-reveal-stage .rdb-lim-foot,
-.rdb-lim.is-countdown-stage .rdb-lim-players {
+.rdb-lim.is-countdown-stage .rdb-lim-players,
+.rdb-lim.is-countdown-stage .rdb-lim-foot {
   max-height: 0;
   opacity: 0;
   transform: translateY(18px);
