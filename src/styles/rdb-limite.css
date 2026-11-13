@@ -190,19 +190,19 @@
   -webkit-line-clamp: 4;
 }
 .rdb-lim-stage:not(.is-scoring) .rdb-lim-question[data-len='xs'] {
-  font-size: clamp(2rem, 6.2vw, 7.4rem);
+  font-size: clamp(2.2rem, 6.8vw, 8.2rem);
 }
 .rdb-lim-stage:not(.is-scoring) .rdb-lim-question[data-len='s'] {
-  font-size: clamp(1.8rem, 4.7vw, 6rem);
+  font-size: clamp(2rem, 5.2vw, 6.6rem);
 }
 .rdb-lim-stage:not(.is-scoring) .rdb-lim-question[data-len='m'] {
-  font-size: clamp(1.6rem, 3.5vw, 4.6rem);
+  font-size: clamp(1.8rem, 4vw, 5.2rem);
 }
 .rdb-lim-stage:not(.is-scoring) .rdb-lim-question[data-len='l'] {
-  font-size: clamp(1.4rem, 2.8vw, 3.7rem);
+  font-size: clamp(1.55rem, 3.2vw, 4.2rem);
 }
 .rdb-lim-stage:not(.is-scoring) .rdb-lim-question[data-len='xl'] {
-  font-size: clamp(1.25rem, 2.2vw, 3rem);
+  font-size: clamp(1.4rem, 2.5vw, 3.4rem);
 }
 .rdb-lim-stage.is-scoring .rdb-lim-question {
   font-size: clamp(1rem, 1.6vw, 1.7rem);
@@ -227,17 +227,23 @@
 /* unidade junto dos palpites: ajuda a responder sem competir com a pergunta */
 .rdb-lim-unit-hint {
   margin-left: auto;
-  padding: 0.2em 0.7em;
-  background: var(--rdb-amber);
-  color: var(--rdb-navy);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.14rem 0.14rem 0.14rem 0.6rem;
+  background: rgba(255, 201, 60, 0.08);
+  border: 1px solid rgba(255, 201, 60, 0.55);
+  color: var(--rdb-ink-2);
   font-weight: 800;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.rdb-lim-unit-hint b {
+.rdb-lim-players-head .rdb-lim-unit-hint b {
+  padding: 0.12rem 0.55rem;
+  background: var(--rdb-amber);
+  color: var(--rdb-navy);
   font-weight: 900;
-  color: inherit;
 }
 .rdb-lim-players-head .rdb-lim-rule {
   margin-left: 0.5rem;
@@ -336,14 +342,13 @@
 .rdb-lim-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-  gap: 0.6rem;
+  gap: 0.45rem 0.6rem;
 }
 .rdb-lim-card {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  min-height: 6rem;
-  padding: 0.7rem 0.8rem;
+  gap: 0.3rem;
+  padding: 0.42rem 0.65rem;
   border: var(--rdb-line) solid rgba(245, 242, 235, 0.22);
   background: var(--rdb-navy-2);
 }
@@ -366,10 +371,10 @@
 .rdb-lim-card-head {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
   min-width: 0;
   font-weight: 900;
-  font-size: 1rem;
+  font-size: 0.94rem;
 }
 .rdb-lim-card-name {
   flex: 1;
@@ -410,7 +415,7 @@
 }
 .rdb-lim-card-guess {
   font-family: 'Anton', 'Impact', sans-serif;
-  font-size: 1.9rem;
+  font-size: 1.65rem;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -455,16 +460,16 @@
 .rdb-lim-card-locked {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
   color: var(--rdb-teal);
   font-weight: 800;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
 }
 .rdb-lim-card-edit {
   display: grid;
   place-items: center;
-  width: 2rem;
-  height: 2rem;
+  width: 1.75rem;
+  height: 1.75rem;
   margin-left: auto;
   background: transparent;
   border: 1px solid rgba(245, 242, 235, 0.3);
@@ -490,13 +495,13 @@
 .rdb-lim-card-input input {
   flex: 1;
   min-width: 0;
-  height: 2.4rem;
-  padding: 0 0.6rem;
+  height: 1.9rem;
+  padding: 0 0.55rem;
   background: var(--rdb-navy);
   border: var(--rdb-line) solid rgba(245, 242, 235, 0.3);
   color: var(--rdb-cream);
   font-family: 'Anton', 'Impact', sans-serif;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   text-align: center;
 }
 .rdb-lim-card-input input:focus {
@@ -506,8 +511,8 @@
 .rdb-lim-card-input button {
   display: grid;
   place-items: center;
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 2.1rem;
+  height: 1.9rem;
   background: var(--rdb-teal);
   border: 0;
   color: var(--rdb-navy);
