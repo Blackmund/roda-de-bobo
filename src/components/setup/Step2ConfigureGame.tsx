@@ -33,6 +33,21 @@ import { POPULAR_THEMES } from './step2/popularThemes';
 import { GameCardArt } from '../art/GameCardArt';
 import { CT_MODE_LABEL } from '../../utils/comTerraEngine';
 import { usesLocalContent } from '../../config/localGames';
+import {
+  ADEDANHA_LETRAS_EXCLUIDAS_PADRAO,
+  ADEDANHA_PADRAO,
+  ADEDANHA_RESENHA,
+  ADEDANHA_TEMATICAS,
+  ADEDANHA_TODAS
+} from '../../data/adedanhaCategorias';
+
+/** Qual conjunto de categorias da Adedanha esta escolhido (para marcar o botao). */
+const adedanhaSetId = (cats?: string[]): string => {
+  if (!cats || cats.join() === ADEDANHA_PADRAO.join()) return 'classicas';
+  if (cats.join() === ADEDANHA_TEMATICAS.slice(0, 7).join()) return 'tematicas';
+  if (cats.some((c) => ADEDANHA_RESENHA.includes(c)) && cats.length === 7 && cats.slice(0, 4).join() === ADEDANHA_PADRAO.slice(0, 4).join()) return 'resenha';
+  return 'sorteio';
+};
 
 export interface Step2ConfigureGameProps {
   activeGame: GameId;
@@ -142,6 +157,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
     activeGame === 'onde-estou' ||
     activeGame === 'respostas-sem-perguntas' ||
     activeGame === 'estadios' ||
+    activeGame === 'adedanha' ||
     activeGame === 'perguntas-e-verdades';
 
   const [isAllThemesExpanded, setIsAllThemesExpanded] = useState(false);
@@ -256,6 +272,19 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             ['physical', 'Baralho físico', { pvDeckMode: 'physical' }]
           ])
         ]
+      : activeGame === 'adedanha'
+      ? [
+          pickRow('ad-categorias', 'Categorias', adedanhaSetId(customConfig.adedanhaCategories), [
+            ['classicas', 'Clássicas', { adedanhaCategories: ADEDANHA_PADRAO }],
+            ['tematicas', 'Temáticas', { adedanhaCategories: ADEDANHA_TEMATICAS.slice(0, 7) }],
+            ['resenha', 'Com resenha', { adedanhaCategories: [...ADEDANHA_PADRAO.slice(0, 4), ...ADEDANHA_RESENHA.slice(0, 3)] }],
+            ['sorteio', 'Sortear 7', { adedanhaCategories: [...ADEDANHA_TODAS].sort(() => Math.random() - 0.5).slice(0, 7) }]
+          ]),
+          pickRow('ad-letras', 'Letras difíceis', (customConfig.adedanhaExcludedLetters ?? ADEDANHA_LETRAS_EXCLUIDAS_PADRAO).length > 0, [
+            [true, 'Fora (K, W, Y, X, Q)', { adedanhaExcludedLetters: ADEDANHA_LETRAS_EXCLUIDAS_PADRAO }],
+            [false, 'Todas as letras', { adedanhaExcludedLetters: [] }]
+          ])
+        ]
       : [];
 
   const isGeneralTheme = !theme || theme.trim().toLowerCase() === 'geral';
@@ -325,7 +354,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
           )}
 
-          {!isPV && !isCT && (
+          {!isPV && !isCT && activeGame !== 'adedanha' && (
             <div className="rdb-opt" data-testid="setup-theme-row">
               <span className="rdb-opt-label">Tema</span>
               <div className="rdb-opt-choices">
@@ -347,7 +376,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
           )}
 
-          {!isPV && !isCT && (
+          {!isPV && !isCT && activeGame !== 'adedanha' && (
             <div className="rdb-opt">
               <span className="rdb-opt-label">Dificuldade</span>
               <div className="rdb-opt-choices">

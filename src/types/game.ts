@@ -18,7 +18,8 @@ export type GameId =
   | 'estadios'
   | 'como-eu-pinto'
   | 'onde-estou'
-  | 'com-terra';
+  | 'com-terra'
+  | 'adedanha';
 
 export type TeamId = 'A' | 'B' | 'C' | 'D';
 
@@ -280,6 +281,31 @@ export interface RepetenteGameState {
   /** juiz: dupla -> considerar combinada mesmo com palavras diferentes */
   overrides: Record<string, boolean>;
   result?: { groups: RepetenteGroupResult[]; pointsByTeam: Record<TeamId, number> };
+}
+
+// ADEDANHA (Stop): letra sorteada, cada um escreve no celular, STOP, validacao por voto
+export interface AdedanhaState {
+  phase: 'READY' | 'WRITING' | 'STOPPING' | 'VOTING' | 'SUMMARY';
+  letter: string;
+  categories: string[];
+  /** quem joga a rodada (ordem fixa) */
+  playerIds: string[];
+  /** respostas de cada jogador, na ordem das categorias (so aparecem depois do STOP) */
+  answers: Record<string, string[]>;
+  submitted: Record<string, boolean>;
+  /** 0 = sem limite */
+  timerSeconds: number;
+  /** horario (ms) em que o tempo acaba; null = sem limite ou ainda nao comecou */
+  endsAt: number | null;
+  stopBy: string | null;
+  stopAt: number | null;
+  /** categoria em validacao */
+  voteIndex: number;
+  /** "cat|jogador" -> votante -> vale? */
+  votes: Record<string, Record<string, boolean>>;
+  /** decisao do diretor, vence os votos */
+  overrides: Record<string, boolean>;
+  pointsAwarded?: Record<string, number>;
 }
 
 // NOV-08: RESPOSTAS SEM PERGUNTAS (a pergunta e oculta; so se sabe quantas palavras tem)
@@ -591,6 +617,9 @@ export interface GameCustomConfig {
   ruleset?: 'home' | 'show';
   // DAD-05: origem do conteudo das perguntas: 'auto' (mistura banco + IA, padrao), 'bank' (so banco pronto) ou 'ai' (so IA)
   contentSource?: 'auto' | 'bank' | 'ai';
+  // Adedanha: categorias da partida e letras que nao saem
+  adedanhaCategories?: string[];
+  adedanhaExcludedLetters?: string[];
   // Tem ou Não Tem
   temItemsCount: number; // default 5 (range 3..10)
   temMaxStrikes: number; // default 2 (range 1..4)
@@ -772,6 +801,7 @@ export interface GameRoom {
   estadios?: EstadiosGameState;
   comoEuPinto?: ComoEuPintoState;
   comTerra?: ComTerraState;
+  adedanha?: AdedanhaState;
   nota?: NotaGameState;
   temOuNaoTem?: TemOuNaoTemGameState;
   perguntasEVerdades?: PerguntasEVerdadesGameState;

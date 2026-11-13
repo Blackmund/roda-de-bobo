@@ -540,6 +540,7 @@ export default function App() {
       estadios: undefined,
       comoEuPinto: undefined,
       comTerra: undefined,
+      adedanha: undefined,
       roundSource: undefined,
       teams: {
         A: { ...prev.teams.A, score: 0 },
@@ -694,7 +695,8 @@ export default function App() {
       'estadios',
       'como-eu-pinto',
       'onde-estou',
-      'com-terra'
+      'com-terra',
+      'adedanha'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     selectGame(randomChoice);

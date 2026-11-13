@@ -15,7 +15,8 @@ const DEFAULT_GAME_NAMES: Record<GameId, string> = {
   estadios: 'ESTÁDIOS',
   'como-eu-pinto': 'COMO EU PINTO',
   'onde-estou': 'ONDE ESTOU',
-  'com-terra': 'COM TERRA'
+  'com-terra': 'COM TERRA',
+  adedanha: 'ADEDANHA'
 };
 
 /**

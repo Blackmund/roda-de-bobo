@@ -23,6 +23,10 @@ export function accumulateRoundPlayerScores(room: GameRoom): Player[] {
     Object.entries(room.comTerra.pointsAwarded || {}).forEach(([pid, pts]) => {
       deltas[pid] = (deltas[pid] || 0) + pts;
     });
+  } else if (room.activeGame === 'adedanha' && room.adedanha) {
+    Object.entries(room.adedanha.pointsAwarded || {}).forEach(([pid, pts]) => {
+      deltas[pid] = (deltas[pid] || 0) + pts;
+    });
   } else if (room.activeGame === 'estadios' && room.estadios) {
     Object.entries(room.estadios.pointsAwarded || {}).forEach(([pid, pts]) => {
       deltas[pid] = (deltas[pid] || 0) + pts;
