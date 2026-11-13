@@ -1050,7 +1050,7 @@ Para cada um:
 - "categoria": 1 a 3 palavras.
 - "wiki": título EXATO de um artigo da Wikipédia em português que tenha foto do momento ou da pessoa/lugar principal (ex.: "Maracanazo", "Zinedine Zidane").
 - "wiki_en": título exato do artigo equivalente na Wikipédia em inglês.
-- "busca": 3 a 5 palavras para achar a foto (nomes próprios e o ano).
+- "busca": 3 palavras-chave (2 nomes/termos fortes + o ano), para achar a FOTO DO LANCE no Wikimedia Commons. Use o nome original da pessoa/lugar/coisa, sem verbos nem adjetivos (ex.: "Zidane Materazzi 2006", "Pelé Brazil 1970", "Brandenburg Gate 1989"). A busca exige TODAS as palavras no nome ou descrição do arquivo, então seja enxuto.
 - "confirma": 2 a 4 palavras que o resumo do artigo CERTO da Wikipédia com certeza cita (ex.: "futebol", "jogador", "Copa do Mundo"), para eu descartar homônimos.
 IMPORTANTE: se o nome tiver homônimo, use o título desambiguado em "wiki" (ex.: "Roberto Carlos (futebolista)", não o cantor).
 NÃO repita nem pareça com: ${JSON.stringify(excludeList)}.

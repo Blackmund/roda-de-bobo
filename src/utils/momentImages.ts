@@ -96,20 +96,45 @@ async function searchPages(lang: 'pt' | 'en', term: string): Promise<PageHit[]> 
   return (pages as any[]).map(toHit);
 }
 
-async function fromCommons(q: string): Promise<string | null> {
+const STOP = new Set(["the","and","de","da","do","das","dos","em","na","no","com","por","para","que","uma","um","final","copa","world","cup"]);
+
+/**
+ * Foto do LANCE: procura no Commons arquivos cujo nome/descricao citam as palavras da busca (pessoas + evento + ano).
+ * Escolhe o melhor por pontuacao; sem pelo menos 2 palavras em comum nao devolve nada (cai para a foto do artigo).
+ */
+function momentTokens(term: string): string[] {
+  return [...new Set(flat(term).split(/[^a-z0-9]+/).filter((t) => t.length >= 3 && !STOP.has(t)))];
+}
+
+/** Uma busca no Commons (com a frase dada) pontuada pelas palavras de `tokens`. */
+async function commonsScoredOnce(search: string, tokens: string[]): Promise<string | null> {
+  if (tokens.length < 2 || !search.trim()) return null;
   const j = await getJson(
-    'https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrnamespace=6&gsrlimit=6&gsrsearch=' +
-      encodeURIComponent(q + ' filetype:bitmap') +
-      '&prop=imageinfo&iiprop=url|size&iiurlwidth=960'
+    'https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrnamespace=6&gsrlimit=12&gsrsearch=' +
+      encodeURIComponent(search + ' filetype:bitmap') +
+      '&prop=imageinfo&iiprop=url|size|extmetadata&iiextmetadatafilter=ImageDescription|ObjectName&iiurlwidth=960'
   );
-  const pages = Object.values((j?.query?.pages as Record<string, any>) || {}).sort((a: any, b: any) => a.index - b.index);
-  for (const p of pages as any[]) {
+  const pages = Object.values((j?.query?.pages as Record<string, any>) || {}) as any[];
+  let best: { url: string; score: number } | null = null;
+  for (const p of pages) {
     const ii = p.imageinfo?.[0];
-    if (!ii || ii.width < 400 || BAD_NAME.test(p.title)) continue;
-    const ok = ii.width <= 1100 ? clean(String(ii.url)) : clean(String(ii.thumburl));
-    if (ok) return ok;
+    if (!ii || ii.width < 500 || BAD_NAME.test(p.title)) continue;
+    const meta = ii.extmetadata || {};
+    const text = flat(`${p.title} ${meta.ImageDescription?.value || ''} ${meta.ObjectName?.value || ''}`);
+    const hits = tokens.filter((t) => text.includes(t)).length;
+    const score = hits / Math.min(tokens.length, 5);
+    if (hits >= 2 && score >= 0.6 && (!best || score > best.score)) {
+      best = { url: ii.width <= 1100 ? clean(String(ii.url)) : clean(String(ii.thumburl)), score };
+    }
   }
-  return null;
+  return best?.url || null;
+}
+
+/** Roda `fn` para cada item, `size` por vez (a Wikimedia limita rajadas grandes). */
+async function inChunks<T>(items: T[], size: number, fn: (item: T, i: number) => Promise<void>) {
+  for (let i = 0; i < items.length; i += size) {
+    await Promise.all(items.slice(i, i + size).map((it, k) => fn(it, i + k)));
+  }
 }
 
 export interface MomentImageQuery {
@@ -141,9 +166,21 @@ export async function findMomentImages(queries: MomentImageQuery[]): Promise<(st
 async function findMomentImagesUncached(queries: MomentImageQuery[]): Promise<(string | null)[]> {
   const res: (string | null)[] = queries.map(() => null);
 
-  // 1) artigo em portugues, todos de uma vez
-  const pt = await pagesByTitle('pt', queries.map((q) => q.wiki || ''));
+  // 0) foto do lance no Commons (nome/descricao do arquivo com as palavras da busca), um pedido por momento
+  // Onda 1: a frase inteira (4 por vez). Onda 2: so as 2 primeiras palavras (a busca do Commons exige todas as palavras).
+  await inChunks(queries, 4, async (q, i) => {
+    if (q.busca) res[i] = await commonsScoredOnce(q.busca, momentTokens(q.busca));
+  });
+  const wave2 = queries.map((q, i) => i).filter((i) => !res[i] && queries[i].busca && momentTokens(queries[i].busca!).length > 2);
+  await inChunks(wave2, 4, async (i) => {
+    const tk = momentTokens(queries[i].busca!);
+    res[i] = await commonsScoredOnce(tk.slice(0, 2).join(' '), tk);
+  });
+
+  // 1) artigo em portugues, so para quem ainda nao tem foto
+  const pt = await pagesByTitle('pt', queries.map((q, i) => (res[i] ? '' : q.wiki || '')));
   queries.forEach((q, i) => {
+    if (res[i]) return;
     const hit = q.wiki ? pt.get(q.wiki) : undefined;
     if (hit?.image && confirms(hit, q.confirma)) res[i] = hit.image;
   });
@@ -164,7 +201,8 @@ async function findMomentImagesUncached(queries: MomentImageQuery[]): Promise<(s
     if (res[i]) continue;
     const q = queries[i];
     const term = q.busca || q.wiki || q.wikiEn;
-    if (!term) continue;
+    // sem palavras de confirmacao nao da para saber se o artigo achado e o certo: melhor sem foto do que errada
+    if (!term || !q.confirma || q.confirma.length === 0) continue;
     for (const lang of ['pt', 'en'] as const) {
       const hits = await searchPages(lang, term);
       const ok = hits.find((h) => h.image && confirms(h, q.confirma));
@@ -175,14 +213,6 @@ async function findMomentImagesUncached(queries: MomentImageQuery[]): Promise<(s
     }
   }
 
-  // 4) Commons so para o que continuar sem foto e sem palavras de confirmacao (nao da para checar homonimos la)
-  for (let i = 0; i < queries.length; i++) {
-    if (res[i]) continue;
-    const q = queries[i];
-    if (q.confirma && q.confirma.length > 0) continue;
-    const term = q.busca || q.wiki || q.wikiEn;
-    if (term) res[i] = await fromCommons(term);
-  }
   return res;
 }
 

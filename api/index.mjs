@@ -78215,18 +78215,34 @@ async function searchPages(lang, term) {
   const pages = Object.values(j?.query?.pages || {}).sort((a, b) => a.index - b.index);
   return pages.map(toHit);
 }
-async function fromCommons(q) {
+var STOP2 = /* @__PURE__ */ new Set(["the", "and", "de", "da", "do", "das", "dos", "em", "na", "no", "com", "por", "para", "que", "uma", "um", "final", "copa", "world", "cup"]);
+function momentTokens(term) {
+  return [...new Set(flat(term).split(/[^a-z0-9]+/).filter((t2) => t2.length >= 3 && !STOP2.has(t2)))];
+}
+async function commonsScoredOnce(search, tokens) {
+  if (tokens.length < 2 || !search.trim()) return null;
   const j = await getJson(
-    "https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrnamespace=6&gsrlimit=6&gsrsearch=" + encodeURIComponent(q + " filetype:bitmap") + "&prop=imageinfo&iiprop=url|size&iiurlwidth=960"
+    "https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrnamespace=6&gsrlimit=12&gsrsearch=" + encodeURIComponent(search + " filetype:bitmap") + "&prop=imageinfo&iiprop=url|size|extmetadata&iiextmetadatafilter=ImageDescription|ObjectName&iiurlwidth=960"
   );
-  const pages = Object.values(j?.query?.pages || {}).sort((a, b) => a.index - b.index);
+  const pages = Object.values(j?.query?.pages || {});
+  let best = null;
   for (const p2 of pages) {
     const ii = p2.imageinfo?.[0];
-    if (!ii || ii.width < 400 || BAD_NAME.test(p2.title)) continue;
-    const ok = ii.width <= 1100 ? clean(String(ii.url)) : clean(String(ii.thumburl));
-    if (ok) return ok;
+    if (!ii || ii.width < 500 || BAD_NAME.test(p2.title)) continue;
+    const meta = ii.extmetadata || {};
+    const text = flat(`${p2.title} ${meta.ImageDescription?.value || ""} ${meta.ObjectName?.value || ""}`);
+    const hits = tokens.filter((t2) => text.includes(t2)).length;
+    const score = hits / Math.min(tokens.length, 5);
+    if (hits >= 2 && score >= 0.6 && (!best || score > best.score)) {
+      best = { url: ii.width <= 1100 ? clean(String(ii.url)) : clean(String(ii.thumburl)), score };
+    }
   }
-  return null;
+  return best?.url || null;
+}
+async function inChunks(items, size, fn) {
+  for (let i2 = 0; i2 < items.length; i2 += size) {
+    await Promise.all(items.slice(i2, i2 + size).map((it, k) => fn(it, i2 + k)));
+  }
 }
 var cache = /* @__PURE__ */ new Map();
 var keyOf = (q) => flat(`${q.wiki || ""}|${q.wikiEn || ""}|${q.busca || ""}`);
@@ -78245,8 +78261,17 @@ async function findMomentImages(queries) {
 }
 async function findMomentImagesUncached(queries) {
   const res = queries.map(() => null);
-  const pt = await pagesByTitle("pt", queries.map((q) => q.wiki || ""));
+  await inChunks(queries, 4, async (q, i2) => {
+    if (q.busca) res[i2] = await commonsScoredOnce(q.busca, momentTokens(q.busca));
+  });
+  const wave2 = queries.map((q, i2) => i2).filter((i2) => !res[i2] && queries[i2].busca && momentTokens(queries[i2].busca).length > 2);
+  await inChunks(wave2, 4, async (i2) => {
+    const tk = momentTokens(queries[i2].busca);
+    res[i2] = await commonsScoredOnce(tk.slice(0, 2).join(" "), tk);
+  });
+  const pt = await pagesByTitle("pt", queries.map((q, i2) => res[i2] ? "" : q.wiki || ""));
   queries.forEach((q, i2) => {
+    if (res[i2]) return;
     const hit = q.wiki ? pt.get(q.wiki) : void 0;
     if (hit?.image && confirms(hit, q.confirma)) res[i2] = hit.image;
   });
@@ -78263,7 +78288,7 @@ async function findMomentImagesUncached(queries) {
     if (res[i2]) continue;
     const q = queries[i2];
     const term = q.busca || q.wiki || q.wikiEn;
-    if (!term) continue;
+    if (!term || !q.confirma || q.confirma.length === 0) continue;
     for (const lang of ["pt", "en"]) {
       const hits = await searchPages(lang, term);
       const ok = hits.find((h2) => h2.image && confirms(h2, q.confirma));
@@ -78272,13 +78297,6 @@ async function findMomentImagesUncached(queries) {
         break;
       }
     }
-  }
-  for (let i2 = 0; i2 < queries.length; i2++) {
-    if (res[i2]) continue;
-    const q = queries[i2];
-    if (q.confirma && q.confirma.length > 0) continue;
-    const term = q.busca || q.wiki || q.wikiEn;
-    if (term) res[i2] = await fromCommons(term);
   }
   return res;
 }
@@ -79040,7 +79058,7 @@ Para cada um:
 - "categoria": 1 a 3 palavras.
 - "wiki": t\xEDtulo EXATO de um artigo da Wikip\xE9dia em portugu\xEAs que tenha foto do momento ou da pessoa/lugar principal (ex.: "Maracanazo", "Zinedine Zidane").
 - "wiki_en": t\xEDtulo exato do artigo equivalente na Wikip\xE9dia em ingl\xEAs.
-- "busca": 3 a 5 palavras para achar a foto (nomes pr\xF3prios e o ano).
+- "busca": 3 palavras-chave (2 nomes/termos fortes + o ano), para achar a FOTO DO LANCE no Wikimedia Commons. Use o nome original da pessoa/lugar/coisa, sem verbos nem adjetivos (ex.: "Zidane Materazzi 2006", "Pel\xE9 Brazil 1970", "Brandenburg Gate 1989"). A busca exige TODAS as palavras no nome ou descri\xE7\xE3o do arquivo, ent\xE3o seja enxuto.
 - "confirma": 2 a 4 palavras que o resumo do artigo CERTO da Wikip\xE9dia com certeza cita (ex.: "futebol", "jogador", "Copa do Mundo"), para eu descartar hom\xF4nimos.
 IMPORTANTE: se o nome tiver hom\xF4nimo, use o t\xEDtulo desambiguado em "wiki" (ex.: "Roberto Carlos (futebolista)", n\xE3o o cantor).
 N\xC3O repita nem pare\xE7a com: ${JSON.stringify(excludeList)}.

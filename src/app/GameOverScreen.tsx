@@ -154,14 +154,14 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.98 }}
                   transition={{ duration: 0.25 }}
-                  className="h-full flex flex-col justify-between gap-2.5 min-h-0 overflow-hidden"
+                  className="h-full flex flex-col justify-between gap-2 min-h-0 overflow-y-auto overflow-x-hidden"
                 >
                   {/* 12-Column Zero-Scroll Horizontal Grid: Winner Centerpiece + MVP / Collective Dupla Card */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 min-h-0 items-stretch">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 flex-1 items-stretch">
                     {/* LEFT COLUMN (6 cols): Winning Individual Champion OR Winning Team */}
                     <div
                       data-testid="gameover-winner-centerpiece"
-                      className="lg:col-span-6 border border-amber-400/50 bg-gradient-to-b from-amber-950/35 via-[#07080d] to-[#07080d] p-4 text-center relative overflow-hidden flex flex-col justify-between min-h-0"
+                      className="lg:col-span-6 border border-amber-400/50 bg-gradient-to-b from-amber-950/35 via-[#07080d] to-[#07080d] p-3 text-center relative overflow-hidden flex flex-col justify-between min-h-0"
                     >
                       <div className="rdb-win-head shrink-0">
                         <div className="rdb-win-art">
@@ -189,8 +189,8 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
 
                       {/* Highlight of the Ranking Individual or Winning Team Players */}
                       {winningTeamPlayers.length > 0 && (
-                        <div className="space-y-1.5 min-h-0">
-                          <div className="text-[10px] font-mono-code text-amber-300 uppercase font-bold tracking-wider">
+                        <div className="space-y-1.5 shrink-0 flex flex-col">
+                          <div className="text-[10px] font-mono-code text-amber-300 uppercase font-bold tracking-wider shrink-0">
                             {isIndividualMatch
                               ? 'RANKING INDIVIDUAL DOS JOGADORES'
                               : winningTeamKey === 'EMPATE'
@@ -198,7 +198,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                               : `EQUIPE CAMPEÃ (${winningTeamName} — PONTUAM JUNTOS)`}
                           </div>
                           {/* UX-14: lista TODOS os jogadores (sem corte em 6); rola dentro do painel se faltar espaço */}
-                          <div className="grid grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-2 max-h-[34vh] overflow-y-auto pr-1">
+                          <div className="grid grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-2 content-start pr-1">
                             {winningTeamPlayers.map((wp, idx) => {
                               const isHighlightedWinner = isIndividualMatch
                                 ? idx === 0
@@ -281,7 +281,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: 0.05 }}
-                      className="lg:col-span-6 border border-amber-400/50 bg-gradient-to-r from-amber-950/35 via-[#07080d] to-[#07080d] p-4 relative overflow-hidden flex flex-col justify-between min-h-0"
+                      className="lg:col-span-6 border border-amber-400/50 bg-gradient-to-r from-amber-950/35 via-[#07080d] to-[#07080d] p-3 relative overflow-hidden flex flex-col justify-between gap-2 min-h-0"
                     >
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
