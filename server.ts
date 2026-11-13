@@ -47,6 +47,7 @@ import {
   type TemOuNaoTemQuestion
 } from './src/utils/temOuNaoTemGoldenDatabase.ts';
 import { isRelated } from './src/utils/similarText.ts';
+import { findMomentImages } from './src/utils/momentImages.ts';
 interface ServerSubAngleDefinition {
   id: number;
   label: string;
@@ -1025,6 +1026,97 @@ REGRA OBRIGATÓRIA: NÃO repita o nome do tema antes de dois-pontos (NUNCA escre
 });
 
 // Gemini AI Procedural Generator Endpoint (Few-Shot Learning + Semantic Sub-Angle + Session Memory Block)
+// Onde estou: a IA escolhe momentos marcantes (e algumas piadas/memes) do tema e o servidor acha uma foto de cada um.
+app.post('/api/onde-estou-moments', async (req, res) => {
+  const { theme: rawTheme, count: rawCount, exclude = [] } = req.body || {};
+  const theme = String(rawTheme || '').trim();
+  const isGeneral = !theme || /^(geral|assuntos diversos|cultura pop e curiosidades)$/i.test(theme);
+  const count = Math.min(10, Math.max(2, Number(rawCount) || 6));
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === 'MY_GEMINI_API_KEY' || apiKey.trim() === '') {
+    return res.status(200).json({ moments: [], fallback: true, reason: 'no_key' });
+  }
+  try {
+    const ai = new GoogleGenAI({ apiKey, httpOptions: { headers: { 'User-Agent': 'aistudio-build' } } });
+    const excludeList = (Array.isArray(exclude) ? exclude : []).slice(-40).map((s: unknown) => String(s));
+    const response = await generateContentWithFallback(ai, {
+      contents: `Você é o diretor criativo do party game brasileiro "Roda de Bobo" (estilo CazéTV, humor de mesa de bar).
+No jogo "Onde estou?" cada jogador recebe, na testa, a FOTO de um momento famoso (um lance, um fato histórico, um meme) e descobre qual é com perguntas de sim ou não.
+${isGeneral ? 'Tema: livre. Misture esporte (principalmente futebol), história e mundo, cultura pop, internet e memes brasileiros.' : `Tema: "${theme}". Todos os momentos precisam ter a ver com esse tema.`}
+Gere exatamente ${count + 4} momentos DIFERENTES entre si, todos REAIS e muito conhecidos. Só inclua o que você tem CERTEZA ABSOLUTA que aconteceu, com o ano certo: nunca invente fato, data ou detalhe. Cada um precisa ter foto na Wikipédia ou no Commons (a pessoa, o time, o lugar ou o evento principal).
+Inclua pelo menos ${Math.max(1, Math.round(count / 4))} piada ou meme engraçado conhecido do Brasil quando o tema permitir.
+Para cada um:
+- "legenda": o que a foto mostra, curta (até 75 caracteres), no estilo do programa, e com o ano entre parênteses no fim quando for um fato datado. Não dê spoilers desnecessários além disso.
+- "categoria": 1 a 3 palavras.
+- "wiki": título EXATO de um artigo da Wikipédia em português que tenha foto do momento ou da pessoa/lugar principal (ex.: "Maracanazo", "Zinedine Zidane").
+- "wiki_en": título exato do artigo equivalente na Wikipédia em inglês.
+- "busca": 3 a 5 palavras para achar a foto (nomes próprios e o ano).
+- "confirma": 2 a 4 palavras que o resumo do artigo CERTO da Wikipédia com certeza cita (ex.: "futebol", "jogador", "Copa do Mundo"), para eu descartar homônimos.
+IMPORTANTE: se o nome tiver homônimo, use o título desambiguado em "wiki" (ex.: "Roberto Carlos (futebolista)", não o cantor).
+NÃO repita nem pareça com: ${JSON.stringify(excludeList)}.
+Semente de aleatoriedade: #${Date.now()}-${Math.floor(Math.random() * 1000000)}.`,
+      config: {
+        temperature: 1,
+        topP: 0.95,
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            momentos: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  legenda: { type: Type.STRING },
+                  categoria: { type: Type.STRING },
+                  wiki: { type: Type.STRING },
+                  wiki_en: { type: Type.STRING },
+                  busca: { type: Type.STRING },
+                  confirma: { type: Type.ARRAY, items: { type: Type.STRING } }
+                },
+                required: ['legenda', 'categoria', 'wiki', 'busca', 'confirma']
+              }
+            }
+          },
+          required: ['momentos']
+        }
+      }
+    });
+    const parsed = JSON.parse(response.text || '{}');
+    const raw: any[] = Array.isArray(parsed.momentos) ? parsed.momentos : [];
+    const picked: any[] = [];
+    for (const m of raw) {
+      const legenda = sanitizeCleanGameText(String(m?.legenda || '')).slice(0, 90);
+      if (!legenda || legenda.length < 8) continue;
+      if (picked.some((p) => isRelated(p.legenda, legenda))) continue;
+      if (excludeList.some((e: string) => isRelated(e, legenda))) continue;
+      picked.push({
+        nome: legenda,
+        categoria: sanitizeCleanGameText(String(m?.categoria || 'Momentos')).slice(0, 30) || 'Momentos',
+        wiki: String(m?.wiki || ''),
+        wikiEn: String(m?.wiki_en || ''),
+        busca: String(m?.busca || ''),
+        confirma: Array.isArray(m?.confirma) ? m.confirma.map((x: unknown) => String(x)).slice(0, 5) : []
+      });
+    }
+    // acha as fotos em lote (a Wikimedia limita pedidos em rajada)
+    const urls = await findMomentImages(picked.map((p) => ({ wiki: p.wiki, wikiEn: p.wikiEn, busca: p.busca, confirma: p.confirma })));
+    const withImg: any[] = [];
+    picked.forEach((p, k) => {
+      let img = urls[k] || undefined;
+      // a mesma foto nao pode aparecer em dois jogadores
+      if (img && withImg.some((w) => w.imagem === img)) img = undefined;
+      withImg.push({ nome: p.nome, categoria: p.categoria, imagem: img });
+    });
+    // quem tem foto vem primeiro; sem foto so completa se faltar
+    const sorted = [...withImg.filter((w) => w.imagem), ...withImg.filter((w) => !w.imagem)].slice(0, count);
+    return res.json({ moments: sorted, fallback: sorted.length === 0 });
+  } catch (err: any) {
+    const kind = classifyGeminiError(err);
+    return res.status(200).json({ moments: [], fallback: true, reason: kind, error: err?.message });
+  }
+});
+
 app.post('/api/generate-round', async (req, res) => {
   const {
     gameId,

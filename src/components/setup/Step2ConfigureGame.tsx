@@ -396,7 +396,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
           </div>
 
-          {!usesLocalContent(activeGame) && !isPV && (
+          {(!usesLocalContent(activeGame) || activeGame === 'onde-estou') && !isPV && (
             <div className="rdb-opt" data-testid="content-source-selector">
               <span className="rdb-opt-label">Perguntas</span>
               <div className="rdb-opt-choices">
