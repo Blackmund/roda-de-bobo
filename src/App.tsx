@@ -79,6 +79,7 @@ import {
   ScreenTemOuNaoTem,
   ScreenPerguntasEVerdades,
   SHOW_DEV_TOOLS,
+  preloadGameScreen,
   DevControlsDrawer,
   ComparePlayersModal
 } from './app/lazyScreens';
@@ -223,6 +224,17 @@ export default function App() {
     }
   }, [visualTheme]);
   const [isLoadingRound, setIsLoadingRound] = useState(false);
+  // A tela "gerando rodada" so aparece se a espera passar de meio segundo (IA lenta).
+  // Com o banco pronto a rodada chega na hora, e a tela piscando so atrasava a troca.
+  const [showLoadingRound, setShowLoadingRound] = useState(false);
+  useEffect(() => {
+    if (!isLoadingRound) {
+      setShowLoadingRound(false);
+      return;
+    }
+    const t = window.setTimeout(() => setShowLoadingRound(true), 500);
+    return () => window.clearTimeout(t);
+  }, [isLoadingRound]);
   const roundLoadRequestIdRef = useRef(0);
   const [shareFeedback, setShareFeedback] = useState<{ status: 'idle' | 'shared'; text?: string }>({
     status: 'idle'
@@ -435,6 +447,11 @@ export default function App() {
       }
     }
   };
+
+  // O codigo da tela do jogo escolhido ja vem baixando enquanto o host configura a partida.
+  useEffect(() => {
+    preloadGameScreen(room.activeGame);
+  }, [room.activeGame]);
 
   const handleNextRound = () => {
     sounds.playPowerup();
@@ -712,7 +729,7 @@ export default function App() {
           </div>
         )}
         <AnimatePresence initial={false} mode="wait">
-          {isLoadingRound ? (
+          {showLoadingRound ? (
             <motion.div
               key="loading-round"
               initial={{ opacity: 0, scale: 0.97 }}
@@ -739,7 +756,7 @@ export default function App() {
               initial={{ opacity: 0, y: 10, scale: 0.99 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.99 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.12, ease: [0.16, 1, 0.3, 1] }}
               className="w-full h-full flex-1 min-h-0 overflow-hidden"
             >
               <ScreenModeSelect
@@ -805,7 +822,7 @@ export default function App() {
               initial={{ opacity: 0, y: 10, scale: 0.99 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.99 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.12, ease: [0.16, 1, 0.3, 1] }}
               className="w-full h-full flex-1 min-h-0 overflow-hidden"
             >
               <ScreenLobby
@@ -836,7 +853,7 @@ export default function App() {
               initial={{ opacity: 0, y: 10, scale: 0.99 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.99 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.12, ease: [0.16, 1, 0.3, 1] }}
               className="w-full h-full flex-1 min-h-0"
             >
               <ScreenGameSetup
@@ -928,7 +945,7 @@ export default function App() {
               initial={{ opacity: 0, y: 10, scale: 0.99 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.99 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.12, ease: [0.16, 1, 0.3, 1] }}
               className="w-full h-full flex-1 min-h-0"
             >
               <ScreenRules

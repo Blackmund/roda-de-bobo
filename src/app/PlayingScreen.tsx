@@ -42,7 +42,7 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
               initial={{ opacity: 0, scale: 0.985 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.985 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.12, ease: [0.16, 1, 0.3, 1] }}
               className="relative w-full h-full flex-1 min-h-0 flex flex-col gap-1.5"
             >
               <PhaseStinger room={room} />
