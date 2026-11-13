@@ -16,7 +16,7 @@ import { ADEDANHA_LETRAS } from '../data/adedanhaCategorias';
 
 export const ADEDANHA_STOP_GRACE_MS = 4000;
 /** A letra gira por este tempo antes de parar; o relogio so comeca a contar depois. */
-export const ADEDANHA_SPIN_MS = 1800;
+export const ADEDANHA_SPIN_MS = 2600;
 export const ADEDANHA_POINTS_UNIQUE = 10;
 export const ADEDANHA_POINTS_REPEATED = 5;
 

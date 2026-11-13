@@ -18,6 +18,7 @@ import {
   voteKey
 } from '../../../utils/adedanhaEngine';
 import { useAdedanhaDriver, useLetterSpin, useNow } from '../../adedanha/useAdedanhaDriver';
+import { LetterDrawOverlay } from '../../adedanha/LetterDrawOverlay';
 
 interface AdedanhaControllerProps {
   room: GameRoom;
@@ -289,6 +290,7 @@ export const AdedanhaController: React.FC<AdedanhaControllerProps> = ({ room, pl
 
   return wrapIfMultiMode(
     <div data-testid="controller-adedanha" className="rdb-adc">
+      <LetterDrawOverlay letter={spin.letter} spinning={spin.spinning} compact />
       {body}
     </div>
   );

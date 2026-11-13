@@ -78,7 +78,6 @@ import {
   ScreenNota,
   ScreenTemOuNaoTem,
   ScreenPerguntasEVerdades,
-  SHOW_DEV_TOOLS,
   preloadGameScreen,
   DevControlsDrawer,
   ComparePlayersModal
@@ -132,6 +131,7 @@ import confetti from 'canvas-confetti';
 import { GameOverScreen } from './app/GameOverScreen';
 import { PlayingScreen } from './app/PlayingScreen';
 import { buildNextRoundUpdater } from './app/buildNextRoundUpdater';
+import { useDevMode } from './app/devMode';
 import { buildStartedRoundUpdater } from './app/buildStartedRoundUpdater';
 
 export default function App() {
@@ -268,6 +268,7 @@ export default function App() {
   const varSnapshotRef = useRef<GameRoom | null>(null);
   const [hasVarSnapshot, setHasVarSnapshot] = useState(false);
   const [varActiveFlash, setVarActiveFlash] = useState(false);
+  const devMode = useDevMode();
   const [suddenDeathBanner, setSuddenDeathBanner] = useState<string | null>(null);
 
   // Synchronized Room Hook with Real-time Presence, Connection Status & localStorage Resume
@@ -1013,7 +1014,7 @@ export default function App() {
       </WindowWrapper>
 
       {/* Dev Multi-Player Simulator Drawer */}
-      {SHOW_DEV_TOOLS && (
+      {devMode && (
         <Suspense fallback={null}>
           <DevControlsDrawer
             room={room}
