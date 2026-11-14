@@ -320,27 +320,16 @@ export const BPIconBadge: React.FC<{ icon: string; size?: number | string; title
 );
 
 /**
- * Moeda dos pontos: escura e fina, apoiada por cima das pecas.
+ * Valor da peca: selo escuro impresso na propria peca (chapado, como no Barenpark).
  * (cx, cy) e o centro da casa; r e o raio da face.
  */
 export const BPCoin: React.FC<{ cx: number; cy: number; v: number; r?: number }> = ({ cx, cy, v, r = 3 }) => {
-  // moeda escura e fina: uma moeda so, pouco erguida, com sombra curta (a dourada fica para o monumento)
-  const depth = r * 0.12;
-  const fy = cy - depth;
+  // selo impresso na peca, como no Barenpark: chapado, sem sombra nem relevo (so o monumento tem volume)
+  const fy = cy;
   return (
     <g pointerEvents="none">
-      <ellipse cx={cx + r * 0.22} cy={cy + r * 0.38} rx={r * 1.02} ry={r * 0.6} fill="#05060f" opacity="0.32" />
-      <circle cx={cx} cy={fy + depth} r={r} fill="#04050c" />
-      <circle cx={cx} cy={fy} r={r} fill="#141a3a" stroke="#04050c" strokeWidth={r * 0.08} />
-      <circle cx={cx} cy={fy} r={r * 0.78} fill="#0b1230" stroke="#2a3366" strokeWidth={r * 0.06} />
-      <path
-        d={`M${cx - r * 0.66} ${fy - r * 0.24}A${r * 0.7} ${r * 0.7} 0 0 1 ${cx - r * 0.16} ${fy - r * 0.68}`}
-        stroke="#f5f2eb"
-        strokeWidth={r * 0.09}
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.35"
-      />
+      <circle cx={cx} cy={fy} r={r} fill="#0b1230" fillOpacity="0.88" />
+      <circle cx={cx} cy={fy} r={r * 0.8} fill="none" stroke="#f5f2eb" strokeOpacity="0.45" strokeWidth={r * 0.06} />
       <text x={cx} y={fy + r * 0.37} textAnchor="middle" fontSize={r * (String(v).length > 1 ? 0.98 : 1.1)} fontFamily="'Anton','Inter','Arial Black',sans-serif" fill="#ffc93c">
         {v}
       </text>
