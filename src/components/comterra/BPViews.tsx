@@ -106,7 +106,7 @@ const TileChip: React.FC<{
           ×{count}
         </span>
       )}
-      <CTPieceView shape={tileShape(type)} color={KIND_COLOR[kind]} label={fullLabel} className="bp-tile-art" minBox={compact ? (kind === 'green' ? 2 : 3) : 2} />
+      <CTPieceView shape={tileShape(type)} color={KIND_COLOR[kind]} label={fullLabel} className="bp-tile-art" minBox={compact ? (kind === 'green' ? 1.3 : 2) : 2} aspect={compact ? 1.5 : 1} />
       <span className="bp-tile-name">{compact ? stockShortName(type) : shortTileName(type)}</span>
       <span className="bp-tile-pts" data-tip="Pontos">
         {pts ?? 0}
@@ -149,7 +149,6 @@ export const BPReserveStock: React.FC<{
   eligibleTypes?: Set<BPTileType>;
   onPickReward?: (type: BPTileType) => void;
 }> = ({ bp, dense, eligibleTypes, onPickReward }) => {
-  const areaCount = bp.areaPiles[0].length + bp.areaPiles[1].length;
   const [colAll, togAll] = useCollapsed('reserve');
   const [colG, togG] = useCollapsed('reserve-green');
   const [colH, togH] = useCollapsed('reserve-house');
@@ -185,7 +184,7 @@ export const BPReserveStock: React.FC<{
           onClick={() => onPickReward!(type)}
           aria-label={`Pegar ${BP_TILE_META[type].label}`}
         >
-          <CTPieceView shape={shape} color={color} label={BP_TILE_META[type].label} className="bp-stock-art" minBox={extraClass.includes('--enc') ? 5 : extraClass.includes('--row') ? 3 : 4} />
+          <CTPieceView shape={shape} color={color} label={BP_TILE_META[type].label} className="bp-stock-art" minBox={extraClass.includes('--enc') ? 3 : extraClass.includes('--row') ? 1.3 : 2} aspect={1.5} />
           <span className="bp-stock-label">{shortName}</span>
           {children}
         </button>
@@ -193,7 +192,7 @@ export const BPReserveStock: React.FC<{
     }
     return (
       <div key={type} className={cls} data-tip={tip}>
-        <CTPieceView shape={shape} color={color} label={BP_TILE_META[type].label} className="bp-stock-art" minBox={extraClass.includes('--enc') ? 5 : extraClass.includes('--row') ? 3 : 4} />
+        <CTPieceView shape={shape} color={color} label={BP_TILE_META[type].label} className="bp-stock-art" minBox={extraClass.includes('--enc') ? 3 : extraClass.includes('--row') ? 1.3 : 2} aspect={1.5} />
         <span className="bp-stock-label">{shortName}</span>
         {children}
       </div>
@@ -209,19 +208,10 @@ export const BPReserveStock: React.FC<{
           </Fold>
         </h4>
         <div className="bp-stock-extra">
-          <div data-tip="Próximo Monumento: vai para o Fosso de quem completar uma área 4×4">
-            <BPIconBadge icon="pit" size="1.55rem" />
-            <div>
-              <b>{bp.statues[0] ?? '–'}</b>
-              <small>{bp.statues.length} un.</small>
-            </div>
-          </div>
-          <div data-tip={`Áreas 4×4 restantes nas 2 pilhas (${bp.areaPiles[0].length} + ${bp.areaPiles[1].length})`}>
-            <BPIconBadge icon="crew" size="1.55rem" />
-            <div>
-              <b>{areaCount}</b>
-              <small>Áreas</small>
-            </div>
+          <div className="bp-statue-chip" data-tip={`Próximo Monumento: ${bp.statues[0] ?? 0} pts para quem completar uma área 4×4 (restam ${bp.statues.length})`}>
+            <BPIconBadge icon="pit" size="1rem" />
+            <b>{bp.statues[0] ?? '–'}</b>
+            <small>×{bp.statues.length}</small>
           </div>
         </div>
       </div>

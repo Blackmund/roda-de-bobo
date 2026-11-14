@@ -1060,12 +1060,13 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
 };
 
 /** Peca solta (vitrine da loja, mao do jogador): mesma linguagem do tabuleiro. */
-export const CTPieceView: React.FC<{ shape: number[][]; color?: { top: string; side: string }; label: string; className?: string; minBox?: number }> = ({
+export const CTPieceView: React.FC<{ shape: number[][]; color?: { top: string; side: string }; label: string; className?: string; minBox?: number; aspect?: number }> = ({
   shape,
   color = { top: '#f5f2eb', side: '#a39d8c' },
   label,
   className,
-  minBox = 5
+  minBox = 5,
+  aspect = 1
 }) => {
   const idRef = useRef<string>('');
   if (!idRef.current) idRef.current = 'ctp' + ++uidSeq;
@@ -1073,11 +1074,13 @@ export const CTPieceView: React.FC<{ shape: number[][]; color?: { top: string; s
   const w = shape[0].length;
   const h = shape.length;
   // caixa quadrada fixa: todas as pecas aparecem na mesma escala, para comparar tamanho no olho
-  const side = Math.max(w, h, minBox) * U;
-  const ox = (side - w * U) / 2;
-  const oy = (side - h * U) / 2;
+  // aspect > 1: caixa larga (mesma proporcao do espaco onde a peca aparece), para a peca usar a largura toda
+  const bh = Math.max(h, minBox, w / aspect) * U;
+  const bw = bh * aspect;
+  const ox = (bw - w * U) / 2;
+  const oy = (bh - h * U) / 2;
   return (
-    <svg className={'ct-piece ' + (className || '')} viewBox={`-2 -2 ${side + 4} ${side + 5.5}`} role="img" aria-label={label}>
+    <svg className={'ct-piece ' + (className || '')} viewBox={`-2 -2 ${bw + 4} ${bh + 5.5}`} role="img" aria-label={label}>
       <defs>
         <filter id={idRef.current} x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur stdDeviation="0.7" />
