@@ -319,17 +319,67 @@ export const BPIconBadge: React.FC<{ icon: string; size?: number | string; title
   <BPIconSvg kind={icon} size={size} title={title} />
 );
 
-/** Monumento (no Fosso de uma area completa) com a pontuacao. */
-const BPMonument: React.FC<{ v: number }> = ({ v }) => (
-  <g>
-    <polygon points="3.2,1.1 6.8,1.1 8.9,3.2 8.9,6.8 6.8,8.9 3.2,8.9 1.1,6.8 1.1,3.2" fill="#8f6708" stroke="#0a0b1e" strokeWidth="0.35" />
-    <polygon points="3.5,1.55 6.5,1.55 8.45,3.5 8.45,6.5 6.5,8.45 3.5,8.45 1.55,6.5 1.55,3.5" fill="#ffc93c" />
-    <circle cx="5" cy="5" r="2.65" fill="#0a0b1e" fillOpacity="0.14" />
-    <text x="5" y="6.1" textAnchor="middle" fontSize="3.5" fontWeight="900" fontFamily="'Anton','Inter','Arial Black',sans-serif" fill="#0a0b1e">
-      {v}
-    </text>
-  </g>
-);
+/**
+ * Moeda 2.5D: sombra no chao, borda grossa (espessura) e face erguida, para parecer apoiada por cima das pecas.
+ * (cx, cy) e o centro da casa; r e o raio da face.
+ */
+export const BPCoin: React.FC<{ cx: number; cy: number; v: number; r?: number }> = ({ cx, cy, v, r = 3 }) => {
+  const lift = r * 0.32;
+  const depth = r * 0.32;
+  const fy = cy - lift;
+  return (
+    <g pointerEvents="none">
+      <ellipse cx={cx + r * 0.3} cy={cy + r * 0.62} rx={r * 1.04} ry={r * 0.52} fill="#05060f" opacity="0.4" />
+      <circle cx={cx} cy={fy + depth} r={r} fill="#7a5200" />
+      <rect x={cx - r} y={fy} width={r * 2} height={depth} fill="#7a5200" />
+      <circle cx={cx} cy={fy + depth * 0.5} r={r} fill="none" stroke="#b07a08" strokeWidth={r * 0.06} />
+      <circle cx={cx} cy={fy} r={r} fill="#ffc93c" stroke="#7a5200" strokeWidth={r * 0.07} />
+      <circle cx={cx} cy={fy} r={r * 0.76} fill="#ffd866" stroke="#d99e12" strokeWidth={r * 0.06} />
+      <path
+        d={`M${cx - r * 0.62} ${fy - r * 0.2}A${r * 0.66} ${r * 0.66} 0 0 1 ${cx - r * 0.12} ${fy - r * 0.64}`}
+        stroke="#fff6d6"
+        strokeWidth={r * 0.13}
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.9"
+      />
+      <text x={cx} y={fy + r * 0.37} textAnchor="middle" fontSize={r * (String(v).length > 1 ? 0.98 : 1.1)} fontFamily="'Anton','Inter','Arial Black',sans-serif" fill="#0a0b1e">
+        {v}
+      </text>
+    </g>
+  );
+};
+
+const OCT = (h: number, dy = 0) => {
+  const k = h * 0.414;
+  return [
+    [5 - k, 5 - h], [5 + k, 5 - h], [5 + h, 5 - k], [5 + h, 5 + k],
+    [5 + k, 5 + h], [5 - k, 5 + h], [5 - h, 5 + k], [5 - h, 5 - k]
+  ]
+    .map(([x, y]) => `${x},${y + dy}`)
+    .join(' ');
+};
+
+/** Monumento (no Fosso de uma area completa) com a pontuacao: ficha octogonal 2.5D, erguida acima do tabuleiro. */
+const BPMonument: React.FC<{ v: number }> = ({ v }) => {
+  const lift = -1.1;
+  const depth = 1.1;
+  return (
+    <g>
+      <ellipse cx="5.9" cy="7" rx="4.3" ry="2.5" fill="#05060f" opacity="0.42" />
+      {Array.from({ length: 6 }, (_, i) => (
+        <polygon key={i} points={OCT(4.1, lift + (depth * (i + 1)) / 6)} fill="#6e4a00" />
+      ))}
+      <polygon points={OCT(4.1, lift + depth * 0.5)} fill="none" stroke="#a87408" strokeWidth="0.25" />
+      <polygon points={OCT(4.1, lift)} fill="#ffc93c" stroke="#6e4a00" strokeWidth="0.3" strokeLinejoin="round" />
+      <polygon points={OCT(3.3, lift)} fill="#ffd866" stroke="#d99e12" strokeWidth="0.25" strokeLinejoin="round" />
+      <path d={`M2.4 ${3.7 + lift}L3.7 ${2.2 + lift}`} stroke="#fff6d6" strokeWidth="0.5" strokeLinecap="round" opacity="0.9" />
+      <text x="5" y={6.25 + lift} textAnchor="middle" fontSize="3.5" fontFamily="'Anton','Inter','Arial Black',sans-serif" fill="#0a0b1e">
+        {v}
+      </text>
+    </g>
+  );
+};
 
 const BPIconMark: React.FC<{ x: number; y: number; kind: string; statue?: number }> = ({ x, y, kind, statue }) => (
   <g pointerEvents="none" transform={`translate(${x * U} ${y * U})`}>
@@ -778,7 +828,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
       {/* fichas e icones de acao ficam no chao (aparecem por dentro do furo) */}
       {cells.map(({ c, x, y }) => (c.tok !== undefined ? <Token key={'t' + x + ',' + y} x={x} y={y} v={c.tok} /> : null))}
       {cells.map(({ c, x, y }) => (c.act ? <ActionIcon key={'a' + x + ',' + y} x={x} y={y} kind={c.act} /> : null))}
-      {cells.map(({ c, x, y }) => (c.bpi && !c.o ? <BPIconMark key={'bp' + x + ',' + y} x={x} y={y} kind={c.bpi} statue={c.statue} /> : null))}
+      {cells.map(({ c, x, y }) => (c.bpi && !c.o && c.statue === undefined ? <BPIconMark key={'bp' + x + ',' + y} x={x} y={y} kind={c.bpi} /> : null))}
       {areaFrames.map((f) => (
         <g key={'af' + f.id} pointerEvents="none">
           <rect x={f.x * U} y={f.y * U} width={f.w * U} height={f.h * U} fill="none" stroke="#5a3d22" strokeOpacity="0.82" strokeWidth="0.72" />
@@ -890,34 +940,13 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
         return (
           <g key={uid}>
             <PieceShape cells={p.cells} color={col} showContour={true} shadowId={shadowId} />
-            {p.ptsCell && (
-              <g pointerEvents="none">
-                <circle
-                  cx={p.ptsCell.x * U + U / 2}
-                  cy={p.ptsCell.y * U + U / 2}
-                  r="2.95"
-                  fill="#0a0b1e"
-                  fillOpacity="0.82"
-                  stroke="#f5f2eb"
-                  strokeOpacity="0.85"
-                  strokeWidth="0.35"
-                />
-                <text
-                  x={p.ptsCell.x * U + U / 2}
-                  y={p.ptsCell.y * U + U / 2 + 1.15}
-                  textAnchor="middle"
-                  fontSize="3.2"
-                  fontWeight="900"
-                  fontFamily="'Anton','Inter','Arial Black',sans-serif"
-                  fill="#ffc93c"
-                >
-                  {p.ptsCell.pts}
-                </text>
-              </g>
-            )}
           </g>
         );
       })}
+
+      {/* moedas e monumentos: por cima de todas as pecas */}
+      {pieces.map(([uid, p]) => (p.ptsCell ? <BPCoin key={'coin' + uid} cx={p.ptsCell.x * U + U / 2} cy={p.ptsCell.y * U + U / 2} v={p.ptsCell.pts} /> : null))}
+      {cells.map(({ c, x, y }) => (c.bpi === 'pit' && c.statue !== undefined && !c.o ? <BPIconMark key={'mon' + x + ',' + y} x={x} y={y} kind="pit" statue={c.statue} /> : null))}
 
       {/* arvores: mais altas que as pecas, passam por dentro do furo */}
       {cells.map(({ c, x, y }) => (c.tree ? <Tree key={'tr' + x + ',' + y} x={x} y={y} grounded={!c.o} /> : null))}
