@@ -2405,3 +2405,16 @@ button.ct-shop-card:focus-visible {
 .bp-peek { background: rgba(5, 6, 15, 0.62); }
 .bp-peek-card { background: none; border: 0; box-shadow: none; }
 .bp-peek-art { filter: drop-shadow(0.7rem 1.3rem 0.6rem rgba(0, 0, 0, 0.92)); }
+
+/* ---------- espiar (peca e parque): desfoque maior; parque igual a peca, sem caixa ---------- */
+.bp-peek { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.bp-modal.is-peek {
+  z-index: 1100;
+  background: rgba(5, 6, 15, 0.62);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.bp-modal.is-peek .bp-modal-card { background: none; border: 0; box-shadow: none; }
+.bp-modal.is-peek .bp-modal-head { border-bottom-color: rgba(245, 242, 235, 0.1); }
+.bp-modal.is-peek .bp-modal-board > svg { filter: drop-shadow(0.7rem 1.3rem 0.8rem rgba(0, 0, 0, 0.85)); }
+.bp-mini-park { touch-action: manipulation; }
