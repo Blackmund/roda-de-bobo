@@ -22,7 +22,7 @@ export const CT_PLAYER_COLORS: Array<{ top: string; side: string; ink: string }>
 /** Arquiteto (Barenpark): cor pela categoria da peca, igual a cor do icone que a da. */
 export const BP_PALETTE: Record<string, { top: string; side: string; ink: string }> = {
   green: { top: '#3fbf6f', side: '#1d6e3e', ink: '#04210f' },
-  house: { top: '#f5f2eb', side: '#9c9686', ink: '#22231f' },
+  house: { top: '#17b8b8', side: '#0b6d70', ink: '#04282a' },
   enclosure: { top: '#ff8a1e', side: '#9a4c0a', ink: '#2a1300' }
 };
 
@@ -149,49 +149,107 @@ const ActionIcon: React.FC<{ x: number; y: number; kind: 'tree' | 'tok' }> = ({ 
   );
 };
 
-/** Arquiteto (Barenpark): icones impressos nas areas. Cor + sigla curta (legenda na tela). */
-export const BP_ICON_META: Record<string, { fill: string; ink: string; tag: string; label: string }> = {
-  wheel: { fill: '#2fb36b', ink: '#04210f', tag: 'V', label: 'Carrinho: pega uma Área Verde' },
-  cement: { fill: '#f5f2eb', ink: '#22231f', tag: 'C', label: 'Betoneira: pega uma Casa de animal (ou Área Verde)' },
-  excavator: { fill: '#ff8a1e', ink: '#2a1300', tag: 'E', label: 'Escavadeira: pega um Cercado (ou Casa, ou Área Verde)' },
-  crew: { fill: '#ffc93c', ink: '#2a1e00', tag: 'O', label: 'Equipe de obra: abre uma área nova no parque' }
+/**
+ * Arquiteto: icones impressos nas areas, no tema do programa (estadio/estudio da Roda de Bobo).
+ * Bola = Area Verde · Microfone = Casa · Camera = Cercado · Ingresso = area nova · Palco = onde vai a Taca.
+ */
+export const BP_ICON_META: Record<string, { fill: string; ink: string; name: string; label: string }> = {
+  wheel: { fill: '#3fbf6f', ink: '#0a0b1e', name: 'Bola', label: 'Bola: pega uma Área Verde' },
+  cement: { fill: '#17b8b8', ink: '#0a0b1e', name: 'Microfone', label: 'Microfone: pega uma Casa (ou Área Verde)' },
+  excavator: { fill: '#ff8a1e', ink: '#0a0b1e', name: 'Câmera', label: 'Câmera: pega um Cercado (ou Casa, ou Área Verde)' },
+  crew: { fill: '#e6194b', ink: '#f5f2eb', name: 'Ingresso', label: 'Ingresso: abre uma área nova no parque' }
 };
 
-const BPIconMark: React.FC<{ x: number; y: number; kind: string; statue?: number }> = ({ x, y, kind, statue }) => {
-  const cx = x * U + U / 2;
-  const cy = y * U + U / 2;
+/** Desenho de cada icone numa caixa 10x10 (o mesmo no tabuleiro, na legenda e na previa das areas). */
+export function bpGlyph(kind: string): React.ReactNode {
+  const m = BP_ICON_META[kind];
   if (kind === 'pit') {
     return (
-      <g pointerEvents="none">
-        <rect x={x * U + 0.8} y={y * U + 0.8} width={U - 1.6} height={U - 1.6} rx="1" fill="#05060f" stroke="#3a3f55" strokeWidth="0.4" />
-        {statue !== undefined ? (
-          <g>
-            <circle cx={cx} cy={cy - 0.4} r="3.1" fill="#f5f2eb" stroke="#b08415" strokeWidth="0.5" />
-            <circle cx={cx - 2.1} cy={cy - 3} r="1" fill="#f5f2eb" stroke="#b08415" strokeWidth="0.4" />
-            <circle cx={cx + 2.1} cy={cy - 3} r="1" fill="#f5f2eb" stroke="#b08415" strokeWidth="0.4" />
-            <text x={cx} y={cy + 0.8} textAnchor="middle" fontSize="3.2" fontWeight="900" fontFamily="'Inter','Arial Black',sans-serif" fill="#22231f">
-              {statue}
-            </text>
-          </g>
-        ) : (
-          <text x={cx} y={cy + 1.1} textAnchor="middle" fontSize="1.7" fontWeight="900" fontFamily="'Inter','Arial Black',sans-serif" fill="#5a6078">
-            FOSSO
-          </text>
-        )}
+      <g>
+        <rect x="0.8" y="0.8" width="8.4" height="8.4" rx="1" fill="#0a0b1e" />
+        <path d="M2.4 7.6h5.2M3.2 6.2h3.6" stroke="#5a6078" strokeWidth="0.7" strokeLinecap="round" />
+        <path d="M5 2.2l0.55 1.15 1.25 0.15-0.92 0.85 0.24 1.25L5 5l-1.12 0.6 0.24-1.25-0.92-0.85 1.25-0.15Z" fill="#5a6078" />
       </g>
     );
   }
-  const m = BP_ICON_META[kind];
   if (!m) return null;
+  const ink = m.ink;
+  let art: React.ReactNode = null;
+  if (kind === 'wheel') {
+    art = (
+      <g>
+        <circle cx="5" cy="5" r="2.35" fill="#f5f2eb" stroke={ink} strokeWidth="0.45" />
+        <path d="M5 3.9l1 0.72-0.38 1.17H4.38L4 4.62Z" fill={ink} />
+        <path d="M5 2.65V3.9M6 4.62l1.2-0.4M5.62 5.79l0.75 1M4.38 5.79l-0.75 1M4 4.62l-1.2-0.4" stroke={ink} strokeWidth="0.35" />
+      </g>
+    );
+  } else if (kind === 'cement') {
+    art = (
+      <g fill={ink}>
+        <rect x="4" y="2.3" width="2" height="3.4" rx="1" />
+        <path d="M3.1 4.7a1.9 1.9 0 0 0 3.8 0" fill="none" stroke={ink} strokeWidth="0.5" />
+        <rect x="4.75" y="6.5" width="0.5" height="1.1" />
+        <rect x="3.7" y="7.5" width="2.6" height="0.5" rx="0.25" />
+      </g>
+    );
+  } else if (kind === 'excavator') {
+    art = (
+      <g fill={ink}>
+        <rect x="2.4" y="3.8" width="4.4" height="3" rx="0.5" />
+        <path d="M6.8 4.6l1.4-0.8v3l-1.4-0.8Z" />
+        <circle cx="4.6" cy="5.3" r="0.95" fill={m.fill} />
+        <rect x="3" y="3.1" width="1.4" height="0.7" rx="0.2" />
+      </g>
+    );
+  } else if (kind === 'crew') {
+    art = (
+      <g>
+        <path d="M2.2 3.4h5.6v1.05a0.6 0.6 0 0 0 0 1.1v1.05H2.2V5.55a0.6 0.6 0 0 0 0-1.1Z" fill="#f5f2eb" />
+        <path d="M5.9 3.6v2.8" stroke={m.fill} strokeWidth="0.35" strokeDasharray="0.45 0.35" />
+        <path d="M3.2 4.3h1.8M3.2 5h1.4M3.2 5.7h1.8" stroke={m.fill} strokeWidth="0.35" />
+      </g>
+    );
+  }
   return (
-    <g pointerEvents="none">
-      <circle cx={cx} cy={cy} r="2.9" fill={m.fill} opacity="0.92" />
-      <text x={cx} y={cy + 1.15} textAnchor="middle" fontSize="3.3" fontWeight="900" fontFamily="'Inter','Arial Black',sans-serif" fill={m.ink}>
-        {m.tag}
-      </text>
+    <g>
+      <circle cx="5" cy="5" r="3.6" fill={m.fill} />
+      {art}
     </g>
   );
-};
+}
+
+/** O mesmo icone como figura solta (legenda, previa das areas). */
+export const BPIconSvg: React.FC<{ kind: string; size?: number | string; title?: string }> = ({ kind, size = '1.2em', title }) => (
+  <svg viewBox="0 0 10 10" width={size} height={size} role={title ? 'img' : undefined} aria-label={title} aria-hidden={title ? undefined : true}>
+    {bpGlyph(kind)}
+  </svg>
+);
+
+/** Taca (no Palco de uma area completa) com o valor. */
+const BPTrophy: React.FC<{ v: number }> = ({ v }) => (
+  <g>
+    <path d="M3 1.6h4v1.4a2 2 0 0 1-4 0Z" fill="#ffc93c" stroke="#7a5a00" strokeWidth="0.3" />
+    <path d="M3 2.1H2.1a1 1 0 0 0 1 1.3M7 2.1h0.9a1 1 0 0 1-1 1.3" fill="none" stroke="#ffc93c" strokeWidth="0.4" />
+    <rect x="4.6" y="4.9" width="0.8" height="0.9" fill="#ffc93c" />
+    <rect x="2.9" y="5.8" width="4.2" height="3" rx="0.4" fill="#ffc93c" stroke="#7a5a00" strokeWidth="0.3" />
+    <text x="5" y="8.05" textAnchor="middle" fontSize="2.5" fontWeight="900" fontFamily="'Inter','Arial Black',sans-serif" fill="#0a0b1e">
+      {v}
+    </text>
+  </g>
+);
+
+const BPIconMark: React.FC<{ x: number; y: number; kind: string; statue?: number }> = ({ x, y, kind, statue }) => (
+  <g pointerEvents="none" transform={`translate(${x * U} ${y * U})`}>
+    {kind === 'pit' && statue !== undefined ? (
+      <g>
+        <rect x="0.8" y="0.8" width="8.4" height="8.4" rx="1" fill="#0a0b1e" />
+        <BPTrophy v={statue} />
+      </g>
+    ) : (
+      bpGlyph(kind)
+    )}
+  </g>
+);
 
 export interface CTGhost {
   m: number[][];
@@ -349,7 +407,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({ board, order, ghost, c
             y={y * U - 0.02}
             width={U + 0.04}
             height={U + 0.04}
-            fill={c.t === 2 ? ((x + y) % 2 ? '#2f93cf' : '#3aa0d8') : (x + y) % 2 ? '#7cae48' : '#86b950'}
+            fill={c.t === 2 ? ((x + y) % 2 ? '#2f93cf' : '#3aa0d8') : board.id.startsWith('bp-') ? ((x + y) % 2 ? '#ece3cc' : '#f4eedf') : (x + y) % 2 ? '#7cae48' : '#86b950'}
           />
         ))}
         {cells
@@ -373,7 +431,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({ board, order, ghost, c
       {cells.map(({ c, x, y }) => (c.act ? <ActionIcon key={'a' + x + ',' + y} x={x} y={y} kind={c.act} /> : null))}
       {cells.map(({ c, x, y }) => (c.bpi && !c.o ? <BPIconMark key={'bp' + x + ',' + y} x={x} y={y} kind={c.bpi} statue={c.statue} /> : null))}
       {areaFrames.map((f) => (
-        <rect key={'af' + f.id} x={f.x * U} y={f.y * U} width={f.w * U} height={f.h * U} fill="none" stroke="#f5f2eb" strokeOpacity="0.35" strokeWidth="0.5" pointerEvents="none" />
+        <rect key={'af' + f.id} x={f.x * U} y={f.y * U} width={f.w * U} height={f.h * U} fill="none" stroke="#0a0b1e" strokeOpacity="0.45" strokeWidth="0.5" pointerEvents="none" />
       ))}
 
       {/* casas que aceitam a acao em curso */}

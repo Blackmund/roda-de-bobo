@@ -302,7 +302,7 @@ function closeTurn(s0: BPState, pid: string): BPState {
     if (a.statue !== undefined || !areaComplete(park, a)) return a;
     const [top, ...rest] = s.statues;
     s = { ...s, statues: rest };
-    s = log(s, pid, top ? `completou uma área: estátua de ${top}` : 'completou uma área (sem estátua sobrando)');
+    s = log(s, pid, top ? `completou uma área: Taça de ${top}` : 'completou uma área (sem Taça sobrando)');
     return { ...a, statue: top ?? 0 };
   });
   const statues = areas.filter((a) => a.statue !== undefined).map((a) => a.statue as number);

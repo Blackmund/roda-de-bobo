@@ -103,7 +103,7 @@ const CT_MODE_NOTES: Record<CTMode, string[]> = {
   arquiteto: [
     'Regras do Bärenpark: cada um monta o próprio parque, que cresce até 4 áreas sorteadas',
     'Na vez: ponha uma peça do seu estoque; cada ícone coberto dá uma peça nova',
-    'Área completa = estátua de urso; quem completar 4 áreas encerra (até 8 jogadores)'
+    'Área completa = Taça no palco; quem completar 4 áreas encerra (até 8 jogadores)'
   ],
   diabo: [
     'Um mapa só para todos, diferente a cada partida',

@@ -27,16 +27,16 @@ import {
 } from '../../utils/bpEngine';
 import { sounds } from '../../utils/soundEffects';
 import { PlayerMark } from '../rdb/PlayerMark';
-import { BP_ICON_META, BP_PALETTE, CTBoardView, CTPieceView } from './CTBoardView';
+import { BPIconSvg, BP_ICON_META, BP_PALETTE, CTBoardView, CTPieceView } from './CTBoardView';
 
 const KIND_COLOR = { green: BP_PALETTE.green, house: BP_PALETTE.house, enclosure: BP_PALETTE.enclosure };
 const KIND_LABEL = { green: 'Área verde', house: 'Casa de animal', enclosure: 'Cercado' };
 const REWARD_TITLE: Record<string, string> = {
-  wheel: 'Carrinho: escolha uma Área Verde',
-  cement: 'Betoneira: escolha uma Casa de animal (ou Área Verde)',
-  excavator: 'Escavadeira: escolha um Cercado (ou Casa, ou Área Verde)',
+  wheel: 'Bola: escolha uma Área Verde',
+  cement: 'Microfone: escolha uma Casa (ou Área Verde)',
+  excavator: 'Câmera: escolha um Cercado (ou Casa, ou Área Verde)',
   pass: 'Você passou a vez: escolha uma Área Verde',
-  crew: 'Equipe de obra: escolha onde abrir a área nova'
+  crew: 'Ingresso: abra uma área nova'
 };
 
 type Upd = (fn: (prev: ComTerraState) => ComTerraState) => void;
@@ -116,7 +116,7 @@ export const BPSeat: React.FC<{ state: ComTerraState; players: Player[]; playerI
         <span className="bp-seat-who">
           {players.find((p) => p.id === playerId) && <PlayerMark p={players.find((p) => p.id === playerId)!} />} {nameOf(playerId)}
         </span>
-        <span className="bp-seat-score" data-tip="Pontos no parque (peças + estátuas)">
+        <span className="bp-seat-score" data-tip="Pontos no parque (peças + taças)">
           {bpScore(bp, playerId)} pts
         </span>
         <span className={'bp-seat-turn' + (myTurn ? ' is-me' : '')}>
@@ -181,13 +181,7 @@ export const BPSeat: React.FC<{ state: ComTerraState; players: Player[]; playerI
                     >
                       <span className="bp-area-mini">
                         {(icons || Array(16).fill(null)).map((ic, k) => (
-                          <i
-                            key={k}
-                            className={ic === 'pit' ? 'is-pit' : ''}
-                            style={ic && ic !== 'pit' ? { background: BP_ICON_META[ic].fill, color: BP_ICON_META[ic].ink } : undefined}
-                          >
-                            {ic && ic !== 'pit' ? BP_ICON_META[ic].tag : ''}
-                          </i>
+                          <i key={k}>{ic ? <BPIconSvg kind={ic} size="100%" title={ic === 'pit' ? 'Palco' : BP_ICON_META[ic].name} /> : null}</i>
                         ))}
                       </span>
                       <small>{icons ? `Opção ${i + 1} · restam ${bp.areaPiles[i].length}` : 'Pilha vazia'}</small>
@@ -263,11 +257,11 @@ export const BPSeat: React.FC<{ state: ComTerraState; players: Player[]; playerI
           <ul className="bp-legend" aria-label="Legenda">
             {Object.entries(BP_ICON_META).map(([k, v]) => (
               <li key={k}>
-                <i style={{ background: v.fill, color: v.ink }}>{v.tag}</i> {v.label}
+                <BPIconSvg kind={k} size="1.35em" /> {v.label}
               </li>
             ))}
             <li>
-              <i className="is-pit" /> Fosso: fica livre. Área completa = estátua de urso
+              <BPIconSvg kind="pit" size="1.35em" /> Palco: fica livre. Área completa = Taça no palco
             </li>
           </ul>
         </aside>
@@ -312,8 +306,8 @@ export const BPTable: React.FC<{ state: ComTerraState; players: Player[] }> = ({
             <b key={t}>{pile.length ? pile[pile.length - 1] : '–'}</b>
           ))}
         </div>
-        <div className="bp-stock-row" data-tip="Próxima estátua de urso (área completa)">
-          <span>Estátua</span>
+        <div className="bp-stock-row" data-tip="Próxima Taça (área completa)">
+          <span>Taça</span>
           <b>{bp.statues[0] ?? '–'}</b>
         </div>
         <div className="bp-stock-row" data-tip="Áreas de parque nas duas pilhas">

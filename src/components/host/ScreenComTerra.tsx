@@ -62,7 +62,7 @@ export const ScreenComTerra: React.FC<ScreenComTerraProps> = ({ room, onUpdateCo
           <span
             className="rdb-lim-rule"
             tabIndex={0}
-            data-tip="Regras do Bärenpark: coloque uma peça do estoque por vez, encostada nas suas. Cada ícone coberto dá uma peça nova; a equipe de obra abre uma área. Área completa = estátua de urso. Quem completar 4 áreas encerra."
+            data-tip="Regras do Bärenpark: coloque uma peça do estoque por vez, encostada nas suas. Cada ícone coberto dá uma peça nova; o Ingresso abre uma área nova. Área completa = Taça no palco. Quem completar 4 áreas encerra."
           >
             <Info size={16} />
           </span>
