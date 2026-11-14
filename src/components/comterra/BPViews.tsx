@@ -487,8 +487,15 @@ const BPParkModal: React.FC<{ bp: BPState; players: Player[]; id: string; onClos
     if (g) g.n++;
     else groups.push({ type: t.type, pts: t.pts, n: 1 });
   });
-  return (
-    <div className={'bp-modal' + (peek ? ' is-peek' : '')} role="dialog" aria-modal="true" aria-label={`Parque de ${name}`} data-testid="bp-park-modal" onClick={onClose}>
+  const modal = (
+    <div
+      className={'bp-modal' + (peek ? ' is-peek' : '')}
+      role={peek ? 'figure' : 'dialog'}
+      aria-modal={peek ? undefined : true}
+      aria-label={`Parque de ${name}`}
+      data-testid="bp-park-modal"
+      onClick={onClose}
+    >
       <div className="bp-modal-card" onClick={(e) => e.stopPropagation()}>
         <header className="bp-modal-head">
           <span className="bp-seat-who">
@@ -527,6 +534,7 @@ const BPParkModal: React.FC<{ bp: BPState; players: Player[]; id: string; onClos
       </div>
     </div>
   );
+  return peek && typeof document !== 'undefined' ? createPortal(modal, document.body) : modal;
 };
 
 /** Painel lateral com miniaturas de todos os parques da partida (clicar para espiar). */
@@ -548,22 +556,47 @@ const BPPlayerRail: React.FC<{
   // segurar a miniatura mostra o parque em tela cheia; soltar fecha
   const holdTimer = useRef<number | null>(null);
   const held = useRef(false);
+  const holdStart = useRef<{ x: number; y: number } | null>(null);
+  const peekRef = useRef(onPeek);
+  peekRef.current = onPeek;
+  const hasPeek = !!onPeek;
   useEffect(() => {
-    if (!onPeek) return;
-    const end = () => {
+    if (!hasPeek) return;
+    const cancel = () => {
       if (holdTimer.current) window.clearTimeout(holdTimer.current);
       holdTimer.current = null;
-      if (held.current) onPeek(null);
+      holdStart.current = null;
     };
+    const move = (e: PointerEvent) => {
+      // so cancela se a mao andou de verdade (tremidinha nao conta)
+      const st = holdStart.current;
+      if (st && holdTimer.current && Math.hypot(e.clientX - st.x, e.clientY - st.y) > 12) cancel();
+    };
+    const end = () => {
+      cancel();
+      if (!held.current) return;
+      held.current = false;
+      peekRef.current?.(null);
+      // engole o clique de soltar (nao troca o parque em foco sem querer)
+      const stop = (ev: Event) => {
+        ev.stopPropagation();
+        ev.preventDefault();
+      };
+      window.addEventListener('click', stop, { capture: true, once: true });
+      window.setTimeout(() => window.removeEventListener('click', stop, { capture: true }), 80);
+    };
+    window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', end);
     window.addEventListener('pointercancel', end);
     window.addEventListener('blur', end);
     return () => {
+      cancel();
+      window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', end);
       window.removeEventListener('pointercancel', end);
       window.removeEventListener('blur', end);
     };
-  }, [onPeek]);
+  }, [hasPeek]);
   if (horizontal && collapsed) return <FoldStrip label={`Parques (${bp.order.length})`} onOpen={tog} testid="bp-rail-strip" />;
   return (
     <aside className={'bp-rail' + (col ? ' is-collapsed' : '')} aria-label="Parques dos jogadores" data-testid="bp-player-rail">
@@ -588,31 +621,25 @@ const BPPlayerRail: React.FC<{
               type="button"
               className={'bp-mini-park' + (isTurn ? ' is-turn' : '') + (isFocused ? ' is-focused' : '')}
               onClick={() => {
-                if (held.current) {
-                  held.current = false;
-                  return;
-                }
                 sounds.playTick();
                 onSelect(id);
               }}
               onPointerDown={
                 onPeek
-                  ? () => {
+                  ? (e) => {
+                      if (e.button !== 0) return;
                       held.current = false;
+                      holdStart.current = { x: e.clientX, y: e.clientY };
                       if (holdTimer.current) window.clearTimeout(holdTimer.current);
                       holdTimer.current = window.setTimeout(() => {
+                        holdTimer.current = null;
                         held.current = true;
-                        onPeek(id);
-                      }, 300);
+                        peekRef.current?.(id);
+                      }, 280);
                     }
                   : undefined
               }
-              onPointerLeave={() => {
-                if (!held.current && holdTimer.current) {
-                  window.clearTimeout(holdTimer.current);
-                  holdTimer.current = null;
-                }
-              }}
+              onDragStart={onPeek ? (e) => e.preventDefault() : undefined}
               onContextMenu={onPeek ? (e) => e.preventDefault() : undefined}
               data-tip={onPeek ? 'Segure para ver em tela cheia' : undefined}
               data-testid={`bp-mini-park-${id}`}
@@ -1179,7 +1206,7 @@ export const BPSeat: React.FC<{
             }}
             collapsed={narrow ? undefined : railFolded}
             onToggle={narrow ? undefined : togRail}
-            onPeek={(id) => setOpenPark(id && id !== playerId ? id : null)}
+            onPeek={setOpenPark}
           />
         </div>
       </div>
