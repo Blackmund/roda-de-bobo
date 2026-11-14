@@ -5,6 +5,7 @@ import { CTSummary } from '../../comterra/CTSummary';
 import { BPSeat } from '../../comterra/BPViews';
 import '../../comterra/comterra.css';
 import { TipLayer } from '../../comterra/TipLayer';
+import { BPPiecePeek } from '../../comterra/BPViews';
 
 interface ComTerraControllerProps {
   room: GameRoom;
@@ -26,6 +27,7 @@ export const ComTerraController: React.FC<ComTerraControllerProps> = ({ room, pl
   return (
     <div className="ct-phone ct-box rdb-tip-scope" data-testid="controller-ct-view">
       <TipLayer scope=".ct-phone" />
+      <BPPiecePeek scope=".ct-phone" />
       {ct.phase === 'SUMMARY' ? (
         <CTSummary state={ct} players={room.players} onFinish={canFinish ? onNextRound : undefined} />
       ) : (

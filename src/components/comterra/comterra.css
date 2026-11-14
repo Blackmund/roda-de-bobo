@@ -2332,3 +2332,76 @@ button.ct-shop-card:focus-visible {
 .bp-tile.is-compact,
 .bp-tiles--reward .bp-tile.is-compact { padding: 0.95rem 0.5rem 0.4rem; }
 .bp-stock-piece { padding-top: 0.95rem; }
+
+/* ---------- Arquiteto v10: monumento em faixa fina, pecas maiores com menos folga ---------- */
+.bp-stock-extra .bp-statue-chip {
+  gap: 0.3rem;
+  padding: 0.08rem 0.4rem 0.08rem 0.2rem;
+  background: rgba(245, 242, 235, 0.07);
+}
+.bp-stock-extra .bp-statue-chip b { font-size: 0.9rem; }
+.bp-stock-extra .bp-statue-chip small { font-size: 0.56rem; }
+
+.bp-stock-greens,
+.bp-stock-pieces--4,
+.bp-stock-enclosures { gap: 0.15rem; }
+.bp-stock-piece { padding: 0.75rem 0.1rem 0.12rem; gap: 0; }
+.bp-stock-art { height: 3.3rem; }
+.bp-stock-enclosures .bp-stock-art { height: 3.1rem; }
+.bp-tile.is-compact,
+.bp-tiles--reward .bp-tile.is-compact { padding: 0.75rem 0.25rem 0.2rem; gap: 0; }
+.bp-tile.is-compact .bp-tile-art,
+.bp-tiles--reward .bp-tile.is-compact .bp-tile-art { width: 100%; max-width: 5.4rem; height: 3.6rem; }
+
+/* ---------- Arquiteto v10b: segurar a peca mostra ela grande ---------- */
+[data-peek] { -webkit-touch-callout: none; user-select: none; }
+.bp-peek {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 6, 15, 0.6);
+  pointer-events: none;
+}
+.bp-peek-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.2rem 1.6rem 1rem;
+  background: #141a3a;
+  border: 1px solid rgba(245, 242, 235, 0.18);
+  box-shadow: 0 6px 0 rgba(4, 5, 12, 0.85);
+}
+.bp-peek-art { width: min(26rem, 80vw); height: min(18rem, 50vh); }
+.bp-peek-name { display: flex; align-items: center; gap: 0.6rem; color: var(--rdb-cream, #f5f2eb); }
+.bp-peek-name strong { font-family: 'Anton', 'Impact', sans-serif; font-weight: 400; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 0.02em; }
+.bp-peek-name b {
+  padding: 0.1rem 0.45rem;
+  background: var(--rdb-amber, #ffc93c);
+  color: var(--rdb-navy, #0b1230);
+  font-weight: 900;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 0 rgba(4, 5, 12, 0.85);
+}
+.bp-peek-name small { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: rgba(245, 242, 235, 0.6); }
+
+/* espiar peca: fundo desfocado, caixa translucida */
+.bp-peek {
+  background: rgba(5, 6, 15, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.bp-peek-card {
+  background: rgba(20, 26, 58, 0.55);
+  border: 1px solid rgba(245, 242, 235, 0.22);
+  box-shadow: none;
+  padding: 1.6rem 2.2rem 1.2rem;
+}
+.bp-peek-name strong { text-shadow: 0 2px 0 rgba(4, 5, 12, 0.7); }
+
+/* espiar peca: sem caixa, fundo mais escuro, peca com sombra projetada */
+.bp-peek { background: rgba(5, 6, 15, 0.62); }
+.bp-peek-card { background: none; border: 0; box-shadow: none; }
+.bp-peek-art { filter: drop-shadow(0.7rem 1.3rem 0.6rem rgba(0, 0, 0, 0.92)); }

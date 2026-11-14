@@ -100,14 +100,21 @@ const PieceShape: React.FC<{
   outline?: string;
   showContour?: boolean;
   shadowId: string;
-}> = ({ cells, color, lift = 0, outline, showContour = false, shadowId }) => {
+  /** 'under' = sombra + lateral; 'top' = face de cima. No tabuleiro desenha-se todas as 'under' antes das 'top',
+   * para a face de uma peca sempre cobrir a lateral da peca de cima (pecas em L se encaixam e nao da para ordenar). */
+  layer?: 'all' | 'under' | 'top';
+}> = ({ cells, color, lift = 0, outline, showContour = false, shadowId, layer = 'all' }) => {
   const d = facePath(cells);
   const edges = edgePaths(cells);
+  const under = layer !== 'top';
+  const top = layer !== 'under';
   return (
     <g>
-      <path d={d} fillRule="evenodd" fill="#000" opacity={lift ? 0.4 : 0.34} transform={`translate(${0.9 + lift * 0.9} ${DEPTH + 0.9 + lift * 1.1})`} filter={`url(#${shadowId})`} />
+      {under && <path d={d} fillRule="evenodd" fill="#000" opacity={lift ? 0.4 : 0.34} transform={`translate(${0.9 + lift * 0.9} ${DEPTH + 0.9 + lift * 1.1})`} filter={`url(#${shadowId})`} />}
       <g transform={`translate(0 ${-lift})`}>
-        <path d={d} fillRule="evenodd" fill={color.side} transform={`translate(0 ${DEPTH})`} />
+        {under && <path d={d} fillRule="evenodd" fill={color.side} transform={`translate(0 ${DEPTH})`} />}
+        {top && (
+        <>
         <path d={d} fillRule="evenodd" fill={color.top} />
         {showContour && edges.inner && <path d={edges.inner} stroke={color.ink || '#0a0b1e'} strokeOpacity="0.16" strokeWidth="0.25" fill="none" />}
         <path
@@ -133,6 +140,8 @@ const PieceShape: React.FC<{
             <circle key={c.x + ',' + c.y} cx={c.x * U + U / 2} cy={c.y * U + U / 2} r={HOLE_R + 0.25} fill="none" stroke="#000" strokeOpacity="0.3" strokeWidth="0.5" />
           ))}
         {outline && <path d={edges.outer || d} fill="none" stroke={outline} strokeWidth="0.95" strokeLinejoin="round" />}
+        </>
+        )}
       </g>
     </g>
   );
@@ -959,14 +968,13 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
       )}
 
       {/* pecas ja encaixadas */}
-      {pieces.map(([uid, p]) => {
-        const col = ctColor(order, p.owner);
-        return (
-          <g key={uid}>
-            <PieceShape cells={p.cells} color={col} shadowId={shadowId} />
-          </g>
-        );
-      })}
+      {/* duas passadas: sombras e laterais de todas as pecas, depois as faces de cima */}
+      {pieces.map(([uid, p]) => (
+        <PieceShape key={'u' + uid} cells={p.cells} color={ctColor(order, p.owner)} shadowId={shadowId} layer="under" />
+      ))}
+      {pieces.map(([uid, p]) => (
+        <PieceShape key={'t' + uid} cells={p.cells} color={ctColor(order, p.owner)} shadowId={shadowId} layer="top" />
+      ))}
 
       {/* faixa da entrada: depois das pecas, para a lateral e a sombra delas nao passarem por cima */}
       {areaFrames
@@ -1060,12 +1068,13 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
 };
 
 /** Peca solta (vitrine da loja, mao do jogador): mesma linguagem do tabuleiro. */
-export const CTPieceView: React.FC<{ shape: number[][]; color?: { top: string; side: string }; label: string; className?: string; minBox?: number }> = ({
+export const CTPieceView: React.FC<{ shape: number[][]; color?: { top: string; side: string }; label: string; className?: string; minBox?: number; aspect?: number }> = ({
   shape,
   color = { top: '#f5f2eb', side: '#a39d8c' },
   label,
   className,
-  minBox = 5
+  minBox = 5,
+  aspect = 1
 }) => {
   const idRef = useRef<string>('');
   if (!idRef.current) idRef.current = 'ctp' + ++uidSeq;
@@ -1073,11 +1082,13 @@ export const CTPieceView: React.FC<{ shape: number[][]; color?: { top: string; s
   const w = shape[0].length;
   const h = shape.length;
   // caixa quadrada fixa: todas as pecas aparecem na mesma escala, para comparar tamanho no olho
-  const side = Math.max(w, h, minBox) * U;
-  const ox = (side - w * U) / 2;
-  const oy = (side - h * U) / 2;
+  // aspect > 1: caixa larga (mesma proporcao do espaco onde a peca aparece), para a peca usar a largura toda
+  const bh = Math.max(h, minBox, w / aspect) * U;
+  const bw = bh * aspect;
+  const ox = (bw - w * U) / 2;
+  const oy = (bh - h * U) / 2;
   return (
-    <svg className={'ct-piece ' + (className || '')} viewBox={`-2 -2 ${side + 4} ${side + 5.5}`} role="img" aria-label={label}>
+    <svg className={'ct-piece ' + (className || '')} viewBox={`-2 -2 ${bw + 4} ${bh + 5.5}`} role="img" aria-label={label}>
       <defs>
         <filter id={idRef.current} x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur stdDeviation="0.7" />
