@@ -19,6 +19,7 @@ import { BPSeat, BPTable } from '../comterra/BPViews';
 import { bpCurrent } from '../../utils/bpEngine';
 import '../comterra/comterra.css';
 import { TipLayer } from '../comterra/TipLayer';
+import { CTSkinProvider } from '../comterra/CTSkin';
 import { BPPiecePeek } from '../comterra/BPViews';
 
 interface ScreenComTerraProps {
@@ -41,7 +42,7 @@ const PHASE_LABEL: Record<ComTerraState['phase'], string> = {
  * A barra "Visao" troca entre a TV (so assiste), a Mesa (joga-se na propria tela, um por vez) e a tela de
  * celular de cada jogador, para testar o fluxo inteiro num aparelho so.
  */
-export const ScreenComTerra: React.FC<ScreenComTerraProps> = ({ room, onUpdateComTerraState, onNextRound }) => {
+const ScreenComTerraInner: React.FC<ScreenComTerraProps> = ({ room, onUpdateComTerraState, onNextRound }) => {
   const ct = room.comTerra;
   const [view, setView] = useState<string>(room.connectionMode === 'local' ? 'mesa' : 'spotlight');
   const [seatPick, setSeatPick] = useState<string | null>(null);
@@ -277,3 +278,10 @@ export const ScreenComTerra: React.FC<ScreenComTerraProps> = ({ room, onUpdateCo
     </div>
   );
 };
+
+/** aplica a skin escolhida na configuracao a tudo o que o jogo desenha */
+export const ScreenComTerra: React.FC<ScreenComTerraProps> = (props) => (
+  <CTSkinProvider skin={props.room.comTerra?.skin}>
+    <ScreenComTerraInner {...props} />
+  </CTSkinProvider>
+);

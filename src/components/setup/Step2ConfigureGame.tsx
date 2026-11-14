@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CTMode,
+import { CTMode, CTSkin,
   GameId,
   GameCustomConfig,
   GameDifficulty
@@ -99,6 +99,10 @@ const PV_ROUND_OPTIONS: Array<{ value: number; label: string; desc: string }> = 
 ];
 
 const CT_MODES: CTMode[] = ['arquiteto', 'diabo'];
+const CT_SKINS: Array<{ value: CTSkin; label: string }> = [
+  { value: 'clean', label: 'Clean' },
+  { value: 'classic', label: 'Clássica' }
+];
 const CT_MODE_NOTES: Record<CTMode, string[]> = {
   arquiteto: [
     'Reserva · Bärenpark brasileiro: cada um monta o próprio parque com até 4 áreas de 4×4',
@@ -347,6 +351,23 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
                     onClick={() => onChangeCustomConfig((prev) => ({ ...prev, ctMode: m }))}
                   >
                     {CT_MODE_LABEL[m]}
+                  </Seg>
+                ))}
+              </div>
+            </div>
+          )}
+          {isCT && ctMode === 'arquiteto' && (
+            <div className="rdb-opt" data-testid="ct-skin-selector">
+              <span className="rdb-opt-label">Visual</span>
+              <div className="rdb-opt-choices">
+                {CT_SKINS.map((o) => (
+                  <Seg
+                    key={o.value}
+                    testid={'ct-skin-btn-' + o.value}
+                    on={(customConfig.ctSkin || 'clean') === o.value}
+                    onClick={() => onChangeCustomConfig((prev) => ({ ...prev, ctSkin: o.value }))}
+                  >
+                    {o.label}
                   </Seg>
                 ))}
               </div>

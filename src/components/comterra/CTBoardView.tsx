@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Maximize2, Minus, Plus } from 'lucide-react';
 import type { CTBoard, CTCell } from '../../types/game';
 import { shapeCells } from '../../utils/comTerraEngine';
+import { CTC, CLASSIC_RIM, CLASSIC_SIDE, useCTSkin } from './CTSkin';
 
 /**
  * Tabuleiro e pecas do Com Terra em "2.5D": camera 100% de cima (grid sem distorcao), mas com volume:
@@ -108,6 +109,39 @@ const PieceShape: React.FC<{
   const edges = edgePaths(cells);
   const under = layer !== 'top';
   const top = layer !== 'under';
+  const skin = useCTSkin();
+  const clipId = 'ctclip' + React.useId().replace(/[^a-zA-Z0-9]/g, '');
+  // skin classica: so para as pecas da Reserva (verde, viveiro, cercado)
+  const kind = skin === 'classic' ? Object.keys(BP_PALETTE).find((k) => BP_PALETTE[k].top === color.top) : undefined;
+  if (kind) {
+    return (
+      <g>
+        {under && <path d={d} fillRule="evenodd" fill="#000" opacity={lift ? 0.42 : 0.38} transform={`translate(${0.9 + lift * 0.9} ${DEPTH + 0.9 + lift * 1.1})`} filter={`url(#${shadowId})`} />}
+        <g transform={`translate(0 ${-lift})`}>
+          {under && <path d={d} fillRule="evenodd" fill={CLASSIC_SIDE[kind]} transform={`translate(0 ${DEPTH})`} />}
+          {top && (
+            <>
+              <clipPath id={clipId}>
+                <path d={d} fillRule="evenodd" />
+              </clipPath>
+              <path d={d} fillRule="evenodd" fill={`url(#${CTC}${kind})`} />
+              <g clipPath={`url(#${clipId})`}>
+                {cells.map((c) => (
+                  <ClassicDeco key={c.x + ',' + c.y} kind={kind} x={c.x} y={c.y} />
+                ))}
+                {CLASSIC_RIM[kind].map((r, i) => (
+                  <path key={i} d={edges.outer || d} fill="none" stroke={r.stroke} strokeWidth={r.width} strokeDasharray={r.dash} strokeOpacity={r.opacity ?? 1} strokeLinejoin="round" />
+                ))}
+              </g>
+              <path d={edges.light} stroke="#ffffff" strokeOpacity="0.32" strokeWidth="0.4" strokeLinecap="round" fill="none" />
+              <path d={edges.outer || d} stroke="#0a0b1e" strokeOpacity="0.55" strokeWidth="0.3" fill="none" strokeLinejoin="round" />
+              {outline && <path d={edges.outer || d} fill="none" stroke={outline} strokeWidth="0.95" strokeLinejoin="round" />}
+            </>
+          )}
+        </g>
+      </g>
+    );
+  }
   return (
     <g>
       {under && <path d={d} fillRule="evenodd" fill="#000" opacity={lift ? 0.4 : 0.34} transform={`translate(${0.9 + lift * 0.9} ${DEPTH + 0.9 + lift * 1.1})`} filter={`url(#${shadowId})`} />}
@@ -145,6 +179,46 @@ const PieceShape: React.FC<{
       </g>
     </g>
   );
+};
+
+const ClassicDeco: React.FC<{ kind: string; x: number; y: number }> = ({ kind, x, y }) => {
+  const h = (x * 7 + y * 13) % 5;
+  const cx = x * U + U / 2;
+  const cy = y * U + U / 2;
+  if (kind === 'green') {
+    if (h !== 1 && h !== 3) return null;
+    const ox = h === 1 ? 1.8 : -1.6;
+    const oy = h === 1 ? 1.4 : -1.8;
+    return (
+      <g pointerEvents="none">
+        <ellipse cx={cx + ox + 0.4} cy={cy + oy + 1.3} rx="1.9" ry="0.7" fill="#2e6e28" opacity="0.45" />
+        <circle cx={cx + ox - 0.8} cy={cy + oy + 0.2} r="1.1" fill="#2f8a33" />
+        <circle cx={cx + ox + 0.7} cy={cy + oy + 0.3} r="1.05" fill="#2f8a33" />
+        <circle cx={cx + ox} cy={cy + oy - 0.5} r="1.25" fill="#3ea13d" />
+        <circle cx={cx + ox - 0.35} cy={cy + oy - 0.95} r="0.45" fill="#7fd06a" />
+      </g>
+    );
+  }
+  if (kind === 'house') {
+    if (h !== 2) return null;
+    return (
+      <g pointerEvents="none">
+        <path d={`M${cx + 1.6} ${cy + 1.2}a1.3 1 0 1 1 -0.01 0.02L${cx + 1.6} ${cy + 2.2}Z`} fill="#3f9a4a" />
+        <circle cx={cx + 1.2} cy={cy + 1.9} r="0.32" fill="#ff9ec4" />
+      </g>
+    );
+  }
+  if (kind === 'enclosure') {
+    if (h !== 0) return null;
+    return (
+      <g pointerEvents="none">
+        <rect x={cx - 2.2} y={cy + 1.2} width="3.6" height="0.9" rx="0.45" fill="#8a5a2b" />
+        <rect x={cx - 2.2} y={cy + 1.2} width="3.6" height="0.35" rx="0.18" fill="#b07a40" />
+        <circle cx={cx + 1.25} cy={cy + 1.65} r="0.42" fill="#c99a5e" />
+      </g>
+    );
+  }
+  return null;
 };
 
 const Tree: React.FC<{ x: number; y: number; grounded: boolean }> = ({ x, y, grounded }) => {
