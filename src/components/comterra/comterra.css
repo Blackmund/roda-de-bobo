@@ -2206,3 +2206,35 @@ button.ct-shop-card:focus-visible {
 }
 .bp-modal { z-index: 400; }
 .bp-modal-card { height: min(86vh, 50rem); }
+
+/* ---------- Arquiteto v8: dicas fora dos paineis, topo achatado, espiar segurando ---------- */
+.rdb-tip-scope [data-tip]::after { content: none !important; display: none !important; }
+.rdb-tip-layer {
+  position: fixed;
+  z-index: 1000;
+  max-width: 18rem;
+  padding: 0.4rem 0.65rem;
+  background: var(--rdb-cream, #f5f2eb);
+  color: var(--rdb-navy, #0b1230);
+  font-family: var(--rdb-heavy, system-ui);
+  font-weight: 800;
+  font-size: 0.78rem;
+  line-height: 1.25;
+  pointer-events: none;
+  box-shadow: 0 2px 0 rgba(5, 6, 15, 0.5);
+}
+
+.bp-screen { gap: 0.35rem; }
+.bp-screen > .rdb-lim-bar { gap: 0.5rem; padding: 0 0 0.3rem; min-height: 0; }
+.bp-screen > .rdb-lim-bar .rdb-lim-title { font-size: 1.1rem; gap: 0.45rem; }
+.bp-screen > .rdb-lim-bar .rdb-lim-round { font-size: 0.62rem; padding: 0.1em 0.5em; }
+.bp-screen > .rdb-lim-bar .rdb-lim-rule { width: 1.5rem; height: 1.5rem; }
+.bp-screen > .rdb-lim-bar .rdb-lim-rule svg { width: 14px; height: 14px; }
+.bp-screen .rdb-lim-bar .rdb-seg { min-height: 1.5rem; height: 1.5rem; padding: 0 0.6rem; font-size: 0.62rem; }
+
+.bp-mini-park { -webkit-touch-callout: none; user-select: none; }
+.bp-modal.is-peek { pointer-events: none; }
+.bp-modal-hint { margin-left: auto; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; color: rgba(245, 242, 235, 0.6); }
+@media (min-width: 1020px) {
+  .bp-screen { margin-top: -1.3rem; }
+}
