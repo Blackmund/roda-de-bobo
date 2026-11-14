@@ -2306,3 +2306,29 @@ button.ct-shop-card:focus-visible {
 @media (min-width: 1020px) {
   .bp-screen { position: absolute; inset: -0.55rem 0 -0.7rem 0; height: auto; margin: 0; }
 }
+
+/* pontos: selo amarelo no canto oposto ao da quantidade */
+.bp-stock-piece b,
+.bp-tile.is-compact .bp-tile-pts,
+.bp-tiles--reward .bp-tile.is-compact .bp-tile-pts {
+  position: absolute;
+  top: 0.18rem;
+  left: 0.18rem;
+  z-index: 1;
+  margin: 0;
+  padding: 0.05rem 0.3rem;
+  background: var(--rdb-amber, #ffc93c);
+  color: var(--rdb-navy, #0b1230);
+  border: 1px solid rgba(10, 11, 30, 0.35);
+  border-radius: 2px;
+  box-shadow: 0 2px 0 rgba(4, 5, 12, 0.85);
+  font-family: var(--rdb-heavy, system-ui);
+  font-size: 0.56rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+.bp-tile.is-compact .bp-tile-pts small { display: none; }
+.bp-tile.is-compact.is-green .bp-tile-pts { display: none; }
+.bp-tile.is-compact,
+.bp-tiles--reward .bp-tile.is-compact { padding: 0.95rem 0.5rem 0.4rem; }
+.bp-stock-piece { padding-top: 0.95rem; }
