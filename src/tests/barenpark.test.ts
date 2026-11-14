@@ -36,7 +36,18 @@ test('Bärenpark: montagem conforme a regra (estoque inicial, estatuas, pilhas d
   assert.equal(s.parks.b.supply[0].type, 'playground');
   assert.deepEqual(statueValues(2), [16, 14, 12, 10, 8, 6, 4, 2]);
   assert.deepEqual(s.houses['h-polar'], [2, 4, 6]);
-  assert.equal(s.areaPiles[0].length + s.areaPiles[1].length, 12);
+  assert.equal(s.areaPiles[0].length + s.areaPiles[1].length, 6, '3 areas por jogador, sorteadas');
+  assert.ok(Object.values(s.parks).every((pk) => pk.supply.every((t) => t.type !== 'river')), 'ninguem comeca com rio');
+  // tabuleiros procedurais: cada area tem 1 fosso; a entrada sempre tem equipe de obra
+  Object.values(s.areaDefs).forEach((d) => assert.equal(d.split('').filter((c) => c === 'P').length, 1));
+  Object.values(s.parks).forEach((pk) => assert.ok(pk.areas[0].icons.includes('crew')));
+  // outra semente = outros tabuleiros
+  assert.notDeepEqual(buildBPState(['a', 'b'], 8).areaDefs, s.areaDefs);
+  // 6 jogadores: estatuas e pilhas maiores
+  const six = buildBPState(['1', '2', '3', '4', '5', '6'], 3);
+  assert.equal(six.statues.length, 24);
+  assert.equal(six.houses['h-polar'].length, 11);
+  assert.equal(six.parks['6'].supply[0].type, 'food');
   assert.equal(bpCurrent(s), 'a');
   const ct = buildComTerraState('arquiteto', [{ id: 'a' }, { id: 'b' }], 3, 1);
   assert.ok(ct.bp, 'Arquiteto usa o motor do Bärenpark');

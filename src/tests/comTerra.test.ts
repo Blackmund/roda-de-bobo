@@ -296,7 +296,7 @@ test('CT: o diretor destrava a partida quando alguem some', () => {
 });
 
 test('CT no hub: limites, conteudo local e pontos no placar das equipes', () => {
-  assert.deepEqual([GAME_LIMITS['com-terra'].min, GAME_LIMITS['com-terra'].max], [2, 4]);
+  assert.deepEqual([GAME_LIMITS['com-terra'].min, GAME_LIMITS['com-terra'].max], [2, 8]);
   assert.equal(usesLocalContent('com-terra'), true);
   const ct = { ...buildComTerraState('arquiteto', [{ id: 'a' }, { id: 'b' }], 3, 1, true), pointsAwarded: { a: 7, b: -2 } };
   const room: any = {
