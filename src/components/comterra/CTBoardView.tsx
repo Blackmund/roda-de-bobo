@@ -320,30 +320,28 @@ export const BPIconBadge: React.FC<{ icon: string; size?: number | string; title
 );
 
 /**
- * Moeda 2.5D: sombra no chao, borda grossa (espessura) e face erguida, para parecer apoiada por cima das pecas.
+ * Moeda dos pontos: escura e fina, apoiada por cima das pecas.
  * (cx, cy) e o centro da casa; r e o raio da face.
  */
 export const BPCoin: React.FC<{ cx: number; cy: number; v: number; r?: number }> = ({ cx, cy, v, r = 3 }) => {
-  const lift = r * 0.32;
-  const depth = r * 0.32;
-  const fy = cy - lift;
+  // moeda escura e fina: uma moeda so, pouco erguida, com sombra curta (a dourada fica para o monumento)
+  const depth = r * 0.12;
+  const fy = cy - depth;
   return (
     <g pointerEvents="none">
-      <ellipse cx={cx + r * 0.3} cy={cy + r * 0.62} rx={r * 1.04} ry={r * 0.52} fill="#05060f" opacity="0.4" />
-      <circle cx={cx} cy={fy + depth} r={r} fill="#7a5200" />
-      <rect x={cx - r} y={fy} width={r * 2} height={depth} fill="#7a5200" />
-      <circle cx={cx} cy={fy + depth * 0.5} r={r} fill="none" stroke="#b07a08" strokeWidth={r * 0.06} />
-      <circle cx={cx} cy={fy} r={r} fill="#ffc93c" stroke="#7a5200" strokeWidth={r * 0.07} />
-      <circle cx={cx} cy={fy} r={r * 0.76} fill="#ffd866" stroke="#d99e12" strokeWidth={r * 0.06} />
+      <ellipse cx={cx + r * 0.22} cy={cy + r * 0.38} rx={r * 1.02} ry={r * 0.6} fill="#05060f" opacity="0.32" />
+      <circle cx={cx} cy={fy + depth} r={r} fill="#04050c" />
+      <circle cx={cx} cy={fy} r={r} fill="#141a3a" stroke="#04050c" strokeWidth={r * 0.08} />
+      <circle cx={cx} cy={fy} r={r * 0.78} fill="#0b1230" stroke="#2a3366" strokeWidth={r * 0.06} />
       <path
-        d={`M${cx - r * 0.62} ${fy - r * 0.2}A${r * 0.66} ${r * 0.66} 0 0 1 ${cx - r * 0.12} ${fy - r * 0.64}`}
-        stroke="#fff6d6"
-        strokeWidth={r * 0.13}
+        d={`M${cx - r * 0.66} ${fy - r * 0.24}A${r * 0.7} ${r * 0.7} 0 0 1 ${cx - r * 0.16} ${fy - r * 0.68}`}
+        stroke="#f5f2eb"
+        strokeWidth={r * 0.09}
         strokeLinecap="round"
         fill="none"
-        opacity="0.9"
+        opacity="0.35"
       />
-      <text x={cx} y={fy + r * 0.37} textAnchor="middle" fontSize={r * (String(v).length > 1 ? 0.98 : 1.1)} fontFamily="'Anton','Inter','Arial Black',sans-serif" fill="#0a0b1e">
+      <text x={cx} y={fy + r * 0.37} textAnchor="middle" fontSize={r * (String(v).length > 1 ? 0.98 : 1.1)} fontFamily="'Anton','Inter','Arial Black',sans-serif" fill="#ffc93c">
         {v}
       </text>
     </g>
