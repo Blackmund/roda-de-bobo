@@ -1,4 +1,5 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Minus, Plus, RotateCcw } from 'lucide-react';
 import type { CTBoard, CTCell } from '../../types/game';
 import { shapeCells } from '../../utils/comTerraEngine';
 
@@ -109,9 +110,23 @@ const PieceShape: React.FC<{
         <path d={d} fillRule="evenodd" fill={color.side} transform={`translate(0 ${DEPTH})`} />
         <path d={d} fillRule="evenodd" fill={color.top} />
         {showContour && edges.inner && <path d={edges.inner} stroke={color.ink || '#0a0b1e'} strokeOpacity="0.16" strokeWidth="0.25" fill="none" />}
-        <path d={edges.light} stroke="#fff" strokeOpacity="0.52" strokeWidth="0.5" strokeLinecap="round" fill="none" />
-        <path d={edges.dark} stroke="#000" strokeOpacity="0.28" strokeWidth="0.5" strokeLinecap="round" fill="none" />
-        {showContour && <path d={edges.outer} stroke="#0a0b1e" strokeOpacity="0.58" strokeWidth="0.48" strokeLinecap="square" fill="none" />}
+        <path
+          d={edges.light}
+          stroke="#ffffff"
+          strokeOpacity={showContour ? 0.62 : 0.52}
+          strokeWidth={showContour ? 0.55 : 0.5}
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d={edges.dark}
+          stroke="#000000"
+          strokeOpacity={showContour ? 0.38 : 0.28}
+          strokeWidth={showContour ? 0.58 : 0.5}
+          strokeLinecap="round"
+          fill="none"
+        />
+        {showContour && <path d={edges.outer} stroke="#0a0b1e" strokeOpacity="0.88" strokeWidth="0.68" strokeLinecap="square" fill="none" />}
         {cells
           .filter((c) => c.k === 2)
           .map((c) => (
@@ -188,7 +203,7 @@ export const BP_ICON_META: Record<string, { fill: string; ink: string; name: str
 export function bpGlyph(kind: string, onGround = false): React.ReactNode {
   const N = '#0a0b1e';
   const C = '#f5f2eb';
-  const wrap = (node: React.ReactNode, groundScale = 0.66) =>
+  const wrap = (node: React.ReactNode, groundScale = 0.76) =>
     onGround ? <g transform={`translate(5 5) scale(${groundScale}) translate(-5 -5)`}>{node}</g> : node;
 
   if (kind === 'pit') {
@@ -205,7 +220,7 @@ export function bpGlyph(kind: string, onGround = false): React.ReactNode {
           <circle key={i} cx={px} cy={py} r="0.34" fill="#2c1d10" stroke={C} strokeWidth="0.12" />
         ))}
       </g>,
-      0.78
+      0.82
     );
   }
 
@@ -342,9 +357,18 @@ export interface CTBoardViewProps {
   /** Arquiteto (Equipe de Obra): posicoes 4x4 livres clicaveis direto no mapa */
   bpExpansionSpots?: Array<{ ax: number; ay: number }>;
   onPickExpansionSpot?: (ax: number, ay: number) => void;
+  /** Permite zoom in/out vetorial (100% a 300%) + arrastar camera no mapa */
+  enableZoom?: boolean;
+  zoom?: number;
+  onZoomChange?: (z: number) => void;
   label: string;
   testid?: string;
 }
+
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 3;
+const ZOOM_STEP = 0.25;
+const ZOOM_CYCLE = [1, 1.5, 2, 3];
 
 let uidSeq = 0;
 
@@ -357,6 +381,9 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
   onCell,
   bpExpansionSpots,
   onPickExpansionSpot,
+  enableZoom = false,
+  zoom: controlledZoom,
+  onZoomChange,
   label,
   testid
 }) => {
@@ -366,6 +393,17 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
   const svgRef = useRef<SVGSVGElement | null>(null);
   const dragging = useRef(false);
   const lastCell = useRef('');
+  const panDrag = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    panX: number;
+    panY: number;
+    moved: boolean;
+  } | null>(null);
+  const [internalZoom, setInternalZoom] = useState(1);
+  const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [panning, setPanning] = useState(false);
   const isBP = board.id.startsWith('bp-');
 
   const box = useMemo(() => {
@@ -432,7 +470,141 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
 
   const pad = 2.2;
   const extraBottom = isBP ? 4.8 : 3.4;
-  const vb = `${box.x * U - pad} ${box.y * U - pad - 1.6} ${box.w * U + pad * 2} ${box.h * U + pad * 2 + extraBottom}`;
+  const fullBox = useMemo(
+    () => ({
+      x: box.x * U - pad,
+      y: box.y * U - pad - 1.6,
+      w: box.w * U + pad * 2,
+      h: box.h * U + pad * 2 + extraBottom
+    }),
+    [box.x, box.y, box.w, box.h, extraBottom]
+  );
+
+  const activeZoom = enableZoom ? Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, controlledZoom ?? internalZoom)) : 1;
+
+  const clampPan = (px: number, py: number, z: number) => {
+    if (z <= 1) return { x: 0, y: 0 };
+    const vw = fullBox.w / z;
+    const vh = fullBox.h / z;
+    return {
+      x: Math.min(Math.max(0, fullBox.w - vw), Math.max(0, px)),
+      y: Math.min(Math.max(0, fullBox.h - vh), Math.max(0, py))
+    };
+  };
+
+  const clampedPan = clampPan(pan.x, pan.y, activeZoom);
+  const vw = fullBox.w / activeZoom;
+  const vh = fullBox.h / activeZoom;
+  const vb = `${fullBox.x + clampedPan.x} ${fullBox.y + clampedPan.y} ${vw} ${vh}`;
+
+  const setZoom = (nextZ: number) => {
+    const z = Math.round(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, nextZ)) * 100) / 100;
+    if (onZoomChange) onZoomChange(z);
+    else setInternalZoom(z);
+    return z;
+  };
+
+  const applyZoom = (nextZ: number, worldFocal?: { x: number; y: number; nx: number; ny: number }) => {
+    const prevZ = activeZoom;
+    const z = setZoom(nextZ);
+    if (z <= 1) {
+      setPan({ x: 0, y: 0 });
+      return;
+    }
+    const nextVw = fullBox.w / z;
+    const nextVh = fullBox.h / z;
+    if (worldFocal) {
+      const nextPx = worldFocal.x - fullBox.x - worldFocal.nx * nextVw;
+      const nextPy = worldFocal.y - fullBox.y - worldFocal.ny * nextVh;
+      setPan(clampPan(nextPx, nextPy, z));
+      return;
+    }
+    // Ao sair de 100% pelo botao +, foca no centro da peca fantasma se ela estiver no tabuleiro
+    if (prevZ <= 1 && ghost) {
+      const gw = ghost.m[0]?.length || 1;
+      const gh = ghost.m.length || 1;
+      const gcx = (ghost.x + gw / 2) * U;
+      const gcy = (ghost.y + gh / 2) * U;
+      setPan(clampPan(gcx - fullBox.x - nextVw / 2, gcy - fullBox.y - nextVh / 2, z));
+      return;
+    }
+    const curVw = fullBox.w / prevZ;
+    const curVh = fullBox.h / prevZ;
+    const cx = clampedPan.x + curVw / 2;
+    const cy = clampedPan.y + curVh / 2;
+    setPan(clampPan(cx - nextVw / 2, cy - nextVh / 2, z));
+  };
+
+  // Mantem a peca fantasma visivel caso seja movida pelas setas ou teclado com zoom > 100%
+  useEffect(() => {
+    if (!enableZoom || activeZoom <= 1 || !ghost) return;
+    const gw = (ghost.m[0]?.length || 1) * U;
+    const gh = (ghost.m.length || 1) * U;
+    const gx1 = ghost.x * U - U * 0.45;
+    const gy1 = ghost.y * U - U * 0.45;
+    const gx2 = ghost.x * U + gw + U * 0.45;
+    const gy2 = ghost.y * U + gh + U * 0.45;
+    setPan((cur) => {
+      const c = clampPan(cur.x, cur.y, activeZoom);
+      const minVx = fullBox.x + c.x;
+      const minVy = fullBox.y + c.y;
+      let dx = 0;
+      let dy = 0;
+      if (gx1 < minVx) dx = gx1 - minVx;
+      else if (gx2 > minVx + vw) dx = gx2 - (minVx + vw);
+      if (gy1 < minVy) dy = gy1 - minVy;
+      else if (gy2 > minVy + vh) dy = gy2 - (minVy + vh);
+      if (!dx && !dy) return cur;
+      return clampPan(c.x + dx, c.y + dy, activeZoom);
+    });
+  }, [enableZoom, activeZoom, ghost?.x, ghost?.y, ghost?.m, fullBox, vw, vh]);
+
+  // Zoom com roda do mouse ancorado sob o cursor
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!enableZoom || !svg) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const dir = e.deltaY < 0 ? 1 : -1;
+      const nextZ = Math.round(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, activeZoom + dir * ZOOM_STEP)) * 100) / 100;
+      if (nextZ === activeZoom) return;
+      const ctm = svg.getScreenCTM();
+      if (ctm) {
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        const world = pt.matrixTransform(ctm.inverse());
+        const nx = (world.x - (fullBox.x + clampedPan.x)) / vw;
+        const ny = (world.y - (fullBox.y + clampedPan.y)) / vh;
+        applyZoom(nextZ, { x: world.x, y: world.y, nx, ny });
+      } else {
+        applyZoom(nextZ);
+      }
+    };
+    svg.addEventListener('wheel', onWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', onWheel);
+  });
+
+  // Atalhos de teclado (+/= amplia ate 300%, - reduz, 0 ajusta 100%)
+  useEffect(() => {
+    if (!enableZoom) return;
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        applyZoom(activeZoom + ZOOM_STEP);
+      } else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        applyZoom(activeZoom - ZOOM_STEP);
+      } else if (e.key === '0' && activeZoom > ZOOM_MIN) {
+        e.preventDefault();
+        applyZoom(ZOOM_MIN);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
 
   const cellFromEvent = (e: React.PointerEvent): { x: number; y: number } | null => {
     const svg = svgRef.current;
@@ -464,27 +636,88 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
 
   const ghostCells: PCell[] = ghost ? shapeCells(ghost.m).map((pc) => ({ x: ghost.x + pc.dx, y: ghost.y + pc.dy, k: pc.k })) : [];
 
+  const boardClass =
+    'ct-board' +
+    (onCell ? ' ct-board--live' : '') +
+    (enableZoom && activeZoom > 1 ? ' ct-board--zoomed' : '') +
+    (panning ? ' is-panning' : '');
+
   return (
-    <svg
-      ref={svgRef}
-      className={'ct-board' + (onCell ? ' ct-board--live' : '')}
-      viewBox={vb}
-      role="img"
-      aria-label={label}
-      data-testid={testid}
-      preserveAspectRatio="xMidYMid meet"
-      onPointerDown={(e) => {
-        if (!onCell) return;
-        dragging.current = true;
-        lastCell.current = '';
-        fire(e);
-      }}
-      onPointerMove={(e) => {
-        if (dragging.current && ghost) fire(e);
-      }}
-      onPointerUp={() => (dragging.current = false)}
-      onPointerLeave={() => (dragging.current = false)}
-    >
+    <>
+      <svg
+        ref={svgRef}
+        className={boardClass}
+        viewBox={vb}
+        role="img"
+        aria-label={label}
+        data-testid={testid}
+        preserveAspectRatio="xMidYMid meet"
+        onPointerDown={(e) => {
+          if (enableZoom && activeZoom > 1) {
+            panDrag.current = {
+              pointerId: e.pointerId,
+              startX: e.clientX,
+              startY: e.clientY,
+              panX: clampedPan.x,
+              panY: clampedPan.y,
+              moved: false
+            };
+            lastCell.current = '';
+            return;
+          }
+          if (!onCell) return;
+          dragging.current = true;
+          lastCell.current = '';
+          fire(e);
+        }}
+        onPointerMove={(e) => {
+          if (enableZoom && activeZoom > 1 && panDrag.current) {
+            const d = panDrag.current;
+            const dxPx = e.clientX - d.startX;
+            const dyPx = e.clientY - d.startY;
+            if (!d.moved && Math.hypot(dxPx, dyPx) >= 5) {
+              d.moved = true;
+              setPanning(true);
+              try {
+                e.currentTarget.setPointerCapture?.(e.pointerId);
+              } catch {}
+            }
+            if (d.moved && svgRef.current) {
+              const ctm = svgRef.current.getScreenCTM();
+              if (ctm && ctm.a > 0 && ctm.d > 0) {
+                setPan(clampPan(d.panX - dxPx / ctm.a, d.panY - dyPx / ctm.d, activeZoom));
+              }
+            }
+            return;
+          }
+          if (dragging.current && ghost) fire(e);
+        }}
+        onPointerUp={(e) => {
+          if (enableZoom && activeZoom > 1 && panDrag.current) {
+            const wasMoved = panDrag.current.moved;
+            panDrag.current = null;
+            setPanning(false);
+            try {
+              if (e.currentTarget.hasPointerCapture?.(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+            } catch {}
+            if (!wasMoved && onCell) fire(e);
+            return;
+          }
+          dragging.current = false;
+        }}
+        onPointerCancel={() => {
+          panDrag.current = null;
+          setPanning(false);
+          dragging.current = false;
+        }}
+        onPointerLeave={() => {
+          if (!panDrag.current?.moved) {
+            panDrag.current = null;
+            setPanning(false);
+          }
+          dragging.current = false;
+        }}
+      >
       <defs>
         <filter id={shadowId} x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur stdDeviation="0.7" />
@@ -548,7 +781,18 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
       {cells.map(({ c, x, y }) => (c.bpi && !c.o ? <BPIconMark key={'bp' + x + ',' + y} x={x} y={y} kind={c.bpi} statue={c.statue} /> : null))}
       {areaFrames.map((f) => (
         <g key={'af' + f.id} pointerEvents="none">
-          <rect x={f.x * U} y={f.y * U} width={f.w * U} height={f.h * U} fill="none" stroke="#5a3d22" strokeOpacity="0.65" strokeWidth="0.55" />
+          <rect x={f.x * U} y={f.y * U} width={f.w * U} height={f.h * U} fill="none" stroke="#5a3d22" strokeOpacity="0.82" strokeWidth="0.72" />
+          <rect
+            x={f.x * U + 0.45}
+            y={f.y * U + 0.45}
+            width={f.w * U - 0.9}
+            height={f.h * U - 0.9}
+            fill="none"
+            stroke="#8c683a"
+            strokeOpacity="0.45"
+            strokeWidth="0.28"
+            strokeDasharray="1.8 1.2"
+          />
           {f.entrance && (
             <g>
               <rect x={f.x * U} y={(f.y + f.h) * U + 0.1} width={f.w * U} height="2.75" rx="0.35" fill="#f59e0b" stroke="#5a3d22" strokeWidth="0.35" />
@@ -685,6 +929,59 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
         </g>
       )}
     </svg>
+    {enableZoom && (
+      <div className="ct-zoom-bar" data-testid="bp-zoom-bar" role="group" aria-label="Zoom do tabuleiro">
+        <button
+          type="button"
+          className="rdb-seg ct-zoom-btn"
+          data-testid="bp-zoom-out"
+          aria-label="Diminuir zoom"
+          title="Diminuir zoom (-)"
+          disabled={activeZoom <= ZOOM_MIN}
+          onClick={() => applyZoom(activeZoom - ZOOM_STEP)}
+        >
+          <Minus size={14} />
+        </button>
+        <button
+          type="button"
+          className="rdb-seg ct-zoom-level"
+          data-testid="bp-zoom-level"
+          aria-label={`Zoom atual ${Math.round(activeZoom * 100)}%. Clique para alternar entre 100% e 300%`}
+          title="Alternar zoom (100% · 150% · 200% · 300%)"
+          onClick={() => {
+            const next = ZOOM_CYCLE.find((step) => step > activeZoom + 0.01) ?? ZOOM_MIN;
+            applyZoom(next);
+          }}
+        >
+          {Math.round(activeZoom * 100)}%
+        </button>
+        <button
+          type="button"
+          className="rdb-seg ct-zoom-btn"
+          data-testid="bp-zoom-in"
+          aria-label="Aumentar zoom até 300%"
+          title="Aumentar zoom (+)"
+          disabled={activeZoom >= ZOOM_MAX}
+          onClick={() => applyZoom(activeZoom + ZOOM_STEP)}
+        >
+          <Plus size={14} />
+        </button>
+        {activeZoom > ZOOM_MIN && (
+          <button
+            type="button"
+            className="rdb-seg ct-zoom-reset"
+            data-testid="bp-zoom-reset"
+            aria-label="Voltar zoom para 100%"
+            title="Ajustar tudo (tecla 0)"
+            onClick={() => applyZoom(ZOOM_MIN)}
+          >
+            <RotateCcw size={13} />
+            <span>Ajustar</span>
+          </button>
+        )}
+      </div>
+    )}
+    </>
   );
 };
 

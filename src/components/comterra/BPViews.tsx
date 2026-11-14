@@ -107,7 +107,7 @@ const TileChip: React.FC<{
         </span>
       )}
       <CTPieceView shape={tileShape(type)} color={KIND_COLOR[kind]} label={fullLabel} className="bp-tile-art" minBox={compact ? 3 : 2} />
-      <span className="bp-tile-name">{shortTileName(type)}</span>
+      <span className="bp-tile-name">{compact ? stockShortName(type) : shortTileName(type)}</span>
       <span className="bp-tile-pts" data-tip="Pontos">
         {pts ?? 0}
         <small>pts</small>
@@ -143,8 +143,59 @@ export const BPLegend: React.FC<{ compact?: boolean }> = ({ compact }) => (
 );
 
 /** Estoque central da Reserva sempre visivel: Monumentos, Areas, Areas Verdes, Viveiros e os 12 Cercados unicos. */
-export const BPReserveStock: React.FC<{ bp: BPState; dense?: boolean }> = ({ bp, dense }) => {
+export const BPReserveStock: React.FC<{
+  bp: BPState;
+  dense?: boolean;
+  eligibleTypes?: Set<BPTileType>;
+  onPickReward?: (type: BPTileType) => void;
+}> = ({ bp, dense, eligibleTypes, onPickReward }) => {
   const areaCount = bp.areaPiles[0].length + bp.areaPiles[1].length;
+  const renderPiece = (
+    type: BPTileType,
+    extraClass: string,
+    shape: number[][],
+    color: { top: string; side: string },
+    shortName: string,
+    tip: string,
+    children: React.ReactNode
+  ) => {
+    const canPick = Boolean(onPickReward && eligibleTypes?.has(type));
+    const out =
+      tileKind(type) === 'green'
+        ? !(bp.greens[type] || 0)
+        : tileKind(type) === 'house'
+        ? !(bp.houses[type]?.length || 0)
+        : !(bp.enclosures[type]?.length || 0);
+    const cls =
+      'bp-stock-piece ' +
+      extraClass +
+      (out ? ' is-out' : '') +
+      (canPick ? ' is-pickable' : eligibleTypes ? ' is-dimmed' : '');
+    if (canPick) {
+      return (
+        <button
+          key={type}
+          type="button"
+          className={cls}
+          data-tip={tip}
+          onClick={() => onPickReward!(type)}
+          aria-label={`Pegar ${BP_TILE_META[type].label}`}
+        >
+          <CTPieceView shape={shape} color={color} label={BP_TILE_META[type].label} className="bp-stock-art" minBox={extraClass.includes('--enc') ? 5 : extraClass.includes('--row') ? 3 : 4} />
+          <span className="bp-stock-label">{shortName}</span>
+          {children}
+        </button>
+      );
+    }
+    return (
+      <div key={type} className={cls} data-tip={tip}>
+        <CTPieceView shape={shape} color={color} label={BP_TILE_META[type].label} className="bp-stock-art" minBox={extraClass.includes('--enc') ? 5 : extraClass.includes('--row') ? 3 : 4} />
+        <span className="bp-stock-label">{shortName}</span>
+        {children}
+      </div>
+    );
+  };
+
   return (
     <section className={'bp-reserve' + (dense ? ' is-dense' : '')} aria-label="Estoque da Reserva" data-testid="bp-reserve-stock">
       <div className="bp-reserve-top">
@@ -174,12 +225,14 @@ export const BPReserveStock: React.FC<{ bp: BPState; dense?: boolean }> = ({ bp,
         <div className="bp-stock-greens">
           {BP_GREENS.map((g) => {
             const count = bp.greens[g] || 0;
-            return (
-              <div key={g} className={'bp-stock-piece bp-stock-piece--row' + (count ? '' : ' is-out')} data-tip={`${BP_TILE_META[g].label}: ${count} restantes`}>
-                <CTPieceView shape={tileShape(g)} color={KIND_COLOR.green} label={BP_TILE_META[g].label} className="bp-stock-art" minBox={3} />
-                <span className="bp-stock-label">{shortTileName(g)}</span>
-                <small>×{count}</small>
-              </div>
+            return renderPiece(
+              g,
+              'bp-stock-piece--row',
+              tileShape(g),
+              KIND_COLOR.green,
+              shortTileName(g),
+              `${BP_TILE_META[g].label}: ${count} restantes`,
+              <small>×{count}</small>
             );
           })}
         </div>
@@ -193,18 +246,16 @@ export const BPReserveStock: React.FC<{ bp: BPState; dense?: boolean }> = ({ bp,
           {BP_HOUSES.map((h) => {
             const pile = bp.houses[h] || [];
             const top = pile[pile.length - 1];
-            return (
-              <div
-                key={h}
-                className={'bp-stock-piece' + (pile.length ? '' : ' is-out')}
-                data-tip={`${BP_TILE_META[h].label}: vale ${top ?? 0} pts, restam ${pile.length}`}
-              >
-                <CTPieceView shape={tileShape(h)} color={KIND_COLOR.house} label={BP_TILE_META[h].label} className="bp-stock-art" minBox={4} />
-                <span className="bp-stock-label">{stockShortName(h)}</span>
-                <div className="bp-stock-meta">
-                  <b>{top ?? '–'}</b>
-                  <small>×{pile.length}</small>
-                </div>
+            return renderPiece(
+              h,
+              '',
+              tileShape(h),
+              KIND_COLOR.house,
+              stockShortName(h),
+              `${BP_TILE_META[h].label}: vale ${top ?? 0} pts, restam ${pile.length}`,
+              <div className="bp-stock-meta">
+                <b>{top ?? '–'}</b>
+                <small>×{pile.length}</small>
               </div>
             );
           })}
@@ -219,18 +270,16 @@ export const BPReserveStock: React.FC<{ bp: BPState; dense?: boolean }> = ({ bp,
           {BP_ENCLOSURES.map((e) => {
             const pile = bp.enclosures[e] || [];
             const top = pile[pile.length - 1];
-            return (
-              <div
-                key={e}
-                className={'bp-stock-piece bp-stock-piece--enc' + (pile.length ? '' : ' is-out')}
-                data-tip={`${BP_TILE_META[e].label}: ${top ? `${top} pts (${pile.length} un.)` : 'esgotado'}`}
-              >
-                <CTPieceView shape={tileShape(e)} color={KIND_COLOR.enclosure} label={BP_TILE_META[e].label} className="bp-stock-art" minBox={5} />
-                <span className="bp-stock-label">{stockShortName(e)}</span>
-                <div className="bp-stock-meta">
-                  <b>{top ?? '–'}</b>
-                  <small>×{pile.length}</small>
-                </div>
+            return renderPiece(
+              e,
+              'bp-stock-piece--enc',
+              tileShape(e),
+              KIND_COLOR.enclosure,
+              stockShortName(e),
+              `${BP_TILE_META[e].label}: ${top ? `${top} pts (${pile.length} un.)` : 'esgotado'}`,
+              <div className="bp-stock-meta">
+                <b>{top ?? '–'}</b>
+                <small>×{pile.length}</small>
               </div>
             );
           })}
@@ -255,7 +304,7 @@ const BPPlayerRail: React.FC<{
         <h4>Parques ({bp.order.length})</h4>
         {bp.turnsLeft !== null && !bp.finished && <span className="bp-last-lap">Última volta</span>}
       </div>
-      <div className={'bp-rail-list' + (bp.order.length >= 4 ? ' is-many' : '')}>
+      <div className={'bp-rail-list' + (bp.order.length >= 4 ? ' is-many' : ' is-few')}>
         {bp.order.map((id) => {
           const p = players.find((x) => x.id === id);
           const pk = bp.parks[id];
@@ -385,19 +434,26 @@ const BPRewardPanel: React.FC<{
   return (
     <section className="bp-reward" data-testid="bp-reward">
       <div className="bp-reward-head">
-        <BPIconBadge icon={iconKey} size="2rem" />
-        <div>
+        <BPIconBadge icon={iconKey} size="1.55rem" />
+        <div className="bp-reward-title">
           {pendingCount > 1 && <span className="bp-reward-queue">Recompensa 1 de {pendingCount}</span>}
           <h4>{REWARD_TITLE[kind]}</h4>
         </div>
+        {secondary.length > 0 && primary.length > 0 && (
+          <button type="button" className="rdb-seg bp-lower-toggle" onClick={() => setShowLower((v) => !v)}>
+            {showLower
+              ? 'Só principal'
+              : `+ ${kind === 'excavator' ? 'Inferiores' : 'Área Verde'} (${secondary.length})`}
+          </button>
+        )}
       </div>
-      <div className={'bp-tiles' + (kind === 'excavator' ? ' is-dense' : '')}>
+      <div className={'bp-tiles bp-tiles--reward' + (kind === 'excavator' ? ' is-dense' : '')}>
         {visible.map((t) => (
           <TileChip
             key={t}
             type={t}
             pts={rewardValue(bp, t)}
-            compact={kind === 'excavator'}
+            compact
             testid={`bp-reward-${t}`}
             count={tileKind(t) === 'green' ? bp.greens[t] : tileKind(t) === 'house' ? bp.houses[t].length : bp.enclosures[t].length}
             countTip="Unidades restantes na Reserva"
@@ -408,13 +464,6 @@ const BPRewardPanel: React.FC<{
           />
         ))}
       </div>
-      {secondary.length > 0 && primary.length > 0 && (
-        <button type="button" className="rdb-seg bp-lower-toggle" onClick={() => setShowLower((v) => !v)}>
-          {showLower
-            ? 'Mostrar só a categoria do ícone'
-            : `Ou pegar ${kind === 'excavator' ? 'Viveiro / Área Verde' : 'Área Verde'} (${secondary.length})`}
-        </button>
-      )}
     </section>
   );
 };
@@ -596,31 +645,6 @@ export const BPSeat: React.FC<{
 
   return (
     <div className="bp-seat" data-testid="bp-seat">
-      <header className="bp-seat-head">
-        <span className="bp-seat-who">
-          {players.find((p) => p.id === displayId) && <PlayerMark p={players.find((p) => p.id === displayId)!} />}
-          {nameOf(displayId)}
-        </span>
-        <span className="bp-seat-score" data-tip="Pontos no parque (peças + monumentos)">
-          {bpScore(bp, displayId)} pts
-        </span>
-        <span className="bp-seat-areas">
-          Áreas {displayPark.areas.length}/4
-        </span>
-        <span className={'bp-seat-turn' + (myTurn && !isInspecting ? ' is-me' : '')}>
-          {bp.finished
-            ? 'Fim de jogo'
-            : isInspecting
-            ? `Espiando · vez de ${nameOf(activePlayer)}`
-            : pend
-            ? REWARD_TITLE[pend.kind]
-            : myTurn
-            ? 'Sua vez'
-            : `Vez de ${nameOf(activePlayer)}`}
-          {bp.turnsLeft !== null && !bp.finished ? ' · última volta' : ''}
-        </span>
-      </header>
-
       <div className="bp-mobile-tabs" role="tablist" aria-label="Visualização no celular">
         <button type="button" className="rdb-seg" role="tab" aria-selected={mobileTab === 'park'} aria-pressed={mobileTab === 'park'} onClick={() => setMobileTab('park')}>
           {pend ? 'Recompensa!' : 'Meu Parque'}
@@ -636,6 +660,31 @@ export const BPSeat: React.FC<{
       <div className="bp-seat-main">
         {/* Coluna 1: Parque em grande destaque + barra de movimento da peca + legenda */}
         <div className={'bp-seat-board' + (mobileTab === 'park' ? ' is-mobile-on' : '')}>
+          <header className="bp-seat-head">
+            <span className="bp-seat-who">
+              {players.find((p) => p.id === displayId) && <PlayerMark p={players.find((p) => p.id === displayId)!} />}
+              {nameOf(displayId)}
+            </span>
+            <span className="bp-seat-score" data-tip="Pontos no parque (peças + monumentos)">
+              {bpScore(bp, displayId)} pts
+            </span>
+            <span className="bp-seat-areas">
+              Áreas {displayPark.areas.length}/4
+            </span>
+            <span className={'bp-seat-turn' + (myTurn && !isInspecting ? ' is-me' : '')}>
+              {bp.finished
+                ? 'Fim de jogo'
+                : isInspecting
+                ? `Espiando · vez de ${nameOf(activePlayer)}`
+                : pend
+                ? 'Recompensa'
+                : myTurn
+                ? 'Sua vez'
+                : `Vez de ${nameOf(activePlayer)}`}
+              {bp.turnsLeft !== null && !bp.finished ? ' · última volta' : ''}
+            </span>
+          </header>
+
           {isInspecting && (
             <div className="bp-inspect-bar">
               <span>
@@ -653,6 +702,7 @@ export const BPSeat: React.FC<{
               order={BP_COLOR_ORDER}
               ghost={ghost}
               bpExpansionSpots={expansionSpots}
+              enableZoom
               onPickExpansionSpot={
                 expansionSpots
                   ? (ax, ay) => {
@@ -781,7 +831,19 @@ export const BPSeat: React.FC<{
           )}
 
           <div className={'bp-reserve-slot' + (mobileTab === 'reserve' ? ' is-mobile-force' : '')}>
-            <BPReserveStock bp={bp} dense />
+            <BPReserveStock
+              bp={bp}
+              dense
+              eligibleTypes={pend && myTurn && pend.kind !== 'crew' ? new Set(rewardOptions(bp, pend.kind)) : undefined}
+              onPickReward={
+                pend && myTurn && pend.kind !== 'crew'
+                  ? (t) => {
+                      sounds.playPowerup();
+                      onUpdate((prev) => withBP(prev, (b) => bpTakeReward(b, playerId, t)));
+                    }
+                  : undefined
+              }
+            />
           </div>
         </aside>
 
@@ -859,7 +921,7 @@ export const BPTable: React.FC<{ state: ComTerraState; players: Player[]; gridMo
         </header>
 
         <div className="bp-board-canvas">
-          <CTBoardView board={bpBoard(bp, focusId)} order={BP_COLOR_ORDER} label={`Parque de ${nameOf(focusId)}`} testid="bp-tv-spotlight-board" />
+          <CTBoardView board={bpBoard(bp, focusId)} order={BP_COLOR_ORDER} enableZoom label={`Parque de ${nameOf(focusId)}`} testid="bp-tv-spotlight-board" />
         </div>
 
         <div className="bp-tv-foot">
