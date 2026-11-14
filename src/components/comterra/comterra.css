@@ -883,3 +883,9 @@ button.ct-shop-card:focus-visible {
 
 .bp-spots { max-width: 13rem; margin-left: auto; margin-right: auto; }
 .bp-spot { font-size: 0.8rem; }
+.bp-legend svg { vertical-align: middle; margin-right: 0.3rem; }
+.bp-area-mini { background: #d6c9a8; }
+.bp-area-mini i, .bp-area-mini i:not([style]):not(.is-pit) { border-radius: 0; background: #f4eedf; display: block; }
+
+.bp-legend li { display: flex; align-items: center; gap: 0.45rem; }
+.bp-legend li svg { width: 1.5rem; height: 1.5rem; flex: none; margin: 0; }
