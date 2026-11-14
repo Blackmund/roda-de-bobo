@@ -2236,7 +2236,7 @@ button.ct-shop-card:focus-visible {
 .bp-modal.is-peek { pointer-events: none; }
 .bp-modal-hint { margin-left: auto; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; color: rgba(245, 242, 235, 0.6); }
 @media (min-width: 1020px) {
-  .bp-screen { margin-top: -1.3rem; }
+  .bp-screen { margin-top: -0.55rem; }
 }
 
 /* barra da peca: o botao Colocar nunca corta; se faltar espaco, Girar/Espelhar viram so icone */
@@ -2246,4 +2246,63 @@ button.ct-shop-card:focus-visible {
 @container (max-width: 29rem) {
   .bp-ctrl-btn > span { display: none; }
   .bp-controls-bar .bp-ctrl-btn { padding: 0; min-width: 1.9rem; }
+}
+
+/* ---------- Arquiteto v9: loja com pecas grandes, quantidade em selo no canto, nome so na dica ---------- */
+.bp-stock-piece { position: relative; justify-content: center; gap: 0.1rem; padding: 0.45rem 0.2rem 0.25rem; }
+.bp-stock-art { height: 2.5rem; }
+.bp-stock-enclosures .bp-stock-art { height: 2.3rem; }
+.bp-stock-label { display: none; }
+.bp-stock-meta { display: contents; }
+.bp-stock-piece b { font-size: 1.05rem; }
+
+/* selo de quantidade: retangulo pequeno, levemente erguido */
+.bp-stock-piece > small,
+.bp-stock-meta > small,
+.bp-tile-count,
+.bp-tile.is-compact .bp-tile-count {
+  position: absolute;
+  top: 0.18rem;
+  right: 0.18rem;
+  z-index: 1;
+  min-width: 0;
+  width: auto;
+  height: auto;
+  padding: 0.05rem 0.28rem;
+  display: block;
+  background: #1b2347;
+  color: var(--rdb-cream, #f5f2eb);
+  border: 1px solid rgba(245, 242, 235, 0.22);
+  border-radius: 2px;
+  box-shadow: 0 2px 0 rgba(4, 5, 12, 0.85);
+  font-family: var(--rdb-heavy, system-ui);
+  font-size: 0.56rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+.bp-tile-count.is-zero { background: #3a3f55; }
+.bp-tile.is-on .bp-tile-count { background: #0b6d70; }
+
+/* fichas (Seu estoque e escolha da recompensa): peca grande, sem nome (o nome fica na dica) */
+.bp-tile.is-compact,
+.bp-tiles--reward .bp-tile.is-compact {
+  min-width: 0;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.5rem 1.6rem 0.4rem 0.5rem;
+}
+.bp-tile.is-compact .bp-tile-name,
+.bp-tiles--reward .bp-tile.is-compact .bp-tile-name { display: none; }
+.bp-tile.is-compact .bp-tile-art,
+.bp-tiles--reward .bp-tile.is-compact .bp-tile-art { width: 3.6rem; max-width: 3.6rem; height: 2.7rem; }
+.bp-tile.is-compact .bp-tile-pts,
+.bp-tiles--reward .bp-tile.is-compact .bp-tile-pts { margin-left: 0; font-size: 1.15rem; }
+.bp-stock-art { height: 3.1rem; }
+.bp-stock-enclosures .bp-stock-art { height: 2.9rem; }
+.bp-tile.is-compact .bp-tile-art,
+.bp-tiles--reward .bp-tile.is-compact .bp-tile-art { width: 4.8rem; max-width: 4.8rem; height: 3.3rem; }
+@media (min-width: 1020px) {
+  .bp-screen { position: absolute; inset: -0.55rem 0 -0.7rem 0; height: auto; margin: 0; }
 }
