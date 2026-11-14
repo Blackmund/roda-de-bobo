@@ -843,23 +843,6 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
             strokeWidth="0.28"
             strokeDasharray="1.8 1.2"
           />
-          {f.entrance && (
-            <g>
-              <rect x={f.x * U} y={(f.y + f.h) * U + 0.1} width={f.w * U} height="2.75" rx="0.35" fill="#f59e0b" stroke="#5a3d22" strokeWidth="0.35" />
-              <text
-                x={(f.x + f.w / 2) * U}
-                y={(f.y + f.h) * U + 2.0}
-                textAnchor="middle"
-                fontSize="1.95"
-                fontWeight="900"
-                letterSpacing="0.16"
-                fontFamily="'Anton','Inter','Arial Black',sans-serif"
-                fill="#140c06"
-              >
-                ENTRADA DA RESERVA
-              </text>
-            </g>
-          )}
         </g>
       ))}
 
@@ -943,6 +926,27 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
           </g>
         );
       })}
+
+      {/* faixa da entrada: depois das pecas, para a lateral e a sombra delas nao passarem por cima */}
+      {areaFrames
+        .filter((f) => f.entrance)
+        .map((f) => (
+            <g key={'en' + f.id} pointerEvents="none">
+              <rect x={f.x * U} y={(f.y + f.h) * U + 0.1} width={f.w * U} height="2.75" rx="0.35" fill="#f59e0b" stroke="#5a3d22" strokeWidth="0.35" />
+              <text
+                x={(f.x + f.w / 2) * U}
+                y={(f.y + f.h) * U + 2.0}
+                textAnchor="middle"
+                fontSize="1.95"
+                fontWeight="900"
+                letterSpacing="0.16"
+                fontFamily="'Anton','Inter','Arial Black',sans-serif"
+                fill="#140c06"
+              >
+                ENTRADA DA RESERVA
+              </text>
+            </g>
+        ))}
 
       {/* moedas e monumentos: por cima de todas as pecas */}
       {pieces.map(([uid, p]) => (p.ptsCell ? <BPCoin key={'coin' + uid} cx={p.ptsCell.x * U + U / 2} cy={p.ptsCell.y * U + U / 2} v={p.ptsCell.pts} /> : null))}
