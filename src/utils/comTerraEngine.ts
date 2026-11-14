@@ -44,7 +44,7 @@ export const CT_TREE_BONUS = 2;
 export const CT_LINE_BONUS = 2;
 
 export const CT_MODE_LABEL: Record<CTMode, string> = {
-  arquiteto: 'Arquiteto',
+  arquiteto: 'Reserva · Bärenpark',
   diabo: 'Plano do Diabo',
   fronteiras: 'Fronteiras'
 };

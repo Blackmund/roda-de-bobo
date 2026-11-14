@@ -57,30 +57,49 @@ function facePath(cells: PCell[]): string {
     .join('');
 }
 
-/** Bordas externas: claras em cima e a esquerda (luz), escuras embaixo e a direita. */
-function edgePaths(cells: PCell[]): { light: string; dark: string } {
+/** Bordas externas (luz/sombra), contorno fechado da peca e grade interna suave entre blocos. */
+function edgePaths(cells: PCell[]): { light: string; dark: string; outer: string; inner: string } {
   const has = new Set(cells.map((c) => c.x + ',' + c.y));
   const i = 0.45;
   let light = '';
   let dark = '';
+  let outer = '';
+  let inner = '';
   cells.forEach((c) => {
     const x = c.x * U;
     const y = c.y * U;
-    if (!has.has(c.x + ',' + (c.y - 1))) light += `M${x + i} ${y + i}h${U - i * 2}`;
-    if (!has.has(c.x - 1 + ',' + c.y)) light += `M${x + i} ${y + i}v${U - i * 2}`;
-    if (!has.has(c.x + ',' + (c.y + 1))) dark += `M${x + i} ${y + U - i}h${U - i * 2}`;
-    if (!has.has(c.x + 1 + ',' + c.y)) dark += `M${x + U - i} ${y + i}v${U - i * 2}`;
+    if (!has.has(c.x + ',' + (c.y - 1))) {
+      light += `M${x + i} ${y + i}h${U - i * 2}`;
+      outer += `M${x} ${y}h${U}`;
+    }
+    if (!has.has(c.x - 1 + ',' + c.y)) {
+      light += `M${x + i} ${y + i}v${U - i * 2}`;
+      outer += `M${x} ${y}v${U}`;
+    }
+    if (!has.has(c.x + ',' + (c.y + 1))) {
+      dark += `M${x + i} ${y + U - i}h${U - i * 2}`;
+      outer += `M${x} ${y + U}h${U}`;
+    } else {
+      inner += `M${x + 0.4} ${y + U}h${U - 0.8}`;
+    }
+    if (!has.has(c.x + 1 + ',' + c.y)) {
+      dark += `M${x + U - i} ${y + i}v${U - i * 2}`;
+      outer += `M${x + U} ${y}v${U}`;
+    } else {
+      inner += `M${x + U} ${y + 0.4}v${U - 0.8}`;
+    }
   });
-  return { light, dark };
+  return { light, dark, outer, inner };
 }
 
 const PieceShape: React.FC<{
   cells: PCell[];
-  color: { top: string; side: string };
+  color: { top: string; side: string; ink?: string };
   lift?: number;
   outline?: string;
+  showContour?: boolean;
   shadowId: string;
-}> = ({ cells, color, lift = 0, outline, shadowId }) => {
+}> = ({ cells, color, lift = 0, outline, showContour = false, shadowId }) => {
   const d = facePath(cells);
   const edges = edgePaths(cells);
   return (
@@ -89,14 +108,16 @@ const PieceShape: React.FC<{
       <g transform={`translate(0 ${-lift})`}>
         <path d={d} fillRule="evenodd" fill={color.side} transform={`translate(0 ${DEPTH})`} />
         <path d={d} fillRule="evenodd" fill={color.top} />
-        <path d={edges.light} stroke="#fff" strokeOpacity="0.5" strokeWidth="0.5" strokeLinecap="round" fill="none" />
+        {showContour && edges.inner && <path d={edges.inner} stroke={color.ink || '#0a0b1e'} strokeOpacity="0.16" strokeWidth="0.25" fill="none" />}
+        <path d={edges.light} stroke="#fff" strokeOpacity="0.52" strokeWidth="0.5" strokeLinecap="round" fill="none" />
         <path d={edges.dark} stroke="#000" strokeOpacity="0.28" strokeWidth="0.5" strokeLinecap="round" fill="none" />
+        {showContour && <path d={edges.outer} stroke="#0a0b1e" strokeOpacity="0.58" strokeWidth="0.48" strokeLinecap="square" fill="none" />}
         {cells
           .filter((c) => c.k === 2)
           .map((c) => (
             <circle key={c.x + ',' + c.y} cx={c.x * U + U / 2} cy={c.y * U + U / 2} r={HOLE_R + 0.25} fill="none" stroke="#000" strokeOpacity="0.3" strokeWidth="0.5" />
           ))}
-        {outline && <path d={d} fillRule="evenodd" fill="none" stroke={outline} strokeWidth="0.9" strokeLinejoin="round" />}
+        {outline && <path d={edges.outer || d} fill="none" stroke={outline} strokeWidth="0.95" strokeLinejoin="round" />}
       </g>
     </g>
   );
@@ -150,107 +171,146 @@ const ActionIcon: React.FC<{ x: number; y: number; kind: 'tree' | 'tok' }> = ({ 
 };
 
 /**
- * Arquiteto: icones impressos nas areas, no tema do programa (estadio/estudio da Roda de Bobo).
- * Bola = Area Verde · Microfone = Casa · Camera = Cercado · Ingresso = area nova · Palco = onde vai a Taca.
+ * Reserva (Bärenpark brasileiro): ícones de obra desenhados diretamente sobre o terreno,
+ * sem círculo gigante de figurinha, deixando espaço livre dentro de cada casa.
  */
 export const BP_ICON_META: Record<string, { fill: string; ink: string; name: string; gives: string; label: string }> = {
-  wheel: { fill: '#3fbf6f', ink: '#0a0b1e', name: 'Bandeirinha', gives: 'Área Verde', label: 'Bandeirinha: pega uma Área Verde' },
-  cement: { fill: '#17b8b8', ink: '#0a0b1e', name: 'Telão', gives: 'Casa', label: 'Telão: pega uma Casa (ou Área Verde)' },
-  excavator: { fill: '#ff8a1e', ink: '#0a0b1e', name: 'Craque', gives: 'Cercado', label: 'Craque: pega um Cercado (ou Casa, ou Área Verde)' },
-  crew: { fill: '#e6194b', ink: '#f5f2eb', name: 'Cone', gives: 'Área nova', label: 'Cone: abre uma área nova no parque' }
+  wheel: { fill: '#3fbf6f', ink: '#0a0b1e', name: 'Carriola', gives: 'Área Verde', label: 'Carriola: pega uma Área Verde' },
+  cement: { fill: '#17b8b8', ink: '#0a0b1e', name: 'Betoneira', gives: 'Viveiro', label: 'Betoneira: pega um Viveiro (ou Área Verde)' },
+  excavator: { fill: '#ff8a1e', ink: '#0a0b1e', name: 'Cavadeira', gives: 'Cercado', label: 'Cavadeira: pega um Cercado único (ou Viveiro, ou Área Verde)' },
+  crew: { fill: '#e6194b', ink: '#f5f2eb', name: 'Equipe de Obra', gives: 'Área nova', label: 'Equipe de Obra: abre uma área nova na reserva' }
 };
 
 /**
- * Icones em estilo figurinha: borda creme, contorno navy, miolo na cor da peca que o icone da e um brilho.
- * Bandeirinha de escanteio (Area Verde), Telao (Casa), Craque/estrela (Cercado), Cone de obra (area nova),
- * Palco (fica livre e recebe a Taca). Caixa 10x10.
+ * Ícones no estilo do Bärenpark com pegada brasileira, em caixa 10×10.
+ * `onGround = true` reduz a escala (~60%) para deixar margem folgada dentro de cada quadrado do mapa.
  */
-export function bpGlyph(kind: string): React.ReactNode {
-  if (kind === 'pit') {
-    return (
-      <g>
-        <rect x="0.6" y="0.6" width="8.8" height="8.8" rx="1.2" fill="#0a0b1e" />
-        <path d="M1.6 7.4h6.8v1.2H1.6Z" fill="#2a2f45" />
-        <path d="M2.4 6.2h5.2v1.2H2.4Z" fill="#3a3f55" />
-        <path d="M3.4 1.4L2 6.1M6.6 1.4L8 6.1" stroke="#ffc93c" strokeOpacity="0.35" strokeWidth="0.5" />
-        <circle cx="5" cy="1.7" r="0.6" fill="#ffc93c" opacity="0.7" />
-      </g>
-    );
-  }
-  const m = BP_ICON_META[kind];
-  if (!m) return null;
+export function bpGlyph(kind: string, onGround = false): React.ReactNode {
   const N = '#0a0b1e';
   const C = '#f5f2eb';
-  let art: React.ReactNode = null;
+  const wrap = (node: React.ReactNode, groundScale = 0.66) =>
+    onGround ? <g transform={`translate(5 5) scale(${groundScale}) translate(-5 -5)`}>{node}</g> : node;
+
+  if (kind === 'pit') {
+    return wrap(
+      <g>
+        <polygon points="3.6,1.6 6.4,1.6 8.4,3.6 8.4,6.4 6.4,8.4 3.6,8.4 1.6,6.4 1.6,3.6" fill="#705129" />
+        <polygon points="3.95,2.45 6.05,2.45 7.55,3.95 7.55,6.05 6.05,7.55 3.95,7.55 2.45,6.05 2.45,3.95" fill="#1d130b" stroke="#3c2614" strokeWidth="0.3" />
+        <polygon points="3.3,1.5 6.7,1.5 8.5,3.3 8.5,6.7 6.7,8.5 3.3,8.5 1.5,6.7 1.5,3.3" fill="none" stroke={C} strokeWidth="0.72" strokeLinejoin="round" />
+        <polygon points="3.3,1.5 6.7,1.5 8.5,3.3 8.5,6.7 6.7,8.5 3.3,8.5 1.5,6.7 1.5,3.3" fill="none" stroke="#e6194b" strokeWidth="0.72" strokeDasharray="1.1 1.1" strokeLinejoin="round" />
+        {[
+          [3.3, 1.5], [6.7, 1.5], [8.5, 3.3], [8.5, 6.7],
+          [6.7, 8.5], [3.3, 8.5], [1.5, 6.7], [1.5, 3.3]
+        ].map(([px, py], i) => (
+          <circle key={i} cx={px} cy={py} r="0.34" fill="#2c1d10" stroke={C} strokeWidth="0.12" />
+        ))}
+      </g>,
+      0.78
+    );
+  }
+
   if (kind === 'wheel') {
-    art = (
+    return wrap(
       <g>
-        <path d="M3.6 2.6v5.2" stroke={N} strokeWidth="0.55" strokeLinecap="round" />
-        <path d="M3.9 2.7l3.4 1.15-3.4 1.2Z" fill={C} stroke={N} strokeWidth="0.35" strokeLinejoin="round" />
-        <path d="M3.9 3.85l1.7 0.6-1.7 0.58Z" fill={N} opacity="0.35" />
-        <ellipse cx="3.6" cy="7.8" rx="1.3" ry="0.35" fill={N} opacity="0.35" />
-      </g>
-    );
-  } else if (kind === 'cement') {
-    art = (
-      <g>
-        <path d="M4 2.4l1 1 1-1" stroke={N} strokeWidth="0.4" fill="none" strokeLinecap="round" />
-        <rect x="2.4" y="3.4" width="5.2" height="3.6" rx="0.6" fill={C} stroke={N} strokeWidth="0.45" />
-        <path d="M4.5 4.4v1.6l1.4-0.8Z" fill={m.fill} />
-        <path d="M3.4 7.6h3.2" stroke={N} strokeWidth="0.45" strokeLinecap="round" />
-      </g>
-    );
-  } else if (kind === 'excavator') {
-    art = (
-      <g>
-        <path
-          d="M5 2.1l0.85 1.75 1.92 0.25-1.4 1.33 0.36 1.9L5 6.4l-1.73 0.93 0.36-1.9-1.4-1.33 1.92-0.25Z"
-          fill={C}
-          stroke={N}
-          strokeWidth="0.42"
-          strokeLinejoin="round"
-        />
-        <circle cx="4.5" cy="4.6" r="0.28" fill={N} />
-        <circle cx="5.5" cy="4.6" r="0.28" fill={N} />
-        <path d="M4.5 5.3q0.5 0.35 1 0" stroke={N} strokeWidth="0.25" fill="none" strokeLinecap="round" />
-      </g>
-    );
-  } else if (kind === 'crew') {
-    art = (
-      <g>
-        <path d="M5 2.2l1.9 5H3.1Z" fill="#ff8a1e" stroke={N} strokeWidth="0.4" strokeLinejoin="round" />
-        <path d="M4.25 4.2h1.5l0.32 0.85H3.93Z" fill={C} />
-        <path d="M3.65 5.8h2.7l0.25 0.65H3.4Z" fill={C} />
-        <rect x="2.4" y="7.2" width="5.2" height="0.75" rx="0.25" fill={N} />
+        <ellipse cx="5.2" cy="7.95" rx="3.4" ry="0.75" fill="#4f391c" opacity="0.32" />
+        <path d="M1.3 5.15 L3.6 5.8 M1.7 5.75 L3.8 6.4 M3.7 6.1 L3.5 7.9" stroke="#3a2412" strokeWidth="0.58" strokeLinecap="round" />
+        <circle cx="7.4" cy="7.0" r="1.15" fill="#1d222b" stroke={N} strokeWidth="0.32" />
+        <circle cx="7.4" cy="7.0" r="0.46" fill={C} />
+        <path d="M3.9 4.2 Q5.45 3.1 7.0 4.2 Z" fill="#7c4f24" />
+        <path d="M5.45 4.0 V1.95" stroke="#462b12" strokeWidth="0.48" strokeLinecap="round" />
+        <circle cx="4.7" cy="2.35" r="0.82" fill="#2ea44f" stroke="#0d3318" strokeWidth="0.22" />
+        <circle cx="6.15" cy="2.25" r="0.82" fill="#3fbf6f" stroke="#0d3318" strokeWidth="0.22" />
+        <circle cx="5.45" cy="1.5" r="0.92" fill="#288e46" stroke="#0d3318" strokeWidth="0.22" />
+        <circle cx="5.9" cy="1.7" r="0.32" fill="#ffc93c" />
+        <circle cx="4.8" cy="2.0" r="0.26" fill="#ffc93c" />
+        <path d="M3.35 4.2 H7.75 L6.8 6.35 H3.95 Z" fill="#1e8a42" stroke="#0d3318" strokeWidth="0.4" strokeLinejoin="round" />
+        <path d="M3.9 4.65 H7.1" stroke="#85ebaa" strokeWidth="0.32" strokeLinecap="round" />
       </g>
     );
   }
-  return (
-    <g>
-      <circle cx="5" cy="5" r="4.45" fill={N} />
-      <circle cx="5" cy="5" r="4.05" fill={C} />
-      <circle cx="5" cy="5" r="3.45" fill={m.fill} />
-      <path d="M2.4 3.3a3 3 0 0 1 2.1-1.65" stroke={C} strokeOpacity="0.7" strokeWidth="0.45" fill="none" strokeLinecap="round" />
-      {art}
-    </g>
-  );
+
+  if (kind === 'cement') {
+    return wrap(
+      <g>
+        <ellipse cx="5.0" cy="7.9" rx="3.7" ry="0.72" fill="#4f391c" opacity="0.32" />
+        <rect x="1.55" y="6.0" width="6.7" height="0.82" rx="0.22" fill="#2b3142" stroke={N} strokeWidth="0.28" />
+        <path d="M1.55 6.0 V4.05 L2.45 3.05 H3.85 V6.0 Z" fill={C} stroke={N} strokeWidth="0.36" strokeLinejoin="round" />
+        <path d="M1.88 4.25 L2.55 3.45 H3.5 V4.6 H1.88 Z" fill="#1a3454" />
+        <rect x="1.78" y="5.05" width="1.8" height="0.52" fill="#17b8b8" />
+        <g transform="rotate(-11 5.95 4.35)">
+          <ellipse cx="5.95" cy="4.35" rx="2.18" ry="1.45" fill={C} stroke={N} strokeWidth="0.38" />
+          <path d="M4.95 3.1 Q5.45 4.35 4.95 5.6" fill="none" stroke="#17b8b8" strokeWidth="0.62" />
+          <path d="M6.35 2.98 Q6.78 4.35 6.35 5.72" fill="none" stroke="#ffc93c" strokeWidth="0.54" />
+          <path d="M7.9 3.75 L8.6 4.45 L7.85 4.85" fill="#9ea6b5" stroke={N} strokeWidth="0.26" strokeLinejoin="round" />
+        </g>
+        {[2.45, 5.55, 7.15].map((wx) => (
+          <g key={wx}>
+            <circle cx={wx} cy="6.95" r="0.78" fill="#181c24" stroke={N} strokeWidth="0.2" />
+            <circle cx={wx} cy="6.95" r="0.3" fill="#cfd6e2" />
+          </g>
+        ))}
+      </g>
+    );
+  }
+
+  if (kind === 'excavator') {
+    return wrap(
+      <g>
+        <ellipse cx="4.85" cy="8.0" rx="3.5" ry="0.72" fill="#4f391c" opacity="0.32" />
+        <rect x="1.6" y="6.2" width="4.4" height="1.38" rx="0.68" fill="#1e222b" stroke={N} strokeWidth="0.32" />
+        {[2.35, 3.8, 5.25].map((rx) => (
+          <circle key={rx} cx={rx} cy="6.88" r="0.34" fill="#9ca4b4" />
+        ))}
+        <rect x="1.95" y="4.05" width="3.45" height="2.15" rx="0.42" fill="#ff9f1c" stroke="#522b00" strokeWidth="0.36" />
+        <rect x="3.3" y="4.38" width="1.45" height="1.1" rx="0.2" fill="#18233a" />
+        <rect x="2.18" y="5.58" width="3.0" height="0.34" fill={N} opacity="0.3" />
+        <path d="M4.85 4.75 L6.75 1.85 L8.1 4.45" fill="none" stroke="#ff9f1c" strokeWidth="0.88" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M4.85 4.75 L6.75 1.85 L8.1 4.45" fill="none" stroke="#522b00" strokeWidth="0.24" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M7.45 4.35 H8.75 L8.38 5.85 L7.15 5.35 Z" fill="#3a4152" stroke={N} strokeWidth="0.3" strokeLinejoin="round" />
+      </g>
+    );
+  }
+
+  if (kind === 'crew') {
+    return wrap(
+      <g>
+        <ellipse cx="5.0" cy="7.9" rx="3.6" ry="0.75" fill="#4f391c" opacity="0.32" />
+        <circle cx="2.75" cy="3.6" r="0.66" fill="#f3cda4" stroke={N} strokeWidth="0.2" />
+        <path d="M1.95 3.55 a0.8 0.68 0 0 1 1.6 0 Z" fill="#ffc93c" stroke={N} strokeWidth="0.24" />
+        <path d="M2.0 6.85 L2.25 4.35 H3.25 L3.5 6.85 Z" fill="#17b8b8" stroke={N} strokeWidth="0.28" />
+        <circle cx="5.1" cy="3.1" r="0.68" fill="#f3cda4" stroke={N} strokeWidth="0.2" />
+        <path d="M4.28 3.05 a0.82 0.7 0 0 1 1.64 0 Z" fill="#ff8a1e" stroke={N} strokeWidth="0.24" />
+        <path d="M4.35 6.45 L4.6 3.9 H5.6 L5.85 6.45 Z" fill="#23395d" stroke={N} strokeWidth="0.28" />
+        <path d="M7.35 4.8 L6.65 7.1 M7.35 4.8 L8.05 7.1 M7.35 4.8 V7.15" stroke="#4a3824" strokeWidth="0.3" strokeLinecap="round" />
+        <rect x="6.75" y="4.1" width="1.2" height="0.72" fill="#ffc93c" stroke={N} strokeWidth="0.24" />
+        <path d="M3.9 5.55 L4.48 7.35 H3.32 Z" fill="#e6194b" stroke={N} strokeWidth="0.22" />
+        <path d="M3.68 6.32 H4.12" stroke={C} strokeWidth="0.34" />
+        <path d="M7.95 6.0 L8.4 7.45 H7.5 Z" fill="#e6194b" stroke={N} strokeWidth="0.22" />
+        <path d="M7.78 6.62 H8.12" stroke={C} strokeWidth="0.28" />
+      </g>
+    );
+  }
+  return null;
 }
 
-/** O mesmo icone como figura solta (legenda, previa das areas). */
+/** O mesmo icone em tamanho cheio para legenda, previa das areas e estoque. */
 export const BPIconSvg: React.FC<{ kind: string; size?: number | string; title?: string }> = ({ kind, size = '1.2em', title }) => (
   <svg viewBox="0 0 10 10" width={size} height={size} role={title ? 'img' : undefined} aria-label={title} aria-hidden={title ? undefined : true}>
-    {bpGlyph(kind)}
+    {bpGlyph(kind, false)}
   </svg>
 );
 
-/** Taca (no Palco de uma area completa) com o valor. */
-const BPTrophy: React.FC<{ v: number }> = ({ v }) => (
+export const BPIconBadge: React.FC<{ icon: string; size?: number | string; title?: string }> = ({ icon, size = '1.2em', title }) => (
+  <BPIconSvg kind={icon} size={size} title={title} />
+);
+
+/** Monumento (no Fosso de uma area completa) com a pontuacao. */
+const BPMonument: React.FC<{ v: number }> = ({ v }) => (
   <g>
-    <path d="M3 1.6h4v1.4a2 2 0 0 1-4 0Z" fill="#ffc93c" stroke="#7a5a00" strokeWidth="0.3" />
-    <path d="M3 2.1H2.1a1 1 0 0 0 1 1.3M7 2.1h0.9a1 1 0 0 1-1 1.3" fill="none" stroke="#ffc93c" strokeWidth="0.4" />
-    <rect x="4.6" y="4.9" width="0.8" height="0.9" fill="#ffc93c" />
-    <rect x="2.9" y="5.8" width="4.2" height="3" rx="0.4" fill="#ffc93c" stroke="#7a5a00" strokeWidth="0.3" />
-    <text x="5" y="8.05" textAnchor="middle" fontSize="2.5" fontWeight="900" fontFamily="'Inter','Arial Black',sans-serif" fill="#0a0b1e">
+    <polygon points="3.2,1.1 6.8,1.1 8.9,3.2 8.9,6.8 6.8,8.9 3.2,8.9 1.1,6.8 1.1,3.2" fill="#8f6708" stroke="#0a0b1e" strokeWidth="0.35" />
+    <polygon points="3.5,1.55 6.5,1.55 8.45,3.5 8.45,6.5 6.5,8.45 3.5,8.45 1.55,6.5 1.55,3.5" fill="#ffc93c" />
+    <circle cx="5" cy="5" r="2.65" fill="#0a0b1e" fillOpacity="0.14" />
+    <text x="5" y="6.1" textAnchor="middle" fontSize="3.5" fontWeight="900" fontFamily="'Anton','Inter','Arial Black',sans-serif" fill="#0a0b1e">
       {v}
     </text>
   </g>
@@ -258,14 +318,7 @@ const BPTrophy: React.FC<{ v: number }> = ({ v }) => (
 
 const BPIconMark: React.FC<{ x: number; y: number; kind: string; statue?: number }> = ({ x, y, kind, statue }) => (
   <g pointerEvents="none" transform={`translate(${x * U} ${y * U})`}>
-    {kind === 'pit' && statue !== undefined ? (
-      <g>
-        <rect x="0.8" y="0.8" width="8.4" height="8.4" rx="1" fill="#0a0b1e" />
-        <BPTrophy v={statue} />
-      </g>
-    ) : (
-      bpGlyph(kind)
-    )}
+    {kind === 'pit' && statue !== undefined ? <BPMonument v={statue} /> : bpGlyph(kind, true)}
   </g>
 );
 
@@ -286,19 +339,34 @@ export interface CTBoardViewProps {
   canTarget?: (x: number, y: number) => boolean;
   selected?: { x: number; y: number } | null;
   onCell?: (x: number, y: number) => void;
+  /** Arquiteto (Equipe de Obra): posicoes 4x4 livres clicaveis direto no mapa */
+  bpExpansionSpots?: Array<{ ax: number; ay: number }>;
+  onPickExpansionSpot?: (ax: number, ay: number) => void;
   label: string;
   testid?: string;
 }
 
 let uidSeq = 0;
 
-export const CTBoardView: React.FC<CTBoardViewProps> = ({ board, order, ghost, canTarget, selected, onCell, label, testid }) => {
+export const CTBoardView: React.FC<CTBoardViewProps> = ({
+  board,
+  order,
+  ghost,
+  canTarget,
+  selected,
+  onCell,
+  bpExpansionSpots,
+  onPickExpansionSpot,
+  label,
+  testid
+}) => {
   const idRef = useRef<string>('');
   if (!idRef.current) idRef.current = 'ctb' + ++uidSeq;
   const shadowId = idRef.current + '-sh';
   const svgRef = useRef<SVGSVGElement | null>(null);
   const dragging = useRef(false);
   const lastCell = useRef('');
+  const isBP = board.id.startsWith('bp-');
 
   const box = useMemo(() => {
     let minX = board.w;
@@ -314,41 +382,57 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({ board, order, ghost, c
       maxX = Math.max(maxX, x);
       maxY = Math.max(maxY, y);
     });
+    (bpExpansionSpots || []).forEach((sp) => {
+      minX = Math.min(minX, sp.ax * 4);
+      minY = Math.min(minY, sp.ay * 4);
+      maxX = Math.max(maxX, sp.ax * 4 + 3);
+      maxY = Math.max(maxY, sp.ay * 4 + 3);
+    });
     if (maxX < 0) return { x: 0, y: 0, w: board.w, h: board.h };
     return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
-  }, [board]);
+  }, [board, bpExpansionSpots]);
 
   const pieces = useMemo(() => {
-    const map = new Map<string, { owner: string; cells: PCell[] }>();
+    const map = new Map<string, { owner: string; cells: PCell[]; ptsCell?: { x: number; y: number; pts: number } }>();
     board.cells.forEach((c, i) => {
       if (!c.o || !c.p) return;
       const x = i % board.w;
       const y = Math.floor(i / board.w);
       const e = map.get(c.p) || { owner: c.o, cells: [] };
       e.cells.push({ x, y, k: c.k === 2 ? 2 : 1 });
+      if (c.tilePts !== undefined && c.tilePts > 0) e.ptsCell = { x, y, pts: c.tilePts };
       map.set(c.p, e);
     });
     return Array.from(map.entries());
   }, [board]);
 
   const areaFrames = useMemo(() => {
-    const m = new Map<string, { id: string; x: number; y: number; x2: number; y2: number }>();
+    const m = new Map<string, { id: string; x: number; y: number; x2: number; y2: number; entrance: boolean }>();
     board.cells.forEach((c, i) => {
-      if (c.t === 0 || !c.z || !board.id.startsWith('bp-')) return;
+      if (c.t === 0 || !c.z || !isBP) return;
       const x = i % board.w;
       const y = Math.floor(i / board.w);
-      const f = m.get(c.z) || { id: c.z, x, y, x2: x, y2: y };
+      const f = m.get(c.z) || { id: c.z, x, y, x2: x, y2: y, entrance: Boolean(c.entrance) };
       f.x = Math.min(f.x, x);
       f.y = Math.min(f.y, y);
       f.x2 = Math.max(f.x2, x);
       f.y2 = Math.max(f.y2, y);
+      if (c.entrance) f.entrance = true;
       m.set(c.z, f);
     });
-    return Array.from(m.values()).map((f) => ({ id: f.id, x: f.x, y: f.y, w: f.x2 - f.x + 1, h: f.y2 - f.y + 1 }));
-  }, [board]);
+    return Array.from(m.values()).map((f) => ({
+      id: f.id,
+      x: f.x,
+      y: f.y,
+      w: f.x2 - f.x + 1,
+      h: f.y2 - f.y + 1,
+      entrance: f.entrance
+    }));
+  }, [board, isBP]);
 
   const pad = 2.2;
-  const vb = `${box.x * U - pad} ${box.y * U - pad - 1.6} ${box.w * U + pad * 2} ${box.h * U + pad * 2 + 3.4}`;
+  const extraBottom = isBP ? 4.8 : 3.4;
+  const vb = `${box.x * U - pad} ${box.y * U - pad - 1.6} ${box.w * U + pad * 2} ${box.h * U + pad * 2 + extraBottom}`;
 
   const cellFromEvent = (e: React.PointerEvent): { x: number; y: number } | null => {
     const svg = svgRef.current;
@@ -421,11 +505,25 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({ board, order, ghost, c
         {cells.map(({ c, x, y }) => (
           <rect
             key={'g' + x + ',' + y}
+            data-cell={`${x},${y}`}
+            data-bp-icon={c.bpi || undefined}
             x={x * U - 0.02}
             y={y * U - 0.02}
             width={U + 0.04}
             height={U + 0.04}
-            fill={c.t === 2 ? ((x + y) % 2 ? '#2f93cf' : '#3aa0d8') : board.id.startsWith('bp-') ? ((x + y) % 2 ? '#ece3cc' : '#f4eedf') : (x + y) % 2 ? '#7cae48' : '#86b950'}
+            fill={
+              c.t === 2
+                ? (x + y) % 2
+                  ? '#2f93cf'
+                  : '#3aa0d8'
+                : isBP
+                ? (x + y) % 2
+                  ? '#e6d8a6'
+                  : '#efe2b6'
+                : (x + y) % 2
+                ? '#7cae48'
+                : '#86b950'
+            }
           />
         ))}
         {cells
@@ -435,12 +533,12 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({ board, order, ghost, c
           ))}
         {/* zonas do Fronteiras: a base de cada jogador ganha a cor dele */}
         {cells
-          .filter(({ c }) => c.z && c.z !== 'ilha' && !board.id.startsWith('bp-'))
+          .filter(({ c }) => c.z && c.z !== 'ilha' && !isBP)
           .map(({ c, x, y }) => (
             <rect key={'z' + x + ',' + y} x={x * U} y={y * U} width={U} height={U} fill={ctColor(order, c.z).top} opacity="0.3" />
           ))}
         {cells.map(({ x, y }) => (
-          <rect key={'l' + x + ',' + y} x={x * U} y={y * U} width={U} height={U} fill="none" stroke="#0a0b1e" strokeOpacity="0.16" strokeWidth="0.25" />
+          <rect key={'l' + x + ',' + y} x={x * U} y={y * U} width={U} height={U} fill="none" stroke={isBP ? '#7a5d32' : '#0a0b1e'} strokeOpacity={isBP ? 0.22 : 0.16} strokeWidth="0.25" />
         ))}
       </g>
 
@@ -449,8 +547,87 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({ board, order, ghost, c
       {cells.map(({ c, x, y }) => (c.act ? <ActionIcon key={'a' + x + ',' + y} x={x} y={y} kind={c.act} /> : null))}
       {cells.map(({ c, x, y }) => (c.bpi && !c.o ? <BPIconMark key={'bp' + x + ',' + y} x={x} y={y} kind={c.bpi} statue={c.statue} /> : null))}
       {areaFrames.map((f) => (
-        <rect key={'af' + f.id} x={f.x * U} y={f.y * U} width={f.w * U} height={f.h * U} fill="none" stroke="#0a0b1e" strokeOpacity="0.45" strokeWidth="0.5" pointerEvents="none" />
+        <g key={'af' + f.id} pointerEvents="none">
+          <rect x={f.x * U} y={f.y * U} width={f.w * U} height={f.h * U} fill="none" stroke="#5a3d22" strokeOpacity="0.65" strokeWidth="0.55" />
+          {f.entrance && (
+            <g>
+              <rect x={f.x * U} y={(f.y + f.h) * U + 0.1} width={f.w * U} height="2.75" rx="0.35" fill="#f59e0b" stroke="#5a3d22" strokeWidth="0.35" />
+              <text
+                x={(f.x + f.w / 2) * U}
+                y={(f.y + f.h) * U + 2.0}
+                textAnchor="middle"
+                fontSize="1.95"
+                fontWeight="900"
+                letterSpacing="0.16"
+                fontFamily="'Anton','Inter','Arial Black',sans-serif"
+                fill="#140c06"
+              >
+                ENTRADA DA RESERVA
+              </text>
+            </g>
+          )}
+        </g>
       ))}
+
+      {/* slots 4x4 interativos para abrir nova area com Equipe de Obra */}
+      {bpExpansionSpots &&
+        bpExpansionSpots.map((sp) => {
+          const sx = sp.ax * 4 * U;
+          const sy = sp.ay * 4 * U;
+          const sw = 4 * U;
+          return (
+            <g
+              key={`exp-${sp.ax}-${sp.ay}`}
+              className="bp-expand-slot"
+              role={onPickExpansionSpot ? 'button' : undefined}
+              tabIndex={onPickExpansionSpot ? 0 : undefined}
+              aria-label={`Abrir nova área na posição ${sp.ax},${sp.ay}`}
+              onClick={
+                onPickExpansionSpot
+                  ? (e) => {
+                      e.stopPropagation();
+                      onPickExpansionSpot(sp.ax, sp.ay);
+                    }
+                  : undefined
+              }
+              onKeyDown={
+                onPickExpansionSpot
+                  ? (e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onPickExpansionSpot(sp.ax, sp.ay);
+                      }
+                    }
+                  : undefined
+              }
+            >
+              <rect
+                x={sx + 0.45}
+                y={sy + 0.45}
+                width={sw - 0.9}
+                height={sw - 0.9}
+                rx="1"
+                fill="#17b8b8"
+                fillOpacity="0.18"
+                stroke="#17b8b8"
+                strokeWidth="0.75"
+                strokeDasharray="2.4 1.3"
+              />
+              <rect x={sx + sw / 2 - 11.5} y={sy + sw / 2 - 3.6} width="23" height="7.2" rx="1.2" fill="#0a0b1e" stroke="#17b8b8" strokeWidth="0.55" />
+              <text
+                x={sx + sw / 2}
+                y={sy + sw / 2 + 1.15}
+                textAnchor="middle"
+                fontSize="3.4"
+                fontWeight="900"
+                fontFamily="'Inter','Arial Black',sans-serif"
+                fill="#17b8b8"
+              >
+                + NOVA ÁREA
+              </text>
+            </g>
+          );
+        })}
 
       {/* casas que aceitam a acao em curso */}
       {canTarget &&
@@ -464,9 +641,39 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({ board, order, ghost, c
       )}
 
       {/* pecas ja encaixadas */}
-      {pieces.map(([uid, p]) => (
-        <PieceShape key={uid} cells={p.cells} color={ctColor(order, p.owner)} shadowId={shadowId} />
-      ))}
+      {pieces.map(([uid, p]) => {
+        const col = ctColor(order, p.owner);
+        return (
+          <g key={uid}>
+            <PieceShape cells={p.cells} color={col} showContour={true} shadowId={shadowId} />
+            {p.ptsCell && (
+              <g pointerEvents="none">
+                <circle
+                  cx={p.ptsCell.x * U + U / 2}
+                  cy={p.ptsCell.y * U + U / 2}
+                  r="2.95"
+                  fill="#0a0b1e"
+                  fillOpacity="0.82"
+                  stroke="#f5f2eb"
+                  strokeOpacity="0.85"
+                  strokeWidth="0.35"
+                />
+                <text
+                  x={p.ptsCell.x * U + U / 2}
+                  y={p.ptsCell.y * U + U / 2 + 1.15}
+                  textAnchor="middle"
+                  fontSize="3.2"
+                  fontWeight="900"
+                  fontFamily="'Anton','Inter','Arial Black',sans-serif"
+                  fill="#ffc93c"
+                >
+                  {p.ptsCell.pts}
+                </text>
+              </g>
+            )}
+          </g>
+        );
+      })}
 
       {/* arvores: mais altas que as pecas, passam por dentro do furo */}
       {cells.map(({ c, x, y }) => (c.tree ? <Tree key={'tr' + x + ',' + y} x={x} y={y} grounded={!c.o} /> : null))}
@@ -474,7 +681,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({ board, order, ghost, c
       {/* peca na mao, flutuando sobre o grid */}
       {ghost && (
         <g className={ghost.locked ? '' : 'ct-ghost'} opacity={ghost.locked ? 1 : 0.94} pointerEvents="none">
-          <PieceShape cells={ghostCells} color={ctColor(order, ghost.playerId)} lift={ghost.locked ? 0.4 : 1.6} outline={ghost.ok ? '#35e06f' : '#ff3b3b'} shadowId={shadowId} />
+          <PieceShape cells={ghostCells} color={ctColor(order, ghost.playerId)} lift={ghost.locked ? 0.4 : 1.6} outline={ghost.ok ? '#35e06f' : '#ff3b3b'} showContour={true} shadowId={shadowId} />
         </g>
       )}
     </svg>

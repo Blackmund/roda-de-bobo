@@ -384,7 +384,9 @@ export type BPRewardKind = 'wheel' | 'cement' | 'excavator' | 'crew' | 'pass';
 export type BPTileType =
   | 'toilet' | 'playground' | 'food' | 'river'
   | 'h-polar' | 'h-gobi' | 'h-koala' | 'h-panda'
-  | 'e-polar' | 'e-gobi' | 'e-koala' | 'e-panda';
+  | 'e-polar' | 'e-gobi' | 'e-koala' | 'e-panda'
+  | 'e-arara' | 'e-mico' | 'e-tamandua' | 'e-lobo'
+  | 'e-boto' | 'e-tucano' | 'e-preguica' | 'e-jabuti';
 export interface BPTile {
   uid: string;
   type: BPTileType;
@@ -452,9 +454,11 @@ export interface CTCell {
   tok?: number;
   /** icone de acao: cobrir com bloco solido da a acao */
   act?: CTPendingKind;
-  /** Arquiteto (Barenpark): icone impresso na area e estatua no fosso */
+  /** Arquiteto (Barenpark): icone impresso na area, entrada, estatua no fosso e pontos da peca */
   bpi?: BPIcon;
+  entrance?: boolean;
   statue?: number;
+  tilePts?: number;
   /** peca que cobre a casa: dono, tipo do bloco (1 solido, 2 furo) e id da peca */
   o?: string;
   k?: 1 | 2;

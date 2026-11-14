@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  BP_ENCLOSURES,
+  BP_ENCLOSURE_PTS,
   BP_ENTRANCE,
+  BP_ICON_LABEL,
+  BP_TILE_META,
   areaSpots,
   bpCanPlace,
   bpCurrent,
@@ -11,12 +15,15 @@ import {
   bpScore,
   bpTakeReward,
   buildBPState,
+  findFirstValidPlacement,
   iconAt,
+  parkCellBounds,
   rewardOptions,
+  snapPlacementToCell,
   statueValues,
   tileShape
 } from '../utils/bpEngine.ts';
-import { buildComTerraState } from '../utils/comTerraEngine.ts';
+import { allOrientations, buildComTerraState, shapeCells } from '../utils/comTerraEngine.ts';
 import type { BPArea, BPState } from '../types/game.ts';
 
 const blank = (rows = ['....', '....', '....', '....']): BPArea['icons'] =>
@@ -130,4 +137,72 @@ test('Bärenpark: area completa ganha a maior estatua; sem peca que caiba, passa
   s = bpTakeReward(s, 'b', 'toilet');
   assert.equal(s.parks.b.supply[0].type, 'toilet');
   assert.equal(bpCurrent(s), 'a');
+});
+
+test('Barenpark: 12 pentominoes livres unicos de fauna brasileira e 1 unidade por modelo ate 4 jogadores', () => {
+  assert.equal(BP_ENCLOSURES.length, 12);
+
+  const canonicalKeys = new Set<string>();
+  for (const id of BP_ENCLOSURES) {
+    const base = tileShape(id);
+    const cells = shapeCells(base);
+    assert.equal(cells.length, 5, `${id} deve ter 5 celulas`);
+    assert.ok(BP_TILE_META[id]?.label, `${id} deve ter label em BP_TILE_META`);
+
+    // Canonical key across all 8 symmetries of this pentomino
+    const forms = allOrientations(base).map((m) =>
+      shapeCells(m)
+        .map((c) => `${c.dx},${c.dy}`)
+        .join(';')
+    );
+    forms.sort();
+    canonicalKeys.add(forms[0]);
+  }
+  assert.equal(canonicalKeys.size, 12, 'Todos os 12 recintos devem ser pentominoes livres distintos');
+
+  for (const count of [2, 3, 4]) {
+    const ids = Array.from({ length: count }, (_, i) => `p${i + 1}`);
+    const s = buildBPState(ids);
+    for (const id of BP_ENCLOSURES) {
+      assert.deepEqual(
+        s.enclosures[id],
+        [BP_ENCLOSURE_PTS[id]],
+        `Com ${count} jogadores, ${id} deve ter exatamente 1 unidade`
+      );
+    }
+  }
+
+  for (const count of [5, 8]) {
+    const ids = Array.from({ length: count }, (_, i) => `p${i + 1}`);
+    const s = buildBPState(ids);
+    for (const id of BP_ENCLOSURES) {
+      assert.deepEqual(
+        s.enclosures[id],
+        [BP_ENCLOSURE_PTS[id] - 1, BP_ENCLOSURE_PTS[id]],
+        `Com ${count} jogadores, ${id} deve ter 2 unidades`
+      );
+    }
+  }
+});
+
+test('Barenpark: icones brasileiros e helpers de encaixe automatico e snap', () => {
+  assert.equal(BP_ICON_LABEL.wheel, 'Carriola');
+  assert.equal(BP_ICON_LABEL.cement, 'Betoneira');
+  assert.equal(BP_ICON_LABEL.excavator, 'Cavadeira');
+  assert.equal(BP_ICON_LABEL.crew, 'Equipe de Obra');
+  assert.equal(BP_ICON_LABEL.pit, 'Fosso');
+
+  const s = buildBPState(['a', 'b']);
+  const parkA = s.parks.a;
+  const first = findFirstValidPlacement(parkA, 'toilet');
+  assert.ok(first, 'Deve encontrar encaixe inicial valido para Banheiro/Quiosque');
+  assert.equal(bpCanPlace(parkA, first.m, first.x, first.y).ok, true);
+
+  // Snap near out-of-bounds positive coordinates should clamp cleanly inside park bounds
+  const b = parkCellBounds(parkA);
+  const pShape = tileShape('e-tucano'); // 5-cell pentomino (4 cols x 2 rows)
+  const snapped = snapPlacementToCell(parkA, pShape, 99, 99);
+  assert.ok(snapped.x >= b.minX && snapped.x <= b.maxX);
+  assert.ok(snapped.y >= b.minY && snapped.y <= b.maxY);
+  assert.equal(typeof snapped.ok, 'boolean');
 });

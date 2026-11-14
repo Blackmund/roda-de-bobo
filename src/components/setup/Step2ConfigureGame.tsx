@@ -98,12 +98,12 @@ const PV_ROUND_OPTIONS: Array<{ value: number; label: string; desc: string }> = 
   { value: 9, label: 'MD9', desc: 'Primeiro a 5' }
 ];
 
-const CT_MODES: CTMode[] = ['arquiteto', 'diabo', 'fronteiras'];
+const CT_MODES: CTMode[] = ['arquiteto', 'diabo'];
 const CT_MODE_NOTES: Record<CTMode, string[]> = {
   arquiteto: [
-    'Regras do Bärenpark: cada um monta o próprio parque, que cresce até 4 áreas sorteadas',
-    'Na vez: ponha uma peça do seu estoque; cada ícone coberto dá uma peça nova',
-    'Área completa = Taça no palco; quem completar 4 áreas encerra (até 8 jogadores)'
+    'Reserva · Bärenpark brasileiro: cada um monta o próprio parque com até 4 áreas de 4×4',
+    'Cubra Carriola (Área Verde), Betoneira (Viveiro), Cavadeira (12 Cercados únicos) e Equipe de Obra (nova área)',
+    'Área completa ganha o Monumento do topo; quem completar 4 áreas dispara a última volta (até 8 jogadores)'
   ],
   diabo: [
     'Um mapa só para todos, diferente a cada partida',

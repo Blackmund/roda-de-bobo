@@ -24,23 +24,52 @@ import { allOrientations, mulberry32, shapeCells, type Rng } from './comTerraEng
 const S = (rows: string[]): number[][] => rows.map((r) => r.split('').map((ch) => (ch === '#' ? 1 : 0)));
 
 export const BP_TILE_META: Record<BPTileType, { label: string; kind: 'green' | 'house' | 'enclosure'; shape: number[][] }> = {
-  toilet: { label: 'Banheiro', kind: 'green', shape: S(['#']) },
-  playground: { label: 'Parquinho', kind: 'green', shape: S(['##']) },
-  food: { label: 'Rua de comida', kind: 'green', shape: S(['##', '#.']) },
-  river: { label: 'Rio', kind: 'green', shape: S(['###']) },
-  'h-polar': { label: 'Casa do urso-polar', kind: 'house', shape: S(['###', '.#.']) },
-  'h-gobi': { label: 'Casa do urso-de-gobi', kind: 'house', shape: S(['##.', '.##']) },
-  'h-koala': { label: 'Casa do coala', kind: 'house', shape: S(['###', '#..']) },
-  'h-panda': { label: 'Casa do panda', kind: 'house', shape: S(['##', '##']) },
-  'e-polar': { label: 'Cercado do urso-polar', kind: 'enclosure', shape: S(['###', '#.#']) },
-  'e-gobi': { label: 'Cercado do urso-de-gobi', kind: 'enclosure', shape: S(['.#.', '###', '.#.']) },
-  'e-koala': { label: 'Cercado do coala', kind: 'enclosure', shape: S(['####', '#...']) },
-  'e-panda': { label: 'Cercado do panda', kind: 'enclosure', shape: S(['##.', '.##', '..#']) }
+  toilet: { label: 'Quiosque', kind: 'green', shape: S(['#']) },
+  playground: { label: 'Recanto', kind: 'green', shape: S(['##']) },
+  food: { label: 'Feirinha', kind: 'green', shape: S(['##', '#.']) },
+  river: { label: 'Córrego', kind: 'green', shape: S(['###']) },
+  'h-polar': { label: 'Viveiro das Araras', kind: 'house', shape: S(['####']) },
+  'h-gobi': { label: 'Lago das Capivaras', kind: 'house', shape: S(['##', '##']) },
+  'h-koala': { label: 'Bosque dos Micos', kind: 'house', shape: S(['###', '.#.']) },
+  'h-panda': { label: 'Toca da Onça', kind: 'house', shape: S(['###', '#..']) },
+  'e-polar': { label: 'Cercado da Onça-Pintada', kind: 'enclosure', shape: S(['.#.', '###', '.#.']) },
+  'e-gobi': { label: 'Cercado da Harpia', kind: 'enclosure', shape: S(['#..', '##.', '.##']) },
+  'e-koala': { label: 'Cercado do Tamanduá', kind: 'enclosure', shape: S(['.##', '##.', '.#.']) },
+  'e-panda': { label: 'Cercado do Lobo-Guará', kind: 'enclosure', shape: S(['##.', '.#.', '.##']) },
+  'e-arara': { label: 'Cercado da Arara-Azul', kind: 'enclosure', shape: S(['###', '.#.', '.#.']) },
+  'e-mico': { label: 'Cercado do Mico-Leão', kind: 'enclosure', shape: S(['#.#', '###']) },
+  'e-tamandua': { label: 'Cercado do Boto', kind: 'enclosure', shape: S(['#..', '#..', '###']) },
+  'e-lobo': { label: 'Cercado do Tucano', kind: 'enclosure', shape: S(['##..', '.###']) },
+  'e-boto': { label: 'Cercado da Preguiça', kind: 'enclosure', shape: S(['.#..', '####']) },
+  'e-tucano': { label: 'Cercado do Jabuti', kind: 'enclosure', shape: S(['#...', '####']) },
+  'e-preguica': { label: 'Cercado do Tatu-Canastra', kind: 'enclosure', shape: S(['##', '##', '#.']) },
+  'e-jabuti': { label: 'Cercado da Capivara', kind: 'enclosure', shape: S(['#####']) }
+};
+
+export const BP_ICON_LABEL: Record<BPIcon, string> = {
+  wheel: 'Carriola',
+  cement: 'Betoneira',
+  excavator: 'Cavadeira',
+  crew: 'Equipe de Obra',
+  pit: 'Fosso'
 };
 
 export const BP_GREENS: BPTileType[] = ['toilet', 'playground', 'food', 'river'];
 export const BP_HOUSES: BPTileType[] = ['h-polar', 'h-gobi', 'h-koala', 'h-panda'];
-export const BP_ENCLOSURES: BPTileType[] = ['e-polar', 'e-gobi', 'e-koala', 'e-panda'];
+export const BP_ENCLOSURES: BPTileType[] = [
+  'e-polar',
+  'e-gobi',
+  'e-koala',
+  'e-panda',
+  'e-arara',
+  'e-mico',
+  'e-tamandua',
+  'e-lobo',
+  'e-boto',
+  'e-tucano',
+  'e-preguica',
+  'e-jabuti'
+];
 
 /** Casas de animal por pilha (de baixo para cima), por numero de jogadores. 2 e 3 jogadores: regra; 4: estimado. */
 function houseValues(n: number): number[] {
@@ -51,14 +80,24 @@ function houseValues(n: number): number[] {
   const len = 7 + (n - 4) * 2;
   return Array.from({ length: len }, (_, k) => 2 + Math.floor((k * 5) / len));
 }
-/** Cercados (3 de cada animal, sempre todos): valores estimados, de baixo para cima. */
-const ENCLOSURE_VALUES: Record<string, number[]> = {
-  'e-polar': [6, 7, 8],
-  'e-gobi': [5, 6, 7],
-  'e-koala': [5, 6, 7],
-  'e-panda': [6, 7, 8]
+
+/** Pontos de cada um dos 12 modelos unicos de Cercado (Cavadeira / pentaminos do Barenpark). */
+export const BP_ENCLOSURE_PTS: Record<string, number> = {
+  'e-polar': 9,
+  'e-gobi': 9,
+  'e-koala': 8,
+  'e-panda': 8,
+  'e-arara': 8,
+  'e-mico': 7,
+  'e-tamandua': 7,
+  'e-lobo': 7,
+  'e-boto': 6,
+  'e-tucano': 6,
+  'e-preguica': 6,
+  'e-jabuti': 5
 };
-/** Estatuas de urso por numero de jogadores (regra); a de maior valor sai primeiro. */
+
+/** Estatuas de monumento por numero de jogadores (regra); a de maior valor sai primeiro. */
 export function statueValues(n: number): number[] {
   if (n <= 2) return [16, 14, 12, 10, 8, 6, 4, 2];
   if (n === 3) return [14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3];
@@ -66,18 +105,18 @@ export function statueValues(n: number): number[] {
   const total = Math.max(16, n * 4);
   return Array.from({ length: total }, (_, i) => total - i);
 }
-/** Areas Verdes no estoque geral: banheiros e parquinhos todos; ruas e rios 4 por jogador (regra). */
+/** Areas Verdes no estoque geral: quiosques e recantos todos; feirinhas e corregos 4 por jogador (regra). */
 function greenCounts(n: number): Record<string, number> {
-  // 5+ jogadores (adaptacao): banheiros e parquinhos crescem junto
+  // 5+ jogadores (adaptacao): quiosques e recantos crescem junto
   const base = Math.max(10, Math.ceil(2.5 * n));
   return { toilet: base, playground: base, food: 4 * n, river: 4 * n };
 }
 
-/** Cercados por animal: 3 (regra); 5+ jogadores ganham um a mais a cada 2 extras, valendo menos. */
+/** Regra do Barenpark: 1 unidade de cada um dos 12 Cercados para ate 4 jogadores; 2 unidades para 5+ jogadores. */
 function enclosureValues(type: string, n: number): number[] {
-  const base = ENCLOSURE_VALUES[type];
-  const extra = n > 4 ? Math.ceil((n - 4) / 2) : 0;
-  return [...Array.from({ length: extra }, (_, i) => base[0] - extra + i), ...base];
+  const pts = BP_ENCLOSURE_PTS[type] ?? 6;
+  if (n <= 4) return [pts];
+  return [Math.max(1, pts - 1), pts];
 }
 
 // ---------------------------------------------------------------- areas do parque (4x4)
@@ -307,14 +346,14 @@ function closeTurn(s0: BPState, pid: string): BPState {
     if (a.statue !== undefined || !areaComplete(park, a)) return a;
     const [top, ...rest] = s.statues;
     s = { ...s, statues: rest };
-    s = log(s, pid, top ? `completou uma área: Taça de ${top}` : 'completou uma área (sem Taça sobrando)');
+    s = log(s, pid, top ? `completou uma área: Monumento de ${top}` : 'completou uma área (sem Monumento sobrando)');
     return { ...a, statue: top ?? 0 };
   });
   const statues = areas.filter((a) => a.statue !== undefined).map((a) => a.statue as number);
   park = { ...park, areas, statues };
   s = { ...s, parks: { ...s.parks, [pid]: park } };
   if (s.endTriggeredBy === null && areas.length >= BP_MAX_AREAS && areas.every((a) => areaComplete(park, a))) {
-    s = log({ ...s, endTriggeredBy: pid, turnsLeft: s.order.length }, pid, 'completou o parque! Os outros jogam mais uma vez');
+    s = log({ ...s, endTriggeredBy: pid, turnsLeft: s.order.length }, pid, 'completou a reserva! Os outros jogam mais uma vez');
   }
   return nextTurn(s);
 }
@@ -424,17 +463,145 @@ export function bpPass(s: BPState, pid: string): BPState {
   return log({ ...s, pending: [{ playerId: pid, kind: 'pass' }] }, pid, 'passou a vez');
 }
 
+/** Limites em casas (x,y) das areas ja abertas do parque. */
+export function parkCellBounds(park: BPPark): { minX: number; minY: number; maxX: number; maxY: number } {
+  if (!park.areas.length) return { minX: BP_ENTRANCE.ax * 4, minY: BP_ENTRANCE.ay * 4, maxX: BP_ENTRANCE.ax * 4 + 3, maxY: BP_ENTRANCE.ay * 4 + 3 };
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  park.areas.forEach((a) => {
+    minX = Math.min(minX, a.ax * 4);
+    minY = Math.min(minY, a.ay * 4);
+    maxX = Math.max(maxX, a.ax * 4 + 3);
+    maxY = Math.max(maxY, a.ay * 4 + 3);
+  });
+  return { minX, minY, maxX, maxY };
+}
+
+function clampToPark(park: BPPark, m: number[][], x: number, y: number): { x: number; y: number } {
+  const b = parkCellBounds(park);
+  const w = m[0]?.length || 1;
+  const h = m.length || 1;
+  const maxAnchorX = Math.max(b.minX, b.maxX - w + 1);
+  const maxAnchorY = Math.max(b.minY, b.maxY - h + 1);
+  return {
+    x: Math.min(maxAnchorX, Math.max(b.minX, x)),
+    y: Math.min(maxAnchorY, Math.max(b.minY, y))
+  };
+}
+
+/** Encontra a primeira posicao valida de uma peca (testando a orientacao atual e depois as demais). */
+export function findFirstValidPlacement(
+  park: BPPark,
+  type: BPTileType,
+  preferredShape?: number[][]
+): { m: number[][]; x: number; y: number } | null {
+  const base = tileShape(type);
+  const oris = allOrientations(base);
+  const ordered = preferredShape
+    ? [preferredShape, ...oris.filter((o) => JSON.stringify(o) !== JSON.stringify(preferredShape))]
+    : oris;
+  const b = parkCellBounds(park);
+  const occ = Object.keys(park.cells).map((k) => k.split(',').map(Number) as [number, number]);
+  const refX = occ.length ? occ.reduce((s, [x]) => s + x, 0) / occ.length : (b.minX + b.maxX) / 2;
+  const refY = occ.length ? occ.reduce((s, [, y]) => s + y, 0) / occ.length : (b.minY + b.maxY) / 2;
+
+  for (const m of ordered) {
+    const valid: Array<{ x: number; y: number; hits: number; dist: number }> = [];
+    const w = m[0]?.length || 1;
+    const h = m.length || 1;
+    const sc = shapeCells(m);
+    for (let y = b.minY; y <= b.maxY; y++) {
+      for (let x = b.minX; x <= b.maxX; x++) {
+        if (!bpCanPlace(park, m, x, y).ok) continue;
+        let hits = 0;
+        for (const c of sc) {
+          if (c.k === 1) {
+            const ic = iconAt(park, x + c.dx, y + c.dy);
+            if (ic && ic !== 'pit') hits++;
+          }
+        }
+        const cx = x + w / 2;
+        const cy = y + h / 2;
+        valid.push({ x, y, hits, dist: (cx - refX) ** 2 + (cy - refY) ** 2 });
+      }
+    }
+    if (valid.length > 0) {
+      valid.sort((a, z) => (z.hits > 0 ? 1 : 0) - (a.hits > 0 ? 1 : 0) || z.hits - a.hits || a.dist - z.dist || a.y - z.y || a.x - z.x);
+      return { m, x: valid[0].x, y: valid[0].y };
+    }
+  }
+  return null;
+}
+
+/** Ao tocar/clicar numa casa (tapX, tapY), encaixa na posicao valida que cobre essa casa mais proxima do centro. */
+export function snapPlacementToCell(park: BPPark, m: number[][], tapX: number, tapY: number): { x: number; y: number; ok: boolean } {
+  const w = m[0]?.length || 1;
+  const h = m.length || 1;
+  const valid: Array<{ x: number; y: number; dist: number }> = [];
+  for (const c of shapeCells(m)) {
+    const x = tapX - c.dx;
+    const y = tapY - c.dy;
+    if (!bpCanPlace(park, m, x, y).ok) continue;
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    valid.push({ x, y, dist: (cx - (tapX + 0.5)) ** 2 + (cy - (tapY + 0.5)) ** 2 });
+  }
+  if (valid.length > 0) {
+    valid.sort((a, b) => a.dist - b.dist || a.y - b.y || a.x - b.x);
+    return { x: valid[0].x, y: valid[0].y, ok: true };
+  }
+  const centered = clampToPark(park, m, tapX - Math.floor(w / 2), tapY - Math.floor(h / 2));
+  return { x: centered.x, y: centered.y, ok: bpCanPlace(park, m, centered.x, centered.y).ok };
+}
+
+/** Mantem o centro da peca dentro do parque ao girar/espelhar e tenta ajustar 1 casa se ficar valido. */
+export function rotateGhostKeepingCenter(
+  park: BPPark,
+  oldM: number[][],
+  oldPos: { x: number; y: number } | null,
+  nextM: number[][]
+): { x: number; y: number } {
+  const b = parkCellBounds(park);
+  const nw = nextM[0]?.length || 1;
+  const nh = nextM.length || 1;
+  const baseX = oldPos
+    ? Math.round(oldPos.x + ((oldM[0]?.length || 1) - nw) / 2)
+    : Math.floor((b.minX + b.maxX + 1 - nw) / 2);
+  const baseY = oldPos
+    ? Math.round(oldPos.y + (oldM.length - nh) / 2)
+    : Math.floor((b.minY + b.maxY + 1 - nh) / 2);
+  const base = clampToPark(park, nextM, baseX, baseY);
+  const near: Array<[number, number]> = [
+    [0, 0],
+    [1, 0],
+    [-1, 0],
+    [0, 1],
+    [0, -1]
+  ];
+  for (const [dx, dy] of near) {
+    if (bpCanPlace(park, nextM, base.x + dx, base.y + dy).ok) {
+      return { x: base.x + dx, y: base.y + dy };
+    }
+  }
+  return base;
+}
+
 /** Visual: o parque como tabuleiro do Com Terra (dono da peca = categoria, para colorir por tipo). */
 export function bpBoard(s: BPState, pid: string): CTBoard {
   const park = s.parks[pid];
   const w = BP_GRID_W * 4;
   const h = BP_GRID_H * 4;
   const cells: CTCell[] = Array.from({ length: w * h }, () => ({ t: 0 as const }));
+  const ptsCells = new Map<string, Array<{ x: number; y: number; pts: number }>>();
+
   park?.areas.forEach((a) => {
     for (let i = 0; i < 16; i++) {
       const x = a.ax * 4 + (i % 4);
       const y = a.ay * 4 + Math.floor(i / 4);
       const c: CTCell = { t: 1, z: a.id };
+      if (a.entrance) c.entrance = true;
       const ic = a.icons[i];
       if (ic) c.bpi = ic;
       if (ic === 'pit' && a.statue !== undefined) c.statue = a.statue;
@@ -443,10 +610,27 @@ export function bpBoard(s: BPState, pid: string): CTBoard {
         c.o = tileKind(placed.type);
         c.k = 1;
         c.p = placed.uid;
+        if (placed.pts > 0) {
+          const list = ptsCells.get(placed.uid) || [];
+          list.push({ x, y, pts: placed.pts });
+          ptsCells.set(placed.uid, list);
+        }
       }
       cells[y * w + x] = c;
     }
   });
+
+  // Estampa a pontuacao uma unica vez na celula mais central de cada Viveiro/Cercado
+  ptsCells.forEach((list) => {
+    if (!list.length) return;
+    const mx = list.reduce((a, b) => a + b.x, 0) / list.length;
+    const my = list.reduce((a, b) => a + b.y, 0) / list.length;
+    const anchor = [...list].sort(
+      (a, b) => (a.x - mx) ** 2 + (a.y - my) ** 2 - ((b.x - mx) ** 2 + (b.y - my) ** 2) || a.y - b.y || a.x - b.x
+    )[0];
+    cells[anchor.y * w + anchor.x].tilePts = anchor.pts;
+  });
+
   return { id: 'bp-' + pid, w, h, owner: pid, cells };
 }
 
