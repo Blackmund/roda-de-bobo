@@ -4,6 +4,7 @@ import { CTSeat } from '../../comterra/CTSeat';
 import { CTSummary } from '../../comterra/CTSummary';
 import { BPSeat } from '../../comterra/BPViews';
 import '../../comterra/comterra.css';
+import { TipLayer } from '../../comterra/TipLayer';
 
 interface ComTerraControllerProps {
   room: GameRoom;
@@ -23,7 +24,8 @@ export const ComTerraController: React.FC<ComTerraControllerProps> = ({ room, pl
   const canFinish = room.connectionMode === 'multi' && isLeader && !!onNextRound;
 
   return (
-    <div className="ct-phone ct-box" data-testid="controller-ct-view">
+    <div className="ct-phone ct-box rdb-tip-scope" data-testid="controller-ct-view">
+      <TipLayer scope=".ct-phone" />
       {ct.phase === 'SUMMARY' ? (
         <CTSummary state={ct} players={room.players} onFinish={canFinish ? onNextRound : undefined} />
       ) : (

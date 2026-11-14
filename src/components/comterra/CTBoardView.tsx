@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Minus, Plus, RotateCcw } from 'lucide-react';
+import { Maximize2, Minus, Plus } from 'lucide-react';
 import type { CTBoard, CTCell } from '../../types/game';
 import { shapeCells } from '../../utils/comTerraEngine';
 
@@ -320,35 +320,26 @@ export const BPIconBadge: React.FC<{ icon: string; size?: number | string; title
 );
 
 /**
- * Moeda 2.5D: sombra no chao, borda grossa (espessura) e face erguida, para parecer apoiada por cima das pecas.
+ * Valor da peca: losango branco impresso no centro da peca (chapado, como no Barenpark).
  * (cx, cy) e o centro da casa; r e o raio da face.
  */
-export const BPCoin: React.FC<{ cx: number; cy: number; v: number; r?: number }> = ({ cx, cy, v, r = 3 }) => {
-  const lift = r * 0.32;
-  const depth = r * 0.32;
-  const fy = cy - lift;
-  return (
-    <g pointerEvents="none">
-      <ellipse cx={cx + r * 0.3} cy={cy + r * 0.62} rx={r * 1.04} ry={r * 0.52} fill="#05060f" opacity="0.4" />
-      <circle cx={cx} cy={fy + depth} r={r} fill="#7a5200" />
-      <rect x={cx - r} y={fy} width={r * 2} height={depth} fill="#7a5200" />
-      <circle cx={cx} cy={fy + depth * 0.5} r={r} fill="none" stroke="#b07a08" strokeWidth={r * 0.06} />
-      <circle cx={cx} cy={fy} r={r} fill="#ffc93c" stroke="#7a5200" strokeWidth={r * 0.07} />
-      <circle cx={cx} cy={fy} r={r * 0.76} fill="#ffd866" stroke="#d99e12" strokeWidth={r * 0.06} />
-      <path
-        d={`M${cx - r * 0.62} ${fy - r * 0.2}A${r * 0.66} ${r * 0.66} 0 0 1 ${cx - r * 0.12} ${fy - r * 0.64}`}
-        stroke="#fff6d6"
-        strokeWidth={r * 0.13}
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.9"
-      />
-      <text x={cx} y={fy + r * 0.37} textAnchor="middle" fontSize={r * (String(v).length > 1 ? 0.98 : 1.1)} fontFamily="'Anton','Inter','Arial Black',sans-serif" fill="#0a0b1e">
-        {v}
-      </text>
-    </g>
-  );
-};
+export const BPCoin: React.FC<{ cx: number; cy: number; v: number; r?: number }> = ({ cx, cy, v, r = 3.1 }) => (
+  // losango branco impresso no meio da peca, como os valores das pecas do Barenpark
+  <g pointerEvents="none">
+    <path d={`M${cx} ${cy - r}L${cx + r} ${cy}L${cx} ${cy + r}L${cx - r} ${cy}Z`} fill="#f5f2eb" stroke="#0a0b1e" strokeOpacity="0.55" strokeWidth="0.3" strokeLinejoin="round" />
+    <path
+      d={`M${cx} ${cy - r * 0.8}L${cx + r * 0.8} ${cy}L${cx} ${cy + r * 0.8}L${cx - r * 0.8} ${cy}Z`}
+      fill="none"
+      stroke="#0a0b1e"
+      strokeOpacity="0.18"
+      strokeWidth="0.2"
+      strokeLinejoin="round"
+    />
+    <text x={cx} y={cy + r * 0.34} textAnchor="middle" fontSize={r * (String(v).length > 1 ? 0.8 : 0.95)} fontFamily="'Anton','Inter','Arial Black',sans-serif" fill="#0a0b1e">
+      {v}
+    </text>
+  </g>
+);
 
 const OCT = (h: number, dy = 0) => {
   const k = h * 0.414;
@@ -451,6 +442,9 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
     panY: number;
     moved: boolean;
   } | null>(null);
+  // dedos na tela (pinca) e estado do gesto
+  const touches = useRef(new Map<number, { x: number; y: number }>());
+  const pinch = useRef<{ dist: number; zoom: number } | null>(null);
   const [internalZoom, setInternalZoom] = useState(1);
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [panning, setPanning] = useState(false);
@@ -481,7 +475,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
   }, [board, bpExpansionSpots]);
 
   const pieces = useMemo(() => {
-    const map = new Map<string, { owner: string; cells: PCell[]; ptsCell?: { x: number; y: number; pts: number } }>();
+    const map = new Map<string, { owner: string; cells: PCell[]; ptsCell?: { x: number; y: number; pts: number }; ptsAt?: { x: number; y: number } }>();
     board.cells.forEach((c, i) => {
       if (!c.o || !c.p) return;
       const x = i % board.w;
@@ -490,6 +484,21 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
       e.cells.push({ x, y, k: c.k === 2 ? 2 : 1 });
       if (c.tilePts !== undefined && c.tilePts > 0) e.ptsCell = { x, y, pts: c.tilePts };
       map.set(c.p, e);
+    });
+    map.forEach((e) => {
+      if (!e.ptsCell) return;
+      const n = e.cells.length;
+      const mx = e.cells.reduce((a, c) => a + c.x + 0.5, 0) / n;
+      const my = e.cells.reduce((a, c) => a + c.y + 0.5, 0) / n;
+      const has = (px: number, py: number) => e.cells.some((c) => c.x === Math.floor(px) && c.y === Math.floor(py));
+      const m = 0.34;
+      const fits = [[-m, -m], [m, -m], [-m, m], [m, m], [0, 0]].every(([dx, dy]) => has(mx + dx, my + dy));
+      if (fits) {
+        e.ptsAt = { x: mx, y: my };
+      } else {
+        const best = e.cells.reduce((a, c) => (Math.hypot(c.x + 0.5 - mx, c.y + 0.5 - my) < Math.hypot(a.x + 0.5 - mx, a.y + 0.5 - my) ? c : a));
+        e.ptsAt = { x: best.x + 0.5, y: best.y + 0.5 };
+      }
     });
     return Array.from(map.entries());
   }, [board]);
@@ -609,27 +618,31 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
     });
   }, [enableZoom, activeZoom, ghost?.x, ghost?.y, ghost?.m, fullBox, vw, vh]);
 
-  // Zoom com roda do mouse ancorado sob o cursor
+  /** Zoom ancorado num ponto da tela (cursor do mouse ou meio da pinca). */
+  const zoomAtClient = (nextZ: number, clientX: number, clientY: number) => {
+    const svg = svgRef.current;
+    const ctm = svg?.getScreenCTM();
+    if (!svg || !ctm) return applyZoom(nextZ);
+    const pt = svg.createSVGPoint();
+    pt.x = clientX;
+    pt.y = clientY;
+    const world = pt.matrixTransform(ctm.inverse());
+    const nx = (world.x - (fullBox.x + clampedPan.x)) / vw;
+    const ny = (world.y - (fullBox.y + clampedPan.y)) / vh;
+    applyZoom(nextZ, { x: world.x, y: world.y, nx, ny });
+  };
+
+  // Zoom com Ctrl + roda do mouse (ou pinca no touchpad), ancorado sob o cursor
   useEffect(() => {
     const svg = svgRef.current;
     if (!enableZoom || !svg) return;
     const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return; // rolagem normal continua rolando a pagina
       e.preventDefault();
-      const dir = e.deltaY < 0 ? 1 : -1;
-      const nextZ = Math.round(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, activeZoom + dir * ZOOM_STEP)) * 100) / 100;
+      const k = e.deltaMode === 1 ? 0.05 : 0.0035;
+      const nextZ = Math.round(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, activeZoom * Math.exp(-e.deltaY * k))) * 100) / 100;
       if (nextZ === activeZoom) return;
-      const ctm = svg.getScreenCTM();
-      if (ctm) {
-        const pt = svg.createSVGPoint();
-        pt.x = e.clientX;
-        pt.y = e.clientY;
-        const world = pt.matrixTransform(ctm.inverse());
-        const nx = (world.x - (fullBox.x + clampedPan.x)) / vw;
-        const ny = (world.y - (fullBox.y + clampedPan.y)) / vh;
-        applyZoom(nextZ, { x: world.x, y: world.y, nx, ny });
-      } else {
-        applyZoom(nextZ);
-      }
+      zoomAtClient(nextZ, e.clientX, e.clientY);
     };
     svg.addEventListener('wheel', onWheel, { passive: false });
     return () => svg.removeEventListener('wheel', onWheel);
@@ -703,6 +716,18 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
         data-testid={testid}
         preserveAspectRatio="xMidYMid meet"
         onPointerDown={(e) => {
+          if (enableZoom && e.pointerType === 'touch') {
+            touches.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            if (touches.current.size === 2) {
+              const [a, b] = Array.from(touches.current.values());
+              pinch.current = { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, zoom: activeZoom };
+              panDrag.current = null;
+              dragging.current = false;
+              setPanning(false);
+              return;
+            }
+          }
+          if (pinch.current) return;
           if (enableZoom && activeZoom > 1) {
             panDrag.current = {
               pointerId: e.pointerId,
@@ -721,6 +746,14 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
           fire(e);
         }}
         onPointerMove={(e) => {
+          if (touches.current.has(e.pointerId)) touches.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+          if (pinch.current && touches.current.size >= 2) {
+            const [a, b] = Array.from(touches.current.values());
+            const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+            const nextZ = Math.round(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, (pinch.current.zoom * dist) / pinch.current.dist)) * 100) / 100;
+            if (nextZ !== activeZoom) zoomAtClient(nextZ, (a.x + b.x) / 2, (a.y + b.y) / 2);
+            return;
+          }
           if (enableZoom && activeZoom > 1 && panDrag.current) {
             const d = panDrag.current;
             const dxPx = e.clientX - d.startX;
@@ -743,6 +776,12 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
           if (dragging.current && ghost) fire(e);
         }}
         onPointerUp={(e) => {
+          touches.current.delete(e.pointerId);
+          if (touches.current.size < 2 && pinch.current) {
+            pinch.current = null;
+            if (touches.current.size === 0) return;
+          }
+          if (touches.current.size > 0 && pinch.current === null && e.pointerType === 'touch' && !panDrag.current && !dragging.current) return;
           if (enableZoom && activeZoom > 1 && panDrag.current) {
             const wasMoved = panDrag.current.moved;
             panDrag.current = null;
@@ -755,7 +794,9 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
           }
           dragging.current = false;
         }}
-        onPointerCancel={() => {
+        onPointerCancel={(e) => {
+          touches.current.delete(e.pointerId);
+          if (touches.current.size < 2) pinch.current = null;
           panDrag.current = null;
           setPanning(false);
           dragging.current = false;
@@ -922,7 +963,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
         const col = ctColor(order, p.owner);
         return (
           <g key={uid}>
-            <PieceShape cells={p.cells} color={col} showContour={true} shadowId={shadowId} />
+            <PieceShape cells={p.cells} color={col} shadowId={shadowId} />
           </g>
         );
       })}
@@ -949,7 +990,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
         ))}
 
       {/* moedas e monumentos: por cima de todas as pecas */}
-      {pieces.map(([uid, p]) => (p.ptsCell ? <BPCoin key={'coin' + uid} cx={p.ptsCell.x * U + U / 2} cy={p.ptsCell.y * U + U / 2} v={p.ptsCell.pts} /> : null))}
+      {pieces.map(([uid, p]) => (p.ptsCell && p.ptsAt ? <BPCoin key={'coin' + uid} cx={p.ptsAt.x * U} cy={p.ptsAt.y * U} v={p.ptsCell.pts} /> : null))}
       {cells.map(({ c, x, y }) => (c.bpi === 'pit' && c.statue !== undefined && !c.o ? <BPIconMark key={'mon' + x + ',' + y} x={x} y={y} kind="pit" statue={c.statue} /> : null))}
 
       {/* arvores: mais altas que as pecas, passam por dentro do furo */}
@@ -958,29 +999,33 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
       {/* peca na mao, flutuando sobre o grid */}
       {ghost && (
         <g className={ghost.locked ? '' : 'ct-ghost'} opacity={ghost.locked ? 1 : 0.94} pointerEvents="none">
-          <PieceShape cells={ghostCells} color={ctColor(order, ghost.playerId)} lift={ghost.locked ? 0.4 : 1.6} outline={ghost.ok ? '#35e06f' : '#ff3b3b'} showContour={true} shadowId={shadowId} />
+          <PieceShape cells={ghostCells} color={ctColor(order, ghost.playerId)} lift={ghost.locked ? 0.4 : 1.6} outline={ghost.ok ? '#35e06f' : '#ff3b3b'} shadowId={shadowId} />
         </g>
       )}
     </svg>
     {enableZoom && (
-      <div className="ct-zoom-bar" data-testid="bp-zoom-bar" role="group" aria-label="Zoom do tabuleiro">
+      <div
+        className="ct-zoom-bar"
+        data-testid="bp-zoom-bar"
+        role="group"
+        aria-label="Zoom do tabuleiro"
+      >
         <button
           type="button"
-          className="rdb-seg ct-zoom-btn"
-          data-testid="bp-zoom-out"
-          aria-label="Diminuir zoom"
-          title="Diminuir zoom (-)"
-          disabled={activeZoom <= ZOOM_MIN}
-          onClick={() => applyZoom(activeZoom - ZOOM_STEP)}
+          className="ct-zoom-btn"
+          data-testid="bp-zoom-in"
+          aria-label="Aumentar zoom"
+          disabled={activeZoom >= ZOOM_MAX}
+          onClick={() => applyZoom(activeZoom + ZOOM_STEP)}
         >
-          <Minus size={14} />
+          <Plus size={13} />
         </button>
         <button
           type="button"
-          className="rdb-seg ct-zoom-level"
+          className="ct-zoom-level"
           data-testid="bp-zoom-level"
-          aria-label={`Zoom atual ${Math.round(activeZoom * 100)}%. Clique para alternar entre 100% e 300%`}
-          title="Alternar zoom (100% · 150% · 200% · 300%)"
+          data-tip="Zoom: Ctrl + rolar, pinça ou + e −"
+          aria-label={`Zoom atual ${Math.round(activeZoom * 100)}%. Clique para alternar`}
           onClick={() => {
             const next = ZOOM_CYCLE.find((step) => step > activeZoom + 0.01) ?? ZOOM_MIN;
             applyZoom(next);
@@ -990,28 +1035,24 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
         </button>
         <button
           type="button"
-          className="rdb-seg ct-zoom-btn"
-          data-testid="bp-zoom-in"
-          aria-label="Aumentar zoom até 300%"
-          title="Aumentar zoom (+)"
-          disabled={activeZoom >= ZOOM_MAX}
-          onClick={() => applyZoom(activeZoom + ZOOM_STEP)}
+          className="ct-zoom-btn"
+          data-testid="bp-zoom-out"
+          aria-label="Diminuir zoom"
+          disabled={activeZoom <= ZOOM_MIN}
+          onClick={() => applyZoom(activeZoom - ZOOM_STEP)}
         >
-          <Plus size={14} />
+          <Minus size={13} />
         </button>
-        {activeZoom > ZOOM_MIN && (
-          <button
-            type="button"
-            className="rdb-seg ct-zoom-reset"
-            data-testid="bp-zoom-reset"
-            aria-label="Voltar zoom para 100%"
-            title="Ajustar tudo (tecla 0)"
-            onClick={() => applyZoom(ZOOM_MIN)}
-          >
-            <RotateCcw size={13} />
-            <span>Ajustar</span>
-          </button>
-        )}
+        <button
+          type="button"
+          className="ct-zoom-btn ct-zoom-reset"
+          data-testid="bp-zoom-reset"
+          aria-label="Ver o parque inteiro"
+          disabled={activeZoom <= ZOOM_MIN}
+          onClick={() => applyZoom(ZOOM_MIN)}
+        >
+          <Maximize2 size={11} />
+        </button>
       </div>
     )}
     </>

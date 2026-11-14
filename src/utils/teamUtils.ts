@@ -637,16 +637,8 @@ export function resolveCurrentTurnSpotlight(room: GameRoom): TurnSpotlightDescri
       );
     }
     if (ct.phase === 'SUMMARY') return solo(null, 'Fim da partida', DONE_TEXT, { activeTeamName: 'Resultado', flagLabel: 'Agora' });
-    if (ct.bp) {
-      const cur = ct.bp.order[ct.bp.turnIdx % ct.bp.order.length];
-      const pp = byId(cur);
-      const pend = ct.bp.pending[0];
-      return solo(
-        pp,
-        pend ? 'Pega a recompensa' : 'Constrói o parque',
-        pend ? `${pp?.name || 'O jogador'} escolhe a recompensa do ícone coberto.` : `${pp?.name || 'O jogador'} coloca uma peça do estoque no parque.`
-      );
-    }
+    // Arquiteto: a vez ja aparece no cabecalho do parque; a faixa de cima so repetia
+    if (ct.bp) return null;
     const p = byId(ct.queue[ct.turnIdx]);
     const piece = p ? ct.hand[p.id] : undefined;
     return solo(
