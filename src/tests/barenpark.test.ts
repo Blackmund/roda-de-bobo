@@ -40,7 +40,16 @@ test('Bärenpark: montagem conforme a regra (estoque inicial, estatuas, pilhas d
   assert.ok(Object.values(s.parks).every((pk) => pk.supply.every((t) => t.type !== 'river')), 'ninguem comeca com rio');
   // tabuleiros procedurais: cada area tem 1 fosso; a entrada sempre tem equipe de obra
   Object.values(s.areaDefs).forEach((d) => assert.equal(d.split('').filter((c) => c === 'P').length, 1));
-  Object.values(s.parks).forEach((pk) => assert.ok(pk.areas[0].icons.includes('crew')));
+  const count = (icons: any[], k: string) => icons.filter((x) => x === k).length;
+  Object.values(s.parks).forEach((pk) => {
+    const ic = pk.areas[0].icons;
+    assert.deepEqual([count(ic, 'wheel'), count(ic, 'cement'), count(ic, 'crew'), count(ic, 'excavator'), count(ic, 'pit')], [3, 2, 1, 0, 1], 'entrada: 3 carrinhos, 2 betoneiras, 1 equipe, sem escavadeira');
+  });
+  Object.values(s.areaDefs).forEach((d) => {
+    const ch = d.split('');
+    const n = (k: string) => ch.filter((x) => x === k).length;
+    assert.deepEqual([n('W'), n('C'), n('E'), n('O'), n('P')], [2, 2, 1, 1, 1], 'demais: 2 carrinhos, 2 betoneiras, 1 escavadeira, 1 equipe');
+  });
   // outra semente = outros tabuleiros
   assert.notDeepEqual(buildBPState(['a', 'b'], 8).areaDefs, s.areaDefs);
   // 6 jogadores: estatuas e pilhas maiores
