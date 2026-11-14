@@ -320,22 +320,26 @@ export const BPIconBadge: React.FC<{ icon: string; size?: number | string; title
 );
 
 /**
- * Valor da peca: selo escuro impresso na propria peca (chapado, como no Barenpark).
+ * Valor da peca: losango branco impresso no centro da peca (chapado, como no Barenpark).
  * (cx, cy) e o centro da casa; r e o raio da face.
  */
-export const BPCoin: React.FC<{ cx: number; cy: number; v: number; r?: number }> = ({ cx, cy, v, r = 3 }) => {
-  // selo impresso na peca, como no Barenpark: chapado, sem sombra nem relevo (so o monumento tem volume)
-  const fy = cy;
-  return (
-    <g pointerEvents="none">
-      <circle cx={cx} cy={fy} r={r} fill="#0b1230" fillOpacity="0.88" />
-      <circle cx={cx} cy={fy} r={r * 0.8} fill="none" stroke="#f5f2eb" strokeOpacity="0.45" strokeWidth={r * 0.06} />
-      <text x={cx} y={fy + r * 0.37} textAnchor="middle" fontSize={r * (String(v).length > 1 ? 0.98 : 1.1)} fontFamily="'Anton','Inter','Arial Black',sans-serif" fill="#ffc93c">
-        {v}
-      </text>
-    </g>
-  );
-};
+export const BPCoin: React.FC<{ cx: number; cy: number; v: number; r?: number }> = ({ cx, cy, v, r = 3.1 }) => (
+  // losango branco impresso no meio da peca, como os valores das pecas do Barenpark
+  <g pointerEvents="none">
+    <path d={`M${cx} ${cy - r}L${cx + r} ${cy}L${cx} ${cy + r}L${cx - r} ${cy}Z`} fill="#f5f2eb" stroke="#0a0b1e" strokeOpacity="0.55" strokeWidth="0.3" strokeLinejoin="round" />
+    <path
+      d={`M${cx} ${cy - r * 0.8}L${cx + r * 0.8} ${cy}L${cx} ${cy + r * 0.8}L${cx - r * 0.8} ${cy}Z`}
+      fill="none"
+      stroke="#0a0b1e"
+      strokeOpacity="0.18"
+      strokeWidth="0.2"
+      strokeLinejoin="round"
+    />
+    <text x={cx} y={cy + r * 0.34} textAnchor="middle" fontSize={r * (String(v).length > 1 ? 0.8 : 0.95)} fontFamily="'Anton','Inter','Arial Black',sans-serif" fill="#0a0b1e">
+      {v}
+    </text>
+  </g>
+);
 
 const OCT = (h: number, dy = 0) => {
   const k = h * 0.414;
@@ -471,7 +475,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
   }, [board, bpExpansionSpots]);
 
   const pieces = useMemo(() => {
-    const map = new Map<string, { owner: string; cells: PCell[]; ptsCell?: { x: number; y: number; pts: number } }>();
+    const map = new Map<string, { owner: string; cells: PCell[]; ptsCell?: { x: number; y: number; pts: number }; ptsAt?: { x: number; y: number } }>();
     board.cells.forEach((c, i) => {
       if (!c.o || !c.p) return;
       const x = i % board.w;
@@ -480,6 +484,21 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
       e.cells.push({ x, y, k: c.k === 2 ? 2 : 1 });
       if (c.tilePts !== undefined && c.tilePts > 0) e.ptsCell = { x, y, pts: c.tilePts };
       map.set(c.p, e);
+    });
+    map.forEach((e) => {
+      if (!e.ptsCell) return;
+      const n = e.cells.length;
+      const mx = e.cells.reduce((a, c) => a + c.x + 0.5, 0) / n;
+      const my = e.cells.reduce((a, c) => a + c.y + 0.5, 0) / n;
+      const has = (px: number, py: number) => e.cells.some((c) => c.x === Math.floor(px) && c.y === Math.floor(py));
+      const m = 0.34;
+      const fits = [[-m, -m], [m, -m], [-m, m], [m, m], [0, 0]].every(([dx, dy]) => has(mx + dx, my + dy));
+      if (fits) {
+        e.ptsAt = { x: mx, y: my };
+      } else {
+        const best = e.cells.reduce((a, c) => (Math.hypot(c.x + 0.5 - mx, c.y + 0.5 - my) < Math.hypot(a.x + 0.5 - mx, a.y + 0.5 - my) ? c : a));
+        e.ptsAt = { x: best.x + 0.5, y: best.y + 0.5 };
+      }
     });
     return Array.from(map.entries());
   }, [board]);
@@ -971,7 +990,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
         ))}
 
       {/* moedas e monumentos: por cima de todas as pecas */}
-      {pieces.map(([uid, p]) => (p.ptsCell ? <BPCoin key={'coin' + uid} cx={p.ptsCell.x * U + U / 2} cy={p.ptsCell.y * U + U / 2} v={p.ptsCell.pts} /> : null))}
+      {pieces.map(([uid, p]) => (p.ptsCell && p.ptsAt ? <BPCoin key={'coin' + uid} cx={p.ptsAt.x * U} cy={p.ptsAt.y * U} v={p.ptsCell.pts} /> : null))}
       {cells.map(({ c, x, y }) => (c.bpi === 'pit' && c.statue !== undefined && !c.o ? <BPIconMark key={'mon' + x + ',' + y} x={x} y={y} kind="pit" statue={c.statue} /> : null))}
 
       {/* arvores: mais altas que as pecas, passam por dentro do furo */}
