@@ -4,6 +4,7 @@ import { VisualTheme, GameCustomConfig } from '../../types/game';
 import { sounds } from '../../utils/soundEffects';
 import { clearUsedRoundSignatures } from '../../utils/aiGameGenerator';
 import { setDevMode, useDevMode } from '../../app/devMode';
+import { SoundThemePicker } from './SoundThemePicker';
 
 type ContentSource = NonNullable<GameCustomConfig['contentSource']>;
 
@@ -345,9 +346,11 @@ export const WindowMenuPanel: React.FC<WindowMenuPanelProps> = ({
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-400 font-mono-code mt-1">
-                          Alterna os sons retrô de TV, sirenes, buzinas de erro, roleta e alertas sonoros do cronômetro.
+                          Escolha o estilo dos sons do site e ouça cada um antes de jogar.
                         </p>
                       </div>
+
+                      <SoundThemePicker disabled={muted} />
 
                       <div className="flex items-center gap-2 pt-1 border-t border-white/10">
                         <button
