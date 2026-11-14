@@ -433,6 +433,8 @@ export interface BPState {
 }
 
 export type CTMode = 'arquiteto' | 'diabo' | 'fronteiras';
+/** visual das pecas da Reserva: clean (chapado, padrao) ou classic (tabuleiro ilustrado) */
+export type CTSkin = 'clean' | 'classic';
 export type CTPendingKind = 'tree' | 'tok';
 
 export interface CTPiece {
@@ -499,6 +501,8 @@ export interface ComTerraState {
   seed: number;
   /** Arquiteto nas regras do Barenpark */
   bp?: BPState;
+  /** visual das pecas (escolhido na configuracao) */
+  skin?: CTSkin;
 }
 
 export type PintoPlayMode = 'pad' | 'tv';
@@ -712,6 +716,7 @@ export interface GameCustomConfig {
   limiteExactBonus: number; // default 2 (1, 2, 3)
   // Com Terra
   ctMode?: CTMode; // default 'arquiteto'
+  ctSkin?: CTSkin; // default 'clean'
   // Perguntas e Verdades (O Jogo do Diabo)
   pvDeckMode: PVDeckMode; // 'assisted' (default) | 'physical'
   pvDeckStyle?: PVDeckStyle; // 'padrao' (CazéTV Ilustrado) | 'compacto' | 'holografico'

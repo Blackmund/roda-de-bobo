@@ -5,6 +5,7 @@ import { CTSummary } from '../../comterra/CTSummary';
 import { BPSeat } from '../../comterra/BPViews';
 import '../../comterra/comterra.css';
 import { TipLayer } from '../../comterra/TipLayer';
+import { CTSkinProvider } from '../../comterra/CTSkin';
 import { BPPiecePeek } from '../../comterra/BPViews';
 
 interface ComTerraControllerProps {
@@ -15,7 +16,7 @@ interface ComTerraControllerProps {
 }
 
 /** Com Terra no celular: o lugar do jogador (tabuleiro, loja e adversarios em abas). */
-export const ComTerraController: React.FC<ComTerraControllerProps> = ({ room, player, onUpdateRoom, onNextRound }) => {
+const ComTerraControllerInner: React.FC<ComTerraControllerProps> = ({ room, player, onUpdateRoom, onNextRound }) => {
   const ct = room.comTerra;
   if (!ct) return null;
   const onUpdate = (fn: (prev: ComTerraState) => ComTerraState) =>
@@ -40,3 +41,10 @@ export const ComTerraController: React.FC<ComTerraControllerProps> = ({ room, pl
     </div>
   );
 };
+
+/** aplica a skin escolhida na configuracao a tudo o que o jogo desenha */
+export const ComTerraController: React.FC<ComTerraControllerProps> = (props) => (
+  <CTSkinProvider skin={props.room.comTerra?.skin}>
+    <ComTerraControllerInner {...props} />
+  </CTSkinProvider>
+);
