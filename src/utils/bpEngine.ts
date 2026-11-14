@@ -82,11 +82,7 @@ function enclosureValues(type: string, n: number): number[] {
 
 // ---------------------------------------------------------------- areas do parque (4x4)
 // Icones: P = fosso, W = carrinho, C = betoneira, E = escavadeira, O = equipe de obra, . = vazio.
-/**
- * Areas sorteadas a cada partida (procedural): 1 fosso em lugar aleatorio e icones espalhados.
- * Entrada: 1 equipe de obra garantida (para o parque crescer) + 3 a 4 icones. Demais: 2 a 4 icones, com
- * carrinho mais comum, depois betoneira, equipe de obra e escavadeira (mais rara).
- */
+/** Areas sorteadas a cada partida (procedural): os icones sao fixos por tipo de area, as posicoes (e o fosso) mudam. */
 function genArea(rng: Rng, entrance: boolean): string[] {
   const cells: string[] = Array(16).fill('.');
   const free = () => {
@@ -94,12 +90,9 @@ function genArea(rng: Rng, entrance: boolean): string[] {
     return opts[Math.floor(rng() * opts.length)];
   };
   cells[free()] = 'P';
-  const bag: string[] = entrance ? ['O'] : [];
-  const extra = entrance ? 3 + Math.floor(rng() * 2) : 2 + Math.floor(rng() * 3);
-  for (let i = 0; i < extra; i++) {
-    const r = rng();
-    bag.push(r < 0.38 ? 'W' : r < 0.66 ? 'C' : r < 0.86 ? 'O' : 'E');
-  }
+  // Como no Barenpark: Entrada = 3 carrinhos, 2 betoneiras e 1 equipe de obra (nunca escavadeira).
+  // Demais areas = 2 carrinhos, 2 betoneiras, 1 escavadeira e 1 equipe de obra. So as posicoes sao sorteadas.
+  const bag: string[] = entrance ? ['W', 'W', 'W', 'C', 'C', 'O'] : ['W', 'W', 'C', 'C', 'E', 'O'];
   bag.forEach((ch) => (cells[free()] = ch));
   return [0, 1, 2, 3].map((r) => cells.slice(r * 4, r * 4 + 4).join(''));
 }
