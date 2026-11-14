@@ -84,17 +84,22 @@ function enclosureValues(type: string, n: number): number[] {
 // Icones: P = fosso, W = carrinho, C = betoneira, E = escavadeira, O = equipe de obra, . = vazio.
 /** Areas sorteadas a cada partida (procedural): os icones sao fixos por tipo de area, as posicoes (e o fosso) mudam. */
 function genArea(rng: Rng, entrance: boolean): string[] {
-  const cells: string[] = Array(16).fill('.');
-  const free = () => {
-    const opts = cells.map((c, i) => (c === '.' ? i : -1)).filter((i) => i >= 0);
-    return opts[Math.floor(rng() * opts.length)];
-  };
-  cells[free()] = 'P';
   // Como no Barenpark: Entrada = 3 carrinhos, 2 betoneiras e 1 equipe de obra (nunca escavadeira).
   // Demais areas = 2 carrinhos, 2 betoneiras, 1 escavadeira e 1 equipe de obra. So as posicoes sao sorteadas.
   const bag: string[] = entrance ? ['W', 'W', 'W', 'C', 'C', 'O'] : ['W', 'W', 'C', 'C', 'E', 'O'];
-  bag.forEach((ch) => (cells[free()] = ch));
-  return [0, 1, 2, 3].map((r) => cells.slice(r * 4, r * 4 + 4).join(''));
+  const items = ['P', ...bag];
+  // Espacamento: os icones (e o fosso) ficam em xadrez, sempre a 2 casas um do outro e nunca encostados pelo lado.
+  // Sorteia qual dos dois xadrezes, qual casa dele fica vazia e a ordem dos icones.
+  const parity = rng() < 0.5 ? 0 : 1;
+  const board = Array.from({ length: 16 }, (_, i) => i).filter((i) => ((i % 4) + Math.floor(i / 4)) % 2 === parity);
+  for (let i = board.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [board[i], board[j]] = [board[j], board[i]];
+  }
+  const best = board.slice(0, items.length);
+  const out: string[] = Array(16).fill('.');
+  (best || []).forEach((cell, k) => (out[cell] = items[k]));
+  return [0, 1, 2, 3].map((r) => out.slice(r * 4, r * 4 + 4).join(''));
 }
 
 const ICON: Record<string, BPIcon | null> = { P: 'pit', W: 'wheel', C: 'cement', E: 'excavator', O: 'crew', '.': null };

@@ -32,11 +32,11 @@ import { BPIconSvg, BP_ICON_META, BP_PALETTE, CTBoardView, CTPieceView } from '.
 const KIND_COLOR = { green: BP_PALETTE.green, house: BP_PALETTE.house, enclosure: BP_PALETTE.enclosure };
 const KIND_LABEL = { green: 'Área verde', house: 'Casa de animal', enclosure: 'Cercado' };
 const REWARD_TITLE: Record<string, string> = {
-  wheel: 'Bola: escolha uma Área Verde',
-  cement: 'Microfone: escolha uma Casa (ou Área Verde)',
-  excavator: 'Câmera: escolha um Cercado (ou Casa, ou Área Verde)',
+  wheel: 'Bandeirinha: escolha uma Área Verde',
+  cement: 'Telão: escolha uma Casa (ou Área Verde)',
+  excavator: 'Craque: escolha um Cercado (ou Casa, ou Área Verde)',
   pass: 'Você passou a vez: escolha uma Área Verde',
-  crew: 'Ingresso: abra uma área nova'
+  crew: 'Cone: abra uma área nova'
 };
 
 type Upd = (fn: (prev: ComTerraState) => ComTerraState) => void;
@@ -52,22 +52,54 @@ export function withBP(prev: ComTerraState, fn: (bp: BPState) => BPState): ComTe
   return { ...prev, bp, phase: 'SUMMARY', pointsAwarded };
 }
 
-const TileChip: React.FC<{ type: BPTileType; pts?: number; on?: boolean; onClick?: () => void; testid?: string; stock?: number }> = ({ type, pts, on, onClick, testid, stock }) => {
+const TileChip: React.FC<{
+  type: BPTileType;
+  pts?: number;
+  on?: boolean;
+  onClick?: () => void;
+  testid?: string;
+  count?: number;
+  countTip?: string;
+}> = ({ type, pts, on, onClick, testid, count, countTip }) => {
   const kind = tileKind(type);
   return (
     <button type="button" className={`bp-tile is-${kind}` + (on ? ' is-on' : '')} onClick={onClick} data-testid={testid} data-tip={BP_TILE_META[type].label}>
-      <span className="bp-tile-kind">{KIND_LABEL[kind]}</span>
-      <CTPieceView shape={tileShape(type)} color={KIND_COLOR[kind]} label={BP_TILE_META[type].label} className="bp-tile-art" />
-      <span className="bp-tile-name">{BP_TILE_META[type].label.replace(/^(Casa|Cercado) d[oa] /, '')}</span>
-      <span className="bp-tile-pts" data-tip="Pontos">{pts ?? 0}<small>pts</small></span>
-      {stock !== undefined && (
-        <span className="bp-tile-stock" data-tip="Quantas sobram no estoque geral">
-          restam {stock}
+      {count !== undefined && (
+        <span className={'bp-tile-count' + (count === 0 ? ' is-zero' : '')} data-tip={countTip} aria-label={countTip}>
+          ×{count}
         </span>
       )}
+      <CTPieceView shape={tileShape(type)} color={KIND_COLOR[kind]} label={BP_TILE_META[type].label} className="bp-tile-art" minBox={2} />
+      <span className="bp-tile-name">{BP_TILE_META[type].label.replace(/^(Casa|Cercado) d[oa] /, '')}</span>
+      <span className="bp-tile-pts" data-tip="Pontos">
+        {pts ?? 0}
+        <small>pts</small>
+      </span>
     </button>
   );
 };
+
+/** Legenda: icone grande -> o que ele da, na cor da peca. */
+const LEGEND: { k: string; name: string; gives: string; color: string }[] = [
+  { k: 'wheel', name: 'Bandeirinha', gives: 'Área Verde', color: BP_PALETTE.green.top },
+  { k: 'cement', name: 'Telão', gives: 'Casa', color: BP_PALETTE.house.top },
+  { k: 'excavator', name: 'Craque', gives: 'Cercado', color: BP_PALETTE.enclosure.top },
+  { k: 'crew', name: 'Cone', gives: 'Área nova', color: '#e6194b' },
+  { k: 'pit', name: 'Palco', gives: 'Taça', color: '#ffc93c' }
+];
+export const BPLegend: React.FC<{ compact?: boolean }> = ({ compact }) => (
+  <ul className={'bp-legend2' + (compact ? ' is-compact' : '')} aria-label="O que cada ícone dá">
+    {LEGEND.map((l) => (
+      <li key={l.k} data-tip={l.k === 'pit' ? 'Palco: não pode cobrir. Completou a área? Ganha a Taça do topo' : BP_ICON_META[l.k].label}>
+        <BPIconSvg kind={l.k} size="100%" />
+        <span>
+          <small>{l.name}</small>
+          <b style={{ ['--c' as string]: l.color } as React.CSSProperties}>{l.gives}</b>
+        </span>
+      </li>
+    ))}
+  </ul>
+);
 
 /** A vez de um jogador: o parque dele, o estoque, as recompensas e a area nova. */
 export const BPSeat: React.FC<{ state: ComTerraState; players: Player[]; playerId: string; onUpdate: Upd }> = ({ state, players, playerId, onUpdate }) => {
@@ -94,6 +126,12 @@ export const BPSeat: React.FC<{ state: ComTerraState; players: Player[]; playerI
         })()
       : null;
   const canPlaceAny = bpCanPlaceAny(park);
+  const groups: { type: BPTileType; pts: number; uids: string[] }[] = [];
+  park.supply.forEach((t) => {
+    const g = groups.find((x) => x.type === t.type && x.pts === t.pts);
+    if (g) g.uids.push(t.uid);
+    else groups.push({ type: t.type, pts: t.pts, uids: [t.uid] });
+  });
 
   const pick = (uid: string) => {
     sounds.playTick();
@@ -135,6 +173,7 @@ export const BPSeat: React.FC<{ state: ComTerraState; players: Player[]; playerI
             label={`Parque de ${nameOf(playerId)}`}
             testid="bp-board"
           />
+          <BPLegend />
         </div>
 
         <aside className="bp-seat-side">
@@ -148,7 +187,8 @@ export const BPSeat: React.FC<{ state: ComTerraState; players: Player[]; playerI
                     type={t}
                     pts={rewardValue(bp, t)}
                     testid={`bp-reward-${t}`}
-                    stock={tileKind(t) === 'green' ? bp.greens[t] : tileKind(t) === 'house' ? bp.houses[t].length : bp.enclosures[t].length}
+                    count={tileKind(t) === 'green' ? bp.greens[t] : tileKind(t) === 'house' ? bp.houses[t].length : bp.enclosures[t].length}
+                    countTip="Quantas sobram no estoque geral"
                     onClick={() => {
                       sounds.playPowerup();
                       onUpdate((prev) => withBP(prev, (b) => bpTakeReward(b, playerId, t)));
@@ -219,11 +259,23 @@ export const BPSeat: React.FC<{ state: ComTerraState; players: Player[]; playerI
 
           {!pend && (
             <section className="bp-supply" data-testid="bp-supply">
-              <h4>Seu estoque {park.supply.length === 0 ? '(vazio)' : ''}</h4>
+              <h4>Seu estoque <span className="bp-h4-n">{park.supply.length === 0 ? 'vazio' : `${park.supply.length} ${park.supply.length === 1 ? 'peça' : 'peças'}`}</span></h4>
               <div className="bp-tiles">
-                {park.supply.map((t) => (
-                  <TileChip key={t.uid} type={t.type} pts={t.pts} on={sel === t.uid} onClick={myTurn ? () => pick(t.uid) : undefined} testid={`bp-supply-${t.type}`} />
-                ))}
+                {groups.map((g) => {
+                  const on = g.uids.includes(sel || '');
+                  return (
+                    <TileChip
+                      key={g.uids[0]}
+                      type={g.type}
+                      pts={g.pts}
+                      on={on}
+                      count={g.uids.length}
+                      countTip={g.uids.length === 1 ? 'Você tem 1 dessa' : `Você tem ${g.uids.length} dessas`}
+                      onClick={myTurn ? () => pick(on ? sel! : g.uids[0]) : undefined}
+                      testid={`bp-supply-${g.type}`}
+                    />
+                  );
+                })}
               </div>
               {myTurn && tile && (
                 <div className="bp-actions">
@@ -254,16 +306,6 @@ export const BPSeat: React.FC<{ state: ComTerraState; players: Player[]; playerI
             </section>
           )}
 
-          <ul className="bp-legend" aria-label="Legenda">
-            {Object.entries(BP_ICON_META).map(([k, v]) => (
-              <li key={k}>
-                <BPIconSvg kind={k} size="1.35em" /> {v.label}
-              </li>
-            ))}
-            <li>
-              <BPIconSvg kind="pit" size="1.35em" /> Palco: fica livre. Área completa = Taça no palco
-            </li>
-          </ul>
         </aside>
       </div>
     </div>
@@ -294,27 +336,36 @@ export const BPTable: React.FC<{ state: ComTerraState; players: Player[] }> = ({
       </div>
       <aside className="bp-stock" aria-label="Estoque geral">
         <h4>Estoque geral</h4>
-        <div className="bp-stock-row" data-tip="Casas de animal: o número é o valor do topo da pilha">
-          <span>Casas</span>
-          {Object.entries(bp.houses).map(([t, pile]) => (
-            <b key={t}>{pile.length ? pile[pile.length - 1] : '–'}</b>
-          ))}
+        {(['house', 'enclosure'] as const).map((kind) => {
+          const piles = kind === 'house' ? bp.houses : bp.enclosures;
+          return (
+            <div key={kind} className={'bp-stock-group is-' + kind}>
+              <span className="bp-stock-cap">{kind === 'house' ? 'Casas' : 'Cercados'}</span>
+              <div className="bp-stock-pieces">
+                {Object.entries(piles).map(([t, pile]) => (
+                  <div key={t} className={'bp-stock-piece' + (pile.length ? '' : ' is-out')} data-tip={`${BP_TILE_META[t as BPTileType].label}: vale ${pile.length ? pile[pile.length - 1] : 0}, restam ${pile.length}`}>
+                    <CTPieceView shape={tileShape(t as BPTileType)} color={KIND_COLOR[kind]} label={BP_TILE_META[t as BPTileType].label} className="bp-stock-art" minBox={3} />
+                    <b>{pile.length ? pile[pile.length - 1] : '–'}</b>
+                    <small>×{pile.length}</small>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+        <div className="bp-stock-extra">
+          <div data-tip="Próxima Taça: vai para quem completar uma área">
+            <BPIconSvg kind="pit" size="1.9rem" />
+            <b>{bp.statues[0] ?? '–'}</b>
+            <small>Taça</small>
+          </div>
+          <div data-tip="Áreas novas nas duas pilhas">
+            <BPIconSvg kind="crew" size="1.9rem" />
+            <b>{bp.areaPiles[0].length + bp.areaPiles[1].length}</b>
+            <small>Áreas</small>
+          </div>
         </div>
-        <div className="bp-stock-row" data-tip="Cercados: valor do topo da pilha">
-          <span>Cercados</span>
-          {Object.entries(bp.enclosures).map(([t, pile]) => (
-            <b key={t}>{pile.length ? pile[pile.length - 1] : '–'}</b>
-          ))}
-        </div>
-        <div className="bp-stock-row" data-tip="Próxima Taça (área completa)">
-          <span>Taça</span>
-          <b>{bp.statues[0] ?? '–'}</b>
-        </div>
-        <div className="bp-stock-row" data-tip="Áreas de parque nas duas pilhas">
-          <span>Áreas</span>
-          <b>{bp.areaPiles[0].length}</b>
-          <b>{bp.areaPiles[1].length}</b>
-        </div>
+        <BPLegend compact />
         <ol className="bp-rank">
           {rank.map((r) => (
             <li key={r.playerId}>

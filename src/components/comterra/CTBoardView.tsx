@@ -153,66 +153,84 @@ const ActionIcon: React.FC<{ x: number; y: number; kind: 'tree' | 'tok' }> = ({ 
  * Arquiteto: icones impressos nas areas, no tema do programa (estadio/estudio da Roda de Bobo).
  * Bola = Area Verde · Microfone = Casa · Camera = Cercado · Ingresso = area nova · Palco = onde vai a Taca.
  */
-export const BP_ICON_META: Record<string, { fill: string; ink: string; name: string; label: string }> = {
-  wheel: { fill: '#3fbf6f', ink: '#0a0b1e', name: 'Bola', label: 'Bola: pega uma Área Verde' },
-  cement: { fill: '#17b8b8', ink: '#0a0b1e', name: 'Microfone', label: 'Microfone: pega uma Casa (ou Área Verde)' },
-  excavator: { fill: '#ff8a1e', ink: '#0a0b1e', name: 'Câmera', label: 'Câmera: pega um Cercado (ou Casa, ou Área Verde)' },
-  crew: { fill: '#e6194b', ink: '#f5f2eb', name: 'Ingresso', label: 'Ingresso: abre uma área nova no parque' }
+export const BP_ICON_META: Record<string, { fill: string; ink: string; name: string; gives: string; label: string }> = {
+  wheel: { fill: '#3fbf6f', ink: '#0a0b1e', name: 'Bandeirinha', gives: 'Área Verde', label: 'Bandeirinha: pega uma Área Verde' },
+  cement: { fill: '#17b8b8', ink: '#0a0b1e', name: 'Telão', gives: 'Casa', label: 'Telão: pega uma Casa (ou Área Verde)' },
+  excavator: { fill: '#ff8a1e', ink: '#0a0b1e', name: 'Craque', gives: 'Cercado', label: 'Craque: pega um Cercado (ou Casa, ou Área Verde)' },
+  crew: { fill: '#e6194b', ink: '#f5f2eb', name: 'Cone', gives: 'Área nova', label: 'Cone: abre uma área nova no parque' }
 };
 
-/** Desenho de cada icone numa caixa 10x10 (o mesmo no tabuleiro, na legenda e na previa das areas). */
+/**
+ * Icones em estilo figurinha: borda creme, contorno navy, miolo na cor da peca que o icone da e um brilho.
+ * Bandeirinha de escanteio (Area Verde), Telao (Casa), Craque/estrela (Cercado), Cone de obra (area nova),
+ * Palco (fica livre e recebe a Taca). Caixa 10x10.
+ */
 export function bpGlyph(kind: string): React.ReactNode {
-  const m = BP_ICON_META[kind];
   if (kind === 'pit') {
     return (
       <g>
-        <rect x="0.8" y="0.8" width="8.4" height="8.4" rx="1" fill="#0a0b1e" />
-        <path d="M2.4 7.6h5.2M3.2 6.2h3.6" stroke="#5a6078" strokeWidth="0.7" strokeLinecap="round" />
-        <path d="M5 2.2l0.55 1.15 1.25 0.15-0.92 0.85 0.24 1.25L5 5l-1.12 0.6 0.24-1.25-0.92-0.85 1.25-0.15Z" fill="#5a6078" />
+        <rect x="0.6" y="0.6" width="8.8" height="8.8" rx="1.2" fill="#0a0b1e" />
+        <path d="M1.6 7.4h6.8v1.2H1.6Z" fill="#2a2f45" />
+        <path d="M2.4 6.2h5.2v1.2H2.4Z" fill="#3a3f55" />
+        <path d="M3.4 1.4L2 6.1M6.6 1.4L8 6.1" stroke="#ffc93c" strokeOpacity="0.35" strokeWidth="0.5" />
+        <circle cx="5" cy="1.7" r="0.6" fill="#ffc93c" opacity="0.7" />
       </g>
     );
   }
+  const m = BP_ICON_META[kind];
   if (!m) return null;
-  const ink = m.ink;
+  const N = '#0a0b1e';
+  const C = '#f5f2eb';
   let art: React.ReactNode = null;
   if (kind === 'wheel') {
     art = (
       <g>
-        <circle cx="5" cy="5" r="2.35" fill="#f5f2eb" stroke={ink} strokeWidth="0.45" />
-        <path d="M5 3.9l1 0.72-0.38 1.17H4.38L4 4.62Z" fill={ink} />
-        <path d="M5 2.65V3.9M6 4.62l1.2-0.4M5.62 5.79l0.75 1M4.38 5.79l-0.75 1M4 4.62l-1.2-0.4" stroke={ink} strokeWidth="0.35" />
+        <path d="M3.6 2.6v5.2" stroke={N} strokeWidth="0.55" strokeLinecap="round" />
+        <path d="M3.9 2.7l3.4 1.15-3.4 1.2Z" fill={C} stroke={N} strokeWidth="0.35" strokeLinejoin="round" />
+        <path d="M3.9 3.85l1.7 0.6-1.7 0.58Z" fill={N} opacity="0.35" />
+        <ellipse cx="3.6" cy="7.8" rx="1.3" ry="0.35" fill={N} opacity="0.35" />
       </g>
     );
   } else if (kind === 'cement') {
     art = (
-      <g fill={ink}>
-        <rect x="4" y="2.3" width="2" height="3.4" rx="1" />
-        <path d="M3.1 4.7a1.9 1.9 0 0 0 3.8 0" fill="none" stroke={ink} strokeWidth="0.5" />
-        <rect x="4.75" y="6.5" width="0.5" height="1.1" />
-        <rect x="3.7" y="7.5" width="2.6" height="0.5" rx="0.25" />
+      <g>
+        <path d="M4 2.4l1 1 1-1" stroke={N} strokeWidth="0.4" fill="none" strokeLinecap="round" />
+        <rect x="2.4" y="3.4" width="5.2" height="3.6" rx="0.6" fill={C} stroke={N} strokeWidth="0.45" />
+        <path d="M4.5 4.4v1.6l1.4-0.8Z" fill={m.fill} />
+        <path d="M3.4 7.6h3.2" stroke={N} strokeWidth="0.45" strokeLinecap="round" />
       </g>
     );
   } else if (kind === 'excavator') {
     art = (
-      <g fill={ink}>
-        <rect x="2.4" y="3.8" width="4.4" height="3" rx="0.5" />
-        <path d="M6.8 4.6l1.4-0.8v3l-1.4-0.8Z" />
-        <circle cx="4.6" cy="5.3" r="0.95" fill={m.fill} />
-        <rect x="3" y="3.1" width="1.4" height="0.7" rx="0.2" />
+      <g>
+        <path
+          d="M5 2.1l0.85 1.75 1.92 0.25-1.4 1.33 0.36 1.9L5 6.4l-1.73 0.93 0.36-1.9-1.4-1.33 1.92-0.25Z"
+          fill={C}
+          stroke={N}
+          strokeWidth="0.42"
+          strokeLinejoin="round"
+        />
+        <circle cx="4.5" cy="4.6" r="0.28" fill={N} />
+        <circle cx="5.5" cy="4.6" r="0.28" fill={N} />
+        <path d="M4.5 5.3q0.5 0.35 1 0" stroke={N} strokeWidth="0.25" fill="none" strokeLinecap="round" />
       </g>
     );
   } else if (kind === 'crew') {
     art = (
       <g>
-        <path d="M2.2 3.4h5.6v1.05a0.6 0.6 0 0 0 0 1.1v1.05H2.2V5.55a0.6 0.6 0 0 0 0-1.1Z" fill="#f5f2eb" />
-        <path d="M5.9 3.6v2.8" stroke={m.fill} strokeWidth="0.35" strokeDasharray="0.45 0.35" />
-        <path d="M3.2 4.3h1.8M3.2 5h1.4M3.2 5.7h1.8" stroke={m.fill} strokeWidth="0.35" />
+        <path d="M5 2.2l1.9 5H3.1Z" fill="#ff8a1e" stroke={N} strokeWidth="0.4" strokeLinejoin="round" />
+        <path d="M4.25 4.2h1.5l0.32 0.85H3.93Z" fill={C} />
+        <path d="M3.65 5.8h2.7l0.25 0.65H3.4Z" fill={C} />
+        <rect x="2.4" y="7.2" width="5.2" height="0.75" rx="0.25" fill={N} />
       </g>
     );
   }
   return (
     <g>
-      <circle cx="5" cy="5" r="3.6" fill={m.fill} />
+      <circle cx="5" cy="5" r="4.45" fill={N} />
+      <circle cx="5" cy="5" r="4.05" fill={C} />
+      <circle cx="5" cy="5" r="3.45" fill={m.fill} />
+      <path d="M2.4 3.3a3 3 0 0 1 2.1-1.65" stroke={C} strokeOpacity="0.7" strokeWidth="0.45" fill="none" strokeLinecap="round" />
       {art}
     </g>
   );
@@ -464,11 +482,12 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({ board, order, ghost, c
 };
 
 /** Peca solta (vitrine da loja, mao do jogador): mesma linguagem do tabuleiro. */
-export const CTPieceView: React.FC<{ shape: number[][]; color?: { top: string; side: string }; label: string; className?: string }> = ({
+export const CTPieceView: React.FC<{ shape: number[][]; color?: { top: string; side: string }; label: string; className?: string; minBox?: number }> = ({
   shape,
   color = { top: '#f5f2eb', side: '#a39d8c' },
   label,
-  className
+  className,
+  minBox = 5
 }) => {
   const idRef = useRef<string>('');
   if (!idRef.current) idRef.current = 'ctp' + ++uidSeq;
@@ -476,7 +495,7 @@ export const CTPieceView: React.FC<{ shape: number[][]; color?: { top: string; s
   const w = shape[0].length;
   const h = shape.length;
   // caixa quadrada fixa: todas as pecas aparecem na mesma escala, para comparar tamanho no olho
-  const side = Math.max(w, h, 5) * U;
+  const side = Math.max(w, h, minBox) * U;
   const ox = (side - w * U) / 2;
   const oy = (side - h * U) / 2;
   return (
