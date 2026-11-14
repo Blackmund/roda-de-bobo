@@ -1012,7 +1012,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
           disabled={activeZoom >= ZOOM_MAX}
           onClick={() => applyZoom(activeZoom + ZOOM_STEP)}
         >
-          <Plus size={16} />
+          <Plus size={13} />
         </button>
         <button
           type="button"
@@ -1035,7 +1035,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
           disabled={activeZoom <= ZOOM_MIN}
           onClick={() => applyZoom(activeZoom - ZOOM_STEP)}
         >
-          <Minus size={16} />
+          <Minus size={13} />
         </button>
         <button
           type="button"
@@ -1045,7 +1045,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
           disabled={activeZoom <= ZOOM_MIN}
           onClick={() => applyZoom(ZOOM_MIN)}
         >
-          <Maximize2 size={14} />
+          <Maximize2 size={11} />
         </button>
       </div>
     )}

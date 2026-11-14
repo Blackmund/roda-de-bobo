@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, PanelRightClose, PanelRightOpen, X } from 'lucide-react';
 import {
   ArrowDown,
   ArrowLeft,
@@ -149,7 +149,8 @@ export const BPReserveStock: React.FC<{
   dense?: boolean;
   eligibleTypes?: Set<BPTileType>;
   onPickReward?: (type: BPTileType) => void;
-}> = ({ bp, dense, eligibleTypes, onPickReward }) => {
+  onFold?: () => void;
+}> = ({ bp, dense, eligibleTypes, onPickReward, onFold }) => {
   const areaCount = bp.areaPiles[0].length + bp.areaPiles[1].length;
   const [colAll, togAll] = useCollapsed('reserve');
   const [colG, togG] = useCollapsed('reserve-green');
@@ -205,7 +206,7 @@ export const BPReserveStock: React.FC<{
     <section className={'bp-reserve' + (dense ? ' is-dense' : '') + (colAll ? ' is-collapsed' : '')} aria-label="Estoque da Reserva" data-testid="bp-reserve-stock">
       <div className="bp-reserve-top">
         <h4>
-          <Fold collapsed={colAll} onToggle={togAll}>
+          <Fold collapsed={onFold ? false : colAll} onToggle={onFold || togAll} horizontal={!!onFold}>
             Estoque da Reserva
           </Fold>
         </h4>
@@ -329,21 +330,119 @@ function useCollapsed(key: string): [boolean, () => void] {
   return [c, toggle];
 }
 
-const Fold: React.FC<{ collapsed: boolean; onToggle: () => void; children: React.ReactNode; className?: string }> = ({ collapsed, onToggle, children, className }) => (
+const Fold: React.FC<{ collapsed: boolean; onToggle: () => void; children: React.ReactNode; className?: string; horizontal?: boolean }> = ({
+  collapsed,
+  onToggle,
+  children,
+  className,
+  horizontal
+}) => (
   <button
     type="button"
-    className={'bp-fold' + (collapsed ? ' is-collapsed' : '') + (className ? ' ' + className : '')}
+    className={'bp-fold' + (collapsed ? ' is-collapsed' : '') + (horizontal ? ' is-h' : '') + (className ? ' ' + className : '')}
     aria-expanded={!collapsed}
-    data-tip={collapsed ? 'Mostrar' : 'Recolher'}
+    data-tip={horizontal ? 'Recolher para o lado' : collapsed ? 'Mostrar' : 'Recolher'}
     onClick={() => {
       sounds.playTick();
       onToggle();
     }}
   >
-    <ChevronDown size={14} className="bp-fold-chev" />
+    {horizontal ? <PanelRightClose size={14} className="bp-fold-chev" /> : <ChevronDown size={14} className="bp-fold-chev" />}
     {children}
   </button>
 );
+
+/** Coluna recolhida para o lado: vira uma faixa estreita com o nome em pe. */
+const FoldStrip: React.FC<{ label: string; onOpen: () => void; testid?: string }> = ({ label, onOpen, testid }) => (
+  <button
+    type="button"
+    className="bp-strip"
+    aria-expanded={false}
+    data-testid={testid}
+    data-tip="Mostrar"
+    onClick={() => {
+      sounds.playTick();
+      onOpen();
+    }}
+  >
+    <PanelRightOpen size={14} />
+    <span>{label}</span>
+  </button>
+);
+
+/** Tela estreita (celular ou previa de celular): ai os paineis nao recolhem para o lado. */
+function useNarrow(ref: React.RefObject<HTMLElement | null>): boolean {
+  const q = '(max-width: 1019px)';
+  const [narrow, setNarrow] = useState(() => (typeof window !== 'undefined' && window.matchMedia ? window.matchMedia(q).matches : false));
+  useEffect(() => {
+    const inPhone = !!ref.current?.closest('.ct-phone, .ct-phone-frame');
+    if (!window.matchMedia) return setNarrow(inPhone);
+    const mq = window.matchMedia(q);
+    const upd = () => setNarrow(mq.matches || inPhone);
+    upd();
+    mq.addEventListener?.('change', upd);
+    return () => mq.removeEventListener?.('change', upd);
+  }, [ref]);
+  return narrow;
+}
+
+const COLS = (mid: boolean, rail: boolean) =>
+  `minmax(0, 1.24fr) ${mid ? '2.1rem' : 'minmax(22rem, 1.16fr)'} ${rail ? '2.1rem' : 'minmax(15.5rem, 0.78fr)'}`;
+
+/** Parque de outro jogador em tela cheia (duplo clique na miniatura): nome, parque e pecas no estoque. */
+const BPParkModal: React.FC<{ bp: BPState; players: Player[]; id: string; onClose: () => void }> = ({ bp, players, id, onClose }) => {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+  const p = players.find((x) => x.id === id);
+  const name = p?.name || 'Jogador';
+  const pk = bp.parks[id];
+  if (!pk) return null;
+  const groups: { type: BPTileType; pts: number; n: number }[] = [];
+  pk.supply.forEach((t) => {
+    const g = groups.find((x) => x.type === t.type && x.pts === t.pts);
+    if (g) g.n++;
+    else groups.push({ type: t.type, pts: t.pts, n: 1 });
+  });
+  return (
+    <div className="bp-modal" role="dialog" aria-modal="true" aria-label={`Parque de ${name}`} data-testid="bp-park-modal" onClick={onClose}>
+      <div className="bp-modal-card" onClick={(e) => e.stopPropagation()}>
+        <header className="bp-modal-head">
+          <span className="bp-seat-who">
+            {p && <PlayerMark p={p} />}
+            {name}
+          </span>
+          <span className="bp-seat-areas">Áreas {pk.areas.length}/4</span>
+          {bpCurrent(bp) === id && <span className="bp-seat-turn is-me">Vez</span>}
+          <button type="button" className="bp-modal-close" aria-label="Fechar" data-tip="Fechar (Esc)" onClick={onClose}>
+            <X size={18} />
+          </button>
+        </header>
+        <div className="bp-modal-body">
+          <div className="bp-modal-board">
+            <CTBoardView board={bpBoard(bp, id)} order={BP_COLOR_ORDER} enableZoom label={`Parque de ${name}`} />
+          </div>
+          <aside className="bp-modal-side">
+            <h4>
+              Peças no estoque <span className="bp-h4-n">{pk.supply.length}</span>
+            </h4>
+            {groups.length ? (
+              <div className="bp-tiles bp-tiles--bar">
+                {groups.map((g) => (
+                  <TileChip key={g.type + g.pts} type={g.type} pts={g.pts} compact count={g.n} countTip={`${name} tem ${g.n}`} />
+                ))}
+              </div>
+            ) : (
+              <p className="bp-modal-empty">Nenhuma peça no estoque.</p>
+            )}
+          </aside>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 /** Painel lateral com miniaturas de todos os parques da partida (clicar para espiar). */
 const BPPlayerRail: React.FC<{
@@ -352,14 +451,21 @@ const BPPlayerRail: React.FC<{
   focusedId: string;
   activeId: string | null;
   onSelect: (pid: string) => void;
-}> = ({ bp, players, focusedId, activeId, onSelect }) => {
+  collapsed?: boolean;
+  onToggle?: () => void;
+  onOpen?: (pid: string) => void;
+}> = ({ bp, players, focusedId, activeId, onSelect, collapsed, onToggle, onOpen }) => {
   const nameOf = (id: string) => players.find((p) => p.id === id)?.name || 'Jogador';
-  const [col, tog] = useCollapsed('rail');
+  const [own, togOwn] = useCollapsed('rail-v');
+  const horizontal = collapsed !== undefined;
+  const col = horizontal ? false : own;
+  const tog = onToggle || togOwn;
+  if (horizontal && collapsed) return <FoldStrip label={`Parques (${bp.order.length})`} onOpen={tog} testid="bp-rail-strip" />;
   return (
     <aside className={'bp-rail' + (col ? ' is-collapsed' : '')} aria-label="Parques dos jogadores" data-testid="bp-player-rail">
       <div className="bp-rail-head">
         <h4>
-          <Fold collapsed={col} onToggle={tog}>
+          <Fold collapsed={col} onToggle={tog} horizontal={horizontal}>
             Parques ({bp.order.length})
           </Fold>
         </h4>
@@ -381,6 +487,8 @@ const BPPlayerRail: React.FC<{
                 sounds.playTick();
                 onSelect(id);
               }}
+              onDoubleClick={onOpen ? () => onOpen(id) : undefined}
+              data-tip={onOpen ? 'Duplo clique: ver em tela cheia' : undefined}
               data-testid={`bp-mini-park-${id}`}
             >
               <div className="bp-mini-head">
@@ -548,6 +656,11 @@ export const BPSeat: React.FC<{
   const [inspectId, setInspectId] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<'park' | 'reserve' | 'rivals'>('park');
   const [colSup, togSup] = useCollapsed('supply');
+  const [foldMid, togMid] = useCollapsed('mid');
+  const [foldRail, togRail] = useCollapsed('rail');
+  const [openPark, setOpenPark] = useState<string | null>(null);
+  const seatRef = React.useRef<HTMLDivElement | null>(null);
+  const narrow = useNarrow(seatRef);
 
   const activePlayer = bpCurrent(bp);
   const myTurn = !readOnly && activePlayer === playerId;
@@ -706,9 +819,13 @@ export const BPSeat: React.FC<{
   const nameOf = (id: string | null) => players.find((p) => p.id === id)?.name || 'Jogador';
   const pendForMe = bp.pending.filter((p) => p.playerId === playerId).length;
   const expansionSpots = !isInspecting && myTurn && pend?.kind === 'crew' ? areaSpots(park) : undefined;
+  // recompensa pendente nunca fica escondida
+  const midFolded = foldMid && !narrow && !(pend && myTurn);
+  const railFolded = foldRail && !narrow;
 
   return (
-    <div className="bp-seat" data-testid="bp-seat">
+    <div className="bp-seat" data-testid="bp-seat" ref={seatRef}>
+      {openPark && <BPParkModal bp={bp} players={players} id={openPark} onClose={() => setOpenPark(null)} />}
       <div className="bp-mobile-tabs" role="tablist" aria-label="Visualização no celular">
         <button type="button" className="rdb-seg" role="tab" aria-selected={mobileTab === 'park'} aria-pressed={mobileTab === 'park'} onClick={() => setMobileTab('park')}>
           {pend ? 'Recompensa!' : 'Meu Parque'}
@@ -721,7 +838,7 @@ export const BPSeat: React.FC<{
         </button>
       </div>
 
-      <div className="bp-seat-main">
+      <div className="bp-seat-main" style={!narrow && (midFolded || railFolded) ? { gridTemplateColumns: COLS(midFolded, railFolded) } : undefined}>
         {/* Coluna 1: Parque em grande destaque + barra de movimento da peca + legenda */}
         <div className={'bp-seat-board' + (mobileTab === 'park' ? ' is-mobile-on' : '')}>
           <header className="bp-seat-head">
@@ -846,6 +963,11 @@ export const BPSeat: React.FC<{
         </div>
 
         {/* Coluna 2: Acao atual (Seu Estoque ou Recompensa) + Estoque Geral da Reserva */}
+        {midFolded ? (
+          <aside className="bp-seat-side is-hfolded">
+            <FoldStrip label="Estoque · Reserva" onOpen={togMid} testid="bp-mid-strip" />
+          </aside>
+        ) : (
         <aside className={'bp-seat-side' + (mobileTab === 'park' || mobileTab === 'reserve' ? ' is-mobile-on' : '')}>
           {mobileTab !== 'reserve' && pend && myTurn && (
             <BPRewardPanel
@@ -863,16 +985,22 @@ export const BPSeat: React.FC<{
             <section className="bp-supply" data-testid="bp-supply">
               <div className="bp-supply-head">
                 <h4>
-                  <Fold collapsed={colSup} onToggle={togSup}>
-                    Seu estoque
-                  </Fold>{' '}
+                  {narrow ? (
+                    <Fold collapsed={colSup} onToggle={togSup}>
+                      Seu estoque
+                    </Fold>
+                  ) : (
+                    <Fold collapsed={false} onToggle={togMid} horizontal>
+                      Seu estoque
+                    </Fold>
+                  )}{' '}
                   <span className="bp-h4-n">
                     {park.supply.length === 0 ? 'vazio' : `${park.supply.length} ${park.supply.length === 1 ? 'peça' : 'peças'}`}
                   </span>
                 </h4>
                 {myTurn && park.supply.length > 0 && <small className="bp-hint-line">Clique ou arraste no parque para encaixar</small>}
               </div>
-              {!colSup && (
+              {!(narrow && colSup) && (
               <div className="bp-tiles bp-tiles--bar">
                 {groups.map((g) => {
                   const on = g.uids.includes(sel || '');
@@ -908,9 +1036,11 @@ export const BPSeat: React.FC<{
                     }
                   : undefined
               }
+              onFold={narrow ? undefined : togMid}
             />
           </div>
         </aside>
+        )}
 
         {/* Coluna 3: Miniaturas de todos os parques da roda */}
         <div className={'bp-rail-col' + (mobileTab === 'rivals' ? ' is-mobile-on' : '')}>
@@ -923,6 +1053,9 @@ export const BPSeat: React.FC<{
               setInspectId(id === playerId ? null : id);
               setMobileTab('park');
             }}
+            collapsed={narrow ? undefined : railFolded}
+            onToggle={narrow ? undefined : togRail}
+            onOpen={(id) => id !== playerId && setOpenPark(id)}
           />
         </div>
       </div>
@@ -935,6 +1068,9 @@ export const BPTable: React.FC<{ state: ComTerraState; players: Player[]; gridMo
   const bp = state.bp!;
   const cur = bpCurrent(bp) || bp.order[0];
   const [inspectId, setInspectId] = useState<string | null>(null);
+  const [foldMid, togMid] = useCollapsed('mid');
+  const [foldRail, togRail] = useCollapsed('rail');
+  const [openPark, setOpenPark] = useState<string | null>(null);
 
   useEffect(() => {
     setInspectId(null);
@@ -970,7 +1106,12 @@ export const BPTable: React.FC<{ state: ComTerraState; players: Player[]; gridMo
   }
 
   return (
-    <div className="bp-table bp-table--spotlight" data-testid="bp-table">
+    <div
+      className="bp-table bp-table--spotlight"
+      data-testid="bp-table"
+      style={foldMid || foldRail ? { gridTemplateColumns: COLS(foldMid, foldRail) } : undefined}
+    >
+      {openPark && <BPParkModal bp={bp} players={players} id={openPark} onClose={() => setOpenPark(null)} />}
       <div className="bp-spotlight-stage">
         <header className="bp-seat-head">
           <span className="bp-seat-who">
@@ -998,8 +1139,8 @@ export const BPTable: React.FC<{ state: ComTerraState; players: Player[]; gridMo
         </div>
       </div>
 
-      <div className="bp-stock-col">
-        <BPReserveStock bp={bp} dense />
+      <div className={'bp-stock-col' + (foldMid ? ' is-hfolded' : '')}>
+        {foldMid ? <FoldStrip label="Reserva" onOpen={togMid} testid="bp-mid-strip" /> : <BPReserveStock bp={bp} dense onFold={togMid} />}
       </div>
 
       <BPPlayerRail
@@ -1008,6 +1149,9 @@ export const BPTable: React.FC<{ state: ComTerraState; players: Player[]; gridMo
         focusedId={focusId}
         activeId={cur}
         onSelect={(id) => setInspectId(id === cur ? null : id)}
+        collapsed={foldRail}
+        onToggle={togRail}
+        onOpen={setOpenPark}
       />
     </div>
   );
