@@ -149,8 +149,7 @@ export const BPReserveStock: React.FC<{
   dense?: boolean;
   eligibleTypes?: Set<BPTileType>;
   onPickReward?: (type: BPTileType) => void;
-  onFold?: () => void;
-}> = ({ bp, dense, eligibleTypes, onPickReward, onFold }) => {
+}> = ({ bp, dense, eligibleTypes, onPickReward }) => {
   const areaCount = bp.areaPiles[0].length + bp.areaPiles[1].length;
   const [colAll, togAll] = useCollapsed('reserve');
   const [colG, togG] = useCollapsed('reserve-green');
@@ -206,7 +205,7 @@ export const BPReserveStock: React.FC<{
     <section className={'bp-reserve' + (dense ? ' is-dense' : '') + (colAll ? ' is-collapsed' : '')} aria-label="Estoque da Reserva" data-testid="bp-reserve-stock">
       <div className="bp-reserve-top">
         <h4>
-          <Fold collapsed={onFold ? false : colAll} onToggle={onFold || togAll} horizontal={!!onFold}>
+          <Fold collapsed={colAll} onToggle={togAll}>
             Estoque da Reserva
           </Fold>
         </h4>
@@ -1081,7 +1080,6 @@ export const BPSeat: React.FC<{
                     }
                   : undefined
               }
-              onFold={narrow ? undefined : togMid}
             />
           </div>
         </aside>
@@ -1113,7 +1111,6 @@ export const BPTable: React.FC<{ state: ComTerraState; players: Player[]; gridMo
   const bp = state.bp!;
   const cur = bpCurrent(bp) || bp.order[0];
   const [inspectId, setInspectId] = useState<string | null>(null);
-  const [foldMid, togMid] = useCollapsed('mid');
   const [foldRail, togRail] = useCollapsed('rail');
   const [openPark, setOpenPark] = useState<string | null>(null);
 
@@ -1154,7 +1151,7 @@ export const BPTable: React.FC<{ state: ComTerraState; players: Player[]; gridMo
     <div
       className="bp-table bp-table--spotlight"
       data-testid="bp-table"
-      style={foldMid || foldRail ? { gridTemplateColumns: COLS(foldMid, foldRail) } : undefined}
+      style={foldRail ? { gridTemplateColumns: COLS(false, foldRail) } : undefined}
     >
       {openPark && <BPParkModal bp={bp} players={players} id={openPark} peek onClose={() => setOpenPark(null)} />}
       <div className="bp-spotlight-stage">
@@ -1184,8 +1181,8 @@ export const BPTable: React.FC<{ state: ComTerraState; players: Player[]; gridMo
         </div>
       </div>
 
-      <div className={'bp-stock-col' + (foldMid ? ' is-hfolded' : '')}>
-        {foldMid ? <FoldStrip label="Reserva" onOpen={togMid} testid="bp-mid-strip" /> : <BPReserveStock bp={bp} dense onFold={togMid} />}
+      <div className="bp-stock-col">
+        <BPReserveStock bp={bp} dense />
       </div>
 
       <BPPlayerRail

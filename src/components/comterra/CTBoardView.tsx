@@ -957,7 +957,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
         const col = ctColor(order, p.owner);
         return (
           <g key={uid}>
-            <PieceShape cells={p.cells} color={col} showContour={true} shadowId={shadowId} />
+            <PieceShape cells={p.cells} color={col} shadowId={shadowId} />
           </g>
         );
       })}
@@ -993,7 +993,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
       {/* peca na mao, flutuando sobre o grid */}
       {ghost && (
         <g className={ghost.locked ? '' : 'ct-ghost'} opacity={ghost.locked ? 1 : 0.94} pointerEvents="none">
-          <PieceShape cells={ghostCells} color={ctColor(order, ghost.playerId)} lift={ghost.locked ? 0.4 : 1.6} outline={ghost.ok ? '#35e06f' : '#ff3b3b'} showContour={true} shadowId={shadowId} />
+          <PieceShape cells={ghostCells} color={ctColor(order, ghost.playerId)} lift={ghost.locked ? 0.4 : 1.6} outline={ghost.ok ? '#35e06f' : '#ff3b3b'} shadowId={shadowId} />
         </g>
       )}
     </svg>
