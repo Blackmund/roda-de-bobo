@@ -88,7 +88,7 @@ test('CT: o saco tem pecas de 1 a 7 e os pontos crescem com o numero', () => {
 });
 
 test('CT Arquiteto: um tabuleiro 8x8 igual para cada jogador, loja com 5 pecas e turnos em rodizio', () => {
-  const s = buildComTerraState('arquiteto', P, 8, 42);
+  const s = buildComTerraState('arquiteto', P, 8, 42, true);
   assert.equal(s.boards.length, 3);
   assert.deepEqual(s.boards.map((b) => [b.w, b.h, b.owner]), [
     [8, 8, 'a'],
@@ -106,7 +106,7 @@ test('CT Arquiteto: um tabuleiro 8x8 igual para cada jogador, loja com 5 pecas e
 });
 
 test('CT: comprar e irreversivel, tira a peca da loja e a loja repoe', () => {
-  const s = buildComTerraState('arquiteto', P, 8, 42);
+  const s = buildComTerraState('arquiteto', P, 8, 42, true);
   const uid = s.shop[2].uid;
   const n = pickPiece(s, 'a', uid);
   assert.equal(n.hand.a.uid, uid);
@@ -118,7 +118,7 @@ test('CT: comprar e irreversivel, tira a peca da loja e a loja repoe', () => {
 });
 
 test('CT: bloco solido nunca cobre arvore; o furo cobre e vale +2', () => {
-  let s = clear(buildComTerraState('arquiteto', P, 8, 1));
+  let s = clear(buildComTerraState('arquiteto', P, 8, 1, true));
   s = setCell(s, 0, 1, 0, { tree: true });
   const p = piece(['12']);
   s = give(s, 'a', p);
@@ -132,7 +132,7 @@ test('CT: bloco solido nunca cobre arvore; o furo cobre e vale +2', () => {
 });
 
 test('CT: ficha coberta por bloco solido e coletada; dentro do furo fica e nao pontua', () => {
-  let s = clear(buildComTerraState('arquiteto', P, 8, 1));
+  let s = clear(buildComTerraState('arquiteto', P, 8, 1, true));
   s = setCell(s, 0, 0, 0, { tok: 2 });
   s = setCell(s, 0, 1, 0, { tok: -1 });
   const p = piece(['12']);
@@ -145,7 +145,7 @@ test('CT: ficha coberta por bloco solido e coletada; dentro do furo fica e nao p
 });
 
 test('CT: fora do tabuleiro, em cima de outra peca e orientacao inventada nao valem', () => {
-  let s = clear(buildComTerraState('arquiteto', P, 8, 1));
+  let s = clear(buildComTerraState('arquiteto', P, 8, 1, true));
   const p = piece(['111']);
   s = give(s, 'a', p);
   assert.equal(canPlaceAt(s, 'a', p.shape, 6, 0).ok, false);
@@ -156,7 +156,7 @@ test('CT: fora do tabuleiro, em cima de outra peca e orientacao inventada nao va
 });
 
 test('CT: descartar custa 3 pontos e passa a vez', () => {
-  let s = clear(buildComTerraState('arquiteto', P, 8, 1));
+  let s = clear(buildComTerraState('arquiteto', P, 8, 1, true));
   s = give(s, 'a', piece(['11']));
   const n = discardPiece(s, 'a');
   assert.equal(n.pointsAwarded.a, -CT_DISCARD_PENALTY);
@@ -165,7 +165,7 @@ test('CT: descartar custa 3 pontos e passa a vez', () => {
 });
 
 test('CT: peca sem encaixe possivel e detectada', () => {
-  let s = clear(buildComTerraState('arquiteto', P, 8, 1));
+  let s = clear(buildComTerraState('arquiteto', P, 8, 1, true));
   const b = s.boards[0];
   s = { ...s, boards: [{ ...b, cells: b.cells.map((c, i) => (i === 0 ? c : { ...c, o: 'a', k: 1 as const, p: 'w' })) }, ...s.boards.slice(1)] };
   assert.equal(hasAnyPlacement(s, 'a', piece(['11'])), false);
@@ -173,7 +173,7 @@ test('CT: peca sem encaixe possivel e detectada', () => {
 });
 
 test('CT Arquiteto: linha cheia vale +2', () => {
-  let s = clear(buildComTerraState('arquiteto', P, 8, 1));
+  let s = clear(buildComTerraState('arquiteto', P, 8, 1, true));
   for (let x = 0; x < 7; x++) s = setCell(s, 0, x, 0, { o: 'a', k: 1, p: 'w' });
   const p = piece(['1']);
   s = give(s, 'a', p);
@@ -182,7 +182,7 @@ test('CT Arquiteto: linha cheia vale +2', () => {
 });
 
 test('CT: cobrir icone de acao com bloco solido da a acao; arvore nao vai em cima de ficha', () => {
-  let s = clear(buildComTerraState('arquiteto', P, 8, 1));
+  let s = clear(buildComTerraState('arquiteto', P, 8, 1, true));
   s = setCell(s, 0, 0, 0, { act: 'tree' });
   s = setCell(s, 0, 5, 5, { tok: 1 });
   const p = piece(['1']);
@@ -199,7 +199,7 @@ test('CT: cobrir icone de acao com bloco solido da a acao; arvore nao vai em cim
 });
 
 test('CT Arquiteto: depois de todas as rodadas a partida vai para o resultado', () => {
-  let s = buildComTerraState('arquiteto', [{ id: 'a' }, { id: 'b' }], 3, 7);
+  let s = buildComTerraState('arquiteto', [{ id: 'a' }, { id: 'b' }], 3, 7, true);
   let guard = 0;
   while (s.phase !== 'SUMMARY' && guard++ < 50) {
     const pid = currentPlayerId(s)!;
@@ -210,7 +210,7 @@ test('CT Arquiteto: depois de todas as rodadas a partida vai para o resultado', 
   assert.equal(guard, 6);
   assert.deepEqual(s.pointsAwarded, { a: -9, b: -9 });
   // a segunda rodada comeca por quem jogou por ultimo na primeira
-  const r2 = buildComTerraState('arquiteto', [{ id: 'a' }, { id: 'b' }], 3, 7);
+  const r2 = buildComTerraState('arquiteto', [{ id: 'a' }, { id: 'b' }], 3, 7, true);
   let t = discardPiece(pickPiece(r2, 'a', r2.shop[0].uid), 'a');
   t = discardPiece(pickPiece(t, 'b', t.shop[0].uid), 'b');
   assert.equal(t.round, 2);
@@ -298,7 +298,7 @@ test('CT: o diretor destrava a partida quando alguem some', () => {
 test('CT no hub: limites, conteudo local e pontos no placar das equipes', () => {
   assert.deepEqual([GAME_LIMITS['com-terra'].min, GAME_LIMITS['com-terra'].max], [2, 4]);
   assert.equal(usesLocalContent('com-terra'), true);
-  const ct = { ...buildComTerraState('arquiteto', [{ id: 'a' }, { id: 'b' }], 3, 1), pointsAwarded: { a: 7, b: -2 } };
+  const ct = { ...buildComTerraState('arquiteto', [{ id: 'a' }, { id: 'b' }], 3, 1, true), pointsAwarded: { a: 7, b: -2 } };
   const room: any = {
     activeGame: 'com-terra',
     comTerra: ct,

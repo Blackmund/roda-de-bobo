@@ -376,6 +376,60 @@ export interface DrawStroke {
 }
 
 // COM TERRA (poliminos com furo vazado; 3 modos: arquiteto, diabo, fronteiras). Motor em utils/comTerraEngine.ts
+
+// Com Terra - Arquiteto nas regras do Barenpark
+export type BPIcon = 'pit' | 'wheel' | 'cement' | 'excavator' | 'crew';
+/** recompensa pendente: um icone coberto ou a Area Verde de quem passou a vez */
+export type BPRewardKind = 'wheel' | 'cement' | 'excavator' | 'crew' | 'pass';
+export type BPTileType =
+  | 'toilet' | 'playground' | 'food' | 'river'
+  | 'h-polar' | 'h-gobi' | 'h-koala' | 'h-panda'
+  | 'e-polar' | 'e-gobi' | 'e-koala' | 'e-panda';
+export interface BPTile {
+  uid: string;
+  type: BPTileType;
+  pts: number;
+}
+export interface BPArea {
+  id: string;
+  /** posicao na grade de areas (7 x 4); a Entrada fica em (3, 3) */
+  ax: number;
+  ay: number;
+  icons: Array<BPIcon | null>;
+  entrance?: boolean;
+  /** valor da estatua que foi para o fosso (area completa) */
+  statue?: number;
+}
+export interface BPPark {
+  areas: BPArea[];
+  /** casas ocupadas: "x,y" -> peca */
+  cells: Record<string, { uid: string; type: BPTileType; pts: number }>;
+  /** estoque pessoal (pecas ainda nao colocadas) */
+  supply: BPTile[];
+  statues: number[];
+}
+export interface BPState {
+  turnIdx: number;
+  order: string[];
+  parks: Record<string, BPPark>;
+  /** Areas Verdes que sobram no estoque geral, por tipo */
+  greens: Record<string, number>;
+  /** pilhas de Casas e de Cercados (o ultimo do array e o topo) */
+  houses: Record<string, number[]>;
+  enclosures: Record<string, number[]>;
+  /** duas pilhas de areas de parque (ids; o ultimo e o topo) */
+  areaPiles: [string[], string[]];
+  areaDefs: Record<string, string>;
+  /** estatuas restantes, da maior para a menor */
+  statues: number[];
+  pending: Array<{ playerId: string; kind: BPRewardKind }>;
+  endTriggeredBy: string | null;
+  /** depois do gatilho do fim: quantas vezes ainda faltam */
+  turnsLeft: number | null;
+  finished: boolean;
+  log: Array<{ id: number; playerId: string; text: string }>;
+}
+
 export type CTMode = 'arquiteto' | 'diabo' | 'fronteiras';
 export type CTPendingKind = 'tree' | 'tok';
 
@@ -398,6 +452,9 @@ export interface CTCell {
   tok?: number;
   /** icone de acao: cobrir com bloco solido da a acao */
   act?: CTPendingKind;
+  /** Arquiteto (Barenpark): icone impresso na area e estatua no fosso */
+  bpi?: BPIcon;
+  statue?: number;
   /** peca que cobre a casa: dono, tipo do bloco (1 solido, 2 furo) e id da peca */
   o?: string;
   k?: 1 | 2;
@@ -436,6 +493,8 @@ export interface ComTerraState {
   log: Array<{ id: number; playerId: string; text: string; delta: number }>;
   seq: number;
   seed: number;
+  /** Arquiteto nas regras do Barenpark */
+  bp?: BPState;
 }
 
 export type PintoPlayMode = 'pad' | 'tv';

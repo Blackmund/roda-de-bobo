@@ -141,6 +141,50 @@ const ActionIcon: React.FC<{ x: number; y: number; kind: 'tree' | 'tok' }> = ({ 
   );
 };
 
+/** Arquiteto (Barenpark): icones impressos nas areas. Cor + sigla curta (legenda na tela). */
+export const BP_ICON_META: Record<string, { fill: string; ink: string; tag: string; label: string }> = {
+  wheel: { fill: '#2fb36b', ink: '#04210f', tag: 'V', label: 'Carrinho: pega uma Área Verde' },
+  cement: { fill: '#f5f2eb', ink: '#22231f', tag: 'C', label: 'Betoneira: pega uma Casa de animal (ou Área Verde)' },
+  excavator: { fill: '#ff8a1e', ink: '#2a1300', tag: 'E', label: 'Escavadeira: pega um Cercado (ou Casa, ou Área Verde)' },
+  crew: { fill: '#ffc93c', ink: '#2a1e00', tag: 'O', label: 'Equipe de obra: abre uma área nova no parque' }
+};
+
+const BPIconMark: React.FC<{ x: number; y: number; kind: string; statue?: number }> = ({ x, y, kind, statue }) => {
+  const cx = x * U + U / 2;
+  const cy = y * U + U / 2;
+  if (kind === 'pit') {
+    return (
+      <g pointerEvents="none">
+        <rect x={x * U + 0.8} y={y * U + 0.8} width={U - 1.6} height={U - 1.6} rx="1" fill="#05060f" stroke="#3a3f55" strokeWidth="0.4" />
+        {statue !== undefined ? (
+          <g>
+            <circle cx={cx} cy={cy - 0.4} r="3.1" fill="#f5f2eb" stroke="#b08415" strokeWidth="0.5" />
+            <circle cx={cx - 2.1} cy={cy - 3} r="1" fill="#f5f2eb" stroke="#b08415" strokeWidth="0.4" />
+            <circle cx={cx + 2.1} cy={cy - 3} r="1" fill="#f5f2eb" stroke="#b08415" strokeWidth="0.4" />
+            <text x={cx} y={cy + 0.8} textAnchor="middle" fontSize="3.2" fontWeight="900" fontFamily="'Inter','Arial Black',sans-serif" fill="#22231f">
+              {statue}
+            </text>
+          </g>
+        ) : (
+          <text x={cx} y={cy + 1.1} textAnchor="middle" fontSize="1.7" fontWeight="900" fontFamily="'Inter','Arial Black',sans-serif" fill="#5a6078">
+            FOSSO
+          </text>
+        )}
+      </g>
+    );
+  }
+  const m = BP_ICON_META[kind];
+  if (!m) return null;
+  return (
+    <g pointerEvents="none">
+      <circle cx={cx} cy={cy} r="2.9" fill={m.fill} opacity="0.92" />
+      <text x={cx} y={cy + 1.15} textAnchor="middle" fontSize="3.3" fontWeight="900" fontFamily="'Inter','Arial Black',sans-serif" fill={m.ink}>
+        {m.tag}
+      </text>
+    </g>
+  );
+};
+
 export interface CTGhost {
   m: number[][];
   x: number;
@@ -201,6 +245,22 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({ board, order, ghost, c
       map.set(c.p, e);
     });
     return Array.from(map.entries());
+  }, [board]);
+
+  const areaFrames = useMemo(() => {
+    const m = new Map<string, { id: string; x: number; y: number; x2: number; y2: number }>();
+    board.cells.forEach((c, i) => {
+      if (c.t === 0 || !c.z || !board.id.startsWith('bp-')) return;
+      const x = i % board.w;
+      const y = Math.floor(i / board.w);
+      const f = m.get(c.z) || { id: c.z, x, y, x2: x, y2: y };
+      f.x = Math.min(f.x, x);
+      f.y = Math.min(f.y, y);
+      f.x2 = Math.max(f.x2, x);
+      f.y2 = Math.max(f.y2, y);
+      m.set(c.z, f);
+    });
+    return Array.from(m.values()).map((f) => ({ id: f.id, x: f.x, y: f.y, w: f.x2 - f.x + 1, h: f.y2 - f.y + 1 }));
   }, [board]);
 
   const pad = 2.2;
@@ -291,7 +351,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({ board, order, ghost, c
           ))}
         {/* zonas do Fronteiras: a base de cada jogador ganha a cor dele */}
         {cells
-          .filter(({ c }) => c.z && c.z !== 'ilha')
+          .filter(({ c }) => c.z && c.z !== 'ilha' && !board.id.startsWith('bp-'))
           .map(({ c, x, y }) => (
             <rect key={'z' + x + ',' + y} x={x * U} y={y * U} width={U} height={U} fill={ctColor(order, c.z).top} opacity="0.3" />
           ))}
@@ -303,6 +363,10 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({ board, order, ghost, c
       {/* fichas e icones de acao ficam no chao (aparecem por dentro do furo) */}
       {cells.map(({ c, x, y }) => (c.tok !== undefined ? <Token key={'t' + x + ',' + y} x={x} y={y} v={c.tok} /> : null))}
       {cells.map(({ c, x, y }) => (c.act ? <ActionIcon key={'a' + x + ',' + y} x={x} y={y} kind={c.act} /> : null))}
+      {cells.map(({ c, x, y }) => (c.bpi && !c.o ? <BPIconMark key={'bp' + x + ',' + y} x={x} y={y} kind={c.bpi} statue={c.statue} /> : null))}
+      {areaFrames.map((f) => (
+        <rect key={'af' + f.id} x={f.x * U} y={f.y * U} width={f.w * U} height={f.h * U} fill="none" stroke="#f5f2eb" strokeOpacity="0.35" strokeWidth="0.5" pointerEvents="none" />
+      ))}
 
       {/* casas que aceitam a acao em curso */}
       {canTarget &&

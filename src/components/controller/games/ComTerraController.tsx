@@ -2,6 +2,7 @@ import React from 'react';
 import type { ComTerraState, GameRoom, Player } from '../../../types/game';
 import { CTSeat } from '../../comterra/CTSeat';
 import { CTSummary } from '../../comterra/CTSummary';
+import { BPSeat } from '../../comterra/BPViews';
 import '../../comterra/comterra.css';
 
 interface ComTerraControllerProps {
@@ -26,7 +27,11 @@ export const ComTerraController: React.FC<ComTerraControllerProps> = ({ room, pl
       {ct.phase === 'SUMMARY' ? (
         <CTSummary state={ct} players={room.players} onFinish={canFinish ? onNextRound : undefined} />
       ) : (
-        <CTSeat state={ct} players={room.players} playerId={player.id} onUpdate={onUpdate} />
+        ct.bp ? (
+          <BPSeat state={ct} players={room.players} playerId={player.id} onUpdate={onUpdate} />
+        ) : (
+          <CTSeat state={ct} players={room.players} playerId={player.id} onUpdate={onUpdate} />
+        )
       )}
     </div>
   );

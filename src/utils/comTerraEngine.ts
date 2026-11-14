@@ -24,6 +24,8 @@ import type {
 
 export type Rng = () => number;
 
+import { buildBPState } from './bpEngine';
+
 export function mulberry32(seed: number): Rng {
   let a = seed >>> 0;
   return () => {
@@ -365,7 +367,9 @@ export function buildComTerraState(
   mode: CTMode,
   players: Array<{ id: string }>,
   totalRounds: number,
-  seed: number = Date.now() % 2147483647
+  seed: number = Date.now() % 2147483647,
+  /** so para testes: o Arquiteto antigo (loja e tabuleiro 8x8), antes de virar Barenpark */
+  classicArquiteto = false
 ): ComTerraState {
   const order = players.slice(0, comTerraMaxPlayers()).map((p) => p.id);
   const rng = mulberry32(seed);
@@ -399,6 +403,10 @@ export function buildComTerraState(
     seq: 0,
     seed
   };
+  if (mode === 'arquiteto' && !classicArquiteto) {
+    // Arquiteto = Barenpark: o estado do jogo vive em `bp`; a loja e os tabuleiros antigos nao sao usados.
+    return { ...base, shop: [], bag: [], boards: [], bp: buildBPState(order, seed) };
+  }
   return refill(base);
 }
 
