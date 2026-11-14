@@ -106,7 +106,7 @@ const TileChip: React.FC<{
           ×{count}
         </span>
       )}
-      <CTPieceView shape={tileShape(type)} color={KIND_COLOR[kind]} label={fullLabel} className="bp-tile-art" minBox={compact ? 3 : 2} />
+      <CTPieceView shape={tileShape(type)} color={KIND_COLOR[kind]} label={fullLabel} className="bp-tile-art" minBox={compact ? (kind === 'green' ? 2 : 3) : 2} />
       <span className="bp-tile-name">{compact ? stockShortName(type) : shortTileName(type)}</span>
       <span className="bp-tile-pts" data-tip="Pontos">
         {pts ?? 0}
