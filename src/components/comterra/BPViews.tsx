@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, PanelRightClose, PanelRightOpen, X } from 'lucide-react';
 import {
   ArrowDown,
@@ -374,7 +375,9 @@ export const BPPiecePeek: React.FC<{ scope: string }> = ({ scope }) => {
   if (!peek) return null;
   const meta = BP_TILE_META[peek.type];
   const cells = tileShape(peek.type).flat().filter(Boolean).length;
-  return (
+  if (typeof document === 'undefined') return null;
+  // portal no body: fica acima das dicas e de qualquer painel
+  return createPortal(
     <div className="bp-peek" role="figure" aria-label={meta.label} data-testid="bp-piece-peek">
       <div className="bp-peek-card">
         <CTPieceView shape={tileShape(peek.type)} color={KIND_COLOR[meta.kind]} label={meta.label} className="bp-peek-art" minBox={2} aspect={1.4} />
@@ -384,7 +387,8 @@ export const BPPiecePeek: React.FC<{ scope: string }> = ({ scope }) => {
           <small>{cells} {cells === 1 ? 'casa' : 'casas'}</small>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
