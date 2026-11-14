@@ -375,7 +375,7 @@ export const BPPiecePeek: React.FC<{ scope: string }> = ({ scope }) => {
   const meta = BP_TILE_META[peek.type];
   const cells = tileShape(peek.type).flat().filter(Boolean).length;
   return (
-    <div className="bp-peek" role="dialog" aria-label={meta.label} data-testid="bp-piece-peek">
+    <div className="bp-peek" role="figure" aria-label={meta.label} data-testid="bp-piece-peek">
       <div className="bp-peek-card">
         <CTPieceView shape={tileShape(peek.type)} color={KIND_COLOR[meta.kind]} label={meta.label} className="bp-peek-art" minBox={2} aspect={1.4} />
         <div className="bp-peek-name">
