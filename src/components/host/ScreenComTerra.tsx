@@ -19,6 +19,7 @@ import { BPSeat, BPTable } from '../comterra/BPViews';
 import { bpCurrent } from '../../utils/bpEngine';
 import '../comterra/comterra.css';
 import { TipLayer } from '../comterra/TipLayer';
+import { BPPiecePeek } from '../comterra/BPViews';
 
 interface ScreenComTerraProps {
   room: GameRoom;
@@ -58,6 +59,7 @@ export const ScreenComTerra: React.FC<ScreenComTerraProps> = ({ room, onUpdateCo
     return (
       <div className="ct-screen bp-screen rdb-tip-scope" data-testid="screen-com-terra">
         <TipLayer scope=".bp-screen" />
+        <BPPiecePeek scope=".bp-screen" />
         <header className="rdb-lim-bar">
           <span className="rdb-lim-title">
             Com Terra <span className="rdb-lim-round">Reserva · Bärenpark</span>

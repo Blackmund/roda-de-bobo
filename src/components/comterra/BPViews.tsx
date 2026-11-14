@@ -100,6 +100,8 @@ const TileChip: React.FC<{
       onClick={onClick}
       data-testid={testid}
       data-tip={fullLabel}
+      data-peek={type}
+      data-peek-pts={kind === 'green' ? undefined : pts}
     >
       {count !== undefined && (
         <span className={'bp-tile-count' + (count === 0 ? ' is-zero' : '')} data-tip={countTip} aria-label={countTip}>
@@ -181,6 +183,7 @@ export const BPReserveStock: React.FC<{
           type="button"
           className={cls}
           data-tip={tip}
+          data-peek={type}
           onClick={() => onPickReward!(type)}
           aria-label={`Pegar ${BP_TILE_META[type].label}`}
         >
@@ -191,7 +194,7 @@ export const BPReserveStock: React.FC<{
       );
     }
     return (
-      <div key={type} className={cls} data-tip={tip}>
+      <div key={type} className={cls} data-tip={tip} data-peek={type}>
         <CTPieceView shape={shape} color={color} label={BP_TILE_META[type].label} className="bp-stock-art" minBox={extraClass.includes('--enc') ? 3 : extraClass.includes('--row') ? 1.3 : 2} aspect={1.5} />
         <span className="bp-stock-label">{shortName}</span>
         {children}
@@ -296,6 +299,92 @@ export const BPReserveStock: React.FC<{
       </div>
       )}
     </section>
+  );
+};
+
+/**
+ * Segurar uma peca (loja, estoque, recompensa) mostra a peca grande no meio da tela; soltar fecha.
+ * Vale para qualquer elemento com data-peek="<tipo>" dentro de `scope`.
+ */
+export const BPPiecePeek: React.FC<{ scope: string }> = ({ scope }) => {
+  const [peek, setPeek] = useState<{ type: BPTileType; pts?: string } | null>(null);
+  useEffect(() => {
+    let timer: number | null = null;
+    let start: { x: number; y: number } | null = null;
+    let shown = false;
+    const clear = () => {
+      if (timer) window.clearTimeout(timer);
+      timer = null;
+      start = null;
+    };
+    const down = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      const el = (e.target as Element | null)?.closest?.('[data-peek]');
+      if (!el || !el.closest(scope)) return;
+      const type = el.getAttribute('data-peek') as BPTileType;
+      if (!BP_TILE_META[type]) return;
+      clear();
+      start = { x: e.clientX, y: e.clientY };
+      timer = window.setTimeout(() => {
+        timer = null;
+        shown = true;
+        const pts = el.getAttribute('data-peek-pts') || el.querySelector(':scope > b, .bp-stock-meta > b')?.textContent || undefined;
+        setPeek({ type, pts: pts && /\d/.test(pts) ? pts : undefined });
+      }, 280);
+    };
+    const move = (e: PointerEvent) => {
+      // arrastar a peca cancela (o arraste segue normal)
+      if (start && timer && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 6) clear();
+    };
+    const up = () => {
+      clear();
+      if (!shown) return;
+      shown = false;
+      setPeek(null);
+      // engole o clique que vem logo depois de soltar, para nao selecionar/pegar a peca sem querer
+      const stop = (ev: Event) => {
+        ev.stopPropagation();
+        ev.preventDefault();
+      };
+      window.addEventListener('click', stop, { capture: true, once: true });
+      window.setTimeout(() => window.removeEventListener('click', stop, { capture: true }), 80);
+    };
+    const menu = (e: Event) => {
+      if ((e.target as Element | null)?.closest?.('[data-peek]')) e.preventDefault();
+    };
+    document.addEventListener('pointerdown', down);
+    document.addEventListener('pointermove', move);
+    document.addEventListener('dragstart', clear);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+    window.addEventListener('blur', up);
+    document.addEventListener('contextmenu', menu);
+    return () => {
+      clear();
+      document.removeEventListener('pointerdown', down);
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('dragstart', clear);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+      window.removeEventListener('blur', up);
+      document.removeEventListener('contextmenu', menu);
+    };
+  }, [scope]);
+
+  if (!peek) return null;
+  const meta = BP_TILE_META[peek.type];
+  const cells = tileShape(peek.type).flat().filter(Boolean).length;
+  return (
+    <div className="bp-peek" role="dialog" aria-label={meta.label} data-testid="bp-piece-peek">
+      <div className="bp-peek-card">
+        <CTPieceView shape={tileShape(peek.type)} color={KIND_COLOR[meta.kind]} label={meta.label} className="bp-peek-art" minBox={2} aspect={1.4} />
+        <div className="bp-peek-name">
+          <strong>{meta.label}</strong>
+          {peek.pts !== undefined && <b>{peek.pts} pts</b>}
+          <small>{cells} {cells === 1 ? 'casa' : 'casas'}</small>
+        </div>
+      </div>
+    </div>
   );
 };
 
