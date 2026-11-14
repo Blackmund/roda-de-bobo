@@ -5,7 +5,6 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
-  Check,
   Eye,
   FlipHorizontal2,
   RotateCw,
@@ -977,7 +976,6 @@ export const BPSeat: React.FC<{
                 disabled={!ghost?.ok}
                 onClick={place}
               >
-                <Check size={15} />
                 <span>
                   {ghost
                     ? ghost.ok

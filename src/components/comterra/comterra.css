@@ -2238,3 +2238,12 @@ button.ct-shop-card:focus-visible {
 @media (min-width: 1020px) {
   .bp-screen { margin-top: -1.3rem; }
 }
+
+/* barra da peca: o botao Colocar nunca corta; se faltar espaco, Girar/Espelhar viram so icone */
+.bp-controls-bar { container-type: inline-size; overflow: hidden; }
+.bp-place-cta { flex: 1 0 auto; min-width: max-content; overflow: visible; }
+.bp-place-cta > span { overflow: visible; }
+@container (max-width: 29rem) {
+  .bp-ctrl-btn > span { display: none; }
+  .bp-controls-bar .bp-ctrl-btn { padding: 0; min-width: 1.9rem; }
+}
