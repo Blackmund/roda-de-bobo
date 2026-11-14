@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Info } from 'lucide-react';
 import type { ComTerraState, GameRoom } from '../../types/game';
 import {
   CT_MODE_LABEL,
@@ -14,6 +15,8 @@ import { PlayerMark } from '../rdb/PlayerMark';
 import { CTBoardView, CTPieceView, ctColor } from '../comterra/CTBoardView';
 import { CTSeat } from '../comterra/CTSeat';
 import { CTSummary } from '../comterra/CTSummary';
+import { BPSeat, BPTable } from '../comterra/BPViews';
+import { bpCurrent } from '../../utils/bpEngine';
 import '../comterra/comterra.css';
 
 interface ScreenComTerraProps {
@@ -47,6 +50,41 @@ export const ScreenComTerra: React.FC<ScreenComTerraProps> = ({ room, onUpdateCo
   }
 
   const players = room.players;
+  if (ct.bp && ct.phase !== 'SUMMARY') {
+    const cur = bpCurrent(ct.bp) || ct.order[0];
+    const local = room.connectionMode === 'local';
+    return (
+      <div className="ct-screen bp-screen" data-testid="screen-com-terra">
+        <header className="rdb-lim-bar">
+          <span className="rdb-lim-title">
+            Com Terra <span className="rdb-lim-round">Arquiteto</span>
+          </span>
+          <span
+            className="rdb-lim-rule"
+            tabIndex={0}
+            data-tip="Regras do Bärenpark: coloque uma peça do estoque por vez, encostada nas suas. Cada ícone coberto dá uma peça nova; a equipe de obra abre uma área. Área completa = estátua de urso. Quem completar 4 áreas encerra."
+          >
+            <Info size={16} />
+          </span>
+          <div className="rdb-lim-tools">
+            <button type="button" className="rdb-seg" aria-pressed={view === 'tv'} onClick={() => setView('tv')}>
+              Todos os parques
+            </button>
+            <button type="button" className="rdb-seg" aria-pressed={view !== 'tv'} onClick={() => setView('mesa')}>
+              Vez de quem joga
+            </button>
+          </div>
+        </header>
+        {view === 'tv' && !local ? (
+          <BPTable state={ct} players={players} />
+        ) : view === 'tv' ? (
+          <BPTable state={ct} players={players} />
+        ) : (
+          <BPSeat key={cur} state={ct} players={players} playerId={cur} onUpdate={onUpdateComTerraState} />
+        )}
+      </div>
+    );
+  }
   const nameOf = (id: string | null) => players.find((p) => p.id === id)?.name || 'Jogador';
   const acting = actingPlayers(ct);
   const turnId = currentPlayerId(ct);
