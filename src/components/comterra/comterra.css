@@ -2003,3 +2003,122 @@ button.ct-shop-card:focus-visible {
   min-height: 2.25rem;
   min-width: 2.25rem;
 }
+
+/* ---------- Arquiteto v6: tudo achatado, botoes menores, paineis recolhiveis, zoom vertical ---------- */
+.bp-seat-head {
+  gap: 0.6rem;
+  padding: 0.15rem 0 0.35rem;
+  background: none;
+  border-left: 0;
+  border-bottom: 1px solid rgba(245, 242, 235, 0.14);
+}
+.bp-seat-who { font-size: 0.95rem; }
+.bp-seat-head .bp-seat-turn {
+  margin-left: auto;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.7rem;
+  box-shadow: none;
+}
+.bp-seat-head .bp-seat-areas { padding: 0.15rem 0.45rem; font-size: 0.68rem; }
+
+.bp-controls-bar { flex-wrap: nowrap; gap: 0.3rem; }
+.bp-controls-orient, .bp-nudge { gap: 0.2rem; flex: none; }
+.bp-controls-bar .rdb-seg,
+.bp-controls-bar .rdb-btn {
+  min-width: 1.9rem;
+  min-height: 1.9rem;
+  height: 1.9rem;
+  padding: 0 0.5rem;
+  font-size: 0.68rem;
+  box-shadow: none;
+  transform: none;
+}
+.bp-nudge .rdb-seg { min-width: 1.9rem; padding: 0; }
+.bp-place-cta {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-width: 1px;
+}
+.bp-place-cta > span { overflow: hidden; text-overflow: ellipsis; }
+.bp-pass-btn { min-height: 1.9rem; font-size: 0.72rem; box-shadow: none; }
+
+/* legenda achatada: uma linha de texto, sem caixas */
+.bp-legend2,
+.bp-legend2.is-compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.9rem;
+  padding: 0.3rem 0 0;
+  border-top: 1px solid rgba(245, 242, 235, 0.1);
+}
+.bp-legend2 li,
+.bp-legend2.is-compact li { padding: 0; background: none; border: 0; gap: 0.3rem; }
+.bp-legend2 li > svg,
+.bp-legend2.is-compact li > svg { width: 1.15rem; height: 1.15rem; }
+.bp-legend2 li > span,
+.bp-legend2.is-compact li > span { flex-direction: row; align-items: baseline; gap: 0.25rem; }
+.bp-legend2 small,
+.bp-legend2.is-compact small { display: inline; font-size: 0.6rem; }
+.bp-legend2 b,
+.bp-legend2.is-compact b { font-size: 0.66rem; }
+
+/* paineis recolhiveis */
+.bp-fold {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+.bp-fold:hover { color: var(--rdb-teal, #17b8b8); }
+.bp-fold-chev { flex: none; transition: transform 0.15s ease; }
+.bp-fold.is-collapsed .bp-fold-chev { transform: rotate(-90deg); }
+.bp-stock-cap.bp-fold { width: 100%; text-align: left; }
+.bp-reserve.is-collapsed { flex: none; }
+.bp-rail.is-collapsed { flex: none; }
+.bp-seat-main:has(.bp-rail.is-collapsed),
+.bp-table--spotlight:has(.bp-rail.is-collapsed) {
+  grid-template-columns: minmax(0, 1.5fr) minmax(22rem, 1.16fr) 10rem;
+}
+
+/* zoom vertical, achatado */
+.ct-zoom-bar {
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  background: rgba(11, 18, 48, 0.9);
+  border: 1px solid rgba(245, 242, 235, 0.22);
+}
+.ct-zoom-bar .ct-zoom-btn,
+.ct-zoom-bar .ct-zoom-level {
+  width: 2rem;
+  min-width: 2rem;
+  height: 2rem;
+  min-height: 2rem;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid rgba(245, 242, 235, 0.12);
+  color: var(--rdb-cream, #f5f2eb);
+  cursor: pointer;
+}
+.ct-zoom-bar > :last-child { border-bottom: 0; }
+.ct-zoom-bar .ct-zoom-level { height: 1.5rem; min-height: 1.5rem; font-size: 0.6rem; font-weight: 900; color: rgba(245, 242, 235, 0.75); }
+.ct-zoom-bar .ct-zoom-btn:hover:not(:disabled),
+.ct-zoom-bar .ct-zoom-level:hover { background: rgba(23, 184, 184, 0.18); color: var(--rdb-teal, #17b8b8); }
+.ct-zoom-bar .ct-zoom-reset { color: var(--rdb-teal, #17b8b8); }
+.bp-stock-cap.bp-fold { font-size: 0.62rem; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(245, 242, 235, 0.78); }
+.bp-stock-cap.bp-fold:hover { color: var(--rdb-teal, #17b8b8); }
+.ct-zoom-bar { position: absolute; top: 0.45rem; right: 0.45rem; }
+.bp-legend2, .bp-legend2.is-compact { gap: 0.15rem 0.7rem; }

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Minus, Plus, RotateCcw } from 'lucide-react';
+import { Maximize2, Minus, Plus } from 'lucide-react';
 import type { CTBoard, CTCell } from '../../types/game';
 import { shapeCells } from '../../utils/comTerraEngine';
 
@@ -451,6 +451,9 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
     panY: number;
     moved: boolean;
   } | null>(null);
+  // dedos na tela (pinca) e estado do gesto
+  const touches = useRef(new Map<number, { x: number; y: number }>());
+  const pinch = useRef<{ dist: number; zoom: number } | null>(null);
   const [internalZoom, setInternalZoom] = useState(1);
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [panning, setPanning] = useState(false);
@@ -609,27 +612,31 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
     });
   }, [enableZoom, activeZoom, ghost?.x, ghost?.y, ghost?.m, fullBox, vw, vh]);
 
-  // Zoom com roda do mouse ancorado sob o cursor
+  /** Zoom ancorado num ponto da tela (cursor do mouse ou meio da pinca). */
+  const zoomAtClient = (nextZ: number, clientX: number, clientY: number) => {
+    const svg = svgRef.current;
+    const ctm = svg?.getScreenCTM();
+    if (!svg || !ctm) return applyZoom(nextZ);
+    const pt = svg.createSVGPoint();
+    pt.x = clientX;
+    pt.y = clientY;
+    const world = pt.matrixTransform(ctm.inverse());
+    const nx = (world.x - (fullBox.x + clampedPan.x)) / vw;
+    const ny = (world.y - (fullBox.y + clampedPan.y)) / vh;
+    applyZoom(nextZ, { x: world.x, y: world.y, nx, ny });
+  };
+
+  // Zoom com Ctrl + roda do mouse (ou pinca no touchpad), ancorado sob o cursor
   useEffect(() => {
     const svg = svgRef.current;
     if (!enableZoom || !svg) return;
     const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return; // rolagem normal continua rolando a pagina
       e.preventDefault();
-      const dir = e.deltaY < 0 ? 1 : -1;
-      const nextZ = Math.round(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, activeZoom + dir * ZOOM_STEP)) * 100) / 100;
+      const k = e.deltaMode === 1 ? 0.05 : 0.0035;
+      const nextZ = Math.round(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, activeZoom * Math.exp(-e.deltaY * k))) * 100) / 100;
       if (nextZ === activeZoom) return;
-      const ctm = svg.getScreenCTM();
-      if (ctm) {
-        const pt = svg.createSVGPoint();
-        pt.x = e.clientX;
-        pt.y = e.clientY;
-        const world = pt.matrixTransform(ctm.inverse());
-        const nx = (world.x - (fullBox.x + clampedPan.x)) / vw;
-        const ny = (world.y - (fullBox.y + clampedPan.y)) / vh;
-        applyZoom(nextZ, { x: world.x, y: world.y, nx, ny });
-      } else {
-        applyZoom(nextZ);
-      }
+      zoomAtClient(nextZ, e.clientX, e.clientY);
     };
     svg.addEventListener('wheel', onWheel, { passive: false });
     return () => svg.removeEventListener('wheel', onWheel);
@@ -703,6 +710,18 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
         data-testid={testid}
         preserveAspectRatio="xMidYMid meet"
         onPointerDown={(e) => {
+          if (enableZoom && e.pointerType === 'touch') {
+            touches.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            if (touches.current.size === 2) {
+              const [a, b] = Array.from(touches.current.values());
+              pinch.current = { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, zoom: activeZoom };
+              panDrag.current = null;
+              dragging.current = false;
+              setPanning(false);
+              return;
+            }
+          }
+          if (pinch.current) return;
           if (enableZoom && activeZoom > 1) {
             panDrag.current = {
               pointerId: e.pointerId,
@@ -721,6 +740,14 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
           fire(e);
         }}
         onPointerMove={(e) => {
+          if (touches.current.has(e.pointerId)) touches.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+          if (pinch.current && touches.current.size >= 2) {
+            const [a, b] = Array.from(touches.current.values());
+            const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+            const nextZ = Math.round(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, (pinch.current.zoom * dist) / pinch.current.dist)) * 100) / 100;
+            if (nextZ !== activeZoom) zoomAtClient(nextZ, (a.x + b.x) / 2, (a.y + b.y) / 2);
+            return;
+          }
           if (enableZoom && activeZoom > 1 && panDrag.current) {
             const d = panDrag.current;
             const dxPx = e.clientX - d.startX;
@@ -743,6 +770,12 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
           if (dragging.current && ghost) fire(e);
         }}
         onPointerUp={(e) => {
+          touches.current.delete(e.pointerId);
+          if (touches.current.size < 2 && pinch.current) {
+            pinch.current = null;
+            if (touches.current.size === 0) return;
+          }
+          if (touches.current.size > 0 && pinch.current === null && e.pointerType === 'touch' && !panDrag.current && !dragging.current) return;
           if (enableZoom && activeZoom > 1 && panDrag.current) {
             const wasMoved = panDrag.current.moved;
             panDrag.current = null;
@@ -755,7 +788,9 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
           }
           dragging.current = false;
         }}
-        onPointerCancel={() => {
+        onPointerCancel={(e) => {
+          touches.current.delete(e.pointerId);
+          if (touches.current.size < 2) pinch.current = null;
           panDrag.current = null;
           setPanning(false);
           dragging.current = false;
@@ -963,24 +998,28 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
       )}
     </svg>
     {enableZoom && (
-      <div className="ct-zoom-bar" data-testid="bp-zoom-bar" role="group" aria-label="Zoom do tabuleiro">
+      <div
+        className="ct-zoom-bar"
+        data-testid="bp-zoom-bar"
+        role="group"
+        aria-label="Zoom do tabuleiro"
+      >
         <button
           type="button"
-          className="rdb-seg ct-zoom-btn"
-          data-testid="bp-zoom-out"
-          aria-label="Diminuir zoom"
-          title="Diminuir zoom (-)"
-          disabled={activeZoom <= ZOOM_MIN}
-          onClick={() => applyZoom(activeZoom - ZOOM_STEP)}
+          className="ct-zoom-btn"
+          data-testid="bp-zoom-in"
+          aria-label="Aumentar zoom"
+          disabled={activeZoom >= ZOOM_MAX}
+          onClick={() => applyZoom(activeZoom + ZOOM_STEP)}
         >
-          <Minus size={14} />
+          <Plus size={16} />
         </button>
         <button
           type="button"
-          className="rdb-seg ct-zoom-level"
+          className="ct-zoom-level"
           data-testid="bp-zoom-level"
-          aria-label={`Zoom atual ${Math.round(activeZoom * 100)}%. Clique para alternar entre 100% e 300%`}
-          title="Alternar zoom (100% · 150% · 200% · 300%)"
+          data-tip="Zoom: Ctrl + rolar, pinça ou + e −"
+          aria-label={`Zoom atual ${Math.round(activeZoom * 100)}%. Clique para alternar`}
           onClick={() => {
             const next = ZOOM_CYCLE.find((step) => step > activeZoom + 0.01) ?? ZOOM_MIN;
             applyZoom(next);
@@ -990,28 +1029,24 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
         </button>
         <button
           type="button"
-          className="rdb-seg ct-zoom-btn"
-          data-testid="bp-zoom-in"
-          aria-label="Aumentar zoom até 300%"
-          title="Aumentar zoom (+)"
-          disabled={activeZoom >= ZOOM_MAX}
-          onClick={() => applyZoom(activeZoom + ZOOM_STEP)}
+          className="ct-zoom-btn"
+          data-testid="bp-zoom-out"
+          aria-label="Diminuir zoom"
+          disabled={activeZoom <= ZOOM_MIN}
+          onClick={() => applyZoom(activeZoom - ZOOM_STEP)}
         >
-          <Plus size={14} />
+          <Minus size={16} />
         </button>
-        {activeZoom > ZOOM_MIN && (
-          <button
-            type="button"
-            className="rdb-seg ct-zoom-reset"
-            data-testid="bp-zoom-reset"
-            aria-label="Voltar zoom para 100%"
-            title="Ajustar tudo (tecla 0)"
-            onClick={() => applyZoom(ZOOM_MIN)}
-          >
-            <RotateCcw size={13} />
-            <span>Ajustar</span>
-          </button>
-        )}
+        <button
+          type="button"
+          className="ct-zoom-btn ct-zoom-reset"
+          data-testid="bp-zoom-reset"
+          aria-label="Ver o parque inteiro"
+          disabled={activeZoom <= ZOOM_MIN}
+          onClick={() => applyZoom(ZOOM_MIN)}
+        >
+          <Maximize2 size={14} />
+        </button>
       </div>
     )}
     </>
