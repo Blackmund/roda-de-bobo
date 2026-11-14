@@ -101,9 +101,9 @@ const PV_ROUND_OPTIONS: Array<{ value: number; label: string; desc: string }> = 
 const CT_MODES: CTMode[] = ['arquiteto', 'diabo', 'fronteiras'];
 const CT_MODE_NOTES: Record<CTMode, string[]> = {
   arquiteto: [
-    'Cada jogador monta o próprio tabuleiro 8x8; na TV aparecem todos',
-    'Turnos em rodízio: pegue uma peça da loja e encaixe',
-    'Linha ou coluna cheia vale +2'
+    'Regras do Bärenpark: cada um monta o próprio parque, que cresce até 4 áreas sorteadas',
+    'Na vez: ponha uma peça do seu estoque; cada ícone coberto dá uma peça nova',
+    'Área completa = estátua de urso; quem completar 4 áreas encerra (até 8 jogadores)'
   ],
   diabo: [
     'Um mapa só para todos, diferente a cada partida',
@@ -407,7 +407,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
           )}
 
-          {activeGame === 'adedanha' ? (
+          {isCT && ctMode === 'arquiteto' ? null : activeGame === 'adedanha' ? (
             <div className="rdb-opt">
               <span className="rdb-opt-label">Rodadas</span>
               <div className="rdb-opt-choices rdb-adstep" data-testid="ad-rounds-stepper">

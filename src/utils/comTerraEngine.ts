@@ -344,8 +344,9 @@ export function clampComTerraRounds(n: number | undefined): number {
   return Math.min(12, Math.max(3, v));
 }
 
-export function comTerraMaxPlayers(): number {
-  return 4;
+export function comTerraMaxPlayers(mode?: CTMode): number {
+  // Arquiteto (Barenpark adaptado) vai ate 8; Plano do Diabo e Fronteiras foram desenhados para 4
+  return mode === 'arquiteto' ? 8 : 4;
 }
 
 function refill(s: ComTerraState): ComTerraState {
@@ -371,7 +372,7 @@ export function buildComTerraState(
   /** so para testes: o Arquiteto antigo (loja e tabuleiro 8x8), antes de virar Barenpark */
   classicArquiteto = false
 ): ComTerraState {
-  const order = players.slice(0, comTerraMaxPlayers()).map((p) => p.id);
+  const order = players.slice(0, comTerraMaxPlayers(mode)).map((p) => p.id);
   const rng = mulberry32(seed);
   const boards =
     mode === 'arquiteto'

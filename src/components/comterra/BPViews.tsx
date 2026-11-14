@@ -22,13 +22,14 @@ import {
   rewardOptions,
   rewardValue,
   tileKind,
-  tileShape
+  tileShape,
+  topAreaIcons
 } from '../../utils/bpEngine';
 import { sounds } from '../../utils/soundEffects';
 import { PlayerMark } from '../rdb/PlayerMark';
-import { BP_ICON_META, CTBoardView, CTPieceView, CT_PLAYER_COLORS } from './CTBoardView';
+import { BP_ICON_META, BP_PALETTE, CTBoardView, CTPieceView } from './CTBoardView';
 
-const KIND_COLOR = { green: CT_PLAYER_COLORS[0], house: CT_PLAYER_COLORS[1], enclosure: CT_PLAYER_COLORS[2] };
+const KIND_COLOR = { green: BP_PALETTE.green, house: BP_PALETTE.house, enclosure: BP_PALETTE.enclosure };
 const KIND_LABEL = { green: 'Área verde', house: 'Casa de animal', enclosure: 'Cercado' };
 const REWARD_TITLE: Record<string, string> = {
   wheel: 'Carrinho: escolha uma Área Verde',
@@ -51,13 +52,19 @@ export function withBP(prev: ComTerraState, fn: (bp: BPState) => BPState): ComTe
   return { ...prev, bp, phase: 'SUMMARY', pointsAwarded };
 }
 
-const TileChip: React.FC<{ type: BPTileType; pts?: number; on?: boolean; onClick?: () => void; testid?: string; note?: string }> = ({ type, pts, on, onClick, testid, note }) => {
+const TileChip: React.FC<{ type: BPTileType; pts?: number; on?: boolean; onClick?: () => void; testid?: string; stock?: number }> = ({ type, pts, on, onClick, testid, stock }) => {
   const kind = tileKind(type);
   return (
-    <button type="button" className={'bp-tile' + (on ? ' is-on' : '')} onClick={onClick} data-testid={testid} data-tip={BP_TILE_META[type].label}>
+    <button type="button" className={`bp-tile is-${kind}` + (on ? ' is-on' : '')} onClick={onClick} data-testid={testid} data-tip={BP_TILE_META[type].label}>
+      <span className="bp-tile-kind">{KIND_LABEL[kind]}</span>
       <CTPieceView shape={tileShape(type)} color={KIND_COLOR[kind]} label={BP_TILE_META[type].label} className="bp-tile-art" />
       <span className="bp-tile-name">{BP_TILE_META[type].label.replace(/^(Casa|Cercado) d[oa] /, '')}</span>
-      <span className="bp-tile-pts">{note ?? (pts ? `${pts} pts` : kind === 'green' ? '0 pts' : '')}</span>
+      <span className="bp-tile-pts" data-tip="Pontos">{pts ?? 0}<small>pts</small></span>
+      {stock !== undefined && (
+        <span className="bp-tile-stock" data-tip="Quantas sobram no estoque geral">
+          restam {stock}
+        </span>
+      )}
     </button>
   );
 };
@@ -83,7 +90,7 @@ export const BPSeat: React.FC<{ state: ComTerraState; players: Player[]; playerI
       ? (() => {
           const gx = at.x - Math.floor((shape[0]?.length || 1) / 2);
           const gy = at.y - Math.floor(shape.length / 2);
-          return { m: shape, x: gx, y: gy, ok: bpCanPlace(park, shape, gx, gy).ok, playerId };
+          return { m: shape, x: gx, y: gy, ok: bpCanPlace(park, shape, gx, gy).ok, playerId: tileKind(tile) };
         })()
       : null;
   const canPlaceAny = bpCanPlaceAny(park);
@@ -141,7 +148,7 @@ export const BPSeat: React.FC<{ state: ComTerraState; players: Player[]; playerI
                     type={t}
                     pts={rewardValue(bp, t)}
                     testid={`bp-reward-${t}`}
-                    note={tileKind(t) === 'green' ? `${bp.greens[t]} no estoque` : `${rewardValue(bp, t)} pts`}
+                    stock={tileKind(t) === 'green' ? bp.greens[t] : tileKind(t) === 'house' ? bp.houses[t].length : bp.enclosures[t].length}
                     onClick={() => {
                       sounds.playPowerup();
                       onUpdate((prev) => withBP(prev, (b) => bpTakeReward(b, playerId, t)));
@@ -155,13 +162,40 @@ export const BPSeat: React.FC<{ state: ComTerraState; players: Player[]; playerI
           {pend && pend.kind === 'crew' && (
             <section className="bp-reward" data-testid="bp-crew">
               <h4>{REWARD_TITLE.crew}</h4>
-              <div className="rdb-opt-choices">
-                {([0, 1] as const).map((i) => (
-                  <button key={i} type="button" className="rdb-seg" aria-pressed={pile === i} disabled={bp.areaPiles[i].length === 0} onClick={() => setPile(i)}>
-                    Pilha {i + 1} ({bp.areaPiles[i].length})
-                  </button>
-                ))}
+              <p className="bp-crew-step">1. Escolha a área</p>
+              <div className="bp-area-options">
+                {([0, 1] as const).map((i) => {
+                  const icons = topAreaIcons(bp, i);
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      className={'bp-area-option' + (pile === i ? ' is-on' : '')}
+                      disabled={!icons}
+                      data-testid={`bp-area-option-${i}`}
+                      aria-pressed={pile === i}
+                      onClick={() => {
+                        sounds.playTick();
+                        setPile(i);
+                      }}
+                    >
+                      <span className="bp-area-mini">
+                        {(icons || Array(16).fill(null)).map((ic, k) => (
+                          <i
+                            key={k}
+                            className={ic === 'pit' ? 'is-pit' : ''}
+                            style={ic && ic !== 'pit' ? { background: BP_ICON_META[ic].fill, color: BP_ICON_META[ic].ink } : undefined}
+                          >
+                            {ic && ic !== 'pit' ? BP_ICON_META[ic].tag : ''}
+                          </i>
+                        ))}
+                      </span>
+                      <small>{icons ? `Opção ${i + 1} · restam ${bp.areaPiles[i].length}` : 'Pilha vazia'}</small>
+                    </button>
+                  );
+                })}
               </div>
+              <p className="bp-crew-step">2. Escolha o lado onde ela encaixa</p>
               <div className="bp-spots" style={{ gridTemplateColumns: `repeat(${BP_GRID_W}, 1fr)` }}>
                 {Array.from({ length: BP_GRID_W * BP_GRID_H }, (_, i) => {
                   const ax = i % BP_GRID_W;

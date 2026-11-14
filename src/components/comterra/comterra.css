@@ -846,3 +846,40 @@ button.ct-shop-card:focus-visible {
   .bp-seat-main { grid-template-columns: 1fr; grid-template-rows: minmax(12rem, 1fr) auto; }
   .bp-table { grid-template-columns: 1fr; }
 }
+
+/* ---------- Arquiteto v2: fichas por tipo, pontos x estoque, opcoes de area ---------- */
+.bp-tiles { grid-template-columns: repeat(auto-fill, minmax(6.6rem, 1fr)); gap: 0.45rem; }
+.bp-tile { position: relative; padding: 0.45rem 0.35rem 0.4rem; gap: 0.2rem; border-width: 2px; }
+.bp-tile.is-green { border-color: rgba(63, 191, 111, 0.55); }
+.bp-tile.is-house { border-color: rgba(245, 242, 235, 0.55); }
+.bp-tile.is-enclosure { border-color: rgba(255, 138, 30, 0.6); }
+.bp-tile.is-on { border-color: var(--rdb-teal, #17b8b8); box-shadow: 0 0 0 2px var(--rdb-teal, #17b8b8); background: rgba(23, 184, 184, 0.12); }
+.bp-tile-kind { font-size: 0.58rem; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.7; }
+.bp-tile.is-green .bp-tile-kind { color: #6fe39a; }
+.bp-tile.is-enclosure .bp-tile-kind { color: #ffad60; }
+.bp-tile-art { width: 4.4rem; height: 3.2rem; }
+.bp-tile-name { font-size: 0.74rem; }
+.bp-tile-pts { font-family: 'Anton', 'Impact', sans-serif; font-weight: 400; font-size: 1.5rem; line-height: 1; color: var(--rdb-amber, #ffc93c); }
+.bp-tile-pts small { font-family: var(--rdb-heavy, system-ui); font-size: 0.6rem; font-weight: 900; margin-left: 0.15rem; text-transform: uppercase; }
+.bp-tile-stock { padding: 0.05rem 0.4rem; background: rgba(245, 242, 235, 0.1); color: rgba(245, 242, 235, 0.8); font-size: 0.66rem; font-weight: 800; text-transform: uppercase; }
+.bp-seat-side h4 { font-size: 0.95rem; color: var(--rdb-cream, #f5f2eb); }
+.bp-crew-step { margin: 0.4rem 0 0.25rem; font-size: 0.78rem; font-weight: 900; text-transform: uppercase; color: rgba(245, 242, 235, 0.8); }
+.bp-area-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+.bp-area-option {
+  display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.4rem;
+  background: rgba(245, 242, 235, 0.04); border: 2px solid rgba(245, 242, 235, 0.25); color: inherit; cursor: pointer;
+}
+.bp-area-option.is-on { border-color: var(--rdb-teal, #17b8b8); box-shadow: 0 0 0 2px var(--rdb-teal, #17b8b8); }
+.bp-area-option small { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; }
+.bp-area-mini { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; width: 6.5rem; padding: 3px; background: #6f9a4a; }
+.bp-area-mini i {
+  display: grid; place-items: center; aspect-ratio: 1; background: #8fbf5f; border-radius: 50%;
+  font-style: normal; font-weight: 900; font-size: 0.62rem;
+}
+.bp-area-mini i:not([style]):not(.is-pit) { border-radius: 0; background: #8fbf5f; }
+.bp-area-mini i.is-pit { border-radius: 2px; background: #05060f; }
+.bp-park-head .bp-park-sup { padding: 0.05rem 0.4rem; background: rgba(245, 242, 235, 0.1); color: rgba(245, 242, 235, 0.85); }
+.bp-park-head > span:not(.bp-park-sup) { font-family: 'Anton', 'Impact', sans-serif; font-weight: 400; font-size: 1.2rem; }
+
+.bp-spots { max-width: 13rem; margin-left: auto; margin-right: auto; }
+.bp-spot { font-size: 0.8rem; }

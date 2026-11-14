@@ -46,7 +46,10 @@ export const BP_ENCLOSURES: BPTileType[] = ['e-polar', 'e-gobi', 'e-koala', 'e-p
 function houseValues(n: number): number[] {
   if (n <= 2) return [2, 4, 6];
   if (n === 3) return [2, 3, 4, 5, 6];
-  return [2, 3, 3, 4, 5, 5, 6];
+  if (n === 4) return [2, 3, 3, 4, 5, 5, 6];
+  // adaptacao para 5+ jogadores: 2 casas a mais por jogador extra, ainda de 2 a 6
+  const len = 7 + (n - 4) * 2;
+  return Array.from({ length: len }, (_, k) => 2 + Math.floor((k * 5) / len));
 }
 /** Cercados (3 de cada animal, sempre todos): valores estimados, de baixo para cima. */
 const ENCLOSURE_VALUES: Record<string, number[]> = {
@@ -59,35 +62,48 @@ const ENCLOSURE_VALUES: Record<string, number[]> = {
 export function statueValues(n: number): number[] {
   if (n <= 2) return [16, 14, 12, 10, 8, 6, 4, 2];
   if (n === 3) return [14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3];
-  return Array.from({ length: 16 }, (_, i) => 16 - i);
+  // 4 jogadores: todas (16 a 1). Adaptacao para 5+: 4 por jogador, do maior para 1
+  const total = Math.max(16, n * 4);
+  return Array.from({ length: total }, (_, i) => total - i);
 }
 /** Areas Verdes no estoque geral: banheiros e parquinhos todos; ruas e rios 4 por jogador (regra). */
 function greenCounts(n: number): Record<string, number> {
-  return { toilet: 10, playground: 10, food: 4 * n, river: 4 * n };
+  // 5+ jogadores (adaptacao): banheiros e parquinhos crescem junto
+  const base = Math.max(10, Math.ceil(2.5 * n));
+  return { toilet: base, playground: base, food: 4 * n, river: 4 * n };
+}
+
+/** Cercados por animal: 3 (regra); 5+ jogadores ganham um a mais a cada 2 extras, valendo menos. */
+function enclosureValues(type: string, n: number): number[] {
+  const base = ENCLOSURE_VALUES[type];
+  const extra = n > 4 ? Math.ceil((n - 4) / 2) : 0;
+  return [...Array.from({ length: extra }, (_, i) => base[0] - extra + i), ...base];
 }
 
 // ---------------------------------------------------------------- areas do parque (4x4)
-// P = fosso, W = carrinho, C = betoneira, E = escavadeira, O = equipe de obra, . = vazio. Desenho estimado.
-const ENTRANCE_AREAS = [
-  ['W..O', '..C.', '.P..', 'O...'],
-  ['...W', 'O.P.', '..C.', 'W...'],
-  ['O...', '.C.W', '..P.', '...O'],
-  ['.W..', 'P..O', '..C.', 'O..W']
-];
-const PARK_AREAS = [
-  ['E..W', '.P..', '..O.', 'C...'],
-  ['W...', '..C.', 'O.P.', '...E'],
-  ['.C..', 'W..P', '..E.', '.O..'],
-  ['..W.', 'E...', '.P.C', 'O...'],
-  ['C..O', '.P..', '...W', 'E...'],
-  ['.E..', 'O..C', '..P.', 'W...'],
-  ['W.E.', '....', 'P..O', '.C..'],
-  ['...C', '.W..', 'E.P.', '..O.'],
-  ['O...', '..P.', 'W..E', '.C..'],
-  ['.P.W', 'C...', '..E.', 'O...'],
-  ['E...', '.O.P', 'W...', '..C.'],
-  ['..C.', 'P...', '.E.W', 'O...']
-];
+// Icones: P = fosso, W = carrinho, C = betoneira, E = escavadeira, O = equipe de obra, . = vazio.
+/**
+ * Areas sorteadas a cada partida (procedural): 1 fosso em lugar aleatorio e icones espalhados.
+ * Entrada: 1 equipe de obra garantida (para o parque crescer) + 3 a 4 icones. Demais: 2 a 4 icones, com
+ * carrinho mais comum, depois betoneira, equipe de obra e escavadeira (mais rara).
+ */
+function genArea(rng: Rng, entrance: boolean): string[] {
+  const cells: string[] = Array(16).fill('.');
+  const free = () => {
+    const opts = cells.map((c, i) => (c === '.' ? i : -1)).filter((i) => i >= 0);
+    return opts[Math.floor(rng() * opts.length)];
+  };
+  cells[free()] = 'P';
+  const bag: string[] = entrance ? ['O'] : [];
+  const extra = entrance ? 3 + Math.floor(rng() * 2) : 2 + Math.floor(rng() * 3);
+  for (let i = 0; i < extra; i++) {
+    const r = rng();
+    bag.push(r < 0.38 ? 'W' : r < 0.66 ? 'C' : r < 0.86 ? 'O' : 'E');
+  }
+  bag.forEach((ch) => (cells[free()] = ch));
+  return [0, 1, 2, 3].map((r) => cells.slice(r * 4, r * 4 + 4).join(''));
+}
+
 const ICON: Record<string, BPIcon | null> = { P: 'pit', W: 'wheel', C: 'cement', E: 'excavator', O: 'crew', '.': null };
 const toIcons = (rows: string[]): Array<BPIcon | null> => rows.join('').split('').map((ch) => ICON[ch] ?? null);
 
@@ -120,22 +136,26 @@ export const tileKind = (t: BPTile | BPTileType) => BP_TILE_META[typeof t === 's
 export function buildBPState(playerIds: string[], seed = Date.now()): BPState {
   const rng = mulberry32(seed);
   const n = Math.max(1, playerIds.length);
-  const entrances = shuffle(ENTRANCE_AREAS, rng);
+  const entrances = playerIds.map(() => genArea(rng, true));
   const parks: Record<string, BPPark> = {};
-  const starting: BPTileType[] = ['toilet', 'playground', n === 3 ? 'food' : 'playground', 'food'];
+  // regra: 1o banheiro, 2o parquinho, 3o parquinho (rua de comida com 3 jogadores), 4o rua de comida. Ninguem comeca com rio.
+  // 5+ jogadores (adaptacao): os demais tambem comecam com rua de comida.
+  const starting = (i: number): BPTileType => (i === 0 ? 'toilet' : i === 1 ? 'playground' : i === 2 ? (n === 3 ? 'food' : 'playground') : 'food');
   playerIds.forEach((pid, i) => {
     parks[pid] = {
       areas: [{ id: `ent-${i}`, ax: BP_ENTRANCE.ax, ay: BP_ENTRANCE.ay, icons: toIcons(entrances[i % entrances.length]), entrance: true }],
       cells: {},
-      supply: [makeTile(starting[i % 4], 0, 'start')],
+      supply: [makeTile(starting(i), 0, 'start')],
       statues: []
     };
   });
   const houses: Record<string, number[]> = {};
   BP_HOUSES.forEach((h) => (houses[h] = houseValues(n)));
   const enclosures: Record<string, number[]> = {};
-  BP_ENCLOSURES.forEach((e) => (enclosures[e] = [...ENCLOSURE_VALUES[e]]));
-  const areaDeck = shuffle(PARK_AREAS.map((rows, i) => ({ id: `pa-${i}`, rows })), rng);
+  BP_ENCLOSURES.forEach((e) => (enclosures[e] = enclosureValues(e, n)));
+  // 3 areas por jogador (como as 12 do jogo com 4), sorteadas agora
+  const areaDeck = Array.from({ length: 3 * n }, (_, i) => ({ id: `pa-${i}`, rows: genArea(rng, false) }));
+  const half = Math.ceil(areaDeck.length / 2);
   return {
     turnIdx: 0,
     order: [...playerIds],
@@ -143,7 +163,7 @@ export function buildBPState(playerIds: string[], seed = Date.now()): BPState {
     greens: greenCounts(n),
     houses,
     enclosures,
-    areaPiles: [areaDeck.slice(0, 6).map((a) => a.id), areaDeck.slice(6).map((a) => a.id)],
+    areaPiles: [areaDeck.slice(0, half).map((a) => a.id), areaDeck.slice(half).map((a) => a.id)],
     areaDefs: Object.fromEntries(areaDeck.map((a) => [a.id, a.rows.join('/')])),
     statues: statueValues(n),
     pending: [],
@@ -389,6 +409,13 @@ export function bpPlaceArea(s: BPState, pid: string, pileIdx: 0 | 1, ax: number,
   };
   next = log(next, pid, 'abriu uma área nova no parque');
   return next.pending.length > 0 ? autoSkipCrew(next) : closeTurn(next, pid);
+}
+
+/** Icones da area do topo de uma pilha (para mostrar as 2 opcoes antes de escolher). */
+export function topAreaIcons(s: BPState, pileIdx: 0 | 1): Array<BPIcon | null> | null {
+  const pile = s.areaPiles[pileIdx];
+  if (!pile.length) return null;
+  return toIcons(s.areaDefs[pile[pile.length - 1]].split('/'));
 }
 
 /** Sem peca que caiba: passa a vez e pega uma Area Verde. */

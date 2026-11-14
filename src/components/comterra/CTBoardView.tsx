@@ -19,7 +19,15 @@ export const CT_PLAYER_COLORS: Array<{ top: string; side: string; ink: string }>
   { top: '#f5f2eb', side: '#a39d8c', ink: '#22231f' }
 ];
 
+/** Arquiteto (Barenpark): cor pela categoria da peca, igual a cor do icone que a da. */
+export const BP_PALETTE: Record<string, { top: string; side: string; ink: string }> = {
+  green: { top: '#3fbf6f', side: '#1d6e3e', ink: '#04210f' },
+  house: { top: '#f5f2eb', side: '#9c9686', ink: '#22231f' },
+  enclosure: { top: '#ff8a1e', side: '#9a4c0a', ink: '#2a1300' }
+};
+
 export function ctColor(order: string[], playerId: string | undefined | null) {
+  if (playerId && BP_PALETTE[playerId]) return BP_PALETTE[playerId];
   const i = Math.max(0, order.indexOf(playerId || ''));
   return CT_PLAYER_COLORS[i % CT_PLAYER_COLORS.length];
 }
