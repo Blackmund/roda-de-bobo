@@ -42,7 +42,7 @@ export const BP_TILE_META: Record<BPTileType, { label: string; kind: 'green' | '
   'e-lobo': { label: 'Cercado do Tucano', kind: 'enclosure', shape: S(['##..', '.###']) },
   'e-boto': { label: 'Cercado da Preguiça', kind: 'enclosure', shape: S(['.#..', '####']) },
   'e-tucano': { label: 'Cercado do Jabuti', kind: 'enclosure', shape: S(['#...', '####']) },
-  'e-preguica': { label: 'Cercado do Tatu-Canastra', kind: 'enclosure', shape: S(['##', '##', '#.']) },
+  'e-preguica': { label: 'Cercado do Tatu-Canastra', kind: 'enclosure', shape: S(['###', '##.']) },
   'e-jabuti': { label: 'Cercado da Capivara', kind: 'enclosure', shape: S(['#####']) }
 };
 
