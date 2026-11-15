@@ -109,7 +109,15 @@ const TileChip: React.FC<{
           ×{count}
         </span>
       )}
-      <CTPieceView shape={tileShape(type)} color={KIND_COLOR[kind]} label={fullLabel} className="bp-tile-art" minBox={compact ? (kind === 'green' ? 1.3 : 2) : 2} aspect={compact ? 1.5 : 1} />
+      <CTPieceView
+        shape={tileShape(type)}
+        color={KIND_COLOR[kind]}
+        tileType={type}
+        label={fullLabel}
+        className="bp-tile-art"
+        minBox={compact ? (kind === 'green' ? 1.3 : 2) : 2}
+        aspect={compact ? 1.5 : 1}
+      />
       <span className="bp-tile-name">{compact ? stockShortName(type) : shortTileName(type)}</span>
       <span className="bp-tile-pts" data-tip="Pontos">
         {pts ?? 0}
@@ -188,7 +196,15 @@ export const BPReserveStock: React.FC<{
           onClick={() => onPickReward!(type)}
           aria-label={`Pegar ${BP_TILE_META[type].label}`}
         >
-          <CTPieceView shape={shape} color={color} label={BP_TILE_META[type].label} className="bp-stock-art" minBox={extraClass.includes('--enc') ? 3 : extraClass.includes('--row') ? 1.3 : 2} aspect={1.5} />
+          <CTPieceView
+            shape={shape}
+            color={color}
+            tileType={type}
+            label={BP_TILE_META[type].label}
+            className="bp-stock-art"
+            minBox={extraClass.includes('--enc') ? 3 : extraClass.includes('--row') ? 1.3 : 2}
+            aspect={1.5}
+          />
           <span className="bp-stock-label">{shortName}</span>
           {children}
         </button>
@@ -196,7 +212,15 @@ export const BPReserveStock: React.FC<{
     }
     return (
       <div key={type} className={cls} data-tip={tip} data-peek={type}>
-        <CTPieceView shape={shape} color={color} label={BP_TILE_META[type].label} className="bp-stock-art" minBox={extraClass.includes('--enc') ? 3 : extraClass.includes('--row') ? 1.3 : 2} aspect={1.5} />
+        <CTPieceView
+          shape={shape}
+          color={color}
+          tileType={type}
+          label={BP_TILE_META[type].label}
+          className="bp-stock-art"
+          minBox={extraClass.includes('--enc') ? 3 : extraClass.includes('--row') ? 1.3 : 2}
+          aspect={1.5}
+        />
         <span className="bp-stock-label">{shortName}</span>
         {children}
       </div>
@@ -380,7 +404,7 @@ export const BPPiecePeek: React.FC<{ scope: string }> = ({ scope }) => {
   return createPortal(
     <div className="bp-peek" role="figure" aria-label={meta.label} data-testid="bp-piece-peek">
       <div className="bp-peek-card">
-        <CTPieceView shape={tileShape(peek.type)} color={KIND_COLOR[meta.kind]} label={meta.label} className="bp-peek-art" minBox={2} aspect={1.4} />
+        <CTPieceView shape={tileShape(peek.type)} color={KIND_COLOR[meta.kind]} tileType={peek.type} label={meta.label} className="bp-peek-art" minBox={2} aspect={1.4} />
         <div className="bp-peek-name">
           <strong>{meta.label}</strong>
           {peek.pts !== undefined && <b>{peek.pts} pts</b>}
@@ -860,7 +884,7 @@ export const BPSeat: React.FC<{
   const shape = tile ? m || tileShape(tile) : null;
   const ghost =
     !isInspecting && myTurn && !pend && tile && shape && pos
-      ? { m: shape, x: pos.x, y: pos.y, ok: bpCanPlace(park, shape, pos.x, pos.y).ok, playerId: tileKind(tile) }
+      ? { m: shape, x: pos.x, y: pos.y, ok: bpCanPlace(park, shape, pos.x, pos.y).ok, playerId: tileKind(tile), tileType: tile.type }
       : null;
 
   const canPlaceAny = park ? bpCanPlaceAny(park) : false;

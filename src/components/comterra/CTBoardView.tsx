@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Maximize2, Minus, Plus } from 'lucide-react';
-import type { CTBoard, CTCell } from '../../types/game';
+import type { BPTileType, CTBoard, CTCell } from '../../types/game';
 import { shapeCells } from '../../utils/comTerraEngine';
-import { CTC, CLASSIC_RIM, CLASSIC_SIDE, useCTSkin } from './CTSkin';
+import { useCTSkin } from './CTSkin';
+import { ClassicAreaFrame, ClassicEntranceBar, ClassicMonument, ClassicPentagonBadge, ClassicPieceShape } from './CTClassicArt';
 
 /**
  * Tabuleiro e pecas do Com Terra em "2.5D": camera 100% de cima (grid sem distorcao), mas com volume:
@@ -97,6 +98,7 @@ function edgePaths(cells: PCell[]): { light: string; dark: string; outer: string
 const PieceShape: React.FC<{
   cells: PCell[];
   color: { top: string; side: string; ink?: string };
+  tileType?: BPTileType;
   lift?: number;
   outline?: string;
   showContour?: boolean;
@@ -104,7 +106,7 @@ const PieceShape: React.FC<{
   /** 'under' = sombra + lateral; 'top' = face de cima. No tabuleiro desenha-se todas as 'under' antes das 'top',
    * para a face de uma peca sempre cobrir a lateral da peca de cima (pecas em L se encaixam e nao da para ordenar). */
   layer?: 'all' | 'under' | 'top';
-}> = ({ cells, color, lift = 0, outline, showContour = false, shadowId, layer = 'all' }) => {
+}> = ({ cells, color, tileType, lift = 0, outline, showContour = false, shadowId, layer = 'all' }) => {
   const d = facePath(cells);
   const edges = edgePaths(cells);
   const under = layer !== 'top';
@@ -113,33 +115,21 @@ const PieceShape: React.FC<{
   const clipId = 'ctclip' + React.useId().replace(/[^a-zA-Z0-9]/g, '');
   // skin classica: so para as pecas da Reserva (verde, viveiro, cercado)
   const kind = skin === 'classic' ? Object.keys(BP_PALETTE).find((k) => BP_PALETTE[k].top === color.top) : undefined;
-  if (kind) {
+  if (skin === 'classic' && (kind || tileType)) {
     return (
-      <g>
-        {under && <path d={d} fillRule="evenodd" fill="#000" opacity={lift ? 0.42 : 0.38} transform={`translate(${0.9 + lift * 0.9} ${DEPTH + 0.9 + lift * 1.1})`} filter={`url(#${shadowId})`} />}
-        <g transform={`translate(0 ${-lift})`}>
-          {under && <path d={d} fillRule="evenodd" fill={CLASSIC_SIDE[kind]} transform={`translate(0 ${DEPTH})`} />}
-          {top && (
-            <>
-              <clipPath id={clipId}>
-                <path d={d} fillRule="evenodd" />
-              </clipPath>
-              <path d={d} fillRule="evenodd" fill={`url(#${CTC}${kind})`} />
-              <g clipPath={`url(#${clipId})`}>
-                {cells.map((c) => (
-                  <ClassicDeco key={c.x + ',' + c.y} kind={kind} x={c.x} y={c.y} />
-                ))}
-                {CLASSIC_RIM[kind].map((r, i) => (
-                  <path key={i} d={edges.outer || d} fill="none" stroke={r.stroke} strokeWidth={r.width} strokeDasharray={r.dash} strokeOpacity={r.opacity ?? 1} strokeLinejoin="round" />
-                ))}
-              </g>
-              <path d={edges.light} stroke="#ffffff" strokeOpacity="0.32" strokeWidth="0.4" strokeLinecap="round" fill="none" />
-              <path d={edges.outer || d} stroke="#0a0b1e" strokeOpacity="0.55" strokeWidth="0.3" fill="none" strokeLinejoin="round" />
-              {outline && <path d={edges.outer || d} fill="none" stroke={outline} strokeWidth="0.95" strokeLinejoin="round" />}
-            </>
-          )}
-        </g>
-      </g>
+      <ClassicPieceShape
+        cells={cells}
+        tileType={tileType}
+        fallbackKind={kind}
+        faceD={d}
+        edges={edges}
+        lift={lift}
+        outline={outline}
+        showContour={showContour}
+        shadowId={shadowId}
+        clipId={clipId}
+        layer={layer}
+      />
     );
   }
   return (
@@ -179,46 +169,6 @@ const PieceShape: React.FC<{
       </g>
     </g>
   );
-};
-
-const ClassicDeco: React.FC<{ kind: string; x: number; y: number }> = ({ kind, x, y }) => {
-  const h = (x * 7 + y * 13) % 5;
-  const cx = x * U + U / 2;
-  const cy = y * U + U / 2;
-  if (kind === 'green') {
-    if (h !== 1 && h !== 3) return null;
-    const ox = h === 1 ? 1.8 : -1.6;
-    const oy = h === 1 ? 1.4 : -1.8;
-    return (
-      <g pointerEvents="none">
-        <ellipse cx={cx + ox + 0.4} cy={cy + oy + 1.3} rx="1.9" ry="0.7" fill="#2e6e28" opacity="0.45" />
-        <circle cx={cx + ox - 0.8} cy={cy + oy + 0.2} r="1.1" fill="#2f8a33" />
-        <circle cx={cx + ox + 0.7} cy={cy + oy + 0.3} r="1.05" fill="#2f8a33" />
-        <circle cx={cx + ox} cy={cy + oy - 0.5} r="1.25" fill="#3ea13d" />
-        <circle cx={cx + ox - 0.35} cy={cy + oy - 0.95} r="0.45" fill="#7fd06a" />
-      </g>
-    );
-  }
-  if (kind === 'house') {
-    if (h !== 2) return null;
-    return (
-      <g pointerEvents="none">
-        <path d={`M${cx + 1.6} ${cy + 1.2}a1.3 1 0 1 1 -0.01 0.02L${cx + 1.6} ${cy + 2.2}Z`} fill="#3f9a4a" />
-        <circle cx={cx + 1.2} cy={cy + 1.9} r="0.32" fill="#ff9ec4" />
-      </g>
-    );
-  }
-  if (kind === 'enclosure') {
-    if (h !== 0) return null;
-    return (
-      <g pointerEvents="none">
-        <rect x={cx - 2.2} y={cy + 1.2} width="3.6" height="0.9" rx="0.45" fill="#8a5a2b" />
-        <rect x={cx - 2.2} y={cy + 1.2} width="3.6" height="0.35" rx="0.18" fill="#b07a40" />
-        <circle cx={cx + 1.25} cy={cy + 1.65} r="0.42" fill="#c99a5e" />
-      </g>
-    );
-  }
-  return null;
 };
 
 const Tree: React.FC<{ x: number; y: number; grounded: boolean }> = ({ x, y, grounded }) => {
@@ -455,11 +405,14 @@ const BPMonument: React.FC<{ v: number }> = ({ v }) => {
   );
 };
 
-const BPIconMark: React.FC<{ x: number; y: number; kind: string; statue?: number }> = ({ x, y, kind, statue }) => (
-  <g pointerEvents="none" transform={`translate(${x * U} ${y * U})`}>
-    {kind === 'pit' && statue !== undefined ? <BPMonument v={statue} /> : bpGlyph(kind, true)}
-  </g>
-);
+const BPIconMark: React.FC<{ x: number; y: number; kind: string; statue?: number }> = ({ x, y, kind, statue }) => {
+  const skin = useCTSkin();
+  return (
+    <g pointerEvents="none" transform={`translate(${x * U} ${y * U})`}>
+      {kind === 'pit' && statue !== undefined ? (skin === 'classic' ? <ClassicMonument v={statue} /> : <BPMonument v={statue} />) : bpGlyph(kind, true)}
+    </g>
+  );
+};
 
 export interface CTGhost {
   m: number[][];
@@ -467,6 +420,7 @@ export interface CTGhost {
   y: number;
   ok: boolean;
   playerId: string;
+  tileType?: BPTileType;
   locked?: boolean;
 }
 
@@ -532,6 +486,8 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [panning, setPanning] = useState(false);
   const isBP = board.id.startsWith('bp-');
+  const skin = useCTSkin();
+  const isClassicBP = isBP && skin === 'classic';
 
   const box = useMemo(() => {
     let minX = board.w;
@@ -558,13 +514,17 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
   }, [board, bpExpansionSpots]);
 
   const pieces = useMemo(() => {
-    const map = new Map<string, { owner: string; cells: PCell[]; ptsCell?: { x: number; y: number; pts: number }; ptsAt?: { x: number; y: number } }>();
+    const map = new Map<
+      string,
+      { owner: string; tileType?: BPTileType; cells: PCell[]; ptsCell?: { x: number; y: number; pts: number }; ptsAt?: { x: number; y: number } }
+    >();
     board.cells.forEach((c, i) => {
       if (!c.o || !c.p) return;
       const x = i % board.w;
       const y = Math.floor(i / board.w);
       const e = map.get(c.p) || { owner: c.o, cells: [] };
       e.cells.push({ x, y, k: c.k === 2 ? 2 : 1 });
+      if (!e.tileType && c.tileType) e.tileType = c.tileType;
       if (c.tilePts !== undefined && c.tilePts > 0) e.ptsCell = { x, y, pts: c.tilePts };
       map.set(c.p, e);
     });
@@ -904,10 +864,10 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
           <rect key={'s' + x + ',' + y} x={x * U - 0.4} y={y * U + 1.2} width={U + 0.8} height={U + 2.2} fill="#000" opacity="0.45" />
         ))}
         {cells.map(({ x, y }) => (
-          <rect key={'e' + x + ',' + y} x={x * U - 0.6} y={y * U - 0.6} width={U + 1.2} height={U + 2.6} fill="#5a3d22" />
+          <rect key={'e' + x + ',' + y} x={x * U - 0.6} y={y * U - 0.6} width={U + 1.2} height={U + 2.6} fill={isClassicBP ? '#444941' : '#5a3d22'} />
         ))}
         {cells.map(({ x, y }) => (
-          <rect key={'r' + x + ',' + y} x={x * U - 0.6} y={y * U - 0.6} width={U + 1.2} height={U + 1.2} fill="#9c7a4d" />
+          <rect key={'r' + x + ',' + y} x={x * U - 0.6} y={y * U - 0.6} width={U + 1.2} height={U + 1.2} fill={isClassicBP ? '#6d7369' : '#9c7a4d'} />
         ))}
         {cells.map(({ c, x, y }) => (
           <rect
@@ -923,6 +883,10 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
                 ? (x + y) % 2
                   ? '#2f93cf'
                   : '#3aa0d8'
+                : isClassicBP
+                ? (x + y) % 2
+                  ? '#ded092'
+                  : '#e8dba0'
                 : isBP
                 ? (x + y) % 2
                   ? '#e6d8a6'
@@ -953,22 +917,26 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
       {cells.map(({ c, x, y }) => (c.tok !== undefined ? <Token key={'t' + x + ',' + y} x={x} y={y} v={c.tok} /> : null))}
       {cells.map(({ c, x, y }) => (c.act ? <ActionIcon key={'a' + x + ',' + y} x={x} y={y} kind={c.act} /> : null))}
       {cells.map(({ c, x, y }) => (c.bpi && !c.o && c.statue === undefined ? <BPIconMark key={'bp' + x + ',' + y} x={x} y={y} kind={c.bpi} /> : null))}
-      {areaFrames.map((f) => (
-        <g key={'af' + f.id} pointerEvents="none">
-          <rect x={f.x * U} y={f.y * U} width={f.w * U} height={f.h * U} fill="none" stroke="#5a3d22" strokeOpacity="0.82" strokeWidth="0.72" />
-          <rect
-            x={f.x * U + 0.45}
-            y={f.y * U + 0.45}
-            width={f.w * U - 0.9}
-            height={f.h * U - 0.9}
-            fill="none"
-            stroke="#8c683a"
-            strokeOpacity="0.45"
-            strokeWidth="0.28"
-            strokeDasharray="1.8 1.2"
-          />
-        </g>
-      ))}
+      {areaFrames.map((f) =>
+        isClassicBP ? (
+          <ClassicAreaFrame key={'af' + f.id} x={f.x} y={f.y} w={f.w} h={f.h} />
+        ) : (
+          <g key={'af' + f.id} pointerEvents="none">
+            <rect x={f.x * U} y={f.y * U} width={f.w * U} height={f.h * U} fill="none" stroke="#5a3d22" strokeOpacity="0.82" strokeWidth="0.72" />
+            <rect
+              x={f.x * U + 0.45}
+              y={f.y * U + 0.45}
+              width={f.w * U - 0.9}
+              height={f.h * U - 0.9}
+              fill="none"
+              stroke="#8c683a"
+              strokeOpacity="0.45"
+              strokeWidth="0.28"
+              strokeDasharray="1.8 1.2"
+            />
+          </g>
+        )
+      )}
 
       {/* slots 4x4 interativos para abrir nova area com Equipe de Obra */}
       {bpExpansionSpots &&
@@ -1044,16 +1012,19 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
       {/* pecas ja encaixadas */}
       {/* duas passadas: sombras e laterais de todas as pecas, depois as faces de cima */}
       {pieces.map(([uid, p]) => (
-        <PieceShape key={'u' + uid} cells={p.cells} color={ctColor(order, p.owner)} shadowId={shadowId} layer="under" />
+        <PieceShape key={'u' + uid} cells={p.cells} color={ctColor(order, p.owner)} tileType={p.tileType} shadowId={shadowId} layer="under" />
       ))}
       {pieces.map(([uid, p]) => (
-        <PieceShape key={'t' + uid} cells={p.cells} color={ctColor(order, p.owner)} shadowId={shadowId} layer="top" />
+        <PieceShape key={'t' + uid} cells={p.cells} color={ctColor(order, p.owner)} tileType={p.tileType} shadowId={shadowId} layer="top" />
       ))}
 
       {/* faixa da entrada: depois das pecas, para a lateral e a sombra delas nao passarem por cima */}
       {areaFrames
         .filter((f) => f.entrance)
-        .map((f) => (
+        .map((f) =>
+          isClassicBP ? (
+            <ClassicEntranceBar key={'en' + f.id} x={f.x} y={f.y} w={f.w} h={f.h} />
+          ) : (
             <g key={'en' + f.id} pointerEvents="none">
               <rect x={f.x * U} y={(f.y + f.h) * U + 0.1} width={f.w * U} height="2.75" rx="0.35" fill="#f59e0b" stroke="#5a3d22" strokeWidth="0.35" />
               <text
@@ -1069,10 +1040,19 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
                 ENTRADA DA RESERVA
               </text>
             </g>
-        ))}
+          )
+        )}
 
       {/* moedas e monumentos: por cima de todas as pecas */}
-      {pieces.map(([uid, p]) => (p.ptsCell && p.ptsAt ? <BPCoin key={'coin' + uid} cx={p.ptsAt.x * U} cy={p.ptsAt.y * U} v={p.ptsCell.pts} /> : null))}
+      {pieces.map(([uid, p]) =>
+        p.ptsCell && p.ptsAt ? (
+          skin === 'classic' && p.owner === 'enclosure' ? (
+            <ClassicPentagonBadge key={'coin' + uid} cx={p.ptsAt.x * U} cy={p.ptsAt.y * U} pts={p.ptsCell.pts} />
+          ) : (
+            <BPCoin key={'coin' + uid} cx={p.ptsAt.x * U} cy={p.ptsAt.y * U} v={p.ptsCell.pts} />
+          )
+        ) : null
+      )}
       {cells.map(({ c, x, y }) => (c.bpi === 'pit' && c.statue !== undefined && !c.o ? <BPIconMark key={'mon' + x + ',' + y} x={x} y={y} kind="pit" statue={c.statue} /> : null))}
 
       {/* arvores: mais altas que as pecas, passam por dentro do furo */}
@@ -1081,7 +1061,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
       {/* peca na mao, flutuando sobre o grid */}
       {ghost && (
         <g className={ghost.locked ? '' : 'ct-ghost'} opacity={ghost.locked ? 1 : 0.94} pointerEvents="none">
-          <PieceShape cells={ghostCells} color={ctColor(order, ghost.playerId)} lift={ghost.locked ? 0.4 : 1.6} outline={ghost.ok ? '#35e06f' : '#ff3b3b'} shadowId={shadowId} />
+          <PieceShape cells={ghostCells} color={ctColor(order, ghost.playerId)} tileType={ghost.tileType} lift={ghost.locked ? 0.4 : 1.6} outline={ghost.ok ? '#35e06f' : '#ff3b3b'} shadowId={shadowId} />
         </g>
       )}
     </svg>
@@ -1142,9 +1122,10 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
 };
 
 /** Peca solta (vitrine da loja, mao do jogador): mesma linguagem do tabuleiro. */
-export const CTPieceView: React.FC<{ shape: number[][]; color?: { top: string; side: string }; label: string; className?: string; minBox?: number; aspect?: number }> = ({
+export const CTPieceView: React.FC<{ shape: number[][]; color?: { top: string; side: string }; tileType?: BPTileType; label: string; className?: string; minBox?: number; aspect?: number }> = ({
   shape,
   color = { top: '#f5f2eb', side: '#a39d8c' },
+  tileType,
   label,
   className,
   minBox = 5,
@@ -1169,7 +1150,7 @@ export const CTPieceView: React.FC<{ shape: number[][]; color?: { top: string; s
         </filter>
       </defs>
       <g transform={`translate(${ox} ${oy})`}>
-        <PieceShape cells={cells} color={color} shadowId={idRef.current} />
+        <PieceShape cells={cells} color={color} tileType={tileType} shadowId={idRef.current} />
       </g>
     </svg>
   );

@@ -610,6 +610,7 @@ export function bpBoard(s: BPState, pid: string): CTBoard {
         c.o = tileKind(placed.type);
         c.k = 1;
         c.p = placed.uid;
+        c.tileType = placed.type;
         if (placed.pts > 0) {
           const list = ptsCells.get(placed.uid) || [];
           list.push({ x, y, pts: placed.pts });

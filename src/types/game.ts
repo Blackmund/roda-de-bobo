@@ -461,6 +461,7 @@ export interface CTCell {
   entrance?: boolean;
   statue?: number;
   tilePts?: number;
+  tileType?: BPTileType;
   /** peca que cobre a casa: dono, tipo do bloco (1 solido, 2 furo) e id da peca */
   o?: string;
   k?: 1 | 2;

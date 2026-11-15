@@ -7,6 +7,7 @@ import {
   BP_ICON_LABEL,
   BP_TILE_META,
   areaSpots,
+  bpBoard,
   bpCanPlace,
   bpCurrent,
   bpPass,
@@ -205,4 +206,11 @@ test('Barenpark: icones brasileiros e helpers de encaixe automatico e snap', () 
   assert.ok(snapped.x >= b.minX && snapped.x <= b.maxX);
   assert.ok(snapped.y >= b.minY && snapped.y <= b.maxY);
   assert.equal(typeof snapped.ok, 'boolean');
+
+  // bpBoard preserva tileType nas casas ocupadas para renderizar a skin Classica corretamente
+  const after = bpPlace(s, 'a', parkA.supply[0].uid, first.m, first.x, first.y);
+  const board = bpBoard(after, 'a');
+  const occupied = board.cells.filter((c) => Boolean(c.o));
+  assert.ok(occupied.length > 0);
+  assert.ok(occupied.every((c) => c.tileType === 'toilet'));
 });
