@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Bot, Plus, X } from 'lucide-react';
 import type { Player, TeamId } from '../../types/game';
 import { BOT_LEVELS, BotLevel, botLevelOf, isBot, newBotPlayer } from '../../ai/bots';
-import { BOT_READY_GAMES } from '../../ai/adapters';
+import { BOT_READY_GAMES } from '../../ai/registry';
 import { GAME_NAMES } from '../../app/gameNames';
 import { sounds } from '../../utils/soundEffects';
 

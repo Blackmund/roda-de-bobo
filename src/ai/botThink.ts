@@ -9,7 +9,9 @@ export type BotThinkKind =
   | 'wrong' // respostas plausiveis porem erradas para uma pergunta (para errar de forma crivel)
   | 'nota-clue' // uma dica que indica uma nota numa escala
   | 'proibido-clues' // dicas para a palavra sem usar as proibidas
-  | 'list'; // itens validos de uma categoria (Duvido)
+  | 'list' // itens validos de uma categoria (Duvido)
+  | 'mega-clues' // dicas de UMA palavra para a palavra-alvo
+  | 'mega-guess'; // chutes da palavra a partir das dicas
 
 const cache = new Map<string, Promise<string[]>>();
 

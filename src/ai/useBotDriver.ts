@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { GameRoom } from '../types/game';
-import { ADAPTERS } from './adapters';
+import { ALL_ADAPTERS as ADAPTERS } from './registry';
 import { isBot } from './bots';
 
 /**

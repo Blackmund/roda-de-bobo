@@ -1147,6 +1147,14 @@ app.post('/api/bot-think', async (req, res) => {
       count = 4;
       task = `Jogo do Proibido (Taboo). Palavra a ser adivinhada: "${s(input.word, 60)}". Palavras proibidas (não use nenhuma delas, nem a palavra-alvo, nem partes delas): ${arr(input.forbidden, 10).join(', ')}. Escreva ${count} dicas curtas (até 10 palavras cada) em português do Brasil, da mais reveladora para a menos.`;
       break;
+    case 'mega-clues':
+      count = 6;
+      task = `Jogo Mega Resenha: você dá dicas para o parceiro adivinhar a palavra "${s(input.word, 60)}". Cada dica é UMA palavra só (sem frase, sem nome composto), diferente da palavra-alvo e sem o mesmo radical dela. Liste ${count} dicas de uma palavra, da mais reveladora para a menos.`;
+      break;
+    case 'mega-guess':
+      count = 3;
+      task = `Jogo Mega Resenha: seu parceiro deu estas dicas de uma palavra cada: ${arr(input.clues, 10).join(', ')}. Qual é a palavra? Dê ${count} chutes de UMA palavra, do mais provável ao menos provável.`;
+      break;
     case 'list':
       count = Math.min(25, Math.max(3, Number(input.count) || 10));
       task = `Jogo do Duvido. Categoria: "${s(input.category)}"${input.rule ? ` (regra: ${s(input.rule)})` : ''}. Liste ${count} itens reais e diferentes que pertencem a essa categoria. Um item por posição, curto.`;
