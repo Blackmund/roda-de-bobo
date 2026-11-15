@@ -348,5 +348,3 @@ export const ADAPTERS: Partial<Record<NonNullable<GameRoom['activeGame']>, Adapt
   proibido
 };
 
-/** Jogos em que a IA ja joga (Fase 1). */
-export const BOT_READY_GAMES = Object.keys(ADAPTERS);
