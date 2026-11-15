@@ -57,7 +57,7 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
                   {room.roundSource === 'ai' ? 'Conteúdo: IA' : 'Conteúdo: banco'}
                 </div>
               )}
-              {room.activeGame && TURN_BAR_GAMES.includes(room.activeGame) && (
+              {room.activeGame && TURN_BAR_GAMES.includes(room.activeGame) && !(room.activeGame === 'como-eu-pinto' && room.comoEuPinto?.phase === 'SUMMARY') && (
                 <div className="shrink-0" data-testid="playing-turn-bar">
                   <ActiveTurnBanner room={room} />
                 </div>

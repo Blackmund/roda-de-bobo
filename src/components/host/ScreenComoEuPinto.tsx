@@ -675,54 +675,65 @@ export const ScreenComoEuPinto: React.FC<ScreenComoEuPintoProps> = ({ room, onUp
       )}
 
       {st.phase === 'SUMMARY' && (
-        <section data-testid="pinto-summary" className="rdb-pro-sum">
-          <div className="rdb-pro-sum-head">
-            <span className="rdb-lim-round">Fim da rodada</span>
-            <h2>
-              {teamName} +{pts.draw}
-              {st.rivalTeam ? <small> · {rivalName} +{pts.rival}</small> : null}
-            </h2>
-          </div>
-          <div className="rdb-pinto-thumbs">
-            {st.words.map((w, i) => (
-              <div key={i} className={'rdb-pinto-thumb' + (st.outcomes[i] === 'correct' ? ' is-hit' : st.outcomes[i] === 'stolen' ? ' is-stolen' : '')}>
-                <DrawingCanvas testId={`pinto-thumb-${i}`} strokes={st.drawings[i] ?? []} backgroundColor={PINTO_PAPER_COLOR} aspect={PINTO_ASPECT} />
-                <span>
-                  {st.outcomes[i] === 'correct' ? <Check size={16} strokeWidth={4} /> : st.outcomes[i] === 'stolen' ? <Swords size={16} /> : <XIcon size={16} strokeWidth={4} />} {w}
-                  {st.outcomes[i] === 'stolen' ? ' (roubada)' : ''}
-                </span>
-                <span className="rdb-pinto-judge">
-                  <button
-                    type="button"
-                    data-testid={`pinto-sum-hit-${i}`}
-                    aria-label={`Ponto para ${teamName}`}
-                    data-tip={`Ponto para ${teamName}`}
-                    className={st.outcomes[i] === 'correct' ? 'is-on' : ''}
-                    onClick={() => onUpdatePintoState((prev) => setPintoOutcome(prev, i, prev.outcomes[i] === 'correct' ? 'pending' : 'correct'))}
-                  >
-                    <Check size={14} strokeWidth={3} />
-                  </button>
-                  {st.rivalTeam && (
-                    <button
-                      type="button"
-                      aria-label={`Ponto para ${rivalName}`}
-                      data-tip={`Ponto para ${rivalName} (roubo)`}
-                      className={st.outcomes[i] === 'stolen' ? 'is-on is-rival' : ''}
-                      onClick={() => onUpdatePintoState((prev) => setPintoOutcome(prev, i, prev.outcomes[i] === 'stolen' ? 'pending' : 'stolen'))}
-                    >
-                      <Swords size={14} />
-                    </button>
-                  )}
-                </span>
-              </div>
-            ))}
-          </div>
-          <div className="rdb-pro-sum-foot">
-            <span />
+        <section data-testid="pinto-summary" className="rdb-pro-sum rdb-pinto-sum">
+          {/* Uma linha só: o que aconteceu, quem desenhou e quanto fez, e a ação de avançar */}
+          <header className="rdb-pinto-sum-head">
+            <span className="rdb-tag">Fim da rodada</span>
+            <div className="rdb-pinto-sum-who">
+              <h2>
+                {drawer?.name || teamName} <b>+{pts.draw}</b>
+              </h2>
+              <p>
+                {guesser ? `Desenhou para ${guesser.name}` : 'Desenhou'}
+                {drawer && drawer.name !== teamName ? ` · ${teamName}` : ''}
+                {st.rivalTeam ? ` · ${rivalName} +${pts.rival}` : ''}
+                <span className="rdb-pinto-sum-hint"> · Clique no desenho para marcar o acerto</span>
+              </p>
+            </div>
             <button type="button" data-testid="pinto-next-round-btn" className="rdb-btn rdb-setup-start" onClick={onNextRound}>
               Confirmar pontos e avançar
               <ArrowRight />
             </button>
+          </header>
+          <div className="rdb-pinto-thumbs" style={{ ['--n' as string]: st.words.length }}>
+            {st.words.map((w, i) => {
+              const outcome = st.outcomes[i];
+              const who = guesser?.name || teamName;
+              const next: 'pending' | 'correct' | 'stolen' =
+                outcome === 'correct' ? (st.rivalTeam ? 'stolen' : 'pending') : outcome === 'stolen' ? 'pending' : 'correct';
+              const tip =
+                outcome === 'correct'
+                  ? st.rivalTeam
+                    ? `Clique para dar o ponto a ${rivalName} (roubo)`
+                    : 'Clique para desmarcar o acerto'
+                  : outcome === 'stolen'
+                    ? 'Clique para desmarcar'
+                    : `Clique na imagem se ${who} acertou`;
+              return (
+                <button
+                  type="button"
+                  key={i}
+                  data-testid={`pinto-sum-hit-${i}`}
+                  data-tip={tip}
+                  aria-pressed={outcome !== 'pending'}
+                  aria-label={`${w}: ${outcome === 'correct' ? 'acertou' : outcome === 'stolen' ? 'roubada' : 'não acertou'}. ${tip}`}
+                  className={'rdb-pinto-thumb' + (outcome === 'correct' ? ' is-hit' : outcome === 'stolen' ? ' is-stolen' : '')}
+                  onClick={() => {
+                    sounds.playTick();
+                    onUpdatePintoState((prev) => setPintoOutcome(prev, i, next));
+                  }}
+                >
+                  <span className="rdb-pinto-thumb-art">
+                    <DrawingCanvas testId={`pinto-thumb-${i}`} strokes={st.drawings[i] ?? []} backgroundColor={PINTO_PAPER_COLOR} aspect={PINTO_ASPECT} />
+                  </span>
+                  <span className="rdb-pinto-thumb-word">
+                    {outcome === 'correct' ? <Check size={18} strokeWidth={4} /> : outcome === 'stolen' ? <Swords size={18} /> : <XIcon size={18} strokeWidth={4} />}
+                    {w}
+                    {outcome === 'stolen' ? <small>roubada</small> : null}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </section>
       )}
