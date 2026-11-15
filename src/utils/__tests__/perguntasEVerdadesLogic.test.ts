@@ -13,7 +13,13 @@ import {
   verifyTruthDeclaration,
   formatDynamicQuestionText
 } from '../perguntasEVerdadesLogic';
-import { checkMatchSeriesWin } from '../perguntasEVerdadesEngine';
+import {
+  checkMatchSeriesWin,
+  validateCardPlacementInSlot,
+  validateCardMoveOrSwapInSlots,
+  resolveTokenAuction as resolveEngineAuction,
+  PVCard
+} from '../perguntasEVerdadesEngine';
 
 const SAMPLE_VALID_HAND: PevSecretCard[] = [
   { position: 1, rank: 2, suit: 'spades', revealedOnTv: false },
@@ -255,6 +261,77 @@ describe('Perguntas e Verdades Logic (Questions & Truth)', () => {
       const r5 = checkMatchSeriesWin({ p1: 5, p2: 0 }, 9, 5);
       assert.equal(r5.matchFinished, true);
       assert.equal(r5.matchWinnerPlayerId, 'p1');
+    });
+  });
+
+  describe('Deck setup slot validation & 0-bid tie rule (Engine)', () => {
+    it('blocks placing smaller card after larger card of same suit (e.g. 4♣ after 8♣ or 6♠ after 7♠)', () => {
+      const slots: Array<PVCard | null> = [
+        { id: 'clubs-8', value: 8, suit: 'clubs', label: '8' },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ];
+
+      // 4♣ after 8♣ -> must reject
+      const badPlacement = validateCardPlacementInSlot(slots, 1, {
+        id: 'clubs-4',
+        value: 4,
+        suit: 'clubs',
+        label: '4'
+      });
+      assert.equal(badPlacement.valid, false);
+      assert.equal(badPlacement.conflictingSlotIndex, 0);
+
+      // 9♣ after 8♣ -> valid
+      const goodSameSuit = validateCardPlacementInSlot(slots, 1, {
+        id: 'clubs-9',
+        value: 9,
+        suit: 'clubs',
+        label: '9'
+      });
+      assert.equal(goodSameSuit.valid, true);
+
+      // 4♥ (different suit) after 8♣ -> valid
+      const goodOtherSuit = validateCardPlacementInSlot(slots, 1, {
+        id: 'hearts-4',
+        value: 4,
+        suit: 'hearts',
+        label: '4'
+      });
+      assert.equal(goodOtherSuit.valid, true);
+    });
+
+    it('validates swaps between occupied slots in both directions', () => {
+      const slots: Array<PVCard | null> = [
+        { id: 'spades-2', value: 2, suit: 'spades', label: '2' },
+        { id: 'spades-7', value: 7, suit: 'spades', label: '7' },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ];
+      // Swapping 7♠ with 2♠ puts 7♠ before 2♠ -> must reject
+      const badSwap = validateCardMoveOrSwapInSlots(slots, 0, slots[1]!, 1);
+      assert.equal(badSwap.valid, false);
+
+      // Moving 7♠ to slot 3 (still after 2♠) -> valid
+      const goodMove = validateCardMoveOrSwapInSlots(slots, 2, slots[1]!, 1);
+      assert.equal(goodMove.valid, true);
+    });
+
+    it('treats 0 vs 0 auction bids as a TIE awarding +2 bonus tokens', () => {
+      const res = resolveEngineAuction({ p1: 10, p2: 10 }, { p1: 0, p2: 0 }, {});
+      assert.equal(res.status, 'TIE');
+      assert.deepEqual(res.tiedPlayerIds, ['p1', 'p2']);
+      assert.equal(res.updatedTokens.p1, 12);
+      assert.equal(res.updatedTokens.p2, 12);
     });
   });
 });

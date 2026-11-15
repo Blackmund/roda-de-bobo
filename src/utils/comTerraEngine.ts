@@ -24,6 +24,8 @@ import type {
 
 export type Rng = () => number;
 
+import { buildBPState } from './bpEngine';
+
 export function mulberry32(seed: number): Rng {
   let a = seed >>> 0;
   return () => {
@@ -42,7 +44,7 @@ export const CT_TREE_BONUS = 2;
 export const CT_LINE_BONUS = 2;
 
 export const CT_MODE_LABEL: Record<CTMode, string> = {
-  arquiteto: 'Arquiteto',
+  arquiteto: 'Reserva · Bärenpark',
   diabo: 'Plano do Diabo',
   fronteiras: 'Fronteiras'
 };
@@ -342,8 +344,9 @@ export function clampComTerraRounds(n: number | undefined): number {
   return Math.min(12, Math.max(3, v));
 }
 
-export function comTerraMaxPlayers(): number {
-  return 4;
+export function comTerraMaxPlayers(mode?: CTMode): number {
+  // Arquiteto (Barenpark adaptado) vai ate 8; Plano do Diabo e Fronteiras foram desenhados para 4
+  return mode === 'arquiteto' ? 8 : 4;
 }
 
 function refill(s: ComTerraState): ComTerraState {
@@ -365,9 +368,11 @@ export function buildComTerraState(
   mode: CTMode,
   players: Array<{ id: string }>,
   totalRounds: number,
-  seed: number = Date.now() % 2147483647
+  seed: number = Date.now() % 2147483647,
+  /** so para testes: o Arquiteto antigo (loja e tabuleiro 8x8), antes de virar Barenpark */
+  classicArquiteto = false
 ): ComTerraState {
-  const order = players.slice(0, comTerraMaxPlayers()).map((p) => p.id);
+  const order = players.slice(0, comTerraMaxPlayers(mode)).map((p) => p.id);
   const rng = mulberry32(seed);
   const boards =
     mode === 'arquiteto'
@@ -399,6 +404,10 @@ export function buildComTerraState(
     seq: 0,
     seed
   };
+  if (mode === 'arquiteto' && !classicArquiteto) {
+    // Arquiteto = Barenpark: o estado do jogo vive em `bp`; a loja e os tabuleiros antigos nao sao usados.
+    return { ...base, shop: [], bag: [], boards: [], bp: buildBPState(order, seed) };
+  }
   return refill(base);
 }
 

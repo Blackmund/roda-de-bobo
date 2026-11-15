@@ -78,7 +78,6 @@ import {
   ScreenNota,
   ScreenTemOuNaoTem,
   ScreenPerguntasEVerdades,
-  SHOW_DEV_TOOLS,
   preloadGameScreen,
   DevControlsDrawer,
   ComparePlayersModal
@@ -132,8 +131,8 @@ import confetti from 'canvas-confetti';
 import { GameOverScreen } from './app/GameOverScreen';
 import { PlayingScreen } from './app/PlayingScreen';
 import { buildNextRoundUpdater } from './app/buildNextRoundUpdater';
+import { useDevMode } from './app/devMode';
 import { buildStartedRoundUpdater } from './app/buildStartedRoundUpdater';
-
 
 export default function App() {
   const parsedQuery = parseRoomQueryParams(window.location.search);
@@ -168,9 +167,11 @@ export default function App() {
     return () => window.clearTimeout(t);
   }, []);
 
+  const isPadRoute = Boolean(parsedQuery.isPadMode);
   const isPlayRoute =
     window.location.pathname.startsWith('/play') ||
     Boolean(parsedQuery.joinCode) ||
+    isPadRoute ||
     urlParams.get('mode') === 'play' ||
     urlParams.get('mode') === 'controller' ||
     parsedQuery.requestedMode === 'multi';
@@ -267,6 +268,7 @@ export default function App() {
   const varSnapshotRef = useRef<GameRoom | null>(null);
   const [hasVarSnapshot, setHasVarSnapshot] = useState(false);
   const [varActiveFlash, setVarActiveFlash] = useState(false);
+  const devMode = useDevMode();
   const [suddenDeathBanner, setSuddenDeathBanner] = useState<string | null>(null);
 
   // Synchronized Room Hook with Real-time Presence, Connection Status & localStorage Resume
@@ -539,6 +541,7 @@ export default function App() {
       estadios: undefined,
       comoEuPinto: undefined,
       comTerra: undefined,
+      adedanha: undefined,
       roundSource: undefined,
       teams: {
         A: { ...prev.teams.A, score: 0 },
@@ -637,25 +640,30 @@ export default function App() {
         <div className="bg-[#090b14] border-b border-rose-500/40 p-2 flex flex-wrap items-center justify-between gap-1.5 text-xs">
           <div className="flex items-center gap-2 min-w-0">
             <span className="font-mono-code text-cyan-300 font-bold uppercase truncate">
-              📱 CONTROLE MOBILE (SALA: {room.roomId})
+              {isPadRoute
+                ? `PRANCHETA · SALA ${room.roomId}`
+                : `CONTROLE MOBILE (SALA: ${room.roomId})`}
             </span>
             {renderConnectionBadge()}
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              onClick={() => setViewMode('host')}
-              className="px-2 py-0.5 border border-cyan-400 bg-cyan-950 text-cyan-200 font-mono-code flex items-center gap-1 cursor-pointer"
-            >
-              <Tv size={12} />
-              Ver Tela da TV
-            </button>
-          </div>
+          {!isPadRoute && (
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={() => setViewMode('host')}
+                className="px-2 py-0.5 border border-cyan-400 bg-cyan-950 text-cyan-200 font-mono-code flex items-center gap-1 cursor-pointer"
+              >
+                <Tv size={12} />
+                Ver Tela da TV
+              </button>
+            </div>
+          )}
         </div>
 
         <ControllerView
           room={room}
           currentPlayerId={currentUserId}
           connectionStatus={connectionStatus}
+          isPadMode={isPadRoute}
           onRegisterPlayer={registerPlayer}
           onUpdateRoom={broadcastState}
           onSwitchToHostMode={() => setViewMode('host')}
@@ -688,7 +696,8 @@ export default function App() {
       'estadios',
       'como-eu-pinto',
       'onde-estou',
-      'com-terra'
+      'com-terra',
+      'adedanha'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     selectGame(randomChoice);
@@ -1005,7 +1014,7 @@ export default function App() {
       </WindowWrapper>
 
       {/* Dev Multi-Player Simulator Drawer */}
-      {SHOW_DEV_TOOLS && (
+      {devMode && (
         <Suspense fallback={null}>
           <DevControlsDrawer
             room={room}

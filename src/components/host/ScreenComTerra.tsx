@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Info } from 'lucide-react';
 import type { ComTerraState, GameRoom } from '../../types/game';
 import {
   CT_MODE_LABEL,
@@ -14,7 +15,12 @@ import { PlayerMark } from '../rdb/PlayerMark';
 import { CTBoardView, CTPieceView, ctColor } from '../comterra/CTBoardView';
 import { CTSeat } from '../comterra/CTSeat';
 import { CTSummary } from '../comterra/CTSummary';
+import { BPSeat, BPTable } from '../comterra/BPViews';
+import { bpCurrent } from '../../utils/bpEngine';
 import '../comterra/comterra.css';
+import { TipLayer } from '../comterra/TipLayer';
+import { CTSkinProvider } from '../comterra/CTSkin';
+import { BPPiecePeek } from '../comterra/BPViews';
 
 interface ScreenComTerraProps {
   room: GameRoom;
@@ -36,9 +42,9 @@ const PHASE_LABEL: Record<ComTerraState['phase'], string> = {
  * A barra "Visao" troca entre a TV (so assiste), a Mesa (joga-se na propria tela, um por vez) e a tela de
  * celular de cada jogador, para testar o fluxo inteiro num aparelho so.
  */
-export const ScreenComTerra: React.FC<ScreenComTerraProps> = ({ room, onUpdateComTerraState, onNextRound }) => {
+const ScreenComTerraInner: React.FC<ScreenComTerraProps> = ({ room, onUpdateComTerraState, onNextRound }) => {
   const ct = room.comTerra;
-  const [view, setView] = useState<string>(room.connectionMode === 'local' ? 'mesa' : 'tv');
+  const [view, setView] = useState<string>(room.connectionMode === 'local' ? 'mesa' : 'spotlight');
   const [seatPick, setSeatPick] = useState<string | null>(null);
   const [askEnd, setAskEnd] = useState(false);
 
@@ -47,6 +53,44 @@ export const ScreenComTerra: React.FC<ScreenComTerraProps> = ({ room, onUpdateCo
   }
 
   const players = room.players;
+  if (ct.bp && ct.phase !== 'SUMMARY') {
+    const cur = bpCurrent(ct.bp) || ct.order[0];
+    const local = room.connectionMode === 'local';
+    const showGrid = view === 'tv';
+    return (
+      <div className="ct-screen bp-screen rdb-tip-scope" data-testid="screen-com-terra">
+        <TipLayer scope=".bp-screen" />
+        <BPPiecePeek scope=".bp-screen" />
+        <header className="rdb-lim-bar">
+          <span className="rdb-lim-title">
+            Com Terra <span className="rdb-lim-round">Reserva · Bärenpark</span>
+          </span>
+          <span
+            className="rdb-lim-rule"
+            tabIndex={0}
+            data-tip="Monte sua reserva com áreas 4×4: encaixe 1 peça por vez encostada nas suas. Carriola = Área Verde, Betoneira = Viveiro, Cavadeira = 1 dos 12 Cercados únicos, Equipe de Obra = nova área. Área completa sem cobrir o Fosso ganha o Monumento do topo."
+          >
+            <Info size={16} />
+          </span>
+          <div className="rdb-lim-tools">
+            <button type="button" className="rdb-seg" aria-pressed={!showGrid} onClick={() => setView(local ? 'mesa' : 'spotlight')}>
+              Destaque da vez
+            </button>
+            <button type="button" className="rdb-seg" aria-pressed={showGrid} onClick={() => setView('tv')}>
+              Todos os parques
+            </button>
+          </div>
+        </header>
+        {showGrid ? (
+          <BPTable state={ct} players={players} gridMode />
+        ) : local ? (
+          <BPSeat key={cur} state={ct} players={players} playerId={cur} onUpdate={onUpdateComTerraState} />
+        ) : (
+          <BPTable state={ct} players={players} />
+        )}
+      </div>
+    );
+  }
   const nameOf = (id: string | null) => players.find((p) => p.id === id)?.name || 'Jogador';
   const acting = actingPlayers(ct);
   const turnId = currentPlayerId(ct);
@@ -234,3 +278,10 @@ export const ScreenComTerra: React.FC<ScreenComTerraProps> = ({ room, onUpdateCo
     </div>
   );
 };
+
+/** aplica a skin escolhida na configuracao a tudo o que o jogo desenha */
+export const ScreenComTerra: React.FC<ScreenComTerraProps> = (props) => (
+  <CTSkinProvider skin={props.room.comTerra?.skin}>
+    <ScreenComTerraInner {...props} />
+  </CTSkinProvider>
+);

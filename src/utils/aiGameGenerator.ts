@@ -2094,6 +2094,11 @@ async function generateRoundContentCore(
     };
   }
 
+  // Adedanha: a letra e as categorias sao sorteadas no proprio App; aqui so um marcador.
+  if (gameId === 'adedanha') {
+    return { source: 'curated', data: {}, themeUsed: 'Adedanha', subthemeUsed: 'Uma letra, várias categorias', signature: `ad-round-${Date.now()}` };
+  }
+
   // NOV-06: o Estadios sorteia o estadio no proprio App; aqui so um marcador.
   if (gameId === 'estadios') {
     return {

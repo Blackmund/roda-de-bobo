@@ -18,7 +18,8 @@ export type GameId =
   | 'estadios'
   | 'como-eu-pinto'
   | 'onde-estou'
-  | 'com-terra';
+  | 'com-terra'
+  | 'adedanha';
 
 export type TeamId = 'A' | 'B' | 'C' | 'D';
 
@@ -139,6 +140,8 @@ export interface DuvidoGameState {
   blindfoldConfirmed: { A: boolean; B: boolean; C?: boolean; D?: boolean };
   currentBid: number;
   currentBidTeam: TeamId | null;
+  teamBids?: Partial<Record<TeamId, number>>;
+  lastBidDelta?: number;
   activeTurnTeam: TeamId;
   activePlayerId?: string;
   timerSeconds: number;
@@ -280,6 +283,38 @@ export interface RepetenteGameState {
   result?: { groups: RepetenteGroupResult[]; pointsByTeam: Record<TeamId, number> };
 }
 
+export type AdedanhaStopRule = 'first' | 'host' | 'majority' | 'none';
+
+// ADEDANHA (Stop): letra sorteada, cada um escreve no celular, STOP, validacao por voto
+export interface AdedanhaState {
+  phase: 'READY' | 'WRITING' | 'STOPPING' | 'VOTING' | 'SUMMARY';
+  letter: string;
+  categories: string[];
+  /** quem joga a rodada (ordem fixa) */
+  playerIds: string[];
+  /** respostas de cada jogador, na ordem das categorias (so aparecem depois do STOP) */
+  answers: Record<string, string[]>;
+  submitted: Record<string, boolean>;
+  /** 0 = sem limite */
+  timerSeconds: number;
+  /** horario (ms) em que o tempo acaba; null = sem limite ou ainda nao comecou */
+  endsAt: number | null;
+  stopBy: string | null;
+  stopAt: number | null;
+  /** categoria em validacao */
+  voteIndex: number;
+  /** "cat|jogador" -> votante -> vale? */
+  votes: Record<string, Record<string, boolean>>;
+  /** decisao do diretor, vence os votos */
+  overrides: Record<string, boolean>;
+  pointsAwarded?: Record<string, number>;
+  stopRule?: AdedanhaStopRule;
+  /** quando a letra foi sorteada (o giro na tela usa isso) */
+  startedAt?: number;
+  /** pedidos de STOP (regra da maioria) */
+  stopVotes?: Record<string, boolean>;
+}
+
 // NOV-08: RESPOSTAS SEM PERGUNTAS (a pergunta e oculta; so se sabe quantas palavras tem)
 export interface RespostasAttempt {
   playerId: string;
@@ -336,10 +371,70 @@ export interface DrawStroke {
   color: string;
   /** espessura relativa a largura da area (ex.: 0.008) */
   width: number;
+  /** opacidade do traco (0.15 a 1.0, padrao 1) */
+  opacity?: number;
 }
 
 // COM TERRA (poliminos com furo vazado; 3 modos: arquiteto, diabo, fronteiras). Motor em utils/comTerraEngine.ts
+
+// Com Terra - Arquiteto nas regras do Barenpark
+export type BPIcon = 'pit' | 'wheel' | 'cement' | 'excavator' | 'crew';
+/** recompensa pendente: um icone coberto ou a Area Verde de quem passou a vez */
+export type BPRewardKind = 'wheel' | 'cement' | 'excavator' | 'crew' | 'pass';
+export type BPTileType =
+  | 'toilet' | 'playground' | 'food' | 'river'
+  | 'h-polar' | 'h-gobi' | 'h-koala' | 'h-panda'
+  | 'e-polar' | 'e-gobi' | 'e-koala' | 'e-panda'
+  | 'e-arara' | 'e-mico' | 'e-tamandua' | 'e-lobo'
+  | 'e-boto' | 'e-tucano' | 'e-preguica' | 'e-jabuti';
+export interface BPTile {
+  uid: string;
+  type: BPTileType;
+  pts: number;
+}
+export interface BPArea {
+  id: string;
+  /** posicao na grade de areas (7 x 4); a Entrada fica em (3, 3) */
+  ax: number;
+  ay: number;
+  icons: Array<BPIcon | null>;
+  entrance?: boolean;
+  /** valor da estatua que foi para o fosso (area completa) */
+  statue?: number;
+}
+export interface BPPark {
+  areas: BPArea[];
+  /** casas ocupadas: "x,y" -> peca */
+  cells: Record<string, { uid: string; type: BPTileType; pts: number }>;
+  /** estoque pessoal (pecas ainda nao colocadas) */
+  supply: BPTile[];
+  statues: number[];
+}
+export interface BPState {
+  turnIdx: number;
+  order: string[];
+  parks: Record<string, BPPark>;
+  /** Areas Verdes que sobram no estoque geral, por tipo */
+  greens: Record<string, number>;
+  /** pilhas de Casas e de Cercados (o ultimo do array e o topo) */
+  houses: Record<string, number[]>;
+  enclosures: Record<string, number[]>;
+  /** duas pilhas de areas de parque (ids; o ultimo e o topo) */
+  areaPiles: [string[], string[]];
+  areaDefs: Record<string, string>;
+  /** estatuas restantes, da maior para a menor */
+  statues: number[];
+  pending: Array<{ playerId: string; kind: BPRewardKind }>;
+  endTriggeredBy: string | null;
+  /** depois do gatilho do fim: quantas vezes ainda faltam */
+  turnsLeft: number | null;
+  finished: boolean;
+  log: Array<{ id: number; playerId: string; text: string }>;
+}
+
 export type CTMode = 'arquiteto' | 'diabo' | 'fronteiras';
+/** visual das pecas da Reserva: clean (chapado, padrao) ou classic (tabuleiro ilustrado) */
+export type CTSkin = 'clean' | 'classic';
 export type CTPendingKind = 'tree' | 'tok';
 
 export interface CTPiece {
@@ -361,6 +456,12 @@ export interface CTCell {
   tok?: number;
   /** icone de acao: cobrir com bloco solido da a acao */
   act?: CTPendingKind;
+  /** Arquiteto (Barenpark): icone impresso na area, entrada, estatua no fosso e pontos da peca */
+  bpi?: BPIcon;
+  entrance?: boolean;
+  statue?: number;
+  tilePts?: number;
+  tileType?: BPTileType;
   /** peca que cobre a casa: dono, tipo do bloco (1 solido, 2 furo) e id da peca */
   o?: string;
   k?: 1 | 2;
@@ -399,11 +500,27 @@ export interface ComTerraState {
   log: Array<{ id: number; playerId: string; text: string; delta: number }>;
   seq: number;
   seed: number;
+  /** Arquiteto nas regras do Barenpark */
+  bp?: BPState;
+  /** visual das pecas (escolhido na configuracao) */
+  skin?: CTSkin;
 }
+
+export type PintoPlayMode = 'pad' | 'tv';
 
 export interface ComoEuPintoState {
   /** STEAL = acabou o tempo e a dupla rival tenta as palavras que faltam */
   phase: 'READY' | 'PLAYING' | 'STEAL' | 'SUMMARY';
+  /** No modo local: 'pad' (1 celular como prancheta, estilo Gartic TV) ou 'tv' (so pela TV) */
+  inputMode?: PintoPlayMode;
+  /** Quando true na TV (modo 'tv'), pede para todos fecharem os olhos antes de mostrar a palavra */
+  tvRevealGate?: boolean;
+  /** Quando true na prancheta unica ('pad'), pede para passar o celular antes de mostrar a palavra */
+  padPassGate?: boolean;
+  /** Indica se a prancheta unica conectou a sala */
+  padConnected?: boolean;
+  /** Traco em andamento enviado ao vivo antes de soltar o dedo */
+  liveStroke?: DrawStroke | null;
   words: string[];
   currentIndex: number;
   /** 'correct' = a dupla que desenha acertou; 'stolen' = a dupla rival roubou */
@@ -417,6 +534,8 @@ export interface ComoEuPintoState {
   timerActive: boolean;
   /** desenho da palavra atual */
   strokes: DrawStroke[];
+  /** pilha de refazer do desenho atual */
+  redoStrokes?: DrawStroke[];
   /** desenhos ja feitos, um por palavra (para o resumo) */
   drawings: DrawStroke[][];
   wordHidden?: boolean;
@@ -564,6 +683,8 @@ export interface PerguntasEVerdadesGameState {
   totalMatchRounds?: number;
   roundWinsByPlayer?: Record<string, number>;
   roundWinBannerMessage?: string | null;
+  auctionRevealPending?: boolean;
+  auctionOutcomeType?: 'WIN' | 'NO_BIDS' | null;
 }
 
 export interface GameCustomConfig {
@@ -571,6 +692,11 @@ export interface GameCustomConfig {
   ruleset?: 'home' | 'show';
   // DAD-05: origem do conteudo das perguntas: 'auto' (mistura banco + IA, padrao), 'bank' (so banco pronto) ou 'ai' (so IA)
   contentSource?: 'auto' | 'bank' | 'ai';
+  // Adedanha: categorias da partida e letras que nao saem
+  adedanhaCategories?: string[];
+  adedanhaExcludedLetters?: string[];
+  /** quem pode pedir STOP: o primeiro que completar, so o diretor, a maioria ou ninguem (so o tempo) */
+  adedanhaStopRule?: AdedanhaStopRule;
   // Tem ou Não Tem
   temItemsCount: number; // default 5 (range 3..10)
   temMaxStrikes: number; // default 2 (range 1..4)
@@ -591,6 +717,7 @@ export interface GameCustomConfig {
   limiteExactBonus: number; // default 2 (1, 2, 3)
   // Com Terra
   ctMode?: CTMode; // default 'arquiteto'
+  ctSkin?: CTSkin; // default 'clean'
   // Perguntas e Verdades (O Jogo do Diabo)
   pvDeckMode: PVDeckMode; // 'assisted' (default) | 'physical'
   pvDeckStyle?: PVDeckStyle; // 'padrao' (CazéTV Ilustrado) | 'compacto' | 'holografico'
@@ -715,6 +842,8 @@ export interface GameRoom {
   sessionKey?: string;
   hostId: string;
   connectionMode?: ConnectionMode;
+  /** Ultima fala de um jogador IA (balao na TV): o que ele "disse" na jogada. */
+  botSay?: { playerId: string; text: string; at: number };
   visualTheme?: VisualTheme;
   difficulty?: GameDifficulty;
   startingPlayerId?: string | null;
@@ -752,6 +881,7 @@ export interface GameRoom {
   estadios?: EstadiosGameState;
   comoEuPinto?: ComoEuPintoState;
   comTerra?: ComTerraState;
+  adedanha?: AdedanhaState;
   nota?: NotaGameState;
   temOuNaoTem?: TemOuNaoTemGameState;
   perguntasEVerdades?: PerguntasEVerdadesGameState;

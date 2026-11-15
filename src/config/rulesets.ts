@@ -73,6 +73,16 @@ const SHOW_PRESETS: Partial<Record<GameId, RulesetPreset>> = {
       'Acabou o tempo: a dupla rival tenta adivinhar as palavras que faltam (1 ponto cada, a confirmar)'
     ]
   },
+  adedanha: {
+    rounds: 5,
+    timer: 90,
+    config: {},
+    notes: [
+      'Uma letra por rodada; cada jogador escreve no celular uma palavra para cada categoria',
+      'Quem preenche tudo pode apertar STOP (ou a maioria, só o diretor ou só o tempo); os outros têm 4 segundos para mandar',
+      'Resposta só sua vale 10, repetida vale 5, inválida 0 (jogo novo, fora do programa)'
+    ]
+  },
   estadios: {
     rounds: 10,
     config: {},

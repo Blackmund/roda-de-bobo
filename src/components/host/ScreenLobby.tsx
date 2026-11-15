@@ -122,7 +122,8 @@ const GAME_TITLES: Record<GameId, string> = {
   estadios: 'ESTÁDIOS',
   'como-eu-pinto': 'COMO EU PINTO',
   'onde-estou': 'ONDE ESTOU',
-  'com-terra': 'COM TERRA'
+  'com-terra': 'COM TERRA',
+  adedanha: 'ADEDANHA'
 };
 
 /** Maximo de cards por pagina do catalogo (o grid e 3x2 no desktop e 2x3 no tablet). */
@@ -353,6 +354,14 @@ const GAMES: Array<{
     badge: 'INDIVIDUAL',
     color: '#17B8B8',
     renderArt: () => null
+  },
+  {
+    id: 'adedanha',
+    name: 'ADEDANHA',
+    tagline: 'UMA LETRA, VÁRIAS CATEGORIAS E QUEM ACABA GRITA STOP',
+    badge: 'INDIVIDUAL',
+    color: '#E6194B',
+    renderArt: () => null
   }
 ];
 
@@ -576,7 +585,8 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
       'estadios',
       'como-eu-pinto',
       'onde-estou',
-      'com-terra'
+      'com-terra',
+      'adedanha'
     ];
     const randomChoice = allGames[Math.floor(Math.random() * allGames.length)];
     // o jogo ja esta sorteado; a roleta mostra o caminho ate ele e so entao abre o jogo

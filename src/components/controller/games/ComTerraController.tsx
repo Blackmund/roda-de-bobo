@@ -2,7 +2,11 @@ import React from 'react';
 import type { ComTerraState, GameRoom, Player } from '../../../types/game';
 import { CTSeat } from '../../comterra/CTSeat';
 import { CTSummary } from '../../comterra/CTSummary';
+import { BPSeat } from '../../comterra/BPViews';
 import '../../comterra/comterra.css';
+import { TipLayer } from '../../comterra/TipLayer';
+import { CTSkinProvider } from '../../comterra/CTSkin';
+import { BPPiecePeek } from '../../comterra/BPViews';
 
 interface ComTerraControllerProps {
   room: GameRoom;
@@ -12,7 +16,7 @@ interface ComTerraControllerProps {
 }
 
 /** Com Terra no celular: o lugar do jogador (tabuleiro, loja e adversarios em abas). */
-export const ComTerraController: React.FC<ComTerraControllerProps> = ({ room, player, onUpdateRoom, onNextRound }) => {
+const ComTerraControllerInner: React.FC<ComTerraControllerProps> = ({ room, player, onUpdateRoom, onNextRound }) => {
   const ct = room.comTerra;
   if (!ct) return null;
   const onUpdate = (fn: (prev: ComTerraState) => ComTerraState) =>
@@ -22,12 +26,25 @@ export const ComTerraController: React.FC<ComTerraControllerProps> = ({ room, pl
   const canFinish = room.connectionMode === 'multi' && isLeader && !!onNextRound;
 
   return (
-    <div className="ct-phone ct-box" data-testid="controller-ct-view">
+    <div className="ct-phone ct-box rdb-tip-scope" data-testid="controller-ct-view">
+      <TipLayer scope=".ct-phone" />
+      <BPPiecePeek scope=".ct-phone" />
       {ct.phase === 'SUMMARY' ? (
         <CTSummary state={ct} players={room.players} onFinish={canFinish ? onNextRound : undefined} />
       ) : (
-        <CTSeat state={ct} players={room.players} playerId={player.id} onUpdate={onUpdate} />
+        ct.bp ? (
+          <BPSeat state={ct} players={room.players} playerId={player.id} onUpdate={onUpdate} />
+        ) : (
+          <CTSeat state={ct} players={room.players} playerId={player.id} onUpdate={onUpdate} />
+        )
       )}
     </div>
   );
 };
+
+/** aplica a skin escolhida na configuracao a tudo o que o jogo desenha */
+export const ComTerraController: React.FC<ComTerraControllerProps> = (props) => (
+  <CTSkinProvider skin={props.room.comTerra?.skin}>
+    <ComTerraControllerInner {...props} />
+  </CTSkinProvider>
+);

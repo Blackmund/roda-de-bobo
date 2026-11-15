@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ComTerraState, Player } from '../../types/game';
+import { bpRanking } from '../../utils/bpEngine';
 import { ranking } from '../../utils/comTerraEngine';
 import { PlayerMark } from '../rdb/PlayerMark';
 import { ctColor } from './CTBoardView';
@@ -11,9 +12,12 @@ export const CTSummary: React.FC<{
   players: Player[];
   onFinish?: () => void;
 }> = ({ state, players, onFinish }) => {
-  const rank = ranking(state);
+  const rank: Array<{ playerId: string; points: number; tie?: number }> = state.bp
+    ? bpRanking(state.bp)
+    : ranking(state);
   const top = rank[0]?.points ?? 0;
-  const winners = rank.filter((r) => r.points === top);
+  const topTie = rank[0]?.tie ?? 0;
+  const winners = rank.filter((r) => r.points === top && (r.tie ?? 0) === topTie);
   const nameOf = (id: string) => players.find((p) => p.id === id)?.name || 'Jogador';
   return (
     <div className="ct-summary" data-testid="ct-summary">
@@ -24,12 +28,15 @@ export const CTSummary: React.FC<{
       <ol className="ct-rank ct-rank--big">
         {rank.map((r) => {
           const p = players.find((x) => x.id === r.playerId);
+          const isWin = r.points === top && (r.tie ?? 0) === topTie;
           return (
-            <li key={r.playerId} className={r.points === top ? 'is-turn' : ''}>
+            <li key={r.playerId} className={isWin ? 'is-turn' : ''}>
               <span className="ct-swatch" style={{ background: ctColor(state.order, r.playerId).top }} aria-hidden="true" />
               <PlayerMark p={p} />
               <span className="ct-rank-name">{p?.name || 'Jogador'}</span>
-              <span className="ct-rank-pts">{r.points} pts</span>
+              <span className="ct-rank-pts">
+                {r.points} pts{state.bp && r.tie ? ` (+${r.tie} est.)` : ''}
+              </span>
             </li>
           );
         })}

@@ -1880,3 +1880,34 @@
     display: none;
   }
 }
+
+/* ---------- Jogar contra IA: escalacao e balao de fala ---------- */
+.rdb-card-art--ia { display: grid; place-items: center; color: var(--rdb-teal, #17b8b8); background: #0b1230; }
+.rdb-botpanel { flex-shrink: 0; margin-top: 0.6rem; padding: 0.7rem 0.8rem; background: rgba(245, 242, 235, 0.04); border: 1px solid rgba(245, 242, 235, 0.12); display: flex; flex-direction: column; gap: 0.5rem; }
+.rdb-botpanel-head { display: flex; align-items: center; gap: 0.5rem; color: var(--rdb-teal, #17b8b8); }
+.rdb-botpanel-head h3 { margin: 0; font-family: 'Anton', 'Impact', sans-serif; font-weight: 400; font-size: 1.05rem; text-transform: uppercase; color: #f5f2eb; }
+.rdb-botpanel-count { margin-left: auto; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: rgba(245, 242, 235, 0.6); }
+.rdb-botpanel-levels { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+.rdb-botpanel-level { padding: 0.35rem 0.7rem; font-weight: 900; font-size: 0.75rem; text-transform: uppercase; background: rgba(245, 242, 235, 0.06); border: 1px solid rgba(245, 242, 235, 0.16); color: #f5f2eb; cursor: pointer; }
+.rdb-botpanel-level.is-on { background: #f5f2eb; color: #0b1230; border-color: #f5f2eb; }
+.rdb-botpanel-level.is-impossivel.is-on { background: #e6194b; color: #fff; border-color: #e6194b; }
+.rdb-botpanel-add { margin-left: auto; display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.4rem 0.8rem; font-weight: 900; font-size: 0.75rem; text-transform: uppercase; background: var(--rdb-teal, #17b8b8); color: #0b1230; border: 0; cursor: pointer; box-shadow: 0 2px 0 rgba(4, 5, 12, 0.85); }
+.rdb-botpanel-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.rdb-botpanel-list li { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.25rem 0.3rem 0.25rem 0.6rem; font-weight: 800; font-size: 0.78rem; background: #141a3a; border-left: 3px solid #17b8b8; }
+.rdb-botpanel-list li.is-facil { border-left-color: #7a8cff; }
+.rdb-botpanel-list li.is-dificil { border-left-color: #ffc93c; }
+.rdb-botpanel-list li.is-impossivel { border-left-color: #e6194b; }
+.rdb-botpanel-list button { display: grid; place-items: center; width: 1.3rem; height: 1.3rem; background: none; border: 0; color: rgba(245, 242, 235, 0.7); cursor: pointer; }
+.rdb-botpanel-note { margin: 0; font-size: 0.7rem; color: rgba(245, 242, 235, 0.55); }
+
+.rdb-botsay { position: fixed; left: 50%; top: 4.2rem; z-index: 950; transform: translateX(-50%); display: flex; align-items: center; gap: 0.65rem; max-width: min(46rem, 92vw); padding: 0.6rem 1rem 0.6rem 0.6rem; background: #f5f2eb; color: #0b1230; box-shadow: 0 4px 0 rgba(4, 5, 12, 0.85); animation: rdb-botsay-in 0.22s ease-out; pointer-events: none; }
+.rdb-botsay-body { display: flex; flex-direction: column; min-width: 0; }
+.rdb-botsay-who { display: flex; align-items: center; gap: 0.5rem; font-size: 0.72rem; font-weight: 900; text-transform: uppercase; }
+.rdb-botsay-who em { font-style: normal; padding: 0 0.35rem; background: #0b1230; color: #f5f2eb; }
+.rdb-botsay-text { font-family: 'Anton', 'Impact', sans-serif; font-size: 1.35rem; line-height: 1.15; text-transform: uppercase; }
+@keyframes rdb-botsay-in { from { opacity: 0; transform: translate(-50%, -0.4rem); } to { opacity: 1; transform: translate(-50%, 0); } }
+@media (prefers-reduced-motion: reduce) { .rdb-botsay { animation: none; } }
+/* tela de modos: 4 cartoes (com o Contra IA) numa linha so */
+@media (min-width: 1024px) {
+  .rdb-grid.rdb-grid--modes { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}

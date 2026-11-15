@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { GameRoom } from '../../types/game';
+import { sounds } from '../../utils/soundEffects';
 
 /**
  * Vinheta de transicao da partida: duas faixas (crimson e teal) cruzam a tela com o nome do momento
@@ -46,6 +47,7 @@ export const PhaseStinger: React.FC<{ room: GameRoom }> = ({ room }) => {
     last.current = key;
     if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
     setShown({ key, label });
+    sounds.playRoundStart();
     const t = setTimeout(() => setShown((s) => (s?.key === key ? null : s)), 1350);
     return () => clearTimeout(t);
   }, [key, label]);

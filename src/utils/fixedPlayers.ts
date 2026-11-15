@@ -109,7 +109,8 @@ export const GAME_FRIENDLY_NAMES: Record<GameId, string> = {
   estadios: 'Estádios',
   'como-eu-pinto': 'Como Eu Pinto',
   'onde-estou': 'Onde Estou',
-  'com-terra': 'Com Terra'
+  'com-terra': 'Com Terra',
+  adedanha: 'Adedanha'
 };
 
 /**

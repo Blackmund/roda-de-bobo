@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CTMode,
+import { CTMode, CTSkin,
   GameId,
   GameCustomConfig,
   GameDifficulty
@@ -33,6 +33,12 @@ import { POPULAR_THEMES } from './step2/popularThemes';
 import { GameCardArt } from '../art/GameCardArt';
 import { CT_MODE_LABEL } from '../../utils/comTerraEngine';
 import { usesLocalContent } from '../../config/localGames';
+import { AdedanhaCategoryEditor } from './AdedanhaCategoryEditor';
+import {
+  ADEDANHA_LETRAS_EXCLUIDAS_PADRAO,
+  ADEDANHA_PADRAO
+} from '../../data/adedanhaCategorias';
+
 
 export interface Step2ConfigureGameProps {
   activeGame: GameId;
@@ -69,6 +75,14 @@ const TIMER_OPTIONS: Array<{ value: number; label: string; desc: string }> = [
   { value: 0, label: 'Livre', desc: 'Sem limite' }
 ];
 
+/** Adedanha: tempo por rodada no estilo do Stop (rapido, medio, lento) ou sem tempo. */
+const AD_TIMER_OPTIONS: Array<{ value: number; label: string; desc: string }> = [
+  { value: 60, label: 'Rápido', desc: '60 segundos por rodada' },
+  { value: 90, label: 'Médio', desc: '90 segundos por rodada (padrão)' },
+  { value: 150, label: 'Lento', desc: '2 minutos e 30 por rodada' },
+  { value: 0, label: 'Sem tempo', desc: 'A rodada só para no STOP' }
+];
+
 const ROUND_OPTIONS: Array<{ value: number; label: string; desc: string }> = [
   { value: 3, label: '3 Rodadas', desc: 'Partida Rápida' },
   { value: 5, label: '5 Rodadas', desc: 'Padrão Oficial' },
@@ -84,12 +98,16 @@ const PV_ROUND_OPTIONS: Array<{ value: number; label: string; desc: string }> = 
   { value: 9, label: 'MD9', desc: 'Primeiro a 5' }
 ];
 
-const CT_MODES: CTMode[] = ['arquiteto', 'diabo', 'fronteiras'];
+const CT_MODES: CTMode[] = ['arquiteto', 'diabo'];
+const CT_SKINS: Array<{ value: CTSkin; label: string }> = [
+  { value: 'clean', label: 'Clean' },
+  { value: 'classic', label: 'Clássica' }
+];
 const CT_MODE_NOTES: Record<CTMode, string[]> = {
   arquiteto: [
-    'Cada jogador monta o próprio tabuleiro 8x8; na TV aparecem todos',
-    'Turnos em rodízio: pegue uma peça da loja e encaixe',
-    'Linha ou coluna cheia vale +2'
+    'Reserva · Bärenpark brasileiro: cada um monta o próprio parque com até 4 áreas de 4×4',
+    'Cubra Carriola (Área Verde), Betoneira (Viveiro), Cavadeira (12 Cercados únicos) e Equipe de Obra (nova área)',
+    'Área completa ganha o Monumento do topo; quem completar 4 áreas dispara a última volta (até 8 jogadores)'
   ],
   diabo: [
     'Um mapa só para todos, diferente a cada partida',
@@ -142,6 +160,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
     activeGame === 'onde-estou' ||
     activeGame === 'respostas-sem-perguntas' ||
     activeGame === 'estadios' ||
+    activeGame === 'adedanha' ||
     activeGame === 'perguntas-e-verdades';
 
   const [isAllThemesExpanded, setIsAllThemesExpanded] = useState(false);
@@ -174,7 +193,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
   }, [isPV, rounds, onChangeRounds]);
 
   // Ajustes exclusivos de cada jogo, como linhas da propria tela (antes ficavam numa janela a parte).
-  type ExtraRow = { id: string; label: string; options: Array<{ id: string; label: string; on: boolean; pick: () => void }> };
+  type ExtraRow = { id: string; label: string; select?: boolean; options: Array<{ id: string; label: string; on: boolean; pick: () => void }> };
   const set = (patch: Partial<GameCustomConfig>) => () => onChangeCustomConfig((prev) => ({ ...prev, ...patch }));
   const pickRow = <T extends string | number | boolean>(
     id: string,
@@ -256,6 +275,19 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             ['physical', 'Baralho físico', { pvDeckMode: 'physical' }]
           ])
         ]
+      : activeGame === 'adedanha'
+      ? [
+          { select: true, ...pickRow('ad-stop', 'Quem pede STOP', customConfig.adedanhaStopRule || 'first', [
+            ['first', 'Quem terminar primeiro', { adedanhaStopRule: 'first' }],
+            ['majority', 'A maioria', { adedanhaStopRule: 'majority' }],
+            ['host', 'Só o diretor', { adedanhaStopRule: 'host' }],
+            ['none', 'Ninguém (só o tempo)', { adedanhaStopRule: 'none' }]
+          ]) },
+          { select: true, ...pickRow('ad-letras', 'Letras difíceis', (customConfig.adedanhaExcludedLetters ?? ADEDANHA_LETRAS_EXCLUIDAS_PADRAO).length > 0, [
+            [true, 'Fora (K, W, Y, X, Q)', { adedanhaExcludedLetters: ADEDANHA_LETRAS_EXCLUIDAS_PADRAO }],
+            [false, 'Todas as letras', { adedanhaExcludedLetters: [] }]
+          ]) }
+        ]
       : [];
 
   const isGeneralTheme = !theme || theme.trim().toLowerCase() === 'geral';
@@ -277,7 +309,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
   );
 
   return (
-    <div data-testid="step2-configure-game" className="rdb-setup">
+    <div data-testid="step2-configure-game" className={'rdb-setup' + (activeGame === 'adedanha' ? ' is-dense' : '')}>
       <div className="rdb-setup-body">
         {/* CARTAZ DO JOGO: vinheta, nome e o resumo das regras do modo escolhido */}
         <aside className="rdb-setup-poster" data-testid="setup-poster">
@@ -324,8 +356,25 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
               </div>
             </div>
           )}
+          {isCT && ctMode === 'arquiteto' && (
+            <div className="rdb-opt" data-testid="ct-skin-selector">
+              <span className="rdb-opt-label">Visual</span>
+              <div className="rdb-opt-choices">
+                {CT_SKINS.map((o) => (
+                  <Seg
+                    key={o.value}
+                    testid={'ct-skin-btn-' + o.value}
+                    on={(customConfig.ctSkin || 'clean') === o.value}
+                    onClick={() => onChangeCustomConfig((prev) => ({ ...prev, ctSkin: o.value }))}
+                  >
+                    {o.label}
+                  </Seg>
+                ))}
+              </div>
+            </div>
+          )}
 
-          {!isPV && !isCT && (
+          {!isPV && !isCT && activeGame !== 'adedanha' && (
             <div className="rdb-opt" data-testid="setup-theme-row">
               <span className="rdb-opt-label">Tema</span>
               <div className="rdb-opt-choices">
@@ -347,7 +396,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
           )}
 
-          {!isPV && !isCT && (
+          {!isPV && !isCT && activeGame !== 'adedanha' && (
             <div className="rdb-opt">
               <span className="rdb-opt-label">Dificuldade</span>
               <div className="rdb-opt-choices">
@@ -370,7 +419,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             <div className="rdb-opt">
               <span className="rdb-opt-label">Tempo por rodada</span>
               <div className="rdb-opt-choices">
-                {TIMER_OPTIONS.map((opt) => (
+                {(activeGame === 'adedanha' ? AD_TIMER_OPTIONS : TIMER_OPTIONS).map((opt) => (
                   <Seg key={opt.value} testid={`timer-btn-${opt.value}`} on={timer === opt.value} onClick={() => onChangeTimer(opt.value)} title={opt.desc}>
                     {opt.label}
                   </Seg>
@@ -379,6 +428,20 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
           )}
 
+          {isCT && ctMode === 'arquiteto' ? null : activeGame === 'adedanha' ? (
+            <div className="rdb-opt">
+              <span className="rdb-opt-label">Rodadas</span>
+              <div className="rdb-opt-choices rdb-adstep" data-testid="ad-rounds-stepper">
+                <button type="button" className="rdb-seg" aria-label="Menos uma rodada" data-testid="ad-rounds-minus" disabled={rounds <= 1} onClick={() => onChangeRounds(Math.max(1, rounds - 1))}>
+                  −
+                </button>
+                <strong data-testid="ad-rounds-value">{rounds} {rounds === 1 ? 'rodada' : 'rodadas'}</strong>
+                <button type="button" className="rdb-seg" aria-label="Mais uma rodada" data-testid="ad-rounds-plus" disabled={rounds >= 30} onClick={() => onChangeRounds(Math.min(30, rounds + 1))}>
+                  +
+                </button>
+              </div>
+            </div>
+          ) : (
           <div className="rdb-opt">
             <span className="rdb-opt-label">{isPV ? 'Série de jogos' : 'Rodadas'}</span>
             <div className="rdb-opt-choices">
@@ -389,10 +452,34 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
               ))}
             </div>
           </div>
+          )}
+
+          {activeGame === 'adedanha' && (
+            <AdedanhaCategoryEditor
+              categories={customConfig.adedanhaCategories ?? ADEDANHA_PADRAO}
+              onChange={(next) => onChangeCustomConfig((prev) => ({ ...prev, adedanhaCategories: next }))}
+            />
+          )}
 
           {extraRows.map((row) => (
             <div className="rdb-opt" key={row.id} data-testid={'setup-extra-' + row.id}>
               <span className="rdb-opt-label">{row.label}</span>
+              {row.select ? (
+                <div className="rdb-opt-choices">
+                  <select
+                    className="rdb-select"
+                    data-testid={`setup-extra-${row.id}-select`}
+                    value={row.options.find((o) => o.on)?.id ?? row.options[0]?.id}
+                    onChange={(e) => row.options.find((o) => o.id === e.target.value)?.pick()}
+                  >
+                    {row.options.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
               <div className="rdb-opt-choices">
                 {row.options.map((o) => (
                   <Seg key={o.id} testid={`setup-extra-${row.id}-${o.id}`} on={o.on} onClick={o.pick}>
@@ -400,6 +487,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
                   </Seg>
                 ))}
               </div>
+              )}
             </div>
           ))}
         </div>

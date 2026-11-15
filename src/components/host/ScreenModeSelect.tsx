@@ -39,10 +39,13 @@ import {
   AlertTriangle,
   UserPlus,
   Trash2,
-  Star
+  Star,
+  Bot
 } from 'lucide-react';
 import { ModeArt } from '../art/GameCardArt';
 import { PlayerMark } from '../rdb/PlayerMark';
+import { BotRosterPanel } from '../ai/BotRosterPanel';
+import { isBot, newBotPlayer } from '../../ai/bots';
 
 export interface ScreenModeSelectProps {
   room: GameRoom;
@@ -305,7 +308,7 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
 
       {/* Os 3 modos, no mesmo card do catalogo: vinheta animada em cima, nome e resumo embaixo */}
       {step === 'mode' && (
-        <div className="rdb-grid rdb-grid--row">
+        <div className="rdb-grid rdb-grid--row rdb-grid--modes">
           {MODE_OPTIONS.map((opt) => {
             const isSelected = activeMode === opt.mode;
             return (
@@ -330,6 +333,29 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
               </button>
             );
           })}
+          <button
+            type="button"
+            data-testid="mode-select-card-ia"
+            aria-pressed={activeMode === 'local' && room.players.some(isBot)}
+            onClick={() => {
+              sounds.playPowerup();
+              onSelectMode('local');
+              if (!room.players.some(isBot)) onAddPlayer({ ...newBotPlayer('medio', room.players), isFixedPlayer: false });
+              setStep('players');
+            }}
+            className={`rdb-card group cursor-pointer ${activeMode === 'local' && room.players.some(isBot) ? 'rdb-card--on' : ''}`}
+          >
+            {activeMode === 'local' && room.players.some(isBot) && <span className="rdb-card-mode">Escolhido</span>}
+            <span className="rdb-card-art rdb-card-art--ia" aria-hidden="true">
+              <Bot size={96} strokeWidth={1.6} />
+            </span>
+            <span className="rdb-card-foot">
+              <span className="min-w-0">
+                <span className="rdb-card-name block">Contra IA</span>
+                <span className="rdb-card-tagline rdb-card-tagline--wrap block">Uma tela só: você e seus amigos contra a IA, do Fácil ao Impossível</span>
+              </span>
+            </span>
+          </button>
         </div>
       )}
 
@@ -347,6 +373,7 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
               hideTeamControls={true}
               showMissingPlayersWarning={false}
             />
+            <BotRosterPanel players={room.players} onAddPlayer={onAddPlayer} onRemovePlayer={onRemovePlayer} />
           </div>
         )}
 

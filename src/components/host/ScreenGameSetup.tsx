@@ -265,6 +265,8 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
         return 'ONDE ESTOU';
       case 'com-terra':
         return 'COM TERRA';
+      case 'adedanha':
+        return 'ADEDANHA';
       default:
         return 'RODA DE BOBO';
     }
@@ -277,6 +279,7 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
     room.activeGame === 'onde-estou' ||
     room.activeGame === 'respostas-sem-perguntas' ||
     room.activeGame === 'estadios' ||
+    room.activeGame === 'adedanha' ||
     room.activeGame === 'com-terra' ||
     room.activeGame === 'perguntas-e-verdades';
 

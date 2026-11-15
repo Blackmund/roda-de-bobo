@@ -1,6 +1,6 @@
 import type { GenerateRoundResponse } from '../utils/aiGameGenerator';
 import type { GameRoom } from '../types/game';
-import { GameId, GameCustomConfig, DEFAULT_GAME_CUSTOM_CONFIG, LimiteGameState, DuvidoGameState, ProibidoGameState, MimicaGameState, QuemSouEuGameState, MegaResenhaGameState, RepetenteGameState, RespostasSemPerguntasState, EstadiosGameState, ComTerraState, ComoEuPintoState, NotaGameState, TemOuNaoTemGameState, PerguntasEVerdadesGameState, TeamId, Player } from '../types/game';
+import { GameId, GameCustomConfig, DEFAULT_GAME_CUSTOM_CONFIG, LimiteGameState, DuvidoGameState, ProibidoGameState, MimicaGameState, QuemSouEuGameState, MegaResenhaGameState, RepetenteGameState, RespostasSemPerguntasState, EstadiosGameState, AdedanhaState, ComTerraState, ComoEuPintoState, NotaGameState, TemOuNaoTemGameState, PerguntasEVerdadesGameState, TeamId, Player } from '../types/game';
 import { getActiveTeamIds, getTeamCount, getNextTeamId, normalizePlayersToTeamCount } from '../utils/teamUtils';
 import { normalizeTemVotesTo100 } from '../utils/aiGameGenerator';
 import { buildMimicaState, pickMimicaPair } from '../utils/mimicaEngine';
@@ -10,6 +10,8 @@ import { buildMegaResenhaState } from '../utils/megaResenhaEngine';
 import { buildRepetenteGroups, buildRepetenteState } from '../utils/repetenteEngine';
 import { buildRespostasState } from '../utils/respostasEngine';
 import { buildEstadiosState } from '../utils/estadiosEngine';
+import { buildAdedanhaState, drawLetter } from '../utils/adedanhaEngine';
+import { ADEDANHA_PADRAO, ADEDANHA_LETRAS_EXCLUIDAS_PADRAO } from '../data/adedanhaCategorias';
 import { buildComTerraState } from '../utils/comTerraEngine';
 import { buildComoEuPintoState, pickPintoPair } from '../utils/comoEuPintoEngine';
 import { drawEstadio, normalizeEstadioKey } from '../data/estadiosBank';
@@ -61,6 +63,7 @@ export const buildStartedRoundUpdater = ({
         let repetenteState: RepetenteGameState | undefined = undefined;
         let respostasState: RespostasSemPerguntasState | undefined = undefined;
         let estadiosState: EstadiosGameState | undefined = undefined;
+        let adedanhaState: AdedanhaState | undefined = undefined;
         let comTerraState: ComTerraState | undefined = undefined;
         let pintoState: ComoEuPintoState | undefined = undefined;
         let extraSignature = '';
@@ -134,10 +137,20 @@ export const buildStartedRoundUpdater = ({
             exactBonus: limiteExactBonusFor(mergedCustomConfig)
           };
         } else if (gameId === 'duvido') {
-          const teamAPlayers = prev.players.filter((p) => p.team === 'A');
-          const teamBPlayers = prev.players.filter((p) => p.team === 'B');
-          const teamCPlayers = prev.players.filter((p) => p.team === 'C');
-          const teamDPlayers = prev.players.filter((p) => p.team === 'D');
+          const roundIdx = Math.max(0, prev.roundNumber - 1);
+          const pickTeamRoles = (teamId: TeamId, suffix: string) => {
+            const list = nextMatchPlayers.filter((p) => p.team === teamId);
+            if (list.length === 0) {
+              return { blind: `p-blind-${suffix}`, neg: `p-neg-${suffix}` };
+            }
+            const blindIdx = (roundIdx + 1) % list.length;
+            const negIdx = roundIdx % list.length;
+            return { blind: list[blindIdx].id, neg: list[negIdx].id };
+          };
+          const rolesA = pickTeamRoles('A', 'a');
+          const rolesB = pickTeamRoles('B', 'b');
+          const rolesC = pickTeamRoles('C', 'c');
+          const rolesD = pickTeamRoles('D', 'd');
           const maxExamples = mergedCustomConfig.duvidoExamplesCount || 16;
 
           duvidoState = {
@@ -149,16 +162,16 @@ export const buildStartedRoundUpdater = ({
                 : []
             },
             blindfoldedPlayers: {
-              A: teamAPlayers[1]?.id || teamAPlayers[0]?.id || 'p-blind-a',
-              B: teamBPlayers[1]?.id || teamBPlayers[0]?.id || 'p-blind-b',
-              C: teamCPlayers[1]?.id || teamCPlayers[0]?.id || 'p-blind-c',
-              D: teamDPlayers[1]?.id || teamDPlayers[0]?.id || 'p-blind-d'
+              A: rolesA.blind,
+              B: rolesB.blind,
+              C: rolesC.blind,
+              D: rolesD.blind
             },
             negotiators: {
-              A: teamAPlayers[0]?.id || 'p-neg-a',
-              B: teamBPlayers[0]?.id || 'p-neg-b',
-              C: teamCPlayers[0]?.id || 'p-neg-c',
-              D: teamDPlayers[0]?.id || 'p-neg-d'
+              A: rolesA.neg,
+              B: rolesB.neg,
+              C: rolesC.neg,
+              D: rolesD.neg
             },
             blindfoldConfirmed: { A: true, B: true, C: true, D: true },
             currentBid: 0,
@@ -327,9 +340,11 @@ export const buildStartedRoundUpdater = ({
             auctionRound: 1,
             activeTurnPlayerId: firstPlayerId,
             targetOpponentId: secondPlayerId,
-            auctionWinnerId: firstPlayerId,
+            auctionWinnerId: null,
             auctionWinningBid: 0,
             auctionTieMessage: null,
+            auctionRevealPending: false,
+            auctionOutcomeType: null,
             tokens,
             tokenAlertLight,
             currentBids: {},
@@ -378,19 +393,41 @@ export const buildStartedRoundUpdater = ({
           // NOV-07: quem desenha e quem adivinha revezam dentro da equipe; a rival (so com 3+ jogadores) rouba no fim.
           const words = (Array.isArray(data) ? data : []).map((x: unknown) => String(x));
           const pair = pickPintoPair(nextMatchPlayers, startingTeam, prev.roundNumber, activeTeamIds.length);
+          const preservedInputMode =
+            prev.connectionMode !== 'local'
+              ? 'pad'
+              : prev.roundNumber > 1 && prev.comoEuPinto?.inputMode
+              ? prev.comoEuPinto.inputMode
+              : undefined;
           pintoState = buildComoEuPintoState({
             words,
             drawTeam: startingTeam,
             rivalTeam: nextMatchPlayers.length > 2 ? opposingTeam : undefined,
             drawerPlayerId: pair.drawerPlayerId,
             guesserPlayerId: pair.guesserPlayerId,
-            timerSeconds: effectiveTimer
+            timerSeconds: effectiveTimer,
+            inputMode: preservedInputMode,
+            padConnected: Boolean(prev.comoEuPinto?.padConnected)
           });
         }
 
         if (gameId === 'com-terra') {
           // A partida inteira corre dentro do estado do jogo; "Rodadas" do setup vira o numero de rodadas internas.
-          comTerraState = buildComTerraState(mergedCustomConfig.ctMode || 'arquiteto', nextMatchPlayers, effectiveMaxRounds);
+          comTerraState = {
+            ...buildComTerraState(mergedCustomConfig.ctMode || 'arquiteto', nextMatchPlayers, effectiveMaxRounds),
+            skin: mergedCustomConfig.ctSkin || 'clean'
+          };
+        }
+
+        if (gameId === 'adedanha') {
+          // Uma letra por rodada, sem repetir as ja usadas na partida; categorias e letras excluidas vem da configuracao.
+          const usedLetters = (prev.usedRoundSignatures || [])
+            .filter((sig) => typeof sig === 'string' && sig.startsWith('ad:'))
+            .map((sig) => (sig as string).slice(3));
+          const letter = drawLetter(usedLetters, mergedCustomConfig.adedanhaExcludedLetters ?? ADEDANHA_LETRAS_EXCLUIDAS_PADRAO);
+          const cats = mergedCustomConfig.adedanhaCategories?.length ? mergedCustomConfig.adedanhaCategories : ADEDANHA_PADRAO;
+          adedanhaState = buildAdedanhaState(nextMatchPlayers, cats, letter, effectiveTimer, mergedCustomConfig.adedanhaStopRule || 'first');
+          extraSignature = 'ad:' + letter;
         }
 
         if (gameId === 'estadios') {
@@ -513,6 +550,7 @@ export const buildStartedRoundUpdater = ({
           repetente: repetenteState,
           respostasSemPerguntas: respostasState,
           estadios: estadiosState,
+          adedanha: adedanhaState,
           comTerra: comTerraState,
           comoEuPinto: pintoState,
           nota: notaState,

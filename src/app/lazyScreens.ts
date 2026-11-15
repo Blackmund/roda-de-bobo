@@ -14,6 +14,9 @@ export const ScreenComoEuPinto = lazy(() =>
 export const ScreenComTerra = lazy(() =>
   import('../components/host/ScreenComTerra').then((m) => ({ default: m.ScreenComTerra }))
 );
+export const ScreenAdedanha = lazy(() =>
+  import('../components/host/ScreenAdedanha').then((m) => ({ default: m.ScreenAdedanha }))
+);
 export const ScreenEstadios = lazy(() =>
   import('../components/host/ScreenEstadios').then((m) => ({ default: m.ScreenEstadios }))
 );
@@ -61,6 +64,7 @@ const GAME_SCREEN_LOADERS: Record<string, () => Promise<unknown>> = {
   repetente: () => import('../components/host/ScreenRepetente'),
   'respostas-sem-perguntas': () => import('../components/host/ScreenRespostasSemPerguntas'),
   estadios: () => import('../components/host/ScreenEstadios'),
+  adedanha: () => import('../components/host/ScreenAdedanha'),
   'como-eu-pinto': () => import('../components/host/ScreenComoEuPinto'),
   'com-terra': () => import('../components/host/ScreenComTerra')
 };
@@ -69,14 +73,7 @@ export function preloadGameScreen(gameId: string | null | undefined): void {
   if (load) void load().catch(() => undefined);
 }
 
-// UX-07: o simulador de controles e ferramenta de desenvolvimento; so aparece em dev ou com ?dev na URL.
-export const SHOW_DEV_TOOLS = (() => {
-  try {
-    return Boolean(import.meta.env.DEV) || new URLSearchParams(window.location.search).has('dev');
-  } catch {
-    return false;
-  }
-})();
+// UX-07: o simulador de controles agora liga pelo menu (modo dev): ver app/devMode.ts
 
 export const DevControlsDrawer = lazy(() =>
   import('../components/dev/DevControlsDrawer').then((m) => ({ default: m.DevControlsDrawer }))

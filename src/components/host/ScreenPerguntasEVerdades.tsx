@@ -23,6 +23,7 @@ import {
   verifyTruthDeclaration,
   dealValidRandomHand,
   validateCardPlacementInSlot,
+  validateCardMoveOrSwapInSlots,
   validateSuitAscendingOrder,
   checkMatchSeriesWin
 } from '../../utils/perguntasEVerdadesEngine';
@@ -185,6 +186,7 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
     card: PVCard;
     fromSlotIndex?: number;
   } | null>(null);
+  const [truthFailedThisTurn, setTruthFailedThisTurn] = useState(false);
 
   const maxPlayers = Math.min(6, Math.max(2, room.customConfig?.pvMaxPlayers || 6));
   const activePlayers = room.players.slice(0, maxPlayers);
@@ -284,16 +286,9 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
   };
 
   // =========================================================================
-  // DECK SETUP HANDLERS
+  // DECK SETUP HANDLERS (Cada jogador monta em seu próprio baralho de 52 cartas)
   // =========================================================================
   const cardsUsedByOtherPlayers = new Set<string>();
-  activePlayers.forEach((p, idx) => {
-    if (idx !== setupPlayerIndex) {
-      (pv.playerHands?.[p.id] || []).forEach((c) => {
-        if (c?.id) cardsUsedByOtherPlayers.add(c.id);
-      });
-    }
-  });
 
   const cardsInCurrentSlots = new Set<string>(
     setupSlots.filter((c): c is PVCard => Boolean(c)).map((c) => c.id)
@@ -304,15 +299,31 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
     targetIndex: number,
     sourceSlotIndex?: number
   ) => {
-    if (cardsUsedByOtherPlayers.has(card.id)) {
+    const validation = validateCardMoveOrSwapInSlots(
+      setupSlots,
+      targetIndex,
+      card,
+      sourceSlotIndex
+    );
+
+    if (!validation.valid) {
       sounds.playBuzzer();
-      setSetupRuleError('Esta carta já foi escolhida por outro jogador nesta rodada.');
+      setSetupRuleError(
+        validation.errorMessage ||
+          'Cartas do mesmo naipe devem estar em ordem crescente da esquerda para a direita!'
+      );
+      setConflictingSlotIdx(validation.conflictingSlotIndex ?? targetIndex);
       return;
     }
 
-    const workingSlots = [...setupSlots];
-    if (typeof sourceSlotIndex === 'number' && sourceSlotIndex >= 0 && sourceSlotIndex < 8) {
-      workingSlots[sourceSlotIndex] = null;
+    const workingSlots = Array.from({ length: 8 }, (_, idx) => setupSlots[idx] || null);
+    const displaced = workingSlots[targetIndex];
+    const hasSourceSlot =
+      typeof sourceSlotIndex === 'number' && sourceSlotIndex >= 0 && sourceSlotIndex < 8;
+
+    if (hasSourceSlot) {
+      if (sourceSlotIndex === targetIndex) return;
+      workingSlots[sourceSlotIndex] = displaced;
     } else {
       const existingIdx = workingSlots.findIndex((c) => c?.id === card.id);
       if (existingIdx !== -1) {
@@ -320,27 +331,21 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
       }
     }
 
-    workingSlots[targetIndex] = card;
-
-    // Regra do jogo: no mesmo naipe os numeros so podem crescer da esquerda para a direita (naipes diferentes se misturam).
-    // Uma carta que quebra isso nao entra na posicao.
-    const order = validateSuitAscendingOrder(workingSlots as PVCard[]);
-    if (!order.valid) {
-      sounds.playBuzzer();
-      setSetupRuleError(
-        `Mesmo naipe só em ordem crescente: o ${card.label} não cabe na ${targetIndex + 1}ª posição.`
-      );
-      setConflictingSlotIdx(targetIndex);
-      return;
-    }
     sounds.playFlip();
+    workingSlots[targetIndex] = card;
     setSetupSlots(workingSlots);
     setSetupRuleError(null);
     setConflictingSlotIdx(null);
-    // a selecao anda para a proxima posicao vazia, para montar a mao em sequencia
-    const nextEmpty = workingSlots.findIndex((x, i) => i > targetIndex && x === null);
-    const anyEmpty = nextEmpty !== -1 ? nextEmpty : workingSlots.findIndex((x) => x === null);
-    if (anyEmpty !== -1) setSelectedSlotIdx(anyEmpty);
+
+    const nextEmptyAfter = workingSlots.findIndex((c, idx) => idx > targetIndex && c === null);
+    if (nextEmptyAfter !== -1) {
+      setSelectedSlotIdx(nextEmptyAfter);
+    } else {
+      const firstEmpty = workingSlots.findIndex((c) => c === null);
+      if (firstEmpty !== -1) {
+        setSelectedSlotIdx(firstEmpty);
+      }
+    }
   };
 
   const handleRemoveCardFromSlot = (slotIdx: number) => {
@@ -355,7 +360,7 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
 
   const handleFillRandomValidHandForCurrentPlayer = () => {
     sounds.playPowerup();
-    const randomHand = dealValidRandomHand(Array.from(cardsUsedByOtherPlayers));
+    const randomHand = dealValidRandomHand();
     setSetupSlots(randomHand);
     setSetupRuleError(null);
     setConflictingSlotIdx(null);
@@ -424,14 +429,11 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
       const hands = { ...prev.playerHands };
       const ready = { ...prev.handReady };
       const revealed = { ...prev.revealedCards };
-      let usedIds: string[] = [];
-
       activePlayers.forEach((p) => {
-        const dealt = dealValidRandomHand(usedIds);
+        const dealt = dealValidRandomHand();
         hands[p.id] = dealt;
         ready[p.id] = true;
         revealed[p.id] = new Array(8).fill(false);
-        usedIds = [...usedIds, ...dealt.map((c) => c.id)];
       });
 
       return {
@@ -604,6 +606,7 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
   const handleConfirmSequentialBid = (playerId: string) => {
     sounds.playSuccess();
     onUpdatePVState((prev) => {
+      const bidValue = prev.currentBids?.[playerId] ?? 0;
       const nextSubmitted = {
         ...prev.bidSubmitted,
         [playerId]: true
@@ -612,6 +615,10 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
       const nextIdx = Math.min(activePlayers.length - 1, currentIdx + 1);
       return {
         ...prev,
+        currentBids: {
+          ...prev.currentBids,
+          [playerId]: bidValue
+        },
         bidSubmitted: nextSubmitted,
         bettingPlayerIndex: nextIdx
       };
@@ -619,10 +626,10 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
   };
 
   const handleResolveAuctionOnTV = () => {
-    sounds.playPowerup();
     onUpdatePVState((prev) => {
       const res = resolveTokenAuction(prev.tokens, prev.currentBids, prev.tokenAlertLight);
       if (res.status === 'TIE') {
+        sounds.playPowerup();
         const tiedNames = res.tiedPlayerIds
           .map((id) => activePlayers.find((p) => p.id === id)?.name || id)
           .join(' & ');
@@ -633,11 +640,15 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
           currentBids: {},
           bidSubmitted: {},
           bettingPlayerIndex: 0,
+          auctionRevealPending: false,
+          auctionOutcomeType: null,
+          auctionWinnerId: null,
           auctionTieMessage: `Empate no maior LANCE (${res.highestBid} FICHAS) ENTRE ${tiedNames.toUpperCase()}! Eles recuperaram as fichas + GANHARAM +2 FICHAS DE BÔNUS para desempatar!`
         };
       }
 
       if (res.status === 'NO_BIDS') {
+        sounds.playPowerup();
         const nextIdx =
           (activePlayers.findIndex((p) => p.id === prev.activeTurnPlayerId) + 1) %
           Math.max(1, activePlayers.length);
@@ -646,17 +657,19 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
           activePlayers.find((p) => p.id !== fallbackWinner)?.id || activePlayers[0]?.id || null;
         return {
           ...prev,
-          phase: 'PLAYER_ACTION',
+          phase: 'TOKEN_AUCTION',
+          auctionRevealPending: true,
+          auctionOutcomeType: 'NO_BIDS',
           activeTurnPlayerId: fallbackWinner,
           targetOpponentId: defaultOpponent,
           auctionWinnerId: fallbackWinner,
           auctionWinningBid: 0,
-          auctionTieMessage: 'Nenhuma ficha apostada — vez da mesa.',
-          timerSeconds: prev.turnTimerConfig,
-          timerActive: prev.turnTimerConfig > 0
+          auctionTieMessage: null,
+          timerActive: false
         };
       }
 
+      sounds.playSuccess();
       const winnerId = res.winnerPlayerId || activePlayers[0]?.id || '';
       const defaultOpponent =
         activePlayers.find((p) => p.id !== winnerId)?.id || activePlayers[0]?.id || null;
@@ -665,21 +678,36 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
         ...prev,
         tokens: res.updatedTokens,
         tokenAlertLight: res.updatedAlertLights,
-        phase: 'PLAYER_ACTION',
+        phase: 'TOKEN_AUCTION',
+        auctionRevealPending: true,
+        auctionOutcomeType: 'WIN',
         activeTurnPlayerId: winnerId,
         targetOpponentId: defaultOpponent,
         auctionWinnerId: winnerId,
         auctionWinningBid: res.highestBid,
         auctionTieMessage: null,
-        timerSeconds: prev.turnTimerConfig,
-        timerActive: prev.turnTimerConfig > 0
+        timerActive: false
       };
     });
+  };
+
+  const handleStartWinnerTurnAfterReveal = () => {
+    sounds.playSuccess();
+    onUpdatePVState((prev) => ({
+      ...prev,
+      phase: 'PLAYER_ACTION',
+      auctionRevealPending: false,
+      auctionOutcomeType: null,
+      timerSeconds: prev.turnTimerConfig,
+      timerActive: prev.turnTimerConfig > 0
+    }));
   };
 
   const handleAdvanceNextRoundWithRecharge = () => {
     sounds.playPowerup();
     setLastAnsweredBanner(null);
+    setTruthFailedThisTurn(false);
+    setActionMode('QUESTION');
     onUpdatePVState((prev) => {
       const recharged = applyRoundEndTokenRecharge(prev.tokens, prev.tokenAlertLight, 2);
       const currIdx = activePlayers.findIndex((p) => p.id === prev.activeTurnPlayerId);
@@ -696,6 +724,10 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
         currentBids: {},
         bidSubmitted: {},
         bettingPlayerIndex: 0,
+        auctionWinnerId: null,
+        auctionWinningBid: 0,
+        auctionRevealPending: false,
+        auctionOutcomeType: null,
         auctionTieMessage: null,
         activeTurnPlayerId: nextPlayerId,
         targetOpponentId: nextOpponentId,
@@ -756,6 +788,8 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
   const handleStartNextMatchRound = () => {
     sounds.playPowerup();
     setLastAnsweredBanner(null);
+    setTruthFailedThisTurn(false);
+    setActionMode('QUESTION');
     onUpdatePVState((prev) => {
       const nextMatchRound = (prev.matchRoundNumber || 1) + 1;
       const resetHands: PerguntasEVerdadesGameState['playerHands'] = {};
@@ -785,6 +819,11 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
         tokenAlertLight: resetAlerts,
         currentBids: {},
         bidSubmitted: {},
+        bettingPlayerIndex: 0,
+        auctionWinnerId: null,
+        auctionWinningBid: 0,
+        auctionRevealPending: false,
+        auctionOutcomeType: null,
         questionHistory: [],
         truthGuessValues: [0, 0, 0, 0, 0, 0, 0, 0],
         savedTruthSlotsByTarget: {},
@@ -901,6 +940,7 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
 
     if (evaluation.status === 'CORRECT') {
       setShowTruthModal(false);
+      setTruthFailedThisTurn(false);
       onUpdatePVState((prev) => ({
         ...prev,
         lastTruthAttemptMessage: null
@@ -908,10 +948,11 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
       handleAwardRoundWinToPlayer(activeTurnPlayer.id, evaluation.message);
     } else {
       sounds.playBuzzer();
+      setTruthFailedThisTurn(true);
       onUpdatePVState((prev) => ({
         ...prev,
         lastTruthAttemptMessage: evaluation.message,
-        auctionTieMessage: evaluation.message
+        auctionTieMessage: null
       }));
       setShowTruthModal(false);
     }
@@ -936,26 +977,45 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
   // GOLDEN TOKEN RULE: NO TEXT/NUMBER when > 5 tokens! ONLY PULSING RED LED when <= 5 tokens!
   // ===========================================================================
   const renderPlayerRosterStrip = () => {
+    const isPreRevealAuction = pv.phase === 'TOKEN_AUCTION' && !pv.auctionRevealPending;
+    const allBidsDone =
+      activePlayers.length > 0 && activePlayers.every((p) => Boolean(pv.bidSubmitted?.[p.id]));
+    const currentBidderId = activePlayers[pv.bettingPlayerIndex ?? 0]?.id;
+
     return (
       <div className="rdb-pv-roster">
         {activePlayers.map((player) => {
-          const isTurn = player.id === activeTurnPlayer?.id;
-          const isTarget = player.id === targetOpponent?.id && !isTurn;
+          const isTurn = isPreRevealAuction
+            ? !allBidsDone && player.id === currentBidderId
+            : player.id === activeTurnPlayer?.id;
+          const isTarget = !isPreRevealAuction && player.id === targetOpponent?.id && !isTurn;
           const tokenVal = pv.tokens[player.id] ?? 10;
           const alertLightOn = Boolean(pv.tokenAlertLight?.[player.id]) || tokenVal <= 5;
+          const canSelectTarget = pv.phase !== 'TOKEN_AUCTION' && !isTurn;
 
           return (
             <div
               key={player.id}
               data-testid={`pv-player-card-${player.id}`}
               onClick={() => {
+                if (!canSelectTarget) return;
                 sounds.playTick();
-                if (!isTurn) {
-                  onUpdatePVState((prev) => ({ ...prev, targetOpponentId: player.id }));
-                }
+                onUpdatePVState((prev) => ({ ...prev, targetOpponentId: player.id }));
               }}
               className={'rdb-pv-chip' + (isTurn ? ' is-turn' : isTarget ? ' is-target' : '')}
-              data-tip={isTurn ? 'Jogador da vez' : isTarget ? 'Alvo das perguntas' : 'Clique para escolher como alvo'}
+              data-tip={
+                isPreRevealAuction
+                  ? isTurn
+                    ? 'Apostando agora'
+                    : pv.bidSubmitted?.[player.id]
+                    ? 'Aposta registrada'
+                    : 'Aguardando vez de apostar'
+                  : isTurn
+                  ? 'Jogador da vez'
+                  : isTarget
+                  ? 'Alvo das perguntas'
+                  : 'Clique para escolher como alvo'
+              }
             >
               <PlayerMark p={player} />
               <span>{player.name}</span>
@@ -1007,11 +1067,11 @@ export const ScreenPerguntasEVerdades: React.FC<ScreenPerguntasEVerdadesProps> =
     const currentSelectedBid = pv.currentBids?.[currentBiddingPlayer?.id] ?? 0;
     const maxTokensForBiddingPlayer = pv.tokens?.[currentBiddingPlayer?.id] ?? 10;
 
-    return <PVIntroView tvWrapperClass={tvWrapperClass} totalMatchRounds={totalMatchRounds} matchRoundNumber={matchRoundNumber} pv={pv} formatTimer={formatTimer} renderPlayerRosterStrip={renderPlayerRosterStrip} maxTokensForBiddingPlayer={maxTokensForBiddingPlayer} room={room} onUpdatePVState={onUpdatePVState} allBidsSubmitted={allBidsSubmitted} bettingIdx={bettingIdx} activePlayers={activePlayers} currentBiddingPlayer={currentBiddingPlayer} currentSelectedBid={currentSelectedBid} handleSetQuickTokenBidOnTV={handleSetQuickTokenBidOnTV} handleConfirmSequentialBid={handleConfirmSequentialBid} handleResolveAuctionOnTV={handleResolveAuctionOnTV} />;
+    return <PVIntroView tvWrapperClass={tvWrapperClass} totalMatchRounds={totalMatchRounds} matchRoundNumber={matchRoundNumber} pv={pv} formatTimer={formatTimer} renderPlayerRosterStrip={renderPlayerRosterStrip} maxTokensForBiddingPlayer={maxTokensForBiddingPlayer} room={room} onUpdatePVState={onUpdatePVState} allBidsSubmitted={allBidsSubmitted} bettingIdx={bettingIdx} activePlayers={activePlayers} currentBiddingPlayer={currentBiddingPlayer} currentSelectedBid={currentSelectedBid} handleSetQuickTokenBidOnTV={handleSetQuickTokenBidOnTV} handleConfirmSequentialBid={handleConfirmSequentialBid} handleResolveAuctionOnTV={handleResolveAuctionOnTV} handleStartWinnerTurnAfterReveal={handleStartWinnerTurnAfterReveal} />;
   }
 
   // ===========================================================================
   // FASE C & D: ESCOLHA DE AÇÃO, SPOTLIGHT DA PERGUNTA & DECLARAR A VERDADE
   // ===========================================================================
-  return <PVPlayingView tvWrapperClass={tvWrapperClass} pv={pv} handleStartNextMatchRound={handleStartNextMatchRound} totalMatchRounds={totalMatchRounds} matchRoundNumber={matchRoundNumber} activeTurnPlayer={activeTurnPlayer} formatTimer={formatTimer} onUpdatePVState={onUpdatePVState} renderPlayerRosterStrip={renderPlayerRosterStrip} room={room} setActionMode={setActionMode} actionMode={actionMode} targetOpponent={targetOpponent} activeQuestionObj={activeQuestionObj} formattedActiveQuestion={formattedActiveQuestion} handleTogglePosForQ1={handleTogglePosForQ1} handleSelectValueQ7={handleSelectValueQ7} handleSelectSuitQ8={handleSelectSuitQ8} handleRecordQuestionInLog={handleRecordQuestionInLog} lastAnsweredBanner={lastAnsweredBanner} handleAdvanceNextRoundWithRecharge={handleAdvanceNextRoundWithRecharge} handleSelectQuestion={handleSelectQuestion} handleRevealAllForPlayer={handleRevealAllForPlayer} handleToggleSingleCardReveal={handleToggleSingleCardReveal} truthFilledCount={truthFilledCount} handleClearTruthSlotsForTarget={handleClearTruthSlotsForTarget} currentTargetTruthSlots={currentTargetTruthSlots} truthSelectedSlotIdx={truthSelectedSlotIdx} truthDraggedCard={truthDraggedCard} handlePlaceCardInTruthSlot={handlePlaceCardInTruthSlot} setTruthDraggedCard={setTruthDraggedCard} setTruthSelectedSlotIdx={setTruthSelectedSlotIdx} handleRemoveCardFromTruthSlot={handleRemoveCardFromTruthSlot} cardsInCurrentTruthSlots={cardsInCurrentTruthSlots} handleConfirmTruthAttempt={handleConfirmTruthAttempt} setIsHistoryOpen={setIsHistoryOpen} isHistoryOpen={isHistoryOpen} setIsBenchOpen={setIsBenchOpen} isBenchOpen={isBenchOpen} setShowManualWinnerModal={setShowManualWinnerModal} setDeductionNotes={setDeductionNotes} deductionNotes={deductionNotes} showManualWinnerModal={showManualWinnerModal} activePlayers={activePlayers} handleAwardRoundWinToPlayer={handleAwardRoundWinToPlayer} />;
+  return <PVPlayingView tvWrapperClass={tvWrapperClass} pv={pv} handleStartNextMatchRound={handleStartNextMatchRound} totalMatchRounds={totalMatchRounds} matchRoundNumber={matchRoundNumber} activeTurnPlayer={activeTurnPlayer} formatTimer={formatTimer} onUpdatePVState={onUpdatePVState} renderPlayerRosterStrip={renderPlayerRosterStrip} room={room} setActionMode={setActionMode} actionMode={actionMode} targetOpponent={targetOpponent} activeQuestionObj={activeQuestionObj} formattedActiveQuestion={formattedActiveQuestion} handleTogglePosForQ1={handleTogglePosForQ1} handleSelectValueQ7={handleSelectValueQ7} handleSelectSuitQ8={handleSelectSuitQ8} handleRecordQuestionInLog={handleRecordQuestionInLog} lastAnsweredBanner={lastAnsweredBanner} truthFailedThisTurn={truthFailedThisTurn} handleAdvanceNextRoundWithRecharge={handleAdvanceNextRoundWithRecharge} handleSelectQuestion={handleSelectQuestion} handleRevealAllForPlayer={handleRevealAllForPlayer} handleToggleSingleCardReveal={handleToggleSingleCardReveal} truthFilledCount={truthFilledCount} handleClearTruthSlotsForTarget={handleClearTruthSlotsForTarget} currentTargetTruthSlots={currentTargetTruthSlots} truthSelectedSlotIdx={truthSelectedSlotIdx} truthDraggedCard={truthDraggedCard} handlePlaceCardInTruthSlot={handlePlaceCardInTruthSlot} setTruthDraggedCard={setTruthDraggedCard} setTruthSelectedSlotIdx={setTruthSelectedSlotIdx} handleRemoveCardFromTruthSlot={handleRemoveCardFromTruthSlot} cardsInCurrentTruthSlots={cardsInCurrentTruthSlots} handleConfirmTruthAttempt={handleConfirmTruthAttempt} setIsHistoryOpen={setIsHistoryOpen} isHistoryOpen={isHistoryOpen} setIsBenchOpen={setIsBenchOpen} isBenchOpen={isBenchOpen} setShowManualWinnerModal={setShowManualWinnerModal} setDeductionNotes={setDeductionNotes} deductionNotes={deductionNotes} showManualWinnerModal={showManualWinnerModal} activePlayers={activePlayers} handleAwardRoundWinToPlayer={handleAwardRoundWinToPlayer} />;
 };

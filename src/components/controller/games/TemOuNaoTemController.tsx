@@ -2,8 +2,7 @@ import React from 'react';
 import { ConfirmSendButton } from '../ConfirmSendButton';
 import { GameRoom, Player } from '../../../types/game';
 import { sounds } from '../../../utils/soundEffects';
-import { getActiveTeamIds, getNextTeamId } from '../../../utils/teamUtils';
-import { checkAnswerFuzzyMatch } from '../../../utils/fuzzyMatch';
+import { applyTemGuess, findTemMatch } from '../../../utils/temGuess';
 
 interface TemOuNaoTemControllerProps {
   room: GameRoom;
@@ -43,101 +42,10 @@ export const TemOuNaoTemController: React.FC<TemOuNaoTemControllerProps> = ({
 
       const team = player.team;
 
-      let matchedIndex = -1;
-      for (let i = 0; i < tem.items.length; i++) {
-        const item = tem.items[i];
-        if (item.revealed) continue;
-        if (checkAnswerFuzzyMatch(guessText, item.texto, item.sinonimos_aceitos)) {
-          matchedIndex = i;
-          break;
-        }
-      }
-
-      if (matchedIndex !== -1) {
-        sounds.playSuccess();
-        onUpdateRoom((prev) => {
-          if (!prev.temOuNaoTem) return prev;
-          const activeTeams = getActiveTeamIds(prev);
-          const updatedItems = [...prev.temOuNaoTem.items];
-          updatedItems[matchedIndex] = {
-            ...updatedItems[matchedIndex],
-            revealed: true,
-            revealedByTeam: team
-          };
-          const addedScore = updatedItems[matchedIndex].votos;
-          const newRoundScore = {
-            ...prev.temOuNaoTem.roundScore,
-            [team]: (prev.temOuNaoTem.roundScore[team] || 0) + addedScore
-          };
-          const allRevealed = updatedItems.every((it) => it.revealed);
-          const nextActiveTeam = prev.temOuNaoTem.freeDomainTeam
-            ? prev.temOuNaoTem.freeDomainTeam
-            : getNextTeamId(team, activeTeams, prev.temOuNaoTem.eliminatedTeams);
-
-          return {
-            ...prev,
-            temOuNaoTem: {
-              ...prev.temOuNaoTem,
-              items: updatedItems,
-              roundScore: newRoundScore,
-              activeTeam: nextActiveTeam,
-              turnStepIndex: (prev.temOuNaoTem.turnStepIndex || 0) + 1,
-              phase: allRevealed ? 'ROUND_END' : 'GUESSING',
-              lastGuessFeedback: {
-                text: guessText,
-                hit: true,
-                itemIndex: matchedIndex,
-                team
-              }
-            }
-          };
-        });
-      } else {
-        sounds.playBuzzer();
-        onUpdateRoom((prev) => {
-          if (!prev.temOuNaoTem) return prev;
-          const activeTeams = getActiveTeamIds(prev);
-          const currentStrikes = (prev.temOuNaoTem.strikes[team] || 0) + 1;
-          const updatedStrikes = { ...prev.temOuNaoTem.strikes, [team]: currentStrikes };
-          const updatedEliminated = [...prev.temOuNaoTem.eliminatedTeams];
-          let freeDomain = prev.temOuNaoTem.freeDomainTeam;
-          let nextTeam = prev.temOuNaoTem.activeTeam;
-          const maxStrikes = prev.temOuNaoTem.maxStrikes || 2;
-
-          if (currentStrikes >= maxStrikes && !updatedEliminated.includes(team)) {
-            updatedEliminated.push(team);
-          }
-
-          const survivingTeams = activeTeams.filter((t) => !updatedEliminated.includes(t));
-          if (survivingTeams.length === 1) {
-            freeDomain = survivingTeams[0];
-            nextTeam = survivingTeams[0];
-          } else if (survivingTeams.length > 1) {
-            nextTeam = getNextTeamId(team, activeTeams, updatedEliminated);
-          }
-
-          const allEliminated = survivingTeams.length === 0;
-
-          return {
-            ...prev,
-            temOuNaoTem: {
-              ...prev.temOuNaoTem,
-              strikes: updatedStrikes,
-              eliminatedTeams: updatedEliminated,
-              freeDomainTeam: freeDomain,
-              activeTeam: nextTeam,
-              turnStepIndex: (prev.temOuNaoTem.turnStepIndex || 0) + 1,
-              phase: allEliminated ? 'ROUND_END' : 'GUESSING',
-              lastGuessFeedback: {
-                text: guessText,
-                hit: false,
-                team
-              }
-            }
-          };
-        });
-      }
-
+      const matchedIndex = findTemMatch(room, guessText);
+      if (matchedIndex !== -1) sounds.playSuccess();
+      else sounds.playBuzzer();
+      onUpdateRoom((prev) => applyTemGuess(prev, team, guessText, matchedIndex));
       setTemGuess('');
     };
 

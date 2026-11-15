@@ -719,5 +719,53 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
       'Cada peça vale pelo número dela: 1, 2, 3, 5, 7, 9 ou 12 pontos. Árvore no furo +2; ficha coberta por bloco sólido soma o valor dela.',
       'No Arquiteto, linha ou coluna cheia vale +2. No Plano do Diabo, quem pega a menor peça joga primeiro. Descartar custa 3 pontos.'
     ]
+  },
+  adedanha: {
+    gameId: 'adedanha',
+    icon: '🔤',
+    name: 'ADEDANHA',
+    welcomeTitle: 'Como Jogar Adedanha',
+    welcomeSubtitle:
+      'Sai uma letra. Cada um escreve, no celular, uma palavra com essa letra para cada categoria. Quem terminar primeiro grita STOP.',
+    steps: [
+      {
+        stepNumber: 1,
+        icon: '🔤',
+        headline: 'Uma Letra, Várias Categorias',
+        description:
+          'A TV sorteia a letra e mostra as categorias (Nome, Animal, Cor...). Cada um preenche no próprio celular, em segredo.',
+        accentTag: 'Tudo com a mesma letra'
+      },
+      {
+        stepNumber: 2,
+        icon: '✋',
+        headline: 'Terminou? STOP!',
+        description:
+          'Quem preencher tudo pode apertar STOP. Os outros têm 4 segundos para mandar o que escreveram. O tempo acabando também para a rodada.',
+        accentTag: 'STOP só com tudo preenchido'
+      },
+      {
+        stepNumber: 3,
+        icon: '👍',
+        headline: 'A Mesa Valida',
+        description:
+          'Uma categoria por vez, cada um vota se as respostas dos outros valem. Resposta só sua vale 10, repetida vale 5, inválida 0.',
+        accentTag: '10 / 5 / 0'
+      }
+    ],
+    proibido: [
+      'RESPOSTA COM OUTRA LETRA',
+      'APERTAR STOP COM CAMPO VAZIO',
+      'VOTAR NA PRÓPRIA RESPOSTA'
+    ],
+    permitido: [
+      'ESCREVER COM OU SEM ACENTO',
+      'TROCAR A RESPOSTA ATÉ O STOP',
+      'O DIRETOR CORRIGIR UMA VOTAÇÃO INJUSTA'
+    ],
+    scoringSummary: [
+      'Resposta válida que só você escreveu vale 10; se outro jogador escreveu a mesma palavra, vale 5 para cada um.',
+      'Vazia, com outra letra ou recusada pela maioria dos votos vale 0. Empate na votação: a resposta vale.'
+    ]
   }
 };
