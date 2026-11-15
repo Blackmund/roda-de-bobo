@@ -3443,6 +3443,8 @@
   gap: 0.8rem;
 }
 .rdb-pinto-thumb {
+  --word-h: clamp(3.5rem, 11vh, 6rem);
+  container-type: size;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -3469,26 +3471,24 @@
   background: color-mix(in srgb, var(--rdb-amber) 12%, var(--rdb-navy-2));
 }
 .rdb-pinto-thumb-art {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+/* o maior 16:9 que cabe no card deixando a faixa da palavra embaixo */
+.rdb-pinto-thumb-art > * {
+  width: min(100cqw, (100cqh - var(--word-h)) * 16 / 9) !important;
+  height: auto;
+}
+/* a palavra fica no meio do espaço que sobra embaixo do desenho */
+.rdb-pinto-thumb-word {
   flex: 1;
   min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  container-type: size;
-  pointer-events: none;
-}
-/* o maior 16:9 que cabe na caixa, de pé ou deitada */
-.rdb-pinto-thumb-art > * {
-  width: min(100cqw, 100cqh * 16 / 9) !important;
-  height: auto;
-}
-.rdb-pinto-thumb-word {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   gap: 0.6rem;
-  flex-shrink: 0;
-  padding: 0.2rem 0 0.4rem;
   font-family: 'Anton', 'Impact', sans-serif;
   font-weight: 400;
   font-size: clamp(1.6rem, 5vh, 3rem);
@@ -3553,6 +3553,17 @@
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: none;
     grid-auto-rows: minmax(0, 1fr);
+  }
+  /* no celular cada desenho vira uma linha: desenho à esquerda, palavra à direita */
+  .rdb-pinto-thumb {
+    flex-direction: row;
+    align-items: center;
+  }
+  .rdb-pinto-thumb-art > * {
+    width: min(58cqw, 100cqh * 16 / 9) !important;
+  }
+  .rdb-pinto-thumb-word {
+    font-size: 1.5rem;
   }
 }
 
