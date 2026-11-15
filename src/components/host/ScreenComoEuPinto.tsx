@@ -718,6 +718,14 @@ export const ScreenComoEuPinto: React.FC<ScreenComoEuPintoProps> = ({ room, onUp
                   aria-pressed={outcome !== 'pending'}
                   aria-label={`${w}: ${outcome === 'correct' ? 'acertou' : outcome === 'stolen' ? 'roubada' : 'não acertou'}. ${tip}`}
                   className={'rdb-pinto-thumb' + (outcome === 'correct' ? ' is-hit' : outcome === 'stolen' ? ' is-stolen' : '')}
+                  onPointerMove={(e) => {
+                    // a dica acompanha o mouse dentro do desenho
+                    const r = e.currentTarget.getBoundingClientRect();
+                    e.currentTarget.style.setProperty('--tip-x', `${e.clientX - r.left}px`);
+                    e.currentTarget.style.setProperty('--tip-y', `${e.clientY - r.top}px`);
+                    // perto da borda direita a dica abre para a esquerda do cursor
+                    e.currentTarget.style.setProperty('--tip-dx', e.clientX - r.left > r.width * 0.55 ? 'calc(-100% - 14px)' : '14px');
+                  }}
                   onClick={() => {
                     sounds.playTick();
                     onUpdatePintoState((prev) => setPintoOutcome(prev, i, next));
@@ -727,7 +735,7 @@ export const ScreenComoEuPinto: React.FC<ScreenComoEuPintoProps> = ({ room, onUp
                     <DrawingCanvas testId={`pinto-thumb-${i}`} strokes={st.drawings[i] ?? []} backgroundColor={PINTO_PAPER_COLOR} aspect={PINTO_ASPECT} />
                   </span>
                   <span className="rdb-pinto-thumb-word">
-                    {outcome === 'correct' ? <Check size={18} strokeWidth={4} /> : outcome === 'stolen' ? <Swords size={18} /> : <XIcon size={18} strokeWidth={4} />}
+                    {outcome === 'correct' ? <Check size={30} strokeWidth={4} /> : outcome === 'stolen' ? <Swords size={30} /> : <XIcon size={30} strokeWidth={4} />}
                     {w}
                     {outcome === 'stolen' ? <small>roubada</small> : null}
                   </span>

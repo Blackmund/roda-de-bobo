@@ -3483,13 +3483,24 @@
   height: auto;
 }
 .rdb-pinto-thumb-word {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.45rem;
+  justify-content: center;
+  gap: 0.6rem;
   flex-shrink: 0;
-  font-weight: 900;
-  font-size: clamp(1rem, 2.4vh, 1.5rem);
+  padding: 0.2rem 0 0.4rem;
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.6rem, 5vh, 3rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
+  text-align: center;
+}
+.rdb-pinto-thumb-word svg {
+  flex-shrink: 0;
+  width: 0.9em;
+  height: 0.9em;
 }
 .rdb-pinto-thumb-word svg {
   color: var(--rdb-crimson);
@@ -3504,12 +3515,13 @@
   color: var(--rdb-amber);
   font-size: 0.7em;
 }
-/* dica centralizada sobre o desenho */
+/* a dica acompanha o mouse (posição vem do onPointerMove) */
 .rdb-pinto-thumb[data-tip]::after {
-  top: 45%;
-  left: 50%;
+  top: var(--tip-y, 45%);
+  left: var(--tip-x, 50%);
   right: auto;
-  transform: translate(-50%, -50%);
+  transform: translate(var(--tip-dx, 14px), 18px);
+  transition: opacity 0.12s;
   background: var(--rdb-navy);
   color: var(--rdb-cream);
   border: 2px solid var(--rdb-teal);
@@ -3517,7 +3529,7 @@
 }
 .rdb-pinto-thumb[data-tip]:hover::after,
 .rdb-pinto-thumb[data-tip]:focus-visible::after {
-  transform: translate(-50%, -50%);
+  transform: translate(var(--tip-dx, 14px), 18px);
 }
 @media (max-width: 699px) {
   .rdb-pinto-sum-head {
