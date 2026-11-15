@@ -2331,6 +2331,12 @@
   font-size: clamp(1.8rem, 5vh, 3rem);
   text-transform: uppercase;
 }
+/* Na linha de progresso (Como Eu Pinto) é só um aviso: não pode roubar a altura do quadro */
+.rdb-pro-progress .rdb-word-hidden {
+  min-width: 0;
+  font-size: clamp(1rem, 2.6vh, 1.6rem);
+  text-align: center;
+}
 .rdb-clue-form {
   display: flex;
   gap: 0.5rem;
@@ -2740,6 +2746,28 @@
 .rdb-pinto-tools > button.is-on {
   outline: 3px solid var(--rdb-teal);
 }
+/* Tela em pé: o quadro segue a largura e mantém a proporção da prancheta (não estica na altura) */
+@media (orientation: portrait) {
+  .rdb-pinto-studio .rdb-pinto-canvas {
+    align-items: center;
+  }
+  .rdb-pinto-studio .rdb-pinto-canvas > * {
+    width: 100% !important;
+    height: auto;
+    max-height: 100%;
+  }
+}
+/* Tela baixa (notebook, janela do navegador): paleta em 3 colunas para caber sem rolar */
+@media (max-height: 860px) and (min-width: 700px) {
+  .rdb-pinto-studio-right .rdb-pinto-tools {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.3rem;
+  }
+  .rdb-pinto-studio-right .rdb-pinto-tools > button:not(.rdb-lim-icon) {
+    width: 1.7rem;
+    height: 1.7rem;
+  }
+}
 .rdb-pinto-choice {
   flex: 1;
   min-height: 0;
@@ -2886,11 +2914,16 @@
   min-height: 0;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
+  /* a linha tem a altura que sobra; sem isso a paleta alta empurra o quadro para baixo dos botões */
+  grid-template-rows: minmax(0, 1fr);
   gap: 0.6rem;
   align-items: stretch;
 }
 .rdb-pinto-studio-left,
 .rdb-pinto-studio-right {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
   display: flex;
   flex-direction: column;
   align-items: center;
