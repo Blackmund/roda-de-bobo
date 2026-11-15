@@ -842,6 +842,8 @@ export interface GameRoom {
   sessionKey?: string;
   hostId: string;
   connectionMode?: ConnectionMode;
+  /** Ultima fala de um jogador IA (balao na TV): o que ele "disse" na jogada. */
+  botSay?: { playerId: string; text: string; at: number };
   visualTheme?: VisualTheme;
   difficulty?: GameDifficulty;
   startingPlayerId?: string | null;

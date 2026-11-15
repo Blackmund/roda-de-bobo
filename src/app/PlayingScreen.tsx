@@ -9,6 +9,8 @@ import { buildMatchMVPSnapshot } from '../utils/sessionPersistence';
 import { applyPVMatchResult } from '../utils/perguntasEVerdadesEngine';
 import { PhaseStinger } from '../components/art/PhaseStinger';
 import { ActiveTurnBanner } from '../components/ActiveTurnBanner';
+import { useBotDriver } from '../ai/useBotDriver';
+import { BotSpeech } from '../components/ai/BotSpeech';
 
 /** Jogos que ainda nao desenham a propria faixa "Vez de": ela entra aqui, acima do jogo. */
 const TURN_BAR_GAMES: GameId[] = [
@@ -38,6 +40,8 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
   handleNextRound
 }) => {
   const devMode = useDevMode();
+  // jogadores IA: fazem as proprias jogadas
+  useBotDriver(room, broadcastState);
   return (
             <motion.div
               key={`screen-playing-${room.activeGame}`}
@@ -48,6 +52,7 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
               className="relative w-full h-full flex-1 min-h-0 flex flex-col gap-1.5"
             >
               <PhaseStinger room={room} />
+              <BotSpeech room={room} />
               {devMode && room.roundSource && room.activeGame !== 'com-terra' && (
                 <div
                   data-testid="round-source-badge"

@@ -1113,6 +1113,74 @@ Responda em português do Brasil, de forma direta e curta (1 frase de até 140 c
   }
 });
 
+// Jogador IA: o que precisa de conhecimento em texto (palavras, palpites, dicas). Sempre devolve { items: string[] }.
+app.post('/api/bot-think', async (req, res) => {
+  const { kind = '', input = {} } = req.body || {};
+  const s = (v: unknown, max = 400) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
+  const arr = (v: unknown, max = 30) => (Array.isArray(v) ? v.slice(0, max).map((x) => s(x, 120)).filter(Boolean) : []);
+  let task = '';
+  let count = 6;
+  switch (kind) {
+    case 'adedanha': {
+      const cats = arr(input.categories, 12);
+      count = cats.length;
+      task = `Jogo Adedanha (Stop). Letra: "${s(input.letter, 2)}". Para cada categoria abaixo, na mesma ordem, escreva UMA resposta real em português do Brasil que comece com a letra "${s(input.letter, 2)}" (sem artigo). Categorias: ${cats.map((c, i) => `${i + 1}) ${c}`).join('; ')}. Devolva exatamente ${cats.length} itens, um por categoria.`;
+      break;
+    }
+    case 'repetente':
+      count = 6;
+      task = `Jogo Repetente: duas pessoas escrevem em segredo UMA palavra para o tema e pontuam se escreverem a mesma. Tema: "${s(input.theme)}"${input.category ? ` (categoria: ${s(input.category)})` : ''}. Liste ${count} palavras únicas (uma palavra cada, sem artigo), da mais óbvia — a que a maioria dos brasileiros escreveria — para a menos óbvia.`;
+      break;
+    case 'respostas':
+      count = 3;
+      task = `Jogo "Respostas sem perguntas": a pergunta está parcialmente escondida. Categoria: "${s(input.category)}". Pergunta com palavras escondidas (___): "${s(input.masked)}". Dê ${count} chutes curtos da RESPOSTA para essa pergunta, do mais provável ao menos provável.`;
+      break;
+    case 'wrong':
+      count = 5;
+      task = `Party game brasileiro. Pergunta: "${s(input.question)}". Respostas corretas (não use nenhuma delas nem sinônimos): ${arr(input.avoid, 20).join(', ') || '—'}. Escreva ${count} respostas curtas que uma pessoa daria e que pareçam plausíveis, mas que NÃO estão entre as corretas.`;
+      break;
+    case 'nota-clue':
+      count = 2;
+      task = `Jogo da Nota: o jogador viu uma nota secreta ${Number(input.score) || 5} numa escala de ${Number(input.min) || 1} a ${Number(input.max) || 10} e precisa dar dicas para os outros adivinharem a nota. Pergunta/eixo da rodada: "${s(input.question)}". Escreva ${count} dicas curtas (até 12 palavras cada) em português do Brasil, cada uma citando algo concreto que vale essa nota nessa escala, sem dizer o número.`;
+      break;
+    case 'proibido-clues':
+      count = 4;
+      task = `Jogo do Proibido (Taboo). Palavra a ser adivinhada: "${s(input.word, 60)}". Palavras proibidas (não use nenhuma delas, nem a palavra-alvo, nem partes delas): ${arr(input.forbidden, 10).join(', ')}. Escreva ${count} dicas curtas (até 10 palavras cada) em português do Brasil, da mais reveladora para a menos.`;
+      break;
+    case 'list':
+      count = Math.min(25, Math.max(3, Number(input.count) || 10));
+      task = `Jogo do Duvido. Categoria: "${s(input.category)}"${input.rule ? ` (regra: ${s(input.rule)})` : ''}. Liste ${count} itens reais e diferentes que pertencem a essa categoria. Um item por posição, curto.`;
+      break;
+    default:
+      return res.status(400).json({ items: [] });
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === 'MY_GEMINI_API_KEY' || apiKey.trim() === '') {
+    return res.status(200).json({ items: [], fallback: true });
+  }
+  try {
+    const ai = new GoogleGenAI({ apiKey, httpOptions: { headers: { 'User-Agent': 'aistudio-build' } } });
+    const response = await generateContentWithFallback(ai, {
+      contents: `Você é um jogador de party games brasileiro jogando o "Roda de Bobo". ${task}\nResponda só com o JSON pedido.`,
+      config: {
+        temperature: 0.7,
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: { items: { type: Type.ARRAY, items: { type: Type.STRING } } },
+          required: ['items']
+        }
+      }
+    });
+    const parsed = JSON.parse(response.text || '{}');
+    const items = Array.isArray(parsed.items) ? parsed.items.slice(0, Math.max(count, 1) + 2).map((x: unknown) => sanitizeCleanGameText(s(x, 140))) : [];
+    return res.status(200).json({ items, source: 'ai' });
+  } catch (err: any) {
+    return res.status(200).json({ items: [], fallback: true, error: err?.message });
+  }
+});
+
 // Gemini AI Procedural Generator Endpoint (Few-Shot Learning + Semantic Sub-Angle + Session Memory Block)
 // Onde estou: a IA escolhe momentos marcantes (e algumas piadas/memes) do tema e o servidor acha uma foto de cada um.
 app.post('/api/onde-estou-moments', async (req, res) => {
