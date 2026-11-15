@@ -1,15 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { PlayerMark } from './rdb/PlayerMark';
 import { motion } from 'motion/react';
 import { PartyAchievement } from '../utils/achievements';
 import { Award, Sparkles, Flame, Crown, Target, Zap } from 'lucide-react';
+import { sounds } from '../utils/soundEffects';
 
 interface PartyAchievementsProps {
   achievements: PartyAchievement[];
 }
 
 export const PartyAchievements: React.FC<PartyAchievementsProps> = ({ achievements }) => {
-  if (!achievements || achievements.length === 0) return null;
+  const has = !!achievements && achievements.length > 0;
+  useEffect(() => {
+    if (!has) return;
+    const t = window.setTimeout(() => sounds.playAchievement(), 2600);
+    return () => window.clearTimeout(t);
+  }, [has]);
+  if (!has) return null;
 
   const getAccentStyles = (accent: PartyAchievement['accent']) => {
     switch (accent) {

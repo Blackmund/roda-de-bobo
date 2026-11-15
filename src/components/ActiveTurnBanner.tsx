@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { GameRoom, TeamId } from '../types/game';
 import { resolveCurrentTurnSpotlight, TEAM_META, getActiveTeamIds, getTeamDisplayName } from '../utils/teamUtils';
 import { sounds } from '../utils/soundEffects';
@@ -38,6 +38,14 @@ export const ActiveTurnBanner: React.FC<ActiveTurnBannerProps> = ({
   hideSecondary
 }) => {
   const spotlight = resolveCurrentTurnSpotlight(room);
+  // passou a vez: um toque curto (nao toca na primeira vez que a faixa aparece; a vinheta da rodada ja tocou)
+  const turnKey = spotlight ? (spotlight.activePlayer?.id || '') + '|' + (spotlight.activeTeamId || '') : '';
+  const prevTurn = useRef<string | null>(null);
+  useEffect(() => {
+    if (!turnKey) return;
+    if (prevTurn.current !== null && prevTurn.current !== turnKey) sounds.playTurn();
+    prevTurn.current = turnKey;
+  }, [turnKey]);
   if (!spotlight) return null;
 
   const {
