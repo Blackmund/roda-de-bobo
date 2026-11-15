@@ -104,7 +104,7 @@ export const ScreenAdedanha: React.FC<ScreenAdedanhaProps> = ({ room, onUpdateAd
     return (
       <div data-testid="screen-adedanha" className={'rdb-pro rdb-ade is-play' + (ad.phase === 'STOPPING' ? ' is-stopping' : '')}>
         {bar}
-        <LetterDrawOverlay letter={spin.letter} spinning={spin.spinning} />
+        <LetterDrawOverlay letter={spin.letter} spinning={spin.spinning} sound />
 
         <div className="rdb-ade-play">
           {/* A letra da rodada, grande, com o tempo escorrendo embaixo */}

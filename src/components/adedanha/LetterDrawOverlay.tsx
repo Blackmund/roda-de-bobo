@@ -1,12 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { sounds } from '../../utils/soundEffects';
 
 /**
  * Sorteio da letra em tela cheia: raios girando atras de uma moldura, a letra passando como uma roleta e, ao parar,
  * um "pulo" e a moldura encolhendo para o lugar dela na tela. Some sozinho.
  */
-export const LetterDrawOverlay: React.FC<{ letter: string; spinning: boolean; compact?: boolean }> = ({ letter, spinning, compact }) => {
+export const LetterDrawOverlay: React.FC<{ letter: string; spinning: boolean; compact?: boolean; sound?: boolean }> = ({ letter, spinning, compact, sound }) => {
   const [stage, setStage] = useState<'off' | 'spin' | 'land' | 'leave'>('off');
   const wasSpinning = useRef(false);
+  const spinStart = useRef(0);
+
+  // som da roleta: cada letra que passa da um toque de catraca; ao parar, o resultado
+  useEffect(() => {
+    if (!sound || !spinning) return;
+    if (!spinStart.current) spinStart.current = Date.now();
+    sounds.playSpinTick(Math.min(1, (Date.now() - spinStart.current) / 2600));
+  }, [letter, spinning, sound]);
+  useEffect(() => {
+    if (!sound || spinning || !spinStart.current) return;
+    spinStart.current = 0;
+    sounds.playSpinStop();
+  }, [spinning, sound]);
 
   useEffect(() => {
     if (spinning) {

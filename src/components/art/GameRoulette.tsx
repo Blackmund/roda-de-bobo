@@ -41,9 +41,9 @@ export const GameRoulette: React.FC<GameRouletteProps> = ({ games, target, onDon
           setIdx(at);
           if (s === steps) {
             setLanded(true);
-            sounds.playSuccess();
+            sounds.playSpinStop();
           } else {
-            sounds.playTick();
+            sounds.playSpinTick(s / steps);
           }
         }, t)
       );
