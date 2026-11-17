@@ -9,6 +9,7 @@ import { ADAPTERS_PHASE2 } from './adapters2';
 import type { ComTerraState, DrawStroke, GameRoom, Player } from '../types/game';
 import { botParamsOf, between, chance, pickOne, isBot } from './bots';
 import { botThink } from './botThink';
+import { identitySibling, mimicaActsLocal, questionsFor, siblingWord } from './knowledge';
 import { applyMimicaOutcome } from '../utils/mimicaEngine';
 import { recordCorrectGuess, recordQuestion, recordWrongGuess } from '../utils/quemSouEuEngine';
 import { addStroke, dismissPadPassGate, dismissTvWordReveal, markDrawn, pintoGuessMatches, setPintoOutcome, skipWord } from '../utils/comoEuPintoEngine';
@@ -58,10 +59,11 @@ const mimica: Adapter = (room, bot) => {
       apply: (prev, data) => {
         const s = prev.mimica;
         if (!s || s.phase !== 'PLAYING' || s.currentIndex !== m.currentIndex) return prev;
-        const acts = Array.isArray(data) ? (data as string[]) : [];
+        const fromAi = Array.isArray(data) ? (data as string[]) : [];
+        const acts = fromAi.length ? fromAi : mimicaActsLocal(word);
         // os niveis baixos fazem menos gestos (mimica mais pobre)
         const n = Math.max(1, Math.round(acts.length * (0.4 + 0.6 * pr.acc)));
-        return say(prev, bot, acts.length ? 'Mímica: ' + acts.slice(0, n).join(' · ') : 'Mímica: (gesticula sem parar)');
+        return say(prev, bot, 'Mímica: ' + acts.slice(0, n).join(' · '));
       }
     };
   }
@@ -77,7 +79,7 @@ const mimica: Adapter = (room, bot) => {
         const s = prev.mimica;
         if (!s || s.phase !== 'PLAYING' || s.currentIndex !== m.currentIndex) return prev;
         if (correct) return say({ ...prev, mimica: applyMimicaOutcome(s, 'correct') }, bot, word);
-        const g = (Array.isArray(data) ? (data as string[]) : [])[0] || pickOne(['Hmm...', 'É um bicho?', 'Uma profissão?']) || '...';
+        const g = (Array.isArray(data) ? (data as string[]) : [])[0] || siblingWord(word);
         return say(prev, bot, g);
       }
     };
@@ -119,10 +121,11 @@ const quemSouEu: Adapter = (room, bot) => {
       if (!entry || entry.questions !== me.questions || entry.wrongGuesses !== me.wrongGuesses) return prev;
       if (knows) return say({ ...prev, quemSouEu: recordCorrectGuess(s) }, bot, `Eu sou ${entry.identity}!`);
       if (lastChance || (entry.questions >= 3 && chance(0.3))) {
-        const other = pickOne(s.entries.filter((e) => e.playerId !== bot.id).map((e) => e.identity)) || 'o Pelé';
+        const other = identitySibling(entry.identity, entry.category, s.entries.map((e) => e.identity));
         return say({ ...prev, quemSouEu: recordWrongGuess(s) }, bot, `Eu sou ${other}?`);
       }
-      return say({ ...prev, quemSouEu: recordQuestion(s) }, bot, QUESTIONS[(entry.questions + Math.floor(Math.random() * 3)) % QUESTIONS.length]);
+      const qs = questionsFor(entry.category);
+      return say({ ...prev, quemSouEu: recordQuestion(s) }, bot, qs[entry.questions % qs.length] || QUESTIONS[entry.questions % QUESTIONS.length]);
     }
   };
 };
@@ -137,6 +140,28 @@ function parseStroke(raw: string, wobble: number): DrawStroke | null {
     .map(([x, y]) => [Math.min(1, Math.max(0, x / 100 + (Math.random() - 0.5) * wobble)), Math.min(1, Math.max(0, y / 100 + (Math.random() - 0.5) * wobble))] as [number, number]);
   if (pts.length < 2) return null;
   return { points: pts, color: '#111111', width: 0.008 };
+}
+
+/** Formas simples para desenhar sem o Gemini (tracos "x,y x,y"). */
+const SKETCHES: Array<[RegExp, string[]]> = [
+  [/casa|lar|predio/, ['30,80 30,45 70,45 70,80 30,80', '25,47 50,20 75,47', '45,80 45,62 55,62 55,80', '35,52 42,52 42,59 35,59 35,52']],
+  [/sol|calor|verao/, ['50,30 58,34 62,42 58,50 50,54 42,50 38,42 42,34 50,30', '50,18 50,10', '50,66 50,74', '30,42 22,42', '70,42 78,42', '36,28 30,22', '64,28 70,22', '36,56 30,62', '64,56 70,62']],
+  [/arvore|planta|floresta/, ['48,85 48,55 52,55 52,85', '50,20 30,40 38,40 25,58 75,58 62,40 70,40 50,20']],
+  [/gato|gata/, ['40,70 40,45 60,45 60,70 40,70', '40,45 42,35 47,45', '53,45 58,35 60,45', '45,53 46,54', '55,53 56,54', '60,65 72,58 74,48']],
+  [/cachorro|cao/, ['30,60 30,45 65,45 65,60 30,60', '65,45 72,38 80,42 78,50 65,50', '33,60 33,72', '45,60 45,72', '55,60 55,72', '62,60 62,72', '30,48 22,40']],
+  [/carro|automovel|taxi/, ['20,65 25,50 40,45 65,45 75,55 82,58 82,65 20,65', '32,68 35,72 39,68 35,64 32,68', '66,68 69,72 73,68 69,64 66,68', '42,48 42,55 60,55 58,48']],
+  [/bola|futebol|gol/, ['50,25 62,30 67,45 62,60 50,65 38,60 33,45 38,30 50,25', '45,38 55,38 58,48 50,54 42,48 45,38']],
+  [/peixe|mar|oceano/, ['25,50 40,38 60,38 72,50 60,62 40,62 25,50', '72,50 82,40 82,60 72,50', '35,46 36,47']],
+  [/coracao|amor|paixao/, ['50,70 30,48 30,35 38,28 50,36 62,28 70,35 70,48 50,70']],
+  [/estrela|famoso/, ['50,20 56,40 77,40 60,52 66,72 50,60 34,72 40,52 23,40 44,40 50,20']],
+  [/lua|noite/, ['55,20 45,25 40,40 45,55 55,60 48,52 46,40 48,28 55,20']],
+  [/oculos/, ['25,45 35,40 45,45 35,52 25,45', '55,45 65,40 75,45 65,52 55,45', '45,45 55,45']],
+  [/copo|bebida|suco/, ['38,30 42,75 58,75 62,30', '38,30 62,30', '40,45 60,45']],
+  [/livro|escola|ler/, ['25,35 50,40 75,35 75,70 50,75 25,70 25,35', '50,40 50,75']]
+];
+function sketchFor(word: string): string[] {
+  const n = word.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  return SKETCHES.find(([re]) => re.test(n))?.[1] || [];
 }
 
 /** Desenho -> PNG pequeno (para o Gemini olhar). So no navegador. */
@@ -192,11 +217,12 @@ const pinto: Adapter = (room, bot) => {
       apply: (prev, data) => {
         const s = prev.comoEuPinto;
         if (!s || s.phase !== 'PLAYING' || s.currentIndex !== p.currentIndex || s.strokes.length !== n) return prev;
-        const raw = Array.isArray(data) ? (data as string[]) : [];
+        const fromAi = Array.isArray(data) ? (data as string[]) : [];
+        const raw = fromAi.length ? fromAi : sketchFor(word);
         // o nivel muda a firmeza do traco e quanto do desenho sai
         const total = Math.max(1, Math.round(raw.length * (0.5 + 0.5 * pr.acc)));
         if (!raw.length) {
-          if (n === 0) return say({ ...prev, comoEuPinto: skipWord(s) }, bot, 'Essa eu não sei desenhar, próxima!');
+          if (n === 0) return say({ ...prev, comoEuPinto: skipWord(s) }, bot, 'Vou começar pela próxima, essa eu volto depois!');
           return prev;
         }
         if (n >= total) return prev;
@@ -226,7 +252,7 @@ const pinto: Adapter = (room, bot) => {
         // viu certo: o nivel decide se ele "fala" a tempo; sem Gemini, chance pelo tamanho do desenho
         const right = hit ? chance(Math.min(0.99, pr.acc + 0.2)) : !guesses.length && chance(pr.acc * Math.min(1, s.strokes.length / 10) * 0.6);
         if (right) return say({ ...prev, comoEuPinto: markDrawn(s) }, bot, word);
-        return say(prev, bot, guesses[0] ? `É ${guesses[0]}?` : 'Hmm... continua!');
+        return say(prev, bot, `É ${guesses[0] || siblingWord(word, [word])}?`);
       }
     };
   }
@@ -241,7 +267,7 @@ const pinto: Adapter = (room, bot) => {
         const s = prev.comoEuPinto;
         if (!s || s.phase !== 'STEAL' || s.outcomes[idx] !== 'pending') return prev;
         if (chance(pr.acc * 0.6)) return say({ ...prev, comoEuPinto: setPintoOutcome(s, idx, 'stolen') }, bot, `Roubei! É ${s.words[idx]}!`);
-        return say({ ...prev, comoEuPinto: setPintoOutcome(s, idx, 'pending') }, bot, 'Não faço ideia...');
+        return say(prev, bot, `É ${siblingWord(s.words[idx])}?`);
       }
     };
   }

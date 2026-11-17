@@ -1113,6 +1113,28 @@ Responda em português do Brasil, de forma direta e curta (1 frase de até 140 c
   }
 });
 
+// Estrategia de cada jogo, para o jogador IA jogar bem (vai junto do pedido ao Gemini).
+const BOT_STRATEGY: Record<string, string> = {
+  adedanha:
+    'Estratégia da Adedanha: resposta só sua vale 10 e repetida vale 5; prefira respostas válidas e conhecidas, mas não as mais óbvias (fuja do primeiro nome que todo mundo pensa). Respeite exatamente a categoria e a letra inicial.',
+  repetente:
+    'Estratégia do Repetente: o objetivo é escrever a MESMA palavra que o parceiro; pense no que a maioria dos brasileiros escreveria primeiro, no singular e sem artigo.',
+  respostas:
+    'Estratégia: use as palavras reveladas e a categoria para reconstruir a pergunta mais provável; responda o que a pergunta pede (nome, número, lugar), curto.',
+  wrong:
+    'Você vai errar de propósito, mas de forma crível: diga respostas que uma pessoa realmente daria nessa pesquisa, do mesmo tipo das corretas, e que não estejam na lista de corretas.',
+  'nota-clue':
+    'Estratégia do Jogo da Nota: a dica precisa apontar para a nota sem dizê-la; use exemplos concretos e conhecidos que todo mundo concorda que valem aquela nota na escala.',
+  'proibido-clues':
+    'Estratégia do Proibido (Taboo): dicas curtas e diretas, que levem à palavra em poucos segundos; comece pelo uso ou característica mais marcante; nunca use palavras proibidas, a palavra-alvo ou partes dela.',
+  list: 'Estratégia do Duvido: liste itens corretos, conhecidos e verificáveis, sem repetir e sem inventar.',
+  'mega-clues':
+    'Estratégia da Mega Resenha: cada dica é UMA palavra; comece pela associação mais forte e direta com a palavra-alvo.',
+  'mega-guess': 'Estratégia: procure a palavra que liga TODAS as dicas ao mesmo tempo.',
+  'mimica-acts': 'Estratégia da Mímica: descreva gestos visuais e marcantes, do mais revelador ao complementar.',
+  'pinto-draw': 'Estratégia do Como Eu Pinto: desenhe o contorno mais reconhecível do objeto, com poucos traços e bem proporcionados.'
+};
+
 // Jogador IA: o que precisa de conhecimento em texto (palavras, palpites, dicas). Sempre devolve { items: string[] }.
 app.post('/api/bot-think', async (req, res) => {
   const { kind = '', input = {} } = req.body || {};
@@ -1209,7 +1231,11 @@ app.post('/api/bot-think', async (req, res) => {
   try {
     const ai = new GoogleGenAI({ apiKey, httpOptions: { headers: { 'User-Agent': 'aistudio-build' } } });
     const response = await generateContentWithFallback(ai, {
-      contents: `Você é um jogador de party games brasileiro jogando o "Roda de Bobo". ${task}\nResponda só com o JSON pedido.`,
+      contents: `Você é um jogador experiente e competitivo de party games brasileiros, jogando o "Roda de Bobo" num programa no estilo CazéTV. Você conhece muito bem cultura pop, futebol, música, TV e o dia a dia do Brasil, e quer GANHAR.
+Regras de ouro: nunca responda "não sei", "passo", "nenhum" ou algo vago; dê sempre respostas concretas, reais e específicas, escritas como um brasileiro escreveria (com acento, sem explicação, sem numeração).
+${BOT_STRATEGY[kind as string] || ''}
+${task}
+Responda só com o JSON pedido.`,
       config: {
         temperature: 0.7,
         responseMimeType: 'application/json',

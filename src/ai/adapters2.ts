@@ -7,6 +7,7 @@ import { say } from './adapters';
 import type { BPState, ComTerraState, GameRoom, Player } from '../types/game';
 import { botParamsOf, between, chance, pickOne } from './bots';
 import { botThink } from './botThink';
+import { megaCluesLocal, siblingWord, stadiumSibling } from './knowledge';
 import { estadiosCluesShown, judgeEstadio } from '../utils/estadiosEngine';
 import { ESTADIOS } from '../data/estadiosBank';
 import { addClue, applyMegaOutcome, validateClue } from '../utils/megaResenhaEngine';
@@ -58,7 +59,7 @@ const estadios: Adapter = (room, bot) => {
     apply: (prev) => {
       const s = prev.estadios;
       if (!s || s.phase !== 'PLAYING' || s.turnPlayerId !== bot.id || s.attempts.length !== e.attempts.length) return prev;
-      const wrong = pickOne(ESTADIOS.filter((x) => norm(x.nome) !== norm(s.nome) && (x.pais === s.pais || chance(0.3))))?.nome || 'Não sei';
+      const wrong = stadiumSibling(s.nome, s.pais);
       const ids = prev.players.map((pl) => pl.id);
       return say({ ...prev, estadios: judgeEstadio(s, correct, ids) }, bot, correct ? s.nome : wrong);
     }
@@ -85,12 +86,15 @@ const mega: Adapter = (room, bot) => {
         const s = prev.megaResenha;
         if (!s || s.phase !== 'PLAYING' || s.currentIndex !== m.currentIndex || (s.clues[s.currentIndex] || []).length !== clues.length) return prev;
         const used = new Set((s.clues[s.currentIndex] || []).map((c) => norm(c.text)));
-        const options = (Array.isArray(data) ? (data as string[]) : [])
+        const options = [...(Array.isArray(data) ? (data as string[]) : []), ...megaCluesLocal(word)]
           .map((c) => c.split(/\s+/)[0])
           .filter((c) => c && !used.has(norm(c)) && validateClue(word, c).ok);
         // os niveis baixos pegam dicas mais fracas (do fim da lista)
         const clue = chance(pr.acc) ? options[0] : options[options.length - 1] || options[0];
-        if (!clue) return say(prev, bot, 'Hmm... deixa eu pensar.');
+        const fallback = siblingWord(word).split(/\s+/)[0];
+        const finalClue = clue || (validateClue(word, fallback).ok ? fallback : '');
+        if (!finalClue) return prev;
+        if (!clue) return say({ ...prev, megaResenha: addClue(s, finalClue) }, bot, finalClue);
         return say({ ...prev, megaResenha: addClue(s, clue) }, bot, clue);
       }
     };
@@ -107,7 +111,7 @@ const mega: Adapter = (room, bot) => {
         const s = prev.megaResenha;
         if (!s || s.phase !== 'PLAYING' || s.currentIndex !== m.currentIndex) return prev;
         if (correct) return say({ ...prev, megaResenha: applyMegaOutcome(s, 'correct') }, bot, word);
-        const guess = (Array.isArray(data) ? (data as string[]) : []).find((g) => norm(g) !== norm(word)) || 'Não sei...';
+        const guess = (Array.isArray(data) ? (data as string[]) : []).find((g) => norm(g) !== norm(word)) || siblingWord(word);
         return say(prev, bot, guess);
       }
     };
@@ -137,7 +141,11 @@ interface Placement {
 }
 
 /** Todas as jogadas validas com uma nota (pontos ganhos, recompensas, tamanho da peca e encaixe justo). */
-export function bpPlacements(bp: BPState, pid: string): Placement[] {
+/** Pesos da avaliacao de jogadas do Com Terra (ajustados por autojogo: IA contra IA). */
+export const BP_WEIGHTS = { score: 1.2, reward: 2.6, size: 0.9, snug: 0.25, pts: 0.5 };
+export type BPWeights = typeof BP_WEIGHTS;
+
+export function bpPlacements(bp: BPState, pid: string, w: BPWeights = BP_WEIGHTS): Placement[] {
   const park = bp.parks[pid];
   if (!park) return [];
   const before = bpScore(bp, pid);
@@ -166,7 +174,7 @@ export function bpPlacements(bp: BPState, pid: string): Placement[] {
             })
           );
           const rewards = next.pending.filter((p) => p.playerId === pid).length;
-          const value = (bpScore(next, pid) - before) * 1.2 + rewards * 2.6 + cells.length * 0.9 + snug * 0.25 + tile.pts * 0.5;
+          const value = (bpScore(next, pid) - before) * w.score + rewards * w.reward + cells.length * w.size + snug * w.snug + tile.pts * w.pts;
           out.push({ uid: tile.uid, m, x, y, value, label: tile.type });
         }
       }
@@ -222,7 +230,7 @@ const comTerra: Adapter = (room, bot) => {
       const next = withBPRoom(prev, (b) => {
         if (bpCurrent(b) !== bot.id || b.pending.length > 0) return b;
         if (!bpCanPlaceAny(b.parks[bot.id])) {
-          label = 'Passo a vez.';
+          label = 'Nenhuma peça cabe agora: passo e pego uma Área Verde.';
           return bpPass(b, bot.id);
         }
         const choice = pickByLevel(bpPlacements(b, bot.id), bot);

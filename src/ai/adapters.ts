@@ -6,6 +6,7 @@
 import type { GameRoom, Player, TeamId } from '../types/game';
 import { botParamsOf, between, chance, gauss, pickOne, isBot } from './bots';
 import { botThink } from './botThink';
+import { adedanhaLocal, notaClueLocal, proibidoCluesLocal, repetenteLocal, respostasPlausibleWrong, temPlausibleWrong } from './knowledge';
 import { resolveCurrentTurnSpotlight, getActiveTeamIds, getNextTeamId } from '../utils/teamUtils';
 import { applyTemGuess, findTemMatch } from '../utils/temGuess';
 import { submitRepetenteAnswer, repetenteWriters } from '../utils/repetenteEngine';
@@ -77,11 +78,15 @@ const tem: Adapter = (room, bot) => {
       if (data === null && hidden.length) {
         // acertar: niveis altos vao nas mais votadas
         const sorted = [...hidden].sort((a, b) => b.it.votos - a.it.votos);
-        const pick = pr.acc > 0.8 ? sorted[0] : pickOne(sorted.slice(0, Math.max(1, Math.ceil(sorted.length * pr.acc)))) || sorted[0];
+        // sorteio ponderado pelos votos (como uma pessoa: lembra mais das respostas populares); os altos vao no topo
+        const total = sorted.reduce((a, x) => a + Math.max(1, x.it.votos), 0);
+        let r = Math.random() * total;
+        const weighted = sorted.find((x) => (r -= Math.max(1, x.it.votos)) <= 0) || sorted[0];
+        const pick = pr.acc > 0.8 ? sorted[0] : weighted;
         text = pick.it.texto;
       } else {
         const wrong = (Array.isArray(data) ? (data as string[]) : []).filter((w) => findTemMatch(prev, w) === -1);
-        text = wrong[0] || pickOne(['Não sei', 'Passo essa', 'Hmm... outra coisa']) || 'Não sei';
+        text = wrong[0] || temPlausibleWrong(pt.roundData.pergunta, pt.items.map((i) => i.texto));
       }
       return say(applyTemGuess(prev, bot.team, text), bot, text);
     }
@@ -100,7 +105,8 @@ const repetente: Adapter = (room, bot) => {
     apply: (prev, data) => {
       const pr2 = prev.repetente;
       if (!pr2 || pr2.phase !== 'WRITING' || (pr2.answers[bot.id] || '').trim()) return prev;
-      const list = Array.isArray(data) ? (data as string[]) : [];
+      const fromAi = Array.isArray(data) ? (data as string[]) : [];
+      const list = fromAi.length ? fromAi : repetenteLocal(pr2.theme, pr2.category);
       // niveis altos escrevem a mais obvia (a que o parceiro humano tende a escrever)
       const idx = chance(pr.acc) ? 0 : Math.min(list.length - 1, 1 + Math.floor(Math.random() * 3));
       const word = (list[Math.max(0, idx)] || r.category || r.theme).split(/\s+/)[0];
@@ -124,7 +130,8 @@ const respostas: Adapter = (room, bot) => {
         if (!p || p.turnPlayerId !== bot.id || p.step !== 'pick') return prev;
         const options = p.words.map((w, i) => ({ w, i })).filter((x) => !p.revealed[x.i]);
         // quem sabe jogar abre a palavra mais longa (mais informacao); o facil abre qualquer uma
-        const best = [...options].sort((a, b) => b.w.length - a.w.length)[0];
+        const weak = /^(o|a|os|as|um|uma|de|do|da|dos|das|em|no|na|e|que|qual|quem|com|por|para|se|ao|mais)$/i;
+        const best = [...options].sort((a, b) => (weak.test(a.w) ? 1 : 0) - (weak.test(b.w) ? 1 : 0) || b.w.length - a.w.length)[0];
         const choice = chance(pr.acc) ? best : pickOne(options) || best;
         if (!choice) return prev;
         return say({ ...prev, respostasSemPerguntas: pickPosition(p, choice.i) }, bot, `Abre a palavra ${choice.i + 1}.`);
@@ -142,7 +149,7 @@ const respostas: Adapter = (room, bot) => {
       const p = prev.respostasSemPerguntas;
       if (!p || p.turnPlayerId !== bot.id || p.step !== 'guess') return prev;
       const chutes = (Array.isArray(data) ? (data as string[]) : []).filter((c) => norm(c) !== norm(p.answer));
-      const text = correct ? p.answer : chutes[0] || 'Passo.';
+      const text = correct ? p.answer : chutes[0] || respostasPlausibleWrong(p.category, p.answer);
       const ids = prev.players.map((pl) => pl.id);
       return say({ ...prev, respostasSemPerguntas: judgeGuess(p, correct, ids) }, bot, text);
     }
@@ -165,8 +172,11 @@ const adedanha: Adapter = (room, bot) => {
         const s = prev.adedanha;
         if (!s || s.submitted[bot.id] || (s.phase !== 'WRITING' && s.phase !== 'STOPPING')) return prev;
         const list = Array.isArray(data) ? (data as string[]) : [];
+        const others = Object.entries(s.answers).filter(([pid]) => pid !== bot.id).flatMap(([, a]) => a);
+        const local = adedanhaLocal(s.letter, s.categories, others);
         const answers = s.categories.map((_, i) => {
-          const w = list[i] || '';
+          const ai = list[i] || '';
+          const w = ai && startsWithLetter(ai, s.letter) ? ai : local[i] || '';
           if (!w || !startsWithLetter(w, s.letter)) return '';
           return chance(pr.acc + 0.1) ? w : '';
         });
@@ -221,7 +231,8 @@ const nota: Adapter = (room, bot) => {
       apply: (prev, data) => {
         if (prev.nota?.phase !== n.phase) return prev;
         const clues = Array.isArray(data) ? (data as string[]) : [];
-        return say(prev, bot, clues[which] || clues[0] || 'É algo bem no meio da escala.');
+        const local = notaClueLocal(target, min, max, q);
+        return say(prev, bot, clues[which] || clues[0] || local[which] || local[0]);
       }
     };
   }
@@ -260,7 +271,8 @@ const duvido: Adapter = (room, bot) => {
   const total = Math.max(1, Number(d.roundData.total_itens_possiveis) || d.roundData.exemplos_validos.length || 5);
   const isNegotiator = Object.values(d.negotiators || {}).includes(bot.id) || !Object.values(d.blindfoldedPlayers || {}).includes(bot.id);
   // quanto a IA acha que consegue listar (os niveis altos conhecem bem a categoria)
-  const capacity = Math.max(1, Math.round(total * (0.35 + 0.6 * pr.acc)));
+  const known = Math.max(d.roundData.exemplos_validos.length, Math.round(total * (0.5 + 0.5 * pr.acc)));
+  const capacity = Math.max(1, Math.min(total, Math.round(known * (0.55 + 0.45 * pr.acc))));
   if (d.phase === 'AUCTION' && d.activeTurnTeam === bot.team && isNegotiator) {
     const myTeamHasHuman = room.players.some((p) => p.team === bot.team && !isBot(p) && Object.values(d.negotiators || {}).includes(p.id));
     if (myTeamHasHuman) return null;
@@ -297,7 +309,8 @@ const duvido: Adapter = (room, bot) => {
         // esgotou o que sabe (ou errou): desiste; o time que duvidou ganha
         if (!item || i >= capacity || !chance(Math.min(0.995, pr.acc + 0.15))) {
           const winningTeam = getNextTeamId(bot.team, getActiveTeamIds(prev));
-          return say({ ...prev, duvido: { ...pd, phase: 'RESULT', timerActive: false, resultWinnerTeam: winningTeam, resultReason: 'A IA travou na lista! Ponto para quem duvidou.' } }, bot, 'Não lembro mais nenhum...');
+          const blefe = temPlausibleWrong(pd.roundData.categoria_secreta, pool);
+          return say({ ...prev, duvido: { ...pd, phase: 'RESULT', timerActive: false, resultWinnerTeam: winningTeam, resultReason: `"${blefe}" não vale! Ponto para quem duvidou.` } }, bot, blefe);
         }
         const next = pd.validCount + 1;
         const reached = next >= pd.currentBid;
@@ -332,7 +345,8 @@ const proibido: Adapter = (room, bot) => {
       const clean = (Array.isArray(data) ? (data as string[]) : []).filter((c) => !banned.some((b) => b.length > 2 && norm(c).includes(b)));
       const pr = botParamsOf(bot);
       const n = Math.max(1, Math.round(clean.length * (0.4 + 0.6 * pr.acc)));
-      return say(prev, bot, clean.slice(0, n).join(' · ') || 'Pensa comigo... é algo bem conhecido!');
+      const dicas = clean.length ? clean : proibidoCluesLocal(card.palavra_alvo, card.palavras_proibidas);
+      return say(prev, bot, dicas.slice(0, Math.max(1, Math.min(dicas.length, n))).join(' · '));
     }
   };
 };
