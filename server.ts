@@ -822,7 +822,7 @@ async function callModelWithTimeoutAndBackoff<T>(
 }
 
 // Helper to call Gemini with fast model order, 5.8s timeout, and minimal thinking overhead
-async function generateContentWithFallback(ai: GoogleGenAI, params: { contents: string; config: any }) {
+async function generateContentWithFallback(ai: GoogleGenAI, params: { contents: any; config: any }) {
   const models = [
     'gemini-3.1-flash-lite-preview',
     'gemini-3-flash-preview'
@@ -1155,6 +1155,45 @@ app.post('/api/bot-think', async (req, res) => {
       count = 3;
       task = `Jogo Mega Resenha: seu parceiro deu estas dicas de uma palavra cada: ${arr(input.clues, 10).join(', ')}. Qual é a palavra? Dê ${count} chutes de UMA palavra, do mais provável ao menos provável.`;
       break;
+    case 'mimica-acts':
+      count = 4;
+      task = `Jogo da Mímica: você precisa fazer a mímica da palavra "${s(input.word, 60)}" sem falar, mas aqui vai DESCREVER em texto os gestos que faria. Liste ${count} gestos curtos (até 10 palavras cada), começando por verbos de ação (ex.: "abre os braços e bate como asas"), sem dizer a palavra nem partes dela.`;
+      break;
+    case 'pinto-draw':
+      count = 10;
+      task = `Jogo Como Eu Pinto: desenhe "${s(input.word, 60)}" como um desenho simples de linha (estilo rabisco de quadro). Cada item é UM traço contínuo, escrito como pontos "x,y" separados por espaço, com x e y de 0 a 100 (0,0 no canto superior esquerdo; a área é larga, 16:9). Use de 4 a ${count} traços, cada um com 4 a 24 pontos, formando um desenho reconhecível e centralizado. Não escreva letras nem a palavra.`;
+      break;
+    case 'pinto-guess': {
+      const img = String(input.image || '');
+      const m = /^data:image\/(png|jpeg);base64,([A-Za-z0-9+/=]+)$/.exec(img);
+      if (!m || img.length > 400000) return res.status(400).json({ items: [] });
+      const apiKeyImg = process.env.GEMINI_API_KEY;
+      if (!apiKeyImg || apiKeyImg === 'MY_GEMINI_API_KEY' || apiKeyImg.trim() === '') return res.status(200).json({ items: [], fallback: true });
+      try {
+        const ai = new GoogleGenAI({ apiKey: apiKeyImg, httpOptions: { headers: { 'User-Agent': 'aistudio-build' } } });
+        const response = await generateContentWithFallback(ai, {
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                { text: 'Jogo Como Eu Pinto (party game brasileiro). Olhe este desenho feito à mão e chute qual palavra ele representa. Responda com até 3 chutes de UMA ou DUAS palavras em português do Brasil, do mais provável ao menos provável, no JSON pedido.' },
+                { inlineData: { mimeType: `image/${m[1]}`, data: m[2] } }
+              ]
+            }
+          ],
+          config: {
+            temperature: 0.4,
+            responseMimeType: 'application/json',
+            responseSchema: { type: Type.OBJECT, properties: { items: { type: Type.ARRAY, items: { type: Type.STRING } } }, required: ['items'] }
+          }
+        });
+        const parsed = JSON.parse(response.text || '{}');
+        const items = Array.isArray(parsed.items) ? parsed.items.slice(0, 3).map((x: unknown) => sanitizeCleanGameText(s(x, 60))) : [];
+        return res.status(200).json({ items, source: 'ai' });
+      } catch (err: any) {
+        return res.status(200).json({ items: [], fallback: true, error: err?.message });
+      }
+    }
     case 'list':
       count = Math.min(25, Math.max(3, Number(input.count) || 10));
       task = `Jogo do Duvido. Categoria: "${s(input.category)}"${input.rule ? ` (regra: ${s(input.rule)})` : ''}. Liste ${count} itens reais e diferentes que pertencem a essa categoria. Um item por posição, curto.`;
