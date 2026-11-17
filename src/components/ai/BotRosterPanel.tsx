@@ -72,7 +72,9 @@ export const BotRosterPanel: React.FC<{
         </ul>
       )}
       <p className="rdb-botpanel-note">
-        A IA já joga: {BOT_READY_GAMES.map((g) => GAME_NAMES[g as keyof typeof GAME_NAMES]).join(', ').toLowerCase()}. Nos outros jogos ela entra nas próximas fases.
+        {BOT_READY_GAMES.length >= Object.keys(GAME_NAMES).length
+          ? 'A IA joga todos os jogos. Na mímica ela descreve os gestos e no Como Eu Pinto ela desenha de verdade.'
+          : `A IA já joga: ${BOT_READY_GAMES.map((g) => GAME_NAMES[g as keyof typeof GAME_NAMES]).join(', ').toLowerCase()}.`}
       </p>
     </section>
   );

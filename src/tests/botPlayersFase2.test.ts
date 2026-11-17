@@ -11,9 +11,9 @@ const P = (id: string, team: 'A' | 'B' = 'A'): Player =>
 const room = (extra: Partial<GameRoom>): GameRoom =>
   ({ roomId: 'X', hostId: 'h', screen: 'playing', theme: 't', players: [], timerConfig: 0, ...extra }) as unknown as GameRoom;
 
-test('IA Fase 2: os 12 jogos com IA estao registrados', () => {
+test('IA: os 16 jogos com IA estao registrados', () => {
   for (const g of ['estadios', 'mega-resenha', 'com-terra', 'perguntas-e-verdades', 'limite', 'adedanha']) assert.ok(BOT_READY_GAMES.includes(g), g);
-  assert.equal(BOT_READY_GAMES.length, 12);
+  assert.equal(BOT_READY_GAMES.length, 16);
 });
 
 test('IA no Com Terra (Arquiteto): acha encaixes validos e o Impossivel joga o melhor', () => {

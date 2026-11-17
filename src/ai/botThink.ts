@@ -11,7 +11,10 @@ export type BotThinkKind =
   | 'proibido-clues' // dicas para a palavra sem usar as proibidas
   | 'list' // itens validos de uma categoria (Duvido)
   | 'mega-clues' // dicas de UMA palavra para a palavra-alvo
-  | 'mega-guess'; // chutes da palavra a partir das dicas
+  | 'mega-guess' // chutes da palavra a partir das dicas
+  | 'mimica-acts' // gestos de mimica descritos em texto
+  | 'pinto-draw' // desenho em tracos (x,y de 0 a 100)
+  | 'pinto-guess'; // olhar um desenho (imagem) e chutar a palavra
 
 const cache = new Map<string, Promise<string[]>>();
 
