@@ -1,0 +1,555 @@
+/* =====================================================================================================
+   Tela de vitoria (fim de partida), igual para todos os jogos.
+   Carta do campeao a esquerda (teal cheio, como o card em foco), classificacao em cinza a direita,
+   numeros da partida numa faixa recolhivel no rodape. Tudo chapado: sem brilho, degrade ou sombra.
+   Entrada: caixas cinza -> faisca cai no campeao -> a caixa estoura em raios -> tela montada.
+   ===================================================================================================== */
+.vic {
+  --vic-gray: #2a2d48;
+  --vic-gray-ink: #7d81a0;
+  --vic-gap: clamp(12px, 1.4vw, 32px);
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--rdb-navy);
+  color: var(--rdb-cream);
+  isolation: isolate;
+}
+
+/* ---------- Fundo: raios girando devagar a partir da carta ---------- */
+.vic-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  transform-origin: 26% 46%;
+}
+.vic-bg-rays {
+  position: absolute;
+  left: 26%;
+  top: 46%;
+  width: 260vmax;
+  height: 260vmax;
+  margin: -130vmax 0 0 -130vmax;
+  background: repeating-conic-gradient(from 0deg, var(--rdb-navy-2) 0deg 7.5deg, var(--rdb-navy) 7.5deg 15deg);
+  animation: vic-spin 90s linear infinite;
+}
+/* reticula no canto oposto, como as cartelas do programa */
+.vic-dots {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 40%;
+  height: 60%;
+  z-index: -2;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(245, 242, 235, 0.07) 22%, transparent 24%);
+  background-size: clamp(10px, 0.9vw, 18px) clamp(10px, 0.9vw, 18px);
+  -webkit-mask-image: linear-gradient(to top left, #000 30%, transparent 75%);
+  mask-image: linear-gradient(to top left, #000 30%, transparent 75%);
+}
+@keyframes vic-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Marca d'agua ---------- */
+.vic-watermark {
+  position: absolute;
+  right: 0.12em;
+  top: 60%;
+  transform-origin: right center;
+  z-index: -1;
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(96px, 13vw, 300px);
+  margin-top: -0.62em;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: #15183a;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ---------- Entrada: a pilha de caixas cinza ---------- */
+.vic-pile {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  gap: clamp(8px, 1vw, 20px);
+  padding: 8%;
+}
+.vic-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15em;
+  width: clamp(80px, 9vw, 190px);
+  aspect-ratio: 1;
+  font-size: clamp(32px, 3.6vw, 76px);
+  background: var(--vic-gray);
+  border: var(--rdb-line) solid #3a3e5e;
+  filter: grayscale(1) brightness(0.7);
+  transition: background-color 0.15s ease-out, filter 0.15s ease-out;
+}
+.vic-box .rdb-mark {
+  font-size: 0.9em;
+}
+.vic-box.is-lit {
+  background: var(--rdb-teal);
+  border-color: var(--rdb-cream);
+  filter: none;
+  z-index: 2;
+}
+/* a faisca: uma linha creme que cai do topo ate a caixa */
+.vic-spark {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 4px;
+  height: 100vh;
+  margin-left: -2px;
+  background: var(--rdb-cream);
+  transform-origin: top;
+  animation: vic-spark 0.45s cubic-bezier(0.5, 0, 0.9, 0.4) both;
+}
+@keyframes vic-spark {
+  0% { transform: scaleY(0); opacity: 1; }
+  80% { transform: scaleY(1); opacity: 1; }
+  100% { transform: scaleY(1); opacity: 0; }
+}
+/* o estouro: raios chapados creme e teal saindo da caixa */
+.vic-burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 360%;
+  height: 360%;
+  margin: -180% 0 0 -180%;
+  z-index: -1;
+  border-radius: 50%;
+  background: repeating-conic-gradient(var(--rdb-cream) 0deg 9deg, transparent 9deg 30deg);
+  -webkit-mask-image: radial-gradient(circle, transparent 18%, #000 19%, #000 48%, transparent 50%);
+  mask-image: radial-gradient(circle, transparent 18%, #000 19%, #000 48%, transparent 50%);
+  animation: vic-burst 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes vic-burst {
+  0% { transform: scale(0.2) rotate(-20deg); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: scale(1.2) rotate(0deg); opacity: 0; }
+}
+
+/* ---------- Palco: carta + classificacao ---------- */
+.vic-stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 44fr) minmax(0, 56fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: var(--vic-gap);
+  padding: calc(var(--vic-gap) * 2.4) calc(var(--vic-gap) * 1.6) var(--vic-gap);
+}
+
+/* ---------- Carta do campeao ---------- */
+.vic-card {
+  position: relative;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+  border: calc(var(--rdb-line) * 2) solid var(--rdb-cream);
+}
+.vic-kicker {
+  display: inline-block;
+  margin-bottom: 0.45em;
+  padding: 0.25em 0.6em;
+  background: var(--rdb-navy);
+  color: var(--rdb-cream);
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-size: var(--rdb-fs-meta);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.vic-art {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 0.9em 0.9em 0;
+  background: var(--rdb-navy);
+  overflow: visible;
+}
+.vic-art-rays {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: repeating-conic-gradient(from 0deg at 50% 100%, #14173a 0deg 6deg, var(--rdb-navy) 6deg 12deg);
+}
+.vic-art-game {
+  position: absolute;
+  right: 0.6em;
+  bottom: 0.6em;
+  width: 30%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+}
+.vic-art-game > * {
+  width: 100%;
+  height: 100%;
+}
+/* a marca do campeao sai pela borda de cima da carta (efeito breakout) */
+.vic-hero-marks {
+  position: absolute;
+  left: 7%;
+  top: -13%;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.12em;
+  font-size: clamp(64px, min(9vw, 17vh), 220px);
+  line-height: 1;
+  z-index: 2;
+}
+.vic-hero-marks.n2 { font-size: clamp(44px, min(5.4vw, 12vh), 150px); }
+.vic-hero-marks.n3,
+.vic-hero-marks.n4 { font-size: clamp(36px, min(4.2vw, 9.5vh), 120px); }
+.vic-hero-marks .rdb-mark {
+  border: calc(var(--rdb-line) * 2) solid var(--rdb-navy);
+}
+.vic-sprite {
+  height: 2.4em;
+  width: auto;
+  max-width: 3em;
+  object-fit: contain;
+  object-position: bottom;
+}
+.vic-card-foot {
+  padding: 0.5em 0.9em 0.8em;
+  min-width: 0;
+}
+.vic-name {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(2.4rem, min(5.6vw, 10vh), 8rem);
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vic-name.is-tie {
+  display: flex;
+  flex-direction: column;
+  font-size: clamp(1.8rem, min(3.6vw, 6.6vh), 5.4rem);
+}
+.vic-name-line {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vic-scoreline {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8em;
+  margin-top: 0.15em;
+  min-width: 0;
+}
+.vic-score {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(1.8rem, min(3.4vw, 6vh), 5rem);
+  line-height: 1;
+  flex-shrink: 0;
+}
+.vic-score small {
+  margin-left: 0.15em;
+  font-size: 0.45em;
+  text-transform: uppercase;
+}
+.vic-line {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: var(--rdb-fs-meta);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.vic-line > span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Classificacao: quem perdeu fica em cinza ---------- */
+.vic-side {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vic-gap);
+}
+.vic-rank {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-auto-rows: minmax(0, clamp(44px, 9vh, 104px));
+  align-content: start;
+  gap: clamp(6px, 0.6vw, 12px);
+  list-style: none;
+  padding: 0;
+}
+.vic-rank.is-two-col {
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: minmax(0, clamp(40px, 8vh, 88px));
+}
+.vic-row {
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0 0.9em;
+  background: #12142c;
+  border: var(--rdb-line) solid var(--vic-gray);
+  color: var(--vic-gray-ink);
+  font-size: clamp(16px, 1.45vw, 30px);
+}
+.vic-row-pos {
+  width: 1.8em;
+  flex-shrink: 0;
+  font-family: 'Anton', 'Impact', sans-serif;
+}
+.vic-row-marks {
+  display: inline-flex;
+  gap: 0.1em;
+  filter: grayscale(1) brightness(0.6);
+}
+.vic-row-name {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vic-row-pts {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: 1.15em;
+}
+.vic-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: clamp(8px, 0.8vw, 16px);
+}
+
+/* ---------- Faixa de numeros (recolhivel) ---------- */
+.vic-stats {
+  position: relative;
+  flex-shrink: 0;
+  background: var(--rdb-navy);
+  border-top: var(--rdb-line) solid var(--rdb-cream);
+}
+.vic-stats-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  width: 100%;
+  height: calc(var(--rdb-bar-h) * 0.85);
+  padding: 0 calc(var(--vic-gap) * 1.6);
+  background: transparent;
+  color: var(--rdb-cream);
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-size: var(--rdb-fs-bar);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+}
+.vic-stats-toggle:hover {
+  color: var(--rdb-teal);
+}
+.vic-stats-toggle:focus-visible {
+  outline: 3px solid var(--rdb-cream);
+  outline-offset: -3px;
+}
+.vic-chev {
+  width: 1.3em;
+  height: 1.3em;
+  transform: rotate(180deg);
+  transition: transform 0.2s ease-out;
+}
+.vic-stats.is-open .vic-chev {
+  transform: rotate(0deg);
+}
+.vic-stats-hint {
+  margin-left: auto;
+  color: var(--rdb-ink-2);
+  font-weight: 800;
+}
+.vic-stats-body {
+  overflow: hidden;
+}
+.vic-cells {
+  display: flex;
+  align-items: stretch;
+  border-top: 1px solid rgba(245, 242, 235, 0.85);
+}
+.vic-cell {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+  padding: 0.9em calc(var(--vic-gap) * 0.9);
+  border-left: 1px solid rgba(245, 242, 235, 0.85);
+}
+.vic-cell:first-child {
+  border-left: 0;
+  padding-left: calc(var(--vic-gap) * 1.6);
+}
+.vic-cell-label {
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: var(--rdb-fs-meta);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rdb-ink-2);
+}
+.vic-cell-value {
+  font-family: 'Anton', 'Impact', sans-serif;
+  font-size: clamp(1.6rem, 2.6vw, 3.6rem);
+  line-height: 1;
+}
+.vic-cell.is-extra .vic-cell-value {
+  color: var(--rdb-teal);
+}
+.vic-cell--medals {
+  flex: 3.2 1 0;
+}
+.vic-medals {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.3em;
+  font-size: var(--rdb-fs-meta);
+}
+.vic-medal {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  min-width: 0;
+  white-space: nowrap;
+}
+.vic-medal b {
+  flex-shrink: 0;
+  padding: 0.1em 0.45em;
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-size: 0.85em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--rdb-teal);
+  color: var(--rdb-navy);
+}
+.vic-medal--quase-la b { background: var(--rdb-cream); }
+.vic-medal--pipoca b { background: var(--rdb-crimson); color: #fff; }
+.vic-medal span {
+  min-width: 0;
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vic-medal i {
+  font-style: normal;
+  font-weight: 600;
+  text-transform: none;
+  color: var(--rdb-ink-2);
+}
+.vic-more {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(6px, 0.6vw, 12px);
+  padding: 0.7em calc(var(--vic-gap) * 1.6) 0.9em;
+  border-top: 1px solid rgba(245, 242, 235, 0.85);
+}
+
+/* ---------- Paineis extras ---------- */
+.vic-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: rgba(10, 11, 30, 0.88);
+}
+.vic-modal {
+  width: min(960px, 100%);
+  max-height: 85dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--rdb-navy);
+  border: var(--rdb-line) solid var(--rdb-teal);
+}
+.vic-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 1rem;
+  border-bottom: var(--rdb-line) solid var(--rdb-teal);
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  font-size: var(--rdb-fs-bar);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.vic-modal-body {
+  padding: 1rem;
+  overflow-y: auto;
+}
+.vic-log {
+  list-style: none;
+  padding: 0;
+  display: grid;
+}
+.vic-log li {
+  display: grid;
+  grid-template-columns: 8em 1fr auto;
+  gap: 1em;
+  padding: 0.6em 0;
+  border-top: 1px solid rgba(245, 242, 235, 0.25);
+  font-size: var(--rdb-fs-meta);
+}
+.vic-log b {
+  font-family: var(--rdb-heavy);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.vic-log i {
+  font-style: normal;
+  font-family: 'Anton', 'Impact', sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vic-bg-rays,
+  .vic-spark,
+  .vic-burst {
+    animation: none;
+  }
+}

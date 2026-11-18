@@ -541,6 +541,8 @@ export const buildStartedRoundUpdater = ({
           timerConfig: effectiveTimer,
           maxRounds: effectiveMaxRounds,
           roundLog: prev.roundNumber === 1 ? [] : prev.roundLog || [],
+          matchExtras: prev.roundNumber === 1 ? {} : prev.matchExtras || {},
+          baseMaxRounds: prev.roundNumber === 1 ? effectiveMaxRounds : prev.baseMaxRounds ?? effectiveMaxRounds,
           limite: limiteState,
           duvido: duvidoState,
           proibido: proibidoState,

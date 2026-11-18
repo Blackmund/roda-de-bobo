@@ -127,7 +127,6 @@ import {
   Medal,
   X
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import { GameOverScreen } from './app/GameOverScreen';
 import { PlayingScreen } from './app/PlayingScreen';
 import { buildNextRoundUpdater } from './app/buildNextRoundUpdater';
@@ -380,17 +379,9 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [viewMode, room.screen, room.activeGame, room.temOuNaoTem?.items?.length]);
 
-  // Trigger celebratory Fanfare sequence and multi-burst confetti when Game Over screen is reached
+  // A comemoracao do fim de partida (fanfarra no estouro dos raios) mora na propria GameOverScreen.
   useEffect(() => {
-    if (room.screen === 'game-over') {
-      sounds.playFanfare();
-      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        confetti({ particleCount: 48, spread: 65, ticks: 90,
-          colors: ['#17b8b8', '#e6194b', '#f5f2eb'],
-          origin: { y: 0.4 }, disableForReducedMotion: true });
-      }
-      return () => { confetti.reset(); };
-    } else {
+    if (room.screen !== 'game-over') {
       setShareFeedback({ status: 'idle' });
       setIsCompareModalOpen(false);
       setActiveGameOverPanel(null);
@@ -509,45 +500,72 @@ export default function App() {
     }
   };
 
+  /** Zera o placar e o estado dos jogos para uma partida nova (mantem jogadores, equipes e sessao). */
+  const resetMatchFields = (prev: GameRoom): GameRoom => ({
+    ...prev,
+    roundNumber: 1,
+    roundLog: [],
+    matchExtras: {},
+    players: prev.players.map((p) => ({
+      ...p,
+      score: 0,
+      roundsPlayed: 0,
+      roundsWon: 0,
+      accuracy: 0
+    })),
+    temOuNaoTem: undefined,
+    limite: undefined,
+    duvido: undefined,
+    proibido: undefined,
+    nota: undefined,
+    perguntasEVerdades: undefined,
+    mimica: undefined,
+    quemSouEu: undefined,
+    megaResenha: undefined,
+    repetente: undefined,
+    respostasSemPerguntas: undefined,
+    estadios: undefined,
+    comoEuPinto: undefined,
+    comTerra: undefined,
+    adedanha: undefined,
+    roundSource: undefined,
+    teams: {
+      ...prev.teams,
+      A: { ...prev.teams.A, score: 0 },
+      B: { ...prev.teams.B, score: 0 },
+      ...(prev.teams.C ? { C: { ...prev.teams.C, score: 0 } } : {}),
+      ...(prev.teams.D ? { D: { ...prev.teams.D, score: 0 } } : {})
+    }
+  });
+
   const handleReturnToLobby = () => {
     roundLoadRequestIdRef.current += 1;
     setIsLoadingRound(false);
     sounds.playFlip();
     setActiveGameOverPanel(null);
     broadcastState((prev) => ({
-      ...prev,
+      ...resetMatchFields(prev),
       screen: 'lobby',
-      activeGame: null,
-      roundNumber: 1,
-      roundLog: [],
-      players: prev.players.map((p) => ({
-        ...p,
-        score: 0,
-        roundsPlayed: 0,
-        roundsWon: 0,
-        accuracy: 0
-      })),
-      temOuNaoTem: undefined,
-      limite: undefined,
-      duvido: undefined,
-      proibido: undefined,
-      nota: undefined,
-      perguntasEVerdades: undefined,
-      mimica: undefined,
-      quemSouEu: undefined,
-      megaResenha: undefined,
-      repetente: undefined,
-      respostasSemPerguntas: undefined,
-      estadios: undefined,
-      comoEuPinto: undefined,
-      comTerra: undefined,
-      adedanha: undefined,
-      roundSource: undefined,
-      teams: {
-        A: { ...prev.teams.A, score: 0 },
-        B: { ...prev.teams.B, score: 0 }
-      }
+      activeGame: null
     }));
+  };
+
+  /** Revanche: o mesmo jogo, com as mesmas regras e o mesmo numero de rodadas do inicio. */
+  const handleRematch = () => {
+    const gameId = room.activeGame;
+    if (!gameId) return;
+    const rounds = room.baseMaxRounds ?? room.maxRounds;
+    setActiveGameOverPanel(null);
+    broadcastState((prev) => resetMatchFields(prev));
+    prepareAndStartRound(gameId, room.theme, room.timerConfig, rounds, room.customConfig);
+  };
+
+  /** Ajustar regras: volta para a configuracao do mesmo jogo. */
+  const handleRematchSetup = () => {
+    if (!room.activeGame) return;
+    sounds.playFlip();
+    setActiveGameOverPanel(null);
+    broadcastState((prev) => ({ ...resetMatchFields(prev), screen: 'game-setup' }));
   };
 
   const handleResetSessionStats = () => {
@@ -1008,7 +1026,7 @@ export default function App() {
             </motion.div>
           ) : room.screen === 'playing' ? <PlayingScreen room={room} isTvMode={isTvMode} broadcastState={broadcastState} handleNextRound={handleNextRound} /> : room.screen === 'game-over' ? (
             /* Clean Victory Screen focused on Winning Team/Player & MVP, with clickable icon buttons for Achievements, Hall of Fame, Activity Log & Session History */
-            <GameOverScreen room={room} setShareFeedback={setShareFeedback} setActiveGameOverPanel={setActiveGameOverPanel} setIsCompareModalOpen={setIsCompareModalOpen} shareFeedback={shareFeedback} isCompareModalOpen={isCompareModalOpen} activeGameOverPanel={activeGameOverPanel} handleReturnToLobby={handleReturnToLobby} handleResetSessionStats={handleResetSessionStats} />
+            <GameOverScreen room={room} setShareFeedback={setShareFeedback} setActiveGameOverPanel={setActiveGameOverPanel} setIsCompareModalOpen={setIsCompareModalOpen} shareFeedback={shareFeedback} isCompareModalOpen={isCompareModalOpen} activeGameOverPanel={activeGameOverPanel} handleReturnToLobby={handleReturnToLobby} handleRematch={handleRematch} handleRematchSetup={handleRematchSetup} handleResetSessionStats={handleResetSessionStats} />
           ) : null}
         </AnimatePresence>
       </WindowWrapper>
