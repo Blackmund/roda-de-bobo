@@ -1,6 +1,6 @@
 import type { GenerateRoundResponse } from '../utils/aiGameGenerator';
 import type { GameRoom } from '../types/game';
-import { GameId, GameCustomConfig, DEFAULT_GAME_CUSTOM_CONFIG, LimiteGameState, DuvidoGameState, ProibidoGameState, MimicaGameState, QuemSouEuGameState, MegaResenhaGameState, RepetenteGameState, RespostasSemPerguntasState, EstadiosGameState, AdedanhaState, ComTerraState, ComoEuPintoState, NotaGameState, TemOuNaoTemGameState, PerguntasEVerdadesGameState, TeamId, Player } from '../types/game';
+import { GameId, GameCustomConfig, DEFAULT_GAME_CUSTOM_CONFIG, LimiteGameState, DuvidoGameState, ProibidoGameState, MimicaGameState, QuemSouEuGameState, MegaResenhaGameState, RepetenteGameState, RespostasSemPerguntasState, EstadiosGameState, GeoGuessGameState, AdedanhaState, ComTerraState, ComoEuPintoState, NotaGameState, TemOuNaoTemGameState, PerguntasEVerdadesGameState, TeamId, Player } from '../types/game';
 import { getActiveTeamIds, getTeamCount, getNextTeamId, normalizePlayersToTeamCount } from '../utils/teamUtils';
 import { normalizeTemVotesTo100 } from '../utils/aiGameGenerator';
 import { buildMimicaState, pickMimicaPair } from '../utils/mimicaEngine';
@@ -14,7 +14,9 @@ import { buildAdedanhaState, drawLetter } from '../utils/adedanhaEngine';
 import { ADEDANHA_PADRAO, ADEDANHA_LETRAS_EXCLUIDAS_PADRAO } from '../data/adedanhaCategorias';
 import { buildComTerraState } from '../utils/comTerraEngine';
 import { buildComoEuPintoState, pickPintoPair } from '../utils/comoEuPintoEngine';
-import { drawEstadio, normalizeEstadioKey } from '../data/estadiosBank';
+import { drawPontinho, normalizePontinhoKey } from '../data/pontinhosBank';
+import { drawGeoLocal } from '../data/geoguessBank';
+import { buildGeoGuessState } from '../utils/geoguessEngine';
 import { drawRespostaQuestion, normalizeRespostaKey } from '../data/respostasSemPerguntas';
 import { drawRepetenteTheme, normalizeThemeKey } from '../data/repetenteThemes';
 import { normalizeIdentity, type QuemSouEuIdentity } from '../data/quemSouEuIdentities';
@@ -62,7 +64,8 @@ export const buildStartedRoundUpdater = ({
         let megaResenhaState: MegaResenhaGameState | undefined = undefined;
         let repetenteState: RepetenteGameState | undefined = undefined;
         let respostasState: RespostasSemPerguntasState | undefined = undefined;
-        let estadiosState: EstadiosGameState | undefined = undefined;
+        let pontinhosState: EstadiosGameState | undefined = undefined;
+        let geoguessState: GeoGuessGameState | undefined = undefined;
         let adedanhaState: AdedanhaState | undefined = undefined;
         let comTerraState: ComTerraState | undefined = undefined;
         let pintoState: ComoEuPintoState | undefined = undefined;
@@ -438,15 +441,30 @@ export const buildStartedRoundUpdater = ({
         }
 
         if (gameId === 'estadios') {
-          // NOV-06: um estadio por rodada (sem repetir na sessao); quem comeca roda a cada rodada.
-          const usedStadiums = new Set<string>();
+          // GeoGuess: um lugar por rodada, das tags escolhidas, sem repetir na sessao.
+          const usedPlaces = new Set<string>();
           (prev.usedRoundSignatures || []).forEach((sig) => {
-            if (typeof sig === 'string' && sig.startsWith('est:')) usedStadiums.add(normalizeEstadioKey(sig.slice(4)));
+            if (typeof sig === 'string' && sig.startsWith('geo:')) usedPlaces.add(sig.slice(4));
           });
-          const picked = drawEstadio(usedStadiums);
+          const picked = drawGeoLocal(usedPlaces, mergedCustomConfig.geoTags || []);
+          geoguessState = buildGeoGuessState(picked);
+          extraSignature = 'geo:' + picked.id;
+        }
+
+        if (gameId === 'pontinhos') {
+          // Jogo dos Pontinhos: uma resposta por rodada dos temas escolhidos (sem repetir na sessao); quem comeca roda.
+          const used = new Set<string>();
+          (prev.usedRoundSignatures || []).forEach((sig) => {
+            if (typeof sig === 'string' && sig.startsWith('pon:')) used.add(normalizePontinhoKey(sig.slice(4)));
+          });
+          const picked = drawPontinho(used, mergedCustomConfig.pontinhosTemas || []);
           const firstIdx = (Math.max(1, prev.roundNumber) - 1) % Math.max(1, nextMatchPlayers.length);
-          estadiosState = buildEstadiosState(picked, nextMatchPlayers, firstIdx);
-          extraSignature = 'est:' + picked.nome;
+          pontinhosState = buildEstadiosState(
+            { tema: picked.tema, nome: picked.nome, cidade: picked.detalhe, pistas: picked.pistas },
+            nextMatchPlayers,
+            firstIdx
+          );
+          extraSignature = 'pon:' + picked.nome;
         }
 
         if (gameId === 'respostas-sem-perguntas') {
@@ -558,7 +576,9 @@ export const buildStartedRoundUpdater = ({
           megaResenha: megaResenhaState,
           repetente: repetenteState,
           respostasSemPerguntas: respostasState,
-          estadios: estadiosState,
+          estadios: undefined,
+          pontinhos: pontinhosState,
+          geoguess: geoguessState,
           adedanha: adedanhaState,
           comTerra: comTerraState,
           comoEuPinto: pintoState,

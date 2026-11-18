@@ -40,8 +40,8 @@ export function computeRoundTeamPoints(room: GameRoom): Record<TeamId, number> {
       const p = room.players.find((pl) => pl.id === pid);
       if (p?.team) roundPts[p.team] = (roundPts[p.team] || 0) + pts;
     });
-  } else if (room.activeGame === 'estadios' && room.estadios) {
-    Object.entries(room.estadios.pointsAwarded || {}).forEach(([pid, pts]) => {
+  } else if ((room.activeGame === 'estadios' || room.activeGame === 'pontinhos') && (room.activeGame === 'estadios' ? room.geoguess : room.pontinhos)) {
+    Object.entries((room.activeGame === 'estadios' ? room.geoguess : room.pontinhos)?.pointsAwarded || {}).forEach(([pid, pts]) => {
       const p = room.players.find((pl) => pl.id === pid);
       if (p?.team) roundPts[p.team] = (roundPts[p.team] || 0) + pts;
     });

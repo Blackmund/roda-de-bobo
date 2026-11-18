@@ -530,18 +530,66 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
   },
   estadios: {
     gameId: 'estadios',
-    icon: '🏟️',
-    name: 'ESTÁDIOS',
-    welcomeTitle: 'Como Jogar Estádios',
+    icon: '🛰️',
+    name: 'GEOGUESS',
+    welcomeTitle: 'Como Jogar GeoGuess',
     welcomeSubtitle:
-      'Descubra qual é o estádio! Quanto antes acertar, mais pontos: 5 de primeira, 4 de segunda, e assim por diante.',
+      'Que lugar é esse? Cinco imagens de satélite do mesmo lugar, do close mais difícil à cidade inteira. Acertou na 1ª imagem: 5 pontos; na 2ª: 4; e assim por diante.',
+    steps: [
+      {
+        stepNumber: 1,
+        icon: '🔎',
+        headline: 'Dica e Close',
+        description:
+          'A rodada abre com uma dica curta e um close extremo de um detalhe do lugar: um pedaço de arquibancada, um telhado, uma praia.',
+        accentTag: 'Imagem 1 de 5'
+      },
+      {
+        stepNumber: 2,
+        icon: '📱',
+        headline: 'Palpite no Celular',
+        description:
+          'Todos chutam ao mesmo tempo, escrevendo no celular. A TV mostra quem já chutou; o diretor abre os palpites e marca acertou ou errou.',
+        accentTag: 'Todos Chutam'
+      },
+      {
+        stepNumber: 3,
+        icon: '🗺️',
+        headline: 'A Imagem Vai Abrindo',
+        description:
+          'Quem errou chuta de novo na próxima imagem, que mostra mais: outra parte, o lugar inteiro, o entorno e por fim a cidade. Cada imagem vale 1 ponto a menos.',
+        accentTag: '5, 4, 3, 2, 1'
+      }
+    ],
+    proibido: [
+      'PESQUISAR NO CELULAR OU NO MAPA DURANTE A RODADA',
+      'FALAR O PALPITE EM VOZ ALTA ANTES DE ENVIAR',
+      'ESPIAR A RESPOSTA NA TELA DO DIRETOR'
+    ],
+    permitido: [
+      'TROCAR O PALPITE ENQUANTO O DIRETOR NÃO JULGAR',
+      'ARRISCAR O NOME OFICIAL OU O APELIDO DO LUGAR',
+      'PEDIR AO DIRETOR PARA ACEITAR UMA VARIAÇÃO DO NOME'
+    ],
+    scoringSummary: [
+      'Acertou na 1ª imagem: 5 pontos; na 2ª: 4; na 3ª: 3; na 4ª: 2; na 5ª: 1. Todos que acertam pontuam.',
+      'Depois da 5ª imagem vem a revelação: o nome e a foto aérea do lugar.'
+    ]
+  },
+  pontinhos: {
+    gameId: 'pontinhos',
+    icon: '🔢',
+    name: 'JOGO DOS PONTINHOS',
+    welcomeTitle: 'Como Jogar o Jogo dos Pontinhos',
+    welcomeSubtitle:
+      'Descubra a resposta com dicas em etapas! Quanto antes acertar, mais pontos: 5 de primeira, 4 de segunda, e assim por diante.',
     steps: [
       {
         stepNumber: 1,
         icon: '🏟️',
-        headline: 'Um Estádio Misterioso',
+        headline: 'Uma Resposta Misteriosa',
         description:
-          'O jogo escolhe um estádio famoso. Começa só com a primeira pista (a mais vaga); no programa essa pista é uma foto.',
+          'O jogo sorteia uma resposta de um tema (animais, países, comidas, estádios...). Começa só com a primeira dica, a mais vaga.',
         accentTag: 'Pista 1 de 5'
       },
       {
@@ -549,15 +597,15 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
         icon: '🎯',
         headline: 'Chute na Sua Vez',
         description:
-          'Em rodízio, cada jogador arrisca o nome do estádio. O diretor confere com a resposta e marca se acertou ou errou.',
+          'Em rodízio, cada jogador arrisca a resposta em voz alta. O diretor confere e marca se acertou ou errou.',
         accentTag: 'Rodízio de Chutes'
       },
       {
         stepNumber: 3,
         icon: '📉',
-        headline: 'Cada Erro Libera Uma Pista',
+        headline: 'Cada Erro Libera Uma Dica',
         description:
-          'Errou? A vez passa, uma pista nova aparece e o valor cai 1 ponto: 5, 4, 3, 2, 1. Errar as 5 pistas encerra sem pontos.',
+          'Errou? A vez passa, uma dica nova aparece e o valor cai 1 ponto: 5, 4, 3, 2, 1. Errar as 5 dicas encerra sem pontos.',
         accentTag: '5, 4, 3, 2, 1'
       }
     ],
@@ -567,13 +615,13 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
       'ESPIAR A RESPOSTA NA TELA DO DIRETOR'
     ],
     permitido: [
-      'ARRISCAR O NOME OFICIAL OU O APELIDO DO ESTÁDIO',
-      'USAR AS PISTAS JÁ LIBERADAS PARA DEDUZIR',
-      'PEDIR AO DIRETOR PARA ACEITAR UMA VARIAÇÃO DO NOME'
+      'ARRISCAR UM SINÔNIMO OU APELIDO DA RESPOSTA',
+      'USAR AS DICAS JÁ LIBERADAS PARA DEDUZIR',
+      'PEDIR AO DIRETOR PARA ACEITAR UMA VARIAÇÃO'
     ],
     scoringSummary: [
       'Acertou de primeira: 5 pontos; de segunda: 4; de terceira: 3; de quarta: 2; de quinta: 1.',
-      'Se ninguém acertar depois da quinta pista, a rodada termina sem pontos.'
+      'Se ninguém acertar depois da quinta dica, a rodada termina sem pontos.'
     ]
   },
   'como-eu-pinto': {

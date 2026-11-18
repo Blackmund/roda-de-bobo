@@ -2099,14 +2099,23 @@ async function generateRoundContentCore(
     return { source: 'curated', data: {}, themeUsed: 'Adedanha', subthemeUsed: 'Uma letra, várias categorias', signature: `ad-round-${Date.now()}` };
   }
 
-  // NOV-06: o Estadios sorteia o estadio no proprio App; aqui so um marcador.
+  // GeoGuess e Jogo dos Pontinhos sorteiam o lugar/resposta no proprio App; aqui so um marcador.
   if (gameId === 'estadios') {
     return {
       source: 'curated',
       data: {},
-      themeUsed: 'Estádios',
-      subthemeUsed: 'Descubra o estádio pelas pistas',
-      signature: `est-round-${Date.now()}`
+      themeUsed: 'GeoGuess',
+      subthemeUsed: 'Que lugar é esse?',
+      signature: `geo-round-${Date.now()}`
+    };
+  }
+  if (gameId === 'pontinhos') {
+    return {
+      source: 'curated',
+      data: {},
+      themeUsed: 'Jogo dos Pontinhos',
+      subthemeUsed: 'Descubra a resposta pelas dicas',
+      signature: `pon-round-${Date.now()}`
     };
   }
 

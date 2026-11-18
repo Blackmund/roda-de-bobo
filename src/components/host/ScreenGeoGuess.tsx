@@ -1,0 +1,280 @@
+import React from 'react';
+import confetti from 'canvas-confetti';
+import { ArrowRight, Check, Eye, EyeOff, Info, X } from 'lucide-react';
+import type { GameRoom, GeoGuessGameState } from '../../types/game';
+import { sounds } from '../../utils/soundEffects';
+import {
+  GEO_PERGUNTA_TEXTO,
+  GEO_TILE_SOURCE,
+  geoPlayersWithGuess,
+  geoSolved,
+  geoValue,
+  geoValueAt,
+  judgeGeoGuess,
+  nextGeoStage,
+  revealGeo
+} from '../../utils/geoguessEngine';
+import { PlayerMark } from '../rdb/PlayerMark';
+import { SatView } from '../geoguess/SatView';
+
+interface ScreenGeoGuessProps {
+  room: GameRoom;
+  onUpdateGeoState: (updater: (prev: GeoGuessGameState) => GeoGuessGameState) => void;
+  onNextRound: () => void;
+}
+
+const ETAPA_NOME = ['Close', 'Outra parte', 'Visão ampla', 'Entorno', 'Cidade'];
+
+/**
+ * GeoGuess na TV: a dica, a imagem da etapa, quem ja chutou (ou os palpites) e o julgamento do diretor.
+ * Formato do quadro "Desafio de hoje: GeoGuessr": 5 imagens do mesmo lugar, do close a cidade; 5, 4, 3, 2, 1 pontos.
+ */
+export const ScreenGeoGuess: React.FC<ScreenGeoGuessProps> = ({ room, onUpdateGeoState, onNextRound }) => {
+  const g = room.geoguess;
+  if (!g) {
+    return <div className="p-6 text-center font-mono-code text-slate-300">Carregando lugar...</div>;
+  }
+  const players = room.players;
+  const ids = players.map((p) => p.id);
+  const total = g.etapas.length;
+  const value = geoValue(g);
+  const reveal = g.phase === 'REVEAL';
+  const guessed = geoPlayersWithGuess(g, players);
+  const isLast = g.stage >= total - 1;
+
+  const start = () => {
+    sounds.playPowerup();
+    onUpdateGeoState((prev) => ({ ...prev, phase: 'PLAYING' }));
+  };
+  const judge = (pid: string, correct: boolean) => {
+    if (correct) sounds.playSuccess();
+    else sounds.playBuzzer();
+    onUpdateGeoState((prev) => {
+      const next = judgeGeoGuess(prev, pid, correct, ids);
+      if (next.phase === 'REVEAL') confetti({ particleCount: 70, spread: 60 });
+      return next;
+    });
+  };
+  const advance = () => {
+    sounds.playFlip();
+    onUpdateGeoState((prev) => nextGeoStage(prev));
+  };
+  const doReveal = () => {
+    sounds.playPowerup();
+    onUpdateGeoState((prev) => revealGeo(prev));
+  };
+  const toggle = (key: 'showGuesses' | 'answerVisible') => {
+    sounds.playTick();
+    onUpdateGeoState((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  return (
+    <div data-testid="geo-screen" className={'rdb-pro rdb-geo' + (reveal ? ' is-reveal' : '')}>
+      <header className="rdb-lim-bar">
+        <span className="rdb-lim-title">
+          GeoGuess
+          <span className="rdb-lim-round">
+            {Math.min(room.roundNumber, room.maxRounds)}/{room.maxRounds}
+          </span>
+          <span className="rdb-nota-scale" data-tip="Acertou na 1ª imagem: 5 pontos; na 2ª: 4; e assim por diante">
+            5-4-3-2-1
+          </span>
+        </span>
+        <span
+          className="rdb-lim-rule"
+          tabIndex={0}
+          data-tip="Todos chutam pelo celular. Abra os palpites e marque quem acertou; quem errou chuta de novo na próxima imagem, que vale 1 ponto a menos."
+        >
+          <Info size={16} />
+        </span>
+        <div className="rdb-lim-tools">
+          {g.phase === 'PLAYING' && (
+            <span data-testid="geo-value" className="rdb-lim-timer" data-tip="Quanto vale acertar nesta imagem">
+              Vale {value}
+            </span>
+          )}
+          <button
+            type="button"
+            data-testid="geo-toggle-answer-btn"
+            className={'rdb-lim-icon' + (g.answerVisible ? ' is-on' : '')}
+            aria-pressed={g.answerVisible}
+            aria-label="Resposta do diretor"
+            data-tip={g.answerVisible ? 'Esconder a resposta' : 'Mostrar a resposta (só o diretor)'}
+            onClick={() => toggle('answerVisible')}
+          >
+            {g.answerVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
+      </header>
+
+      {g.answerVisible && !reveal && (
+        <div data-testid="geo-answer" className="rdb-pro-note">
+          <strong>{g.nome}</strong> · {g.lugar}
+        </div>
+      )}
+
+      <div className="rdb-geo-body">
+        {/* PALCO: dica + imagem da etapa (ou a revelacao) */}
+        <section className="rdb-geo-stage" data-testid="geo-stage">
+          {reveal ? (
+            <div className="rdb-geo-reveal" data-testid="geo-reveal">
+              <h2>{g.nome}</h2>
+              <p>{g.lugar}</p>
+              <div className="rdb-geo-reveal-photo">
+                <SatView lat={g.lat} lon={g.lon} etapa={g.revelacao} label={`Foto aérea: ${g.nome}`} />
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="rdb-geo-hint">
+                <span className="rdb-tag">Dica</span>
+                <strong data-testid="geo-dica">{g.dica}</strong>
+                <span className="rdb-geo-q">{GEO_PERGUNTA_TEXTO[g.pergunta]}</span>
+              </div>
+              {g.phase === 'READY' ? (
+                <div className="rdb-geo-ready">
+                  <p>
+                    Cinco imagens do mesmo lugar, do close mais difícil até a cidade. Quem acerta na 1ª imagem leva 5 pontos.
+                  </p>
+                  <button type="button" data-testid="geo-start-btn" className="rdb-btn rdb-setup-start" onClick={start}>
+                    Mostrar a 1ª imagem
+                  </button>
+                </div>
+              ) : (
+                <div className="rdb-geo-frame">
+                  <SatView
+                    lat={g.lat}
+                    lon={g.lon}
+                    etapa={g.etapas[g.stage]}
+                    prefetch={isLast ? g.revelacao : g.etapas[g.stage + 1]}
+                    label={`Imagem ${g.stage + 1} de ${total}`}
+                  />
+                  <ol className="rdb-geo-pips" aria-label={`Imagem ${g.stage + 1} de ${total}`}>
+                    {g.etapas.map((_, i) => (
+                      <li key={i} className={i < g.stage ? 'is-past' : i === g.stage ? 'is-now' : ''}>
+                        <b>{i + 1}</b>
+                        {i === g.stage && <span>{ETAPA_NOME[i] || 'Imagem'}</span>}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+            </>
+          )}
+          <small className="rdb-geo-credit">{GEO_TILE_SOURCE.attribution}</small>
+        </section>
+
+        {/* JOGADORES: quem chutou, palpites e o julgamento */}
+        <aside className="rdb-geo-side" data-testid="geo-players">
+          <div className="rdb-geo-side-head">
+            <span>Palpites</span>
+            {g.phase === 'PLAYING' && (
+              <span data-testid="geo-guess-count">
+                {guessed}/{players.length} chutaram
+              </span>
+            )}
+          </div>
+          <ul>
+            {players.map((p) => {
+              const solved = geoSolved(g, p.id);
+              const guess = g.guesses[p.id];
+              const now = guess && guess.stage === g.stage ? guess : undefined;
+              const wrongNow = now?.verdict === 'wrong';
+              const canJudge = g.phase === 'PLAYING' && !solved && !wrongNow;
+              const showText = reveal || g.showGuesses || solved || wrongNow;
+              return (
+                <li
+                  key={p.id}
+                  data-testid={`geo-row-${p.id}`}
+                  className={'rdb-geo-row' + (solved ? ' is-right' : wrongNow ? ' is-wrong' : now ? ' is-sent' : '')}
+                >
+                  <PlayerMark p={p} />
+                  <div className="rdb-geo-row-main">
+                    <span className="rdb-geo-row-name">{p.name}</span>
+                    <span className="rdb-geo-row-guess" data-testid={`geo-guess-${p.id}`}>
+                      {solved
+                        ? `Acertou na ${g.solvedAt[p.id] + 1}ª${guess?.text ? ': ' + guess.text : ''}`
+                        : now
+                        ? showText
+                          ? (wrongNow ? 'Errou: ' : '') + (now.text || 'chute falado')
+                          : 'Já chutou'
+                        : reveal
+                        ? 'Não acertou'
+                        : 'Pensando...'}
+                    </span>
+                  </div>
+                  {solved ? (
+                    <span className="rdb-geo-pts">+{g.pointsAwarded[p.id] ?? geoValueAt(g, g.solvedAt[p.id])}</span>
+                  ) : canJudge ? (
+                    <span className="rdb-geo-judge">
+                      <button
+                        type="button"
+                        data-testid={`geo-right-${p.id}`}
+                        aria-label={`${p.name} acertou`}
+                        className={'rdb-geo-jbtn is-right' + (now ? '' : ' is-quiet')}
+                        onClick={() => judge(p.id, true)}
+                      >
+                        <Check size={18} strokeWidth={3} />
+                      </button>
+                      <button
+                        type="button"
+                        data-testid={`geo-wrong-${p.id}`}
+                        aria-label={`${p.name} errou`}
+                        className={'rdb-geo-jbtn is-wrong' + (now ? '' : ' is-quiet')}
+                        onClick={() => judge(p.id, false)}
+                      >
+                        <X size={18} strokeWidth={3} />
+                      </button>
+                    </span>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        </aside>
+      </div>
+
+      {g.phase === 'PLAYING' && (
+        <footer className="rdb-pro-foot">
+          <button
+            type="button"
+            data-testid="geo-show-guesses-btn"
+            className={'rdb-btn' + (g.showGuesses ? ' rdb-btn--solid' : '')}
+            aria-pressed={g.showGuesses}
+            onClick={() => toggle('showGuesses')}
+          >
+            {g.showGuesses ? <EyeOff size={18} /> : <Eye size={18} />}
+            {g.showGuesses ? 'Esconder palpites' : 'Mostrar palpites'}
+          </button>
+          <div className="rdb-pro-foot-end">
+            <button type="button" data-testid="geo-reveal-btn" className="rdb-btn" onClick={doReveal}>
+              Revelar
+            </button>
+            <button type="button" data-testid="geo-next-btn" className="rdb-btn rdb-pro-hit" onClick={advance}>
+              {isLast ? 'Revelar o lugar' : `Próxima imagem (vale ${geoValueAt(g, g.stage + 1)})`}
+              <ArrowRight size={18} />
+            </button>
+          </div>
+        </footer>
+      )}
+
+      {reveal && (
+        <footer className="rdb-pro-foot">
+          <span className="rdb-est-attempts" data-testid="geo-summary">
+            {Object.keys(g.solvedAt).length === 0
+              ? 'Ninguém acertou'
+              : Object.keys(g.solvedAt).length === 1
+              ? '1 acertou'
+              : `${Object.keys(g.solvedAt).length} acertaram`}
+          </span>
+          <div className="rdb-pro-foot-end">
+            <button type="button" data-testid="geo-next-round-btn" className="rdb-btn rdb-setup-start" onClick={onNextRound}>
+              Confirmar pontos e avançar
+              <ArrowRight />
+            </button>
+          </div>
+        </footer>
+      )}
+    </div>
+  );
+};

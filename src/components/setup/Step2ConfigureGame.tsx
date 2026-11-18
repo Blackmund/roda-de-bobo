@@ -34,6 +34,77 @@ import { GameCardArt } from '../art/GameCardArt';
 import { CT_MODE_LABEL } from '../../utils/comTerraEngine';
 import { usesLocalContent } from '../../config/localGames';
 import { AdedanhaCategoryEditor } from './AdedanhaCategoryEditor';
+import { GEO_CATEGORIAS, GEO_REGIOES, geoPool } from '../../data/geoguessBank';
+import { PONTINHOS_TEMAS, pontinhosPool } from '../../data/pontinhosBank';
+
+type TagGroup = { label: string; tags: ReadonlyArray<{ id: string; label: string }> };
+const GEO_TAG_GROUPS: TagGroup[] = [
+  { label: 'Onde', tags: GEO_REGIOES },
+  { label: 'O quê', tags: GEO_CATEGORIAS }
+];
+const PON_TAG_GROUPS: TagGroup[] = [{ label: 'Temas', tags: PONTINHOS_TEMAS.map((t) => ({ id: t, label: t })) }];
+
+/**
+ * Temas como tags de selecao multipla. Nenhuma tag num grupo = tudo daquele grupo ("Todos os países").
+ * No GeoGuess, tags do mesmo grupo somam (Europa + America do Sul) e grupos diferentes cruzam
+ * (Brasil + Pontos turisticos = pontos turisticos do Brasil).
+ */
+const TagPicker: React.FC<{
+  testid: string;
+  groups: TagGroup[];
+  selected: string[];
+  count: (sel: string[]) => number;
+  noun: [string, string];
+  onChange: (next: string[]) => void;
+}> = ({ testid, groups, selected, count, noun, onChange }) => {
+  const n = count(selected);
+  const toggle = (id: string) => {
+    sounds.playTick();
+    onChange(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
+  };
+  return (
+    <div className="rdb-opt" data-testid={testid}>
+      <span className="rdb-opt-label">Temas</span>
+      <div className="rdb-tags">
+        {groups.map((g) => {
+          const none = !g.tags.some((t) => selected.includes(t.id));
+          return (
+            <div className="rdb-tags-group" key={g.label}>
+              {groups.length > 1 && <span>{g.label}</span>}
+              <button
+                type="button"
+                className="rdb-seg"
+                aria-pressed={none}
+                data-testid={`${testid}-all-${g.label}`}
+                onClick={() => {
+                  sounds.playTick();
+                  onChange(selected.filter((x) => !g.tags.some((t) => t.id === x)));
+                }}
+              >
+                {g.label === 'Onde' ? 'Todos os países' : 'Todos'}
+              </button>
+              {g.tags.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  className="rdb-seg"
+                  aria-pressed={selected.includes(t.id)}
+                  data-testid={`${testid}-${t.id}`}
+                  onClick={() => toggle(t.id)}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          );
+        })}
+        <span className={'rdb-tags-count' + (n === 0 ? ' is-empty' : '')} data-testid={`${testid}-count`}>
+          {n === 0 ? 'Nenhum com essa combinação: o jogo usa o banco inteiro' : `${n} ${n === 1 ? noun[0] : noun[1]} nessa combinação`}
+        </span>
+      </div>
+    </div>
+  );
+};
 import {
   ADEDANHA_LETRAS_EXCLUIDAS_PADRAO,
   ADEDANHA_PADRAO
@@ -66,7 +137,15 @@ export interface Step2ConfigureGameProps {
   connectionMode?: string;
   /** Nome do jogo, mostrado no cartaz. */
   gameTitle?: string;
+  /** Troca o jogo sem sair do setup (modos que sao jogos irmaos, como Quem Sou Eu / Onde Estou). */
+  onSwitchGame?: (gameId: GameId) => void;
 }
+
+/** Modos do Quem Sou Eu: o classico (identidades) e o Onde Estou (grandes momentos do esporte). */
+const QSE_MODES: Array<{ id: GameId; label: string }> = [
+  { id: 'quem-sou-eu', label: 'Quem Sou Eu clássico' },
+  { id: 'onde-estou', label: 'Onde Estou' }
+];
 
 const TIMER_OPTIONS: Array<{ value: number; label: string; desc: string }> = [
   { value: 30, label: '30 s', desc: 'Rápido' },
@@ -151,8 +230,13 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
   onGoToRules,
   onBackToLobby,
   connectedPlayersCount,
-  gameTitle
+  gameTitle,
+  onSwitchGame
 }) => {
+  const isQSE = activeGame === 'quem-sou-eu' || activeGame === 'onde-estou';
+  const isGeo = activeGame === 'estadios';
+  const isPon = activeGame === 'pontinhos';
+  const usesTags = isGeo || isPon;
   const isPV = activeGame === 'perguntas-e-verdades';
   const isCT = activeGame === 'com-terra';
   const ctMode: CTMode = customConfig.ctMode || 'arquiteto';
@@ -164,6 +248,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
     activeGame === 'onde-estou' ||
     activeGame === 'respostas-sem-perguntas' ||
     activeGame === 'estadios' ||
+    activeGame === 'pontinhos' ||
     activeGame === 'adedanha' ||
     activeGame === 'perguntas-e-verdades';
 
@@ -400,7 +485,38 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
           )}
 
-          {!isPV && !isCT && activeGame !== 'adedanha' && (
+          {isQSE && (
+            <div className="rdb-opt" data-testid="qse-mode-selector">
+              <span className="rdb-opt-label">Modo</span>
+              <div className="rdb-opt-choices">
+                {QSE_MODES.map((m) => (
+                  <Seg
+                    key={m.id}
+                    testid={'qse-mode-btn-' + m.id}
+                    on={activeGame === m.id}
+                    onClick={() => activeGame !== m.id && onSwitchGame?.(m.id)}
+                  >
+                    {m.label}
+                  </Seg>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {usesTags && (
+            <TagPicker
+              testid={isGeo ? 'geo-tags' : 'pon-tags'}
+              groups={isGeo ? GEO_TAG_GROUPS : PON_TAG_GROUPS}
+              selected={(isGeo ? customConfig.geoTags : customConfig.pontinhosTemas) || []}
+              count={(sel) => (isGeo ? geoPool(sel).length : pontinhosPool(sel).length)}
+              noun={isGeo ? ['lugar', 'lugares'] : ['resposta', 'respostas']}
+              onChange={(next) =>
+                onChangeCustomConfig((prev) => (isGeo ? { ...prev, geoTags: next } : { ...prev, pontinhosTemas: next }))
+              }
+            />
+          )}
+
+          {!isPV && !isCT && !usesTags && activeGame !== 'adedanha' && (
             <div className="rdb-opt" data-testid="setup-theme-row">
               <span className="rdb-opt-label">Tema</span>
               <div className="rdb-opt-choices">
@@ -422,7 +538,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
           )}
 
-          {!isPV && !isCT && activeGame !== 'adedanha' && (
+          {!isPV && !isCT && !usesTags && activeGame !== 'adedanha' && (
             <div className="rdb-opt">
               <span className="rdb-opt-label">Dificuldade</span>
               <div className="rdb-opt-choices">

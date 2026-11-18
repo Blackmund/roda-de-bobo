@@ -87,9 +87,18 @@ const SHOW_PRESETS: Partial<Record<GameId, RulesetPreset>> = {
     rounds: 10,
     config: {},
     notes: [
-      'Dez estádios por partida (como no episódio do programa)',
+      'Dez lugares por partida (como no episódio do programa)',
+      'Cinco imagens de satélite do mesmo lugar: acertou na 1ª = 5 pontos, na 2ª = 4, até 1',
+      'Todos chutam pelo celular; o diretor marca acertou ou errou'
+    ]
+  },
+  pontinhos: {
+    rounds: 10,
+    config: {},
+    notes: [
+      'Uma resposta por rodada, de temas variados',
       'Acertou de primeira = 5 pontos, de segunda = 4, e assim por diante até 1',
-      'No programa o estádio aparece em foto; aqui cada erro revela uma pista escrita a mais'
+      'Cada erro passa a vez e revela mais uma dica'
     ]
   },
   'respostas-sem-perguntas': {

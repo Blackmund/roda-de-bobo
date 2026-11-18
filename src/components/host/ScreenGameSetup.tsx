@@ -46,7 +46,8 @@ import {
   Smartphone
 } from 'lucide-react';
 import { SetupPlayersStageView } from './setup/SetupPlayersStageView';
-import { SetupTeamsStageView } from './setup/SetupTeamsStageView';
+import { SetupTeamsStageView } from './setup/SetupTeamsStageView';
+
 import { getRulesetPreset } from '../../config/rulesets';
 
 export interface SetupLaunchConfig {
@@ -84,6 +85,8 @@ interface ScreenGameSetupProps {
   onSwitchToControllerMode?: () => void;
   transportStatus?: string;
   onForceSync?: () => void;
+  /** Troca para um jogo irmao sem sair do setup (Quem Sou Eu / Onde Estou). */
+  onSwitchGame?: (gameId: GameId) => void;
 }
 
 const RANDOM_ROULETTE_THEMES = [
@@ -119,7 +122,8 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
   onRegenerateUniqueRoom,
   onSwitchToControllerMode,
   transportStatus,
-  onForceSync
+  onForceSync,
+  onSwitchGame
 }) => {
   // Two sequential stages before the game launches:
   // 1. 'config': Theme, Timer, Rounds, Difficulty
@@ -258,11 +262,13 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
       case 'respostas-sem-perguntas':
         return 'RESPOSTAS SEM PERGUNTAS';
       case 'estadios':
-        return 'ESTÁDIOS';
+        return 'GEOGUESS';
+      case 'pontinhos':
+        return 'JOGO DOS PONTINHOS';
       case 'como-eu-pinto':
         return 'COMO EU PINTO';
       case 'onde-estou':
-        return 'ONDE ESTOU';
+        return 'QUEM SOU EU';
       case 'com-terra':
         return 'COM TERRA';
       case 'adedanha':
@@ -279,6 +285,7 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
     room.activeGame === 'onde-estou' ||
     room.activeGame === 'respostas-sem-perguntas' ||
     room.activeGame === 'estadios' ||
+    room.activeGame === 'pontinhos' ||
     room.activeGame === 'adedanha' ||
     room.activeGame === 'com-terra' ||
     room.activeGame === 'perguntas-e-verdades';
@@ -725,6 +732,7 @@ export const ScreenGameSetup: React.FC<ScreenGameSetupProps> = ({
           connectedPlayersCount={room.players.length}
           connectionMode={connectionMode}
           gameTitle={getGameTitle(room.activeGame)}
+          onSwitchGame={onSwitchGame}
         />
       )}
 

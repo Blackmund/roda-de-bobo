@@ -3,5 +3,6 @@ import App from './App.tsx';
 import './index.css';
 import './styles/rdb.css';
 import './styles/rdb-limite.css';
+import './styles/rdb-geo.css';
 
 createRoot(document.getElementById('root')!).render(<App />);

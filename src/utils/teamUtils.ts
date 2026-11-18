@@ -612,14 +612,14 @@ export function resolveCurrentTurnSpotlight(room: GameRoom): TurnSpotlightDescri
     );
   }
 
-  // ESTADIOS
-  if (gameId === 'estadios' && room.estadios) {
-    const e = room.estadios;
+  // JOGO DOS PONTINHOS
+  if (gameId === 'pontinhos' && room.pontinhos) {
+    const e = room.pontinhos;
     const p = byId(e.turnPlayerId);
     return solo(
       p,
-      'Chuta o estádio',
-      e.phase === 'READY' ? READY_TEXT : e.phase === 'SUMMARY' ? DONE_TEXT : `${p?.name || 'O jogador'} diz o nome do estádio em voz alta.`
+      'Chuta a resposta',
+      e.phase === 'READY' ? READY_TEXT : e.phase === 'SUMMARY' ? DONE_TEXT : `${p?.name || 'O jogador'} diz a resposta em voz alta.`
     );
   }
 

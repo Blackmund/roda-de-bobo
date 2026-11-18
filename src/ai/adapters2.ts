@@ -1,5 +1,5 @@
 /**
- * IA - Fase 2: Estadios, Mega Resenha, Com Terra (Arquiteto) e Perguntas e Verdades.
+ * IA - Fase 2: GeoGuess, Jogo dos Pontinhos, Mega Resenha, Com Terra (Arquiteto) e Perguntas e Verdades.
  * Mesma ideia da Fase 1: a jogada e a mesma atualizacao de sala que o jogador faria; o nivel muda a qualidade.
  */
 import type { BotMove } from './adapters';
@@ -9,7 +9,9 @@ import { botParamsOf, between, chance, pickOne } from './bots';
 import { botThink } from './botThink';
 import { megaCluesLocal, siblingWord, stadiumSibling } from './knowledge';
 import { estadiosCluesShown, judgeEstadio } from '../utils/estadiosEngine';
-import { ESTADIOS } from '../data/estadiosBank';
+import { PONTINHOS } from '../data/pontinhosBank';
+import { GEO_LOCAIS } from '../data/geoguessBank';
+import { geoSolved, judgeGeoGuess, submitGeoGuess } from '../utils/geoguessEngine';
 import { addClue, applyMegaOutcome, validateClue } from '../utils/megaResenhaEngine';
 import {
   BP_GRID_H,
@@ -43,24 +45,50 @@ function pickByLevel<T>(sorted: T[], bot: Player): T | undefined {
   return sorted[Math.floor(Math.random() * Math.max(1, Math.ceil(sorted.length * 0.15)))];
 }
 
-// ---------------- ESTADIOS: chutar o estadio pelas pistas ----------------
-const estadios: Adapter = (room, bot) => {
-  const e = room.estadios;
+// ---------------- JOGO DOS PONTINHOS: chutar a resposta pelas dicas ----------------
+const pontinhos: Adapter = (room, bot) => {
+  const e = room.pontinhos;
   if (!e || e.phase !== 'PLAYING' || e.turnPlayerId !== bot.id) return null;
   const pr = botParamsOf(bot);
   const shown = estadiosCluesShown(e);
-  // cada pista a mais deixa mais facil; o Impossivel sabe quase sempre ja na primeira
+  // cada dica a mais deixa mais facil; o Impossivel sabe quase sempre ja na primeira
   const p = Math.min(0.99, pr.acc * (0.3 + 0.7 * (shown / Math.max(1, e.pistas.length))) + (pr.acc > 0.9 ? 0.3 : 0));
   const correct = chance(p);
   return {
-    key: `est|${e.nome}|${e.attempts.length}|${bot.id}`,
+    key: `pon|${e.nome}|${e.attempts.length}|${bot.id}`,
     delay: thinkMs(bot, 600),
     apply: (prev) => {
-      const s = prev.estadios;
+      const s = prev.pontinhos;
       if (!s || s.phase !== 'PLAYING' || s.turnPlayerId !== bot.id || s.attempts.length !== e.attempts.length) return prev;
-      const wrong = stadiumSibling(s.nome, s.pais);
+      const sameTheme = PONTINHOS.filter((x) => x.tema === (s.tema || 'Estádios') && norm(x.nome) !== norm(s.nome));
+      const wrong = s.tema && s.tema !== 'Estádios' ? pickOne(sameTheme)?.nome || 'Não sei' : stadiumSibling(s.nome, s.pais);
       const ids = prev.players.map((pl) => pl.id);
-      return say({ ...prev, estadios: judgeEstadio(s, correct, ids) }, bot, correct ? s.nome : wrong);
+      return say({ ...prev, pontinhos: judgeEstadio(s, correct, ids) }, bot, correct ? s.nome : wrong);
+    }
+  };
+};
+
+// ---------------- GEOGUESS: chutar o lugar pela imagem (a IA sabe a resposta, entao o palpite ja sai julgado) ----------------
+const geoguess: Adapter = (room, bot) => {
+  const g = room.geoguess;
+  if (!g || g.phase !== 'PLAYING' || geoSolved(g, bot.id)) return null;
+  const mine = g.guesses[bot.id];
+  if (mine && mine.stage === g.stage) return null;
+  const pr = botParamsOf(bot);
+  // a 1a imagem e quase impossivel; a ultima (a cidade) quase todo mundo acerta
+  const ease = (g.stage + 1) / Math.max(1, g.etapas.length);
+  const correct = chance(Math.min(0.97, pr.acc * (0.08 + 0.92 * ease * ease)));
+  return {
+    key: `geo|${g.localId}|${g.stage}|${bot.id}`,
+    delay: thinkMs(bot, 2500),
+    apply: (prev) => {
+      const s = prev.geoguess;
+      if (!s || s.phase !== 'PLAYING' || s.stage !== g.stage || geoSolved(s, bot.id)) return prev;
+      const others = GEO_LOCAIS.filter((l) => l.id !== s.localId && l.pergunta === s.pergunta);
+      const text = correct ? s.nome : pickOne(others)?.nome || 'Não sei';
+      const ids = prev.players.map((pl) => pl.id);
+      const sent = submitGeoGuess(s, bot.id, text);
+      return say({ ...prev, geoguess: judgeGeoGuess(sent, bot.id, correct, ids) }, bot, text);
     }
   };
 };
@@ -346,7 +374,8 @@ const pv: Adapter = (room, bot) => {
 };
 
 export const ADAPTERS_PHASE2: Record<string, Adapter> = {
-  estadios,
+  estadios: geoguess,
+  pontinhos,
   'mega-resenha': mega,
   'com-terra': comTerra,
   'perguntas-e-verdades': pv

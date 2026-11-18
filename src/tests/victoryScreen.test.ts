@@ -56,13 +56,24 @@ test('vitoria: Limite soma cravadas e estouros rodada a rodada', () => {
   assert.equal(merged.b.estouros, 1);
 });
 
-test('vitoria: Estadios guarda o MENOR numero de pistas', () => {
+test('vitoria: Jogo dos Pontinhos guarda o MENOR numero de dicas', () => {
   const room = baseRoom({
-    activeGame: 'estadios',
-    estadios: { winnerPlayerId: 'a', attempts: [{ playerId: 'b', correct: false }, { playerId: 'a', correct: true }] },
+    activeGame: 'pontinhos',
+    pontinhos: { winnerPlayerId: 'a', attempts: [{ playerId: 'b', correct: false }, { playerId: 'a', correct: true }] },
     matchExtras: { a: { menosPistas: 4 } }
   });
   assert.equal(mergeRoundExtras(room).a.menosPistas, 2);
+});
+
+test('vitoria: GeoGuess guarda a imagem em que cada um acertou (a menor)', () => {
+  const room = baseRoom({
+    activeGame: 'estadios',
+    geoguess: { solvedAt: { a: 1, b: 3 } },
+    matchExtras: { a: { menosImagens: 4 } }
+  });
+  const m = mergeRoundExtras(room);
+  assert.equal(m.a.menosImagens, 2);
+  assert.equal(m.b.menosImagens, 4);
 });
 
 test('vitoria: sequencias e rodadas vencidas por equipe', () => {

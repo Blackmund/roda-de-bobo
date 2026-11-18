@@ -1,21 +1,27 @@
 import type { EstadiosGameState, Player } from '../types/game';
 import { nextPlayerId } from './respostasEngine';
 
+/**
+ * Motor de pistas em etapas do Jogo dos Pontinhos (nasceu como o "Estadios" por pistas; o GeoGuess hoje e por
+ * imagens, em geoguessEngine.ts). Os nomes `estadios*` ficaram por compatibilidade.
+ */
+
 /** Pontos de quem acerta de primeira (programa: 5; de segunda 4, e assim por diante). */
 export const ESTADIOS_MAX_POINTS = 5;
 export const ESTADIOS_CLUES = 5;
 
 export function buildEstadiosState(
-  item: { nome: string; cidade: string; pais: string; pistas: readonly string[]; foto?: string },
+  item: { nome: string; cidade?: string; pais?: string; pistas: readonly string[]; foto?: string; tema?: string },
   players: Pick<Player, 'id'>[],
   firstPlayerIndex = 0
 ): EstadiosGameState {
   const n = Math.max(1, players.length);
   return {
     phase: 'READY',
+    ...(item.tema ? { tema: item.tema } : {}),
     nome: item.nome,
-    cidade: item.cidade,
-    pais: item.pais,
+    cidade: item.cidade || '',
+    pais: item.pais || '',
     pistas: [...item.pistas].slice(0, ESTADIOS_CLUES),
     foto: item.foto,
     turnPlayerId: players[((firstPlayerIndex % n) + n) % n]?.id ?? '',
@@ -65,3 +71,6 @@ export function giveUpEstadio(prev: EstadiosGameState): EstadiosGameState {
   if (prev.phase === 'SUMMARY') return prev;
   return { ...prev, phase: 'SUMMARY', answerVisible: true };
 }
+
+/** Linha de detalhe da resposta (ex.: "Porto Alegre, Brasil"). */
+export const pontinhoDetalhe = (s: Pick<EstadiosGameState, 'cidade' | 'pais'>): string => [s.cidade, s.pais].filter(Boolean).join(', ');
