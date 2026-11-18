@@ -6,6 +6,7 @@ import { GameHistoryEntry, TeamId } from '../types/game';
 import { TEAM_META, getActiveTeamIds, syncTeamsRecordFromPlayers } from '../utils/teamUtils';
 import { pintoRoundPoints } from '../utils/comoEuPintoEngine';
 import { updateFixedPlayersAfterMatch } from '../utils/fixedPlayers';
+import { applyRoundResults, mergeRoundExtras } from '../utils/matchExtras';
 import { accumulateRoundPlayerScores, buildMatchMVPSnapshot, buildTeamCollectiveMVPSnapshot, buildRoundActivityEvent } from '../utils/sessionPersistence';
 
 interface buildNextRoundUpdaterDeps {
@@ -70,6 +71,14 @@ export const buildNextRoundUpdater = ({
         prev.activeGame ? GAME_NAMES[prev.activeGame] : 'PARTIDA'
       );
       const updatedRoundLog = [...(prev.roundLog || []), roundEvent];
+      const roundTeamIds = getActiveTeamIds(prev);
+      const matchExtras = applyRoundResults(
+        mergeRoundExtras(prev),
+        Object.fromEntries(
+          updatedPlayers.map((p) => [p.id, (p.score || 0) - (prev.players.find((x) => x.id === p.id)?.score || 0)])
+        ),
+        Object.fromEntries(roundTeamIds.map((t) => [t, roundPts[t] || 0]))
+      );
 
       const nextRoundNum = prev.roundNumber + 1;
       const isIndividualGame =
@@ -111,6 +120,7 @@ export const buildNextRoundUpdater = ({
           maxRounds: prev.maxRounds + 1,
           players: updatedPlayers,
           roundLog: updatedRoundLog,
+          matchExtras,
           teams: updatedTeams
         };
       }
@@ -188,6 +198,7 @@ export const buildNextRoundUpdater = ({
           screen: 'game-over' as const,
           players: updatedPlayers,
           roundLog: updatedRoundLog,
+          matchExtras,
           temOuNaoTem: clearedTemOuNaoTem,
           proibido: clearedProibido,
           teams: updatedTeams,
@@ -206,6 +217,7 @@ export const buildNextRoundUpdater = ({
         roundNumber: nextRoundNum,
         players: updatedPlayers,
         roundLog: updatedRoundLog,
+          matchExtras,
         temOuNaoTem: clearedTemOuNaoTem,
         proibido: clearedProibido,
         teams: updatedTeams

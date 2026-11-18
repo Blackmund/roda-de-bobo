@@ -71,6 +71,8 @@ export interface Player {
   isMasterControl?: boolean;
   lastPingAt?: number;
   lastBuzzAt?: number;
+  /** Ilustracao do jogador para a tela de vitoria (opcional; sem ela a tela usa a marca com iniciais). */
+  winnerSpriteUrl?: string;
 }
 
 export interface Team {
@@ -891,6 +893,10 @@ export interface GameRoom {
   };
   sessionStats: SessionStats;
   roundLog?: RoundActivityEvent[];
+  /** Numeros proprios do jogo somados na partida (utils/matchExtras.ts), para a tela de vitoria. */
+  matchExtras?: Record<string, Record<string, number>>;
+  /** Rodadas escolhidas no inicio da partida (antes de morte subita), para a revanche. */
+  baseMaxRounds?: number;
   limite?: LimiteGameState;
   duvido?: DuvidoGameState;
   proibido?: ProibidoGameState;
