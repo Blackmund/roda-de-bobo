@@ -16,6 +16,7 @@ export type GameId =
   | 'repetente'
   | 'respostas-sem-perguntas'
   | 'estadios'
+  | 'pontinhos'
   | 'como-eu-pinto'
   | 'onde-estou'
   | 'com-terra'
@@ -350,8 +351,14 @@ export interface EstadiosAttempt {
   correct: boolean;
 }
 
+/**
+ * Jogo dos Pontinhos (antigo jogo de pistas do Estadios): descubra a resposta com dicas em etapas (5, 4, 3, 2, 1).
+ * `cidade` e `pais` formam a linha de detalhe da resposta; `tema` diz de que assunto e a rodada.
+ */
 export interface EstadiosGameState {
   phase: 'READY' | 'PLAYING' | 'SUMMARY';
+  /** tema da rodada (ex.: Animais, Estadios) */
+  tema?: string;
   nome: string;
   cidade: string;
   pais: string;
@@ -363,6 +370,51 @@ export interface EstadiosGameState {
   attempts: EstadiosAttempt[];
   winnerPlayerId?: string;
   pointsAwarded: Record<string, number>;
+  answerVisible: boolean;
+}
+
+export type PontinhosGameState = EstadiosGameState;
+
+// GEOGUESS: o mesmo lugar em imagens de satelite, do close mais dificil a cidade inteira (5, 4, 3, 2, 1 pontos)
+/** Uma etapa: zoom do tile, quantos tiles cabem na largura e deslocamento em metros (leste, norte) a partir do ponto. */
+export interface GeoEtapa {
+  z: number;
+  span: number;
+  dx?: number;
+  dy?: number;
+}
+
+export interface GeoGuessPalpite {
+  text: string;
+  /** etapa (0-based) em que o palpite foi enviado */
+  stage: number;
+  verdict?: 'right' | 'wrong';
+  at: number;
+}
+
+export interface GeoGuessGameState {
+  phase: 'READY' | 'PLAYING' | 'REVEAL';
+  localId: string;
+  nome: string;
+  /** cidade, pais */
+  lugar: string;
+  /** o que se pergunta: o lugar, a cidade ou o pais */
+  pergunta: 'local' | 'cidade' | 'pais';
+  dica: string;
+  lat: number;
+  lon: number;
+  etapas: GeoEtapa[];
+  revelacao: GeoEtapa;
+  stage: number;
+  /** palpite atual de cada jogador (um por etapa; quem acertou fica com o palpite certo) */
+  guesses: Record<string, GeoGuessPalpite>;
+  /** etapa em que cada jogador acertou */
+  solvedAt: Record<string, number>;
+  /** palpites errados ja julgados, para o resumo */
+  history: Array<{ playerId: string; text: string; stage: number; correct: boolean }>;
+  pointsAwarded: Record<string, number>;
+  /** a TV mostra o texto dos palpites (senao, so quem ja chutou) */
+  showGuesses: boolean;
   answerVisible: boolean;
 }
 
@@ -716,6 +768,10 @@ export interface GameCustomConfig {
   contentSource?: 'auto' | 'bank' | 'ai';
   // Adedanha: categorias da partida e letras que nao saem
   adedanhaCategories?: string[];
+  // GeoGuess: tags de tema escolhidas (regiao e categoria; vazio = tudo)
+  geoTags?: string[];
+  // Jogo dos Pontinhos: temas escolhidos (vazio = todos)
+  pontinhosTemas?: string[];
   adedanhaExcludedLetters?: string[];
   /** quem pode pedir STOP: o primeiro que completar, so o diretor, a maioria ou ninguem (so o tempo) */
   adedanhaStopRule?: AdedanhaStopRule;
@@ -905,7 +961,10 @@ export interface GameRoom {
   megaResenha?: MegaResenhaGameState;
   repetente?: RepetenteGameState;
   respostasSemPerguntas?: RespostasSemPerguntasState;
+  /** legado: estado do antigo Estadios por pistas (hoje Jogo dos Pontinhos) */
   estadios?: EstadiosGameState;
+  pontinhos?: PontinhosGameState;
+  geoguess?: GeoGuessGameState;
   comoEuPinto?: ComoEuPintoState;
   comTerra?: ComTerraState;
   adedanha?: AdedanhaState;

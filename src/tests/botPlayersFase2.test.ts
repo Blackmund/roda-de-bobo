@@ -11,9 +11,9 @@ const P = (id: string, team: 'A' | 'B' = 'A'): Player =>
 const room = (extra: Partial<GameRoom>): GameRoom =>
   ({ roomId: 'X', hostId: 'h', screen: 'playing', theme: 't', players: [], timerConfig: 0, ...extra }) as unknown as GameRoom;
 
-test('IA: os 16 jogos com IA estao registrados', () => {
-  for (const g of ['estadios', 'mega-resenha', 'com-terra', 'perguntas-e-verdades', 'limite', 'adedanha']) assert.ok(BOT_READY_GAMES.includes(g), g);
-  assert.equal(BOT_READY_GAMES.length, 16);
+test('IA: os 17 jogos com IA estao registrados', () => {
+  for (const g of ['estadios', 'pontinhos', 'mega-resenha', 'com-terra', 'perguntas-e-verdades', 'limite', 'adedanha']) assert.ok(BOT_READY_GAMES.includes(g), g);
+  assert.equal(BOT_READY_GAMES.length, 17);
 });
 
 test('IA no Com Terra (Arquiteto): acha encaixes validos e o Impossivel joga o melhor', () => {
@@ -31,12 +31,12 @@ test('IA no Com Terra (Arquiteto): acha encaixes validos e o Impossivel joga o m
   assert.ok(cellsAfter > 0, 'colocou uma peca');
 });
 
-test('IA no Estadios: na vez dela, julga um palpite e a vez anda ou a rodada acaba', () => {
+test('IA no Jogo dos Pontinhos: na vez dela, julga um palpite e a vez anda ou a rodada acaba', () => {
   const bot = P('ia-impossivel-1');
-  const s = { ...buildEstadiosState({ nome: 'Maracanã', cidade: 'Rio', pais: 'Brasil', pistas: ['a', 'b', 'c', 'd', 'e'] }, [bot, P('h1')]), phase: 'PLAYING' as const };
-  const r = room({ activeGame: 'estadios', players: [bot, P('h1')], estadios: s });
-  const mv = ALL_ADAPTERS.estadios(r, bot)!;
-  const after = mv.apply(r, undefined).estadios!;
+  const s = { ...buildEstadiosState({ tema: 'Estádios', nome: 'Maracanã', cidade: 'Rio', pais: 'Brasil', pistas: ['a', 'b', 'c', 'd', 'e'] }, [bot, P('h1')]), phase: 'PLAYING' as const };
+  const r = room({ activeGame: 'pontinhos', players: [bot, P('h1')], pontinhos: s });
+  const mv = ALL_ADAPTERS.pontinhos(r, bot)!;
+  const after = mv.apply(r, undefined).pontinhos!;
   assert.equal(after.attempts.length, 1);
   assert.equal(after.attempts[0].playerId, bot.id);
 });

@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { useDevMode } from './devMode';
 import { motion } from 'motion/react';
 import { GameId, GameRoom, GameHistoryEntry } from '../types/game';
-import { ScreenLimite, ScreenDuvido, ScreenComoEuPinto, ScreenEstadios, ScreenAdedanha, ScreenComTerra, ScreenRespostasSemPerguntas, ScreenRepetente, ScreenMegaResenha, ScreenQuemSouEu, ScreenMimica, ScreenProibido, ScreenNota, ScreenTemOuNaoTem, ScreenPerguntasEVerdades } from './lazyScreens';
+import { ScreenLimite, ScreenDuvido, ScreenComoEuPinto, ScreenGeoGuess, ScreenPontinhos, ScreenAdedanha, ScreenComTerra, ScreenRespostasSemPerguntas, ScreenRepetente, ScreenMegaResenha, ScreenQuemSouEu, ScreenMimica, ScreenProibido, ScreenNota, ScreenTemOuNaoTem, ScreenPerguntasEVerdades } from './lazyScreens';
 import { updateFixedPlayersAfterMatch } from '../utils/fixedPlayers';
 import { buildMatchMVPSnapshot } from '../utils/sessionPersistence';
 import { applyPVMatchResult } from '../utils/perguntasEVerdadesEngine';
@@ -20,7 +20,7 @@ const TURN_BAR_GAMES: GameId[] = [
   'mega-resenha',
   'repetente',
   'respostas-sem-perguntas',
-  'estadios',
+  'pontinhos',
   'como-eu-pinto',
   'perguntas-e-verdades',
   'com-terra'
@@ -153,13 +153,25 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
                 />
               )}
               {room.activeGame === 'estadios' && (
-                <ScreenEstadios
+                <ScreenGeoGuess
                   room={room}
-                  isTvMode={isTvMode}
-                  onUpdateEstadiosState={(updater) =>
+                  onUpdateGeoState={(updater) =>
                     broadcastState((prev) => ({
                       ...prev,
-                      estadios: prev.estadios ? updater(prev.estadios) : undefined
+                      geoguess: prev.geoguess ? updater(prev.geoguess) : undefined
+                    }))
+                  }
+                  onNextRound={handleNextRound}
+                />
+              )}
+              {room.activeGame === 'pontinhos' && (
+                <ScreenPontinhos
+                  room={room}
+                  isTvMode={isTvMode}
+                  onUpdatePontinhosState={(updater) =>
+                    broadcastState((prev) => ({
+                      ...prev,
+                      pontinhos: prev.pontinhos ? updater(prev.pontinhos) : undefined
                     }))
                   }
                   onNextRound={handleNextRound}

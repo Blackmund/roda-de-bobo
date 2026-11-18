@@ -52,7 +52,8 @@ export const GAME_EXTRAS: Record<GameId, ExtraDef[]> = {
   'respostas-sem-perguntas': [
     { key: 'menosPalavras', label: 'Menos palavras para acertar', agg: 'min', owner: 'player' }
   ],
-  estadios: [{ key: 'menosPistas', label: 'Menos pistas para acertar', agg: 'min', owner: 'player' }],
+  estadios: [{ key: 'menosImagens', label: 'Menos imagens para acertar', agg: 'min', owner: 'player' }],
+  pontinhos: [{ key: 'menosPistas', label: 'Menos dicas para acertar', agg: 'min', owner: 'player' }],
   'como-eu-pinto': [
     { key: 'desenhos', label: 'Desenhos acertados', agg: 'sum', owner: 'team' },
     { key: 'roubadas', label: 'Roubadas', agg: 'sum', owner: 'team' }
@@ -168,7 +169,14 @@ export function collectRoundExtras(room: GameRoom): Entry[] {
       break;
     }
     case 'estadios': {
-      const s = room.estadios;
+      const g = room.geoguess;
+      if (!g) break;
+      // imagem em que acertou (1 = de primeira)
+      Object.entries(g.solvedAt || {}).forEach(([pid, st]) => add(pid, 'menosImagens', st + 1));
+      break;
+    }
+    case 'pontinhos': {
+      const s = room.pontinhos;
       if (!s?.winnerPlayerId) break;
       // 1a pista + uma a mais por erro antes do acerto
       add(s.winnerPlayerId, 'menosPistas', 1 + count(s.attempts, (a) => !a.correct));

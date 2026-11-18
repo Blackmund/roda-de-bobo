@@ -17,8 +17,11 @@ export const ScreenComTerra = lazy(() =>
 export const ScreenAdedanha = lazy(() =>
   import('../components/host/ScreenAdedanha').then((m) => ({ default: m.ScreenAdedanha }))
 );
-export const ScreenEstadios = lazy(() =>
-  import('../components/host/ScreenEstadios').then((m) => ({ default: m.ScreenEstadios }))
+export const ScreenGeoGuess = lazy(() =>
+  import('../components/host/ScreenGeoGuess').then((m) => ({ default: m.ScreenGeoGuess }))
+);
+export const ScreenPontinhos = lazy(() =>
+  import('../components/host/ScreenPontinhos').then((m) => ({ default: m.ScreenPontinhos }))
 );
 export const ScreenRespostasSemPerguntas = lazy(() =>
   import('../components/host/ScreenRespostasSemPerguntas').then((m) => ({ default: m.ScreenRespostasSemPerguntas }))
@@ -63,7 +66,8 @@ const GAME_SCREEN_LOADERS: Record<string, () => Promise<unknown>> = {
   'mega-resenha': () => import('../components/host/ScreenMegaResenha'),
   repetente: () => import('../components/host/ScreenRepetente'),
   'respostas-sem-perguntas': () => import('../components/host/ScreenRespostasSemPerguntas'),
-  estadios: () => import('../components/host/ScreenEstadios'),
+  estadios: () => import('../components/host/ScreenGeoGuess'),
+  pontinhos: () => import('../components/host/ScreenPontinhos'),
   adedanha: () => import('../components/host/ScreenAdedanha'),
   'como-eu-pinto': () => import('../components/host/ScreenComoEuPinto'),
   'com-terra': () => import('../components/host/ScreenComTerra')

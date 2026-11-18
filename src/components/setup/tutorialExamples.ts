@@ -68,8 +68,12 @@ export const TUTORIAL_EXAMPLES: Record<GameId, TutorialExample> = {
     detalhe: 'A resposta aparece e o jogo esconde a pergunta ("Quem é o produtor mais bonito do Roda de Bobo?"). Quem revelar as palavras certas e adivinhar ganha mais.'
   },
   estadios: {
-    texto: 'Maracanã (Rio de Janeiro, Brasil)',
-    detalhe: 'As pistas saem aos poucos: "fica na América do Sul", "cidade do Carnaval e do Cristo Redentor"... quanto antes acertar, mais pontos.'
+    texto: 'Dica: estádio dividido por dois rivais → San Siro (Milão, Itália)',
+    detalhe: 'Primeiro um close da arquibancada, depois outra parte do teto, o estádio inteiro, o bairro e a cidade. Quanto antes acertar, mais pontos.'
+  },
+  pontinhos: {
+    texto: 'Tema Animais: Girafa',
+    detalhe: 'As dicas saem aos poucos: "é um mamífero que vive em savanas", "come folhas do alto das árvores"... quanto antes acertar, mais pontos.'
   },
   'como-eu-pinto': {
     texto: 'Palavra para desenhar: Benfica',

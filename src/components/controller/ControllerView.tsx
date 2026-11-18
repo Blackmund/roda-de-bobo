@@ -88,7 +88,8 @@ import { QuemSouEuController } from './games/QuemSouEuController';
 import { MegaResenhaController } from './games/MegaResenhaController';
 import { RepetenteController } from './games/RepetenteController';
 import { RespostasSemPerguntasController } from './games/RespostasSemPerguntasController';
-import { EstadiosController } from './games/EstadiosController';
+import { PontinhosController } from './games/PontinhosController';
+import { GeoGuessController } from './games/GeoGuessController';
 import { ComTerraController } from './games/ComTerraController';
 import { ComoEuPintoController } from './games/ComoEuPintoController';
 import { PerguntasEVerdadesController } from './games/PerguntasEVerdadesController';
@@ -649,9 +650,14 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
     return <AdedanhaController room={room} player={player} onUpdateRoom={onUpdateRoom} wrapIfMultiMode={wrapIfMultiMode} />;
   }
 
-  // NOV-06: Estadios no celular (somente leitura): pistas liberadas e de quem e a vez; o diretor julga na TV.
-  if (room.activeGame === 'estadios' && room.estadios) {
-    return <EstadiosController room={room} player={player} wrapIfMultiMode={wrapIfMultiMode} />;
+  // GeoGuess no celular: cada um escreve o palpite da imagem atual; o diretor julga na TV.
+  if (room.activeGame === 'estadios' && room.geoguess) {
+    return <GeoGuessController room={room} player={player} onUpdateRoom={onUpdateRoom} wrapIfMultiMode={wrapIfMultiMode} />;
+  }
+
+  // Jogo dos Pontinhos no celular (somente leitura): dicas liberadas e de quem e a vez; o diretor julga na TV.
+  if (room.activeGame === 'pontinhos' && room.pontinhos) {
+    return <PontinhosController room={room} player={player} wrapIfMultiMode={wrapIfMultiMode} />;
   }
 
   // NOV-08: Respostas sem perguntas no celular. Quem esta na vez escolhe a palavra a revelar; o diretor julga o palpite na TV.

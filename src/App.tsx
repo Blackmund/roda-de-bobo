@@ -43,9 +43,7 @@ import { drawMoments, normalizeMomentKey } from './data/ondeEstouMoments';
 import { buildMegaResenhaState } from './utils/megaResenhaEngine';
 import { buildRepetenteGroups, buildRepetenteState } from './utils/repetenteEngine';
 import { buildRespostasState } from './utils/respostasEngine';
-import { buildEstadiosState } from './utils/estadiosEngine';
 import { buildComoEuPintoState, pickPintoPair, pintoRoundPoints } from './utils/comoEuPintoEngine';
-import { drawEstadio, normalizeEstadioKey } from './data/estadiosBank';
 import { drawRespostaQuestion, normalizeRespostaKey } from './data/respostasSemPerguntas';
 import { drawRepetenteTheme, normalizeThemeKey } from './data/repetenteThemes';
 import { normalizeIdentity } from './data/quemSouEuIdentities';
@@ -68,7 +66,6 @@ import {
   ScreenLimite,
   ScreenDuvido,
   ScreenComoEuPinto,
-  ScreenEstadios,
   ScreenRespostasSemPerguntas,
   ScreenRepetente,
   ScreenMegaResenha,
@@ -525,6 +522,8 @@ export default function App() {
     repetente: undefined,
     respostasSemPerguntas: undefined,
     estadios: undefined,
+    pontinhos: undefined,
+    geoguess: undefined,
     comoEuPinto: undefined,
     comTerra: undefined,
     adedanha: undefined,
@@ -712,8 +711,8 @@ export default function App() {
       'repetente',
       'respostas-sem-perguntas',
       'estadios',
+      'pontinhos',
       'como-eu-pinto',
-      'onde-estou',
       'com-terra',
       'adedanha'
     ];
@@ -908,6 +907,7 @@ export default function App() {
               <ScreenGameSetup
                 room={room}
                 isTvMode={isTvMode}
+                onSwitchGame={selectGame}
                 onBack={() => updateScreen('lobby')}
                 onAddPlayer={addLobbyPlayer}
                 onRemovePlayer={removePlayer}

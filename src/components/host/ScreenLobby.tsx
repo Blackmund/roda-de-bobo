@@ -10,8 +10,7 @@ import {
   RepetenteArt,
   RespostasSemPerguntasArt,
   EstadiosArt,
-  ComoEuPintoArt,
-  OndeEstouArt
+  ComoEuPintoArt
 } from '../RodaIcons';
 import { GAME_LIMITS } from '../../config/gameLimits';
 import {
@@ -119,7 +118,8 @@ const GAME_TITLES: Record<GameId, string> = {
   'mega-resenha': 'MEGA RESENHA',
   repetente: 'REPETENTE',
   'respostas-sem-perguntas': 'RESPOSTAS SEM PERGUNTAS',
-  estadios: 'ESTÁDIOS',
+  estadios: 'GEOGUESS',
+  pontinhos: 'JOGO DOS PONTINHOS',
   'como-eu-pinto': 'COMO EU PINTO',
   'onde-estou': 'ONDE ESTOU',
   'com-terra': 'COM TERRA',
@@ -245,7 +245,7 @@ const GAMES: Array<{
   {
     id: 'quem-sou-eu',
     name: 'QUEM SOU EU',
-    tagline: 'DESCUBRA A IDENTIDADE NA SUA TESTA',
+    tagline: 'QUEM VOCÊ É OU ONDE VOCÊ ESTÁ, NA TESTA',
     badge: 'INDIVIDUAL',
     color: '#38BDF8',
     renderArt: (cls) => (
@@ -304,8 +304,8 @@ const GAMES: Array<{
   },
   {
     id: 'estadios',
-    name: 'ESTÁDIOS',
-    tagline: 'DESCUBRA O ESTÁDIO: 5, 4, 3, 2, 1 PONTOS',
+    name: 'GEOGUESS',
+    tagline: 'QUE LUGAR É ESSE? 5 IMAGENS, 5 A 1 PONTOS',
     badge: 'INDIVIDUAL',
     color: '#0EA5E9',
     renderArt: (cls) => (
@@ -318,6 +318,14 @@ const GAMES: Array<{
     )
   },
   {
+    id: 'pontinhos',
+    name: 'JOGO DOS PONTINHOS',
+    tagline: 'DESCUBRA A RESPOSTA COM DICAS: 5, 4, 3, 2, 1 PONTOS',
+    badge: 'INDIVIDUAL',
+    color: '#17B8B8',
+    renderArt: () => null
+  },
+  {
     id: 'como-eu-pinto',
     name: 'COMO EU PINTO',
     tagline: 'DESENHE A PALAVRA E O PARCEIRO ADIVINHA',
@@ -325,21 +333,6 @@ const GAMES: Array<{
     color: '#A855F7',
     renderArt: (cls) => (
       <ComoEuPintoArt
-        className={
-          cls ||
-          'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
-        }
-      />
-    )
-  },
-  {
-    id: 'onde-estou',
-    name: 'ONDE ESTOU',
-    tagline: 'DESCUBRA O GRANDE MOMENTO NA SUA TESTA',
-    badge: 'INDIVIDUAL',
-    color: '#22C55E',
-    renderArt: (cls) => (
-      <OndeEstouArt
         className={
           cls ||
           'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 max-h-full max-w-full h-auto object-contain transition-transform duration-200 group-hover:scale-105 filter drop-shadow'
@@ -583,8 +576,8 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
       'repetente',
       'respostas-sem-perguntas',
       'estadios',
+      'pontinhos',
       'como-eu-pinto',
-      'onde-estou',
       'com-terra',
       'adedanha'
     ];

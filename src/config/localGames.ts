@@ -13,6 +13,7 @@ export const LOCAL_CONTENT_GAMES: readonly GameId[] = [
   'repetente',
   'respostas-sem-perguntas',
   'estadios',
+  'pontinhos',
   'como-eu-pinto',
   'onde-estou',
   'com-terra',

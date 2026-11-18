@@ -88,6 +88,7 @@ export const buildNextRoundUpdater = ({
         prev.activeGame === 'onde-estou' ||
         prev.activeGame === 'respostas-sem-perguntas' ||
         prev.activeGame === 'estadios' ||
+        prev.activeGame === 'pontinhos' ||
         prev.activeGame === 'com-terra' ||
         prev.activeGame === 'perguntas-e-verdades';
 

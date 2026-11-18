@@ -27,8 +27,8 @@ export function accumulateRoundPlayerScores(room: GameRoom): Player[] {
     Object.entries(room.adedanha.pointsAwarded || {}).forEach(([pid, pts]) => {
       deltas[pid] = (deltas[pid] || 0) + pts;
     });
-  } else if (room.activeGame === 'estadios' && room.estadios) {
-    Object.entries(room.estadios.pointsAwarded || {}).forEach(([pid, pts]) => {
+  } else if ((room.activeGame === 'estadios' || room.activeGame === 'pontinhos') && (room.activeGame === 'estadios' ? room.geoguess : room.pontinhos)) {
+    Object.entries((room.activeGame === 'estadios' ? room.geoguess : room.pontinhos)?.pointsAwarded || {}).forEach(([pid, pts]) => {
       deltas[pid] = (deltas[pid] || 0) + pts;
     });
   } else if (room.activeGame === 'respostas-sem-perguntas' && room.respostasSemPerguntas) {

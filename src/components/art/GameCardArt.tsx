@@ -60,7 +60,7 @@ const ComoEuPinto = () => (
 );
 
 const Estadios = () => (
-  <Svg label="Estádios">
+  <Svg label="GeoGuess">
     <g fill="none" stroke={CRIMSON} strokeLinecap="round">
       {[
         [136, 62, 7],
@@ -123,6 +123,39 @@ const OndeEstou = () => (
       <circle cx="218" cy="44" r="20" fill={CREAM} />
       <text x="218" y="57" textAnchor="middle" fontFamily={ANTON} fontSize="34" fill={NAVY}>?</text>
     </g>
+  </Svg>
+);
+
+/** Jogo dos Pontinhos: os pontinhos que valem 5, 4, 3, 2, 1 e as dicas que vao abrindo. */
+const Pontinhos = () => (
+  <Svg label="Jogo dos Pontinhos">
+    {[5, 4, 3, 2, 1].map((n, i) => {
+      const r = 25 - i * 3;
+      const cx = 58 + i * 50;
+      const on = i === 0;
+      return (
+        <g key={n} className={on ? 'rdbv-dot' : undefined}>
+          <circle cx={cx} cy="58" r={r} fill={on ? TEAL : NAVY} stroke={on ? NAVY : CREAM} strokeWidth="4" />
+          <text x={cx} y={58 + r * 0.42} textAnchor="middle" fontFamily={ANTON} fontSize={r * 1.2} fill={on ? NAVY : CREAM}>
+            {n}
+          </text>
+        </g>
+      );
+    })}
+    <g>
+      <rect x="40" y="104" width="240" height="24" fill={CREAM} />
+      <rect x="40" y="104" width="24" height="24" fill={TEAL} />
+      <text x="52" y="122" textAnchor="middle" fontFamily={ANTON} fontSize="18" fill={NAVY}>1</text>
+      <rect x="74" y="112" width="150" height="8" fill={NAVY} />
+    </g>
+    {[0, 1].map((i) => (
+      <g key={i}>
+        <rect x="40" y={136 + i * 30} width="240" height="24" fill="none" stroke={CREAM} strokeWidth="3" strokeDasharray="8 7" />
+        <text x="52" y={154 + i * 30} textAnchor="middle" fontFamily={ANTON} fontSize="18" fill={CREAM}>{i + 2}</text>
+        <rect x="254" y={142 + i * 30} width="12" height="10" fill={CRIMSON} />
+        <path d={`M256 ${143 + i * 30} v-4 a4 4 0 0 1 8 0 v4`} fill="none" stroke={CRIMSON} strokeWidth="2.5" />
+      </g>
+    ))}
   </Svg>
 );
 
@@ -385,6 +418,7 @@ const VIGNETTES: Partial<Record<GameId, React.FC>> = {
   'mega-resenha': MegaResenha,
   'como-eu-pinto': ComoEuPinto,
   estadios: Estadios,
+  pontinhos: Pontinhos,
   'quem-sou-eu': QuemSouEu,
   'onde-estou': OndeEstou,
   mimica: Mimica,

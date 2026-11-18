@@ -11,6 +11,7 @@ export const INDIVIDUAL_GAMES: GameId[] = [
   'onde-estou',
   'respostas-sem-perguntas',
   'estadios',
+  'pontinhos',
   'com-terra',
   'perguntas-e-verdades'
 ];
