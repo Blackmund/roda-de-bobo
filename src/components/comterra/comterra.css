@@ -2514,15 +2514,18 @@ button.ct-shop-card:focus-visible {
 }
 
 /* barra da tela principal numa linha so */
-.ct-host--diabo .ct-viewbar {
-  flex-wrap: nowrap;
-  overflow: hidden;
-}
-.ct-host--diabo .ct-viewbar-title {
+.ct-host--diabo .ct-viewbar-title,
+.ct-host--diabo .ct-viewbar .rdb-seg {
   white-space: nowrap;
 }
-.ct-host--diabo .ct-viewbar-opts {
-  flex-wrap: nowrap;
+/* Mesa estreita (abas): o lugar do jogador rola dentro da tela */
+.ct-host--diabo .ct-mesa-seat {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rdb-teal) transparent;
+}
+.dbt-map {
+  position: relative;
 }
 
 /* TV: mapa na altura toda + coluna lateral */
@@ -2545,7 +2548,9 @@ button.ct-shop-card:focus-visible {
   align-content: start;
   gap: 0.8rem 1.1rem;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rdb-teal) transparent;
 }
 .dbt-legend,
 .dbt-block--shop,
@@ -2620,9 +2625,6 @@ button.ct-shop-card:focus-visible {
 
 /* Mesa (lugar largo): mapa grande, ferramentas ao lado, loja e placar compactos */
 @container ctbox (min-width: 900px) {
-  .ct-seat--diabo .ct-zoom-bar {
-    display: none;
-  }
   .ct-seat--diabo {
     gap: 0.5rem;
   }
@@ -2636,8 +2638,47 @@ button.ct-shop-card:focus-visible {
   .ct-seat--diabo .ct-panel--board .ct-tools-row:has(.rdb-btn) {
     grid-template-columns: 1fr;
   }
+  /* nada some: o que nao couber rola, com barra visivel */
   .ct-seat--diabo .ct-panel {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rdb-teal) transparent;
+  }
+  .ct-seat--diabo .ct-panel--board {
     overflow: hidden;
+  }
+  .ct-seat--diabo .ct-panel--board .ct-tools {
+    max-height: 100%;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rdb-teal) transparent;
+  }
+  /* loja: as pecas rolam e o botao Pegar fica sempre a vista embaixo */
+  .ct-seat--diabo .ct-panel--shop {
+    overflow: hidden;
+  }
+  .ct-seat--diabo .ct-panel--shop .ct-shop {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    align-content: start;
+    padding-right: 0.2rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rdb-teal) transparent;
+  }
+  .ct-seat--diabo .ct-shop-take {
+    flex-shrink: 0;
+  }
+  /* ferramentas compactas para caber em telas baixas */
+  .ct-seat--diabo .ct-panel--board .ct-dpad {
+    grid-template-columns: repeat(3, 2.4rem);
+    grid-template-rows: repeat(2, 2.4rem);
+  }
+  .ct-seat--diabo .ct-panel--board .rdb-seg {
+    min-height: 2.4rem;
+  }
+  .ct-seat--diabo .ct-panel--board .ct-tools {
+    gap: 0.45rem;
   }
   .ct-seat--diabo .ct-board-wrap {
     height: 100%;
@@ -2657,7 +2698,7 @@ button.ct-shop-card:focus-visible {
     padding: 0.3rem 0.3rem 0.2rem;
   }
   .ct-seat--diabo .ct-shop .ct-piece {
-    max-height: 3.4rem;
+    max-height: min(3.4rem, 7vh);
   }
   .ct-seat--diabo .ct-shop-take {
     margin-top: 0.3rem;
@@ -2724,5 +2765,34 @@ button.ct-shop-card:focus-visible {
   }
   .ct-seat--diabo .ct-commit .ct-fit {
     grid-column: 1 / -1;
+  }
+}
+
+/* TV/janela baixa: compacta a coluna lateral antes de precisar rolar */
+@media (max-height: 820px) {
+  .dbt-side {
+    gap: 0.5rem 1rem;
+  }
+  .dbt-shop .ct-shop-card {
+    padding-top: 1.35rem;
+  }
+  .dbt-shop .ct-piece {
+    height: 2.2rem;
+  }
+  .dbt-shop .ct-badges {
+    display: none;
+  }
+  .dbt-rank li {
+    padding: 0.2rem 0.5rem;
+  }
+  .dbt-side .ct-contracts li {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.78rem;
+  }
+  .dbt-log {
+    display: none;
+  }
+  .dbt-side .ct-tv-director .rdb-btn {
+    min-height: 2.2rem;
   }
 }
