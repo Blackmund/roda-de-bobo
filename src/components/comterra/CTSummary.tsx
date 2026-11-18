@@ -41,6 +41,12 @@ export const CTSummary: React.FC<{
           );
         })}
       </ol>
+      {state.mode === 'diabo' && state.territoryWinners?.length ? (
+        <p className="ct-hint" data-testid="ct-territory-note">
+          Maior território ({Math.max(...Object.values(state.territory || {}))} casas):{' '}
+          {state.territoryWinners.map(nameOf).join(' e ')} +{state.territoryWinners.length > 1 ? 4 : 8}
+        </p>
+      ) : null}
       {onFinish ? (
         <button type="button" className="rdb-btn rdb-setup-start" data-testid="ct-finish-btn" onClick={onFinish}>
           Confirmar pontos e encerrar

@@ -21,6 +21,7 @@ import '../comterra/comterra.css';
 import { TipLayer } from '../comterra/TipLayer';
 import { CTSkinProvider } from '../comterra/CTSkin';
 import { BPPiecePeek } from '../comterra/BPViews';
+import { DiaboHost } from '../comterra/DiaboHost';
 
 interface ScreenComTerraProps {
   room: GameRoom;
@@ -90,6 +91,9 @@ const ScreenComTerraInner: React.FC<ScreenComTerraProps> = ({ room, onUpdateComT
         )}
       </div>
     );
+  }
+  if (ct.mode === 'diabo' && ct.phase !== 'SUMMARY') {
+    return <DiaboHost room={room} state={ct} onUpdate={onUpdateComTerraState} />;
   }
   const nameOf = (id: string | null) => players.find((p) => p.id === id)?.name || 'Jogador';
   const acting = actingPlayers(ct);

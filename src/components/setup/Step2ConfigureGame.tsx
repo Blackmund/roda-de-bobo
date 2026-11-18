@@ -103,6 +103,10 @@ const CT_SKINS: Array<{ value: CTSkin; label: string }> = [
   { value: 'clean', label: 'Clean' },
   { value: 'classic', label: 'Clássica' }
 ];
+const CT_VARIANTS: Array<{ value: 'mare' | 'contratos'; label: string }> = [
+  { value: 'mare', label: 'Maré Alta' },
+  { value: 'contratos', label: 'Contratos' }
+];
 const CT_MODE_NOTES: Record<CTMode, string[]> = {
   arquiteto: [
     'Reserva · Bärenpark brasileiro: cada um monta o próprio parque com até 4 áreas de 4×4',
@@ -110,9 +114,9 @@ const CT_MODE_NOTES: Record<CTMode, string[]> = {
     'Área completa ganha o Monumento do topo; quem completar 4 áreas dispara a última volta (até 8 jogadores)'
   ],
   diabo: [
-    'Um mapa só para todos, diferente a cada partida',
-    'Rodada em 3 fases: escolher a peça, sabotar o mapa e colocar',
-    'Quem pega a menor peça joga primeiro; a maior vale mais e joga por último'
+    'Mapa grande e diferente a cada partida, um só para todos; cada um joga na sua vez',
+    'Cada bloco vale 1; quadrado da sua cor vale mais: 2×2 +3, 3×3 +8, 4×4 +15, 5×5 +24',
+    '3 diabinhos por partida para sabotar o mapa; ponte passa sobre a água'
   ],
   fronteiras: [
     'Cada um começa na própria base 5x5, ligada a uma ilha central',
@@ -353,6 +357,28 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
                     {CT_MODE_LABEL[m]}
                   </Seg>
                 ))}
+              </div>
+            </div>
+          )}
+          {isCT && ctMode === 'diabo' && (
+            <div className="rdb-opt" data-testid="ct-variant-selector">
+              <span className="rdb-opt-label">Variantes</span>
+              <div className="rdb-opt-choices">
+                {CT_VARIANTS.map((o) => {
+                  const on = !!customConfig.ctVariants?.[o.value];
+                  return (
+                    <Seg
+                      key={o.value}
+                      testid={'ct-variant-btn-' + o.value}
+                      on={on}
+                      onClick={() =>
+                        onChangeCustomConfig((prev) => ({ ...prev, ctVariants: { ...(prev.ctVariants || {}), [o.value]: !on } }))
+                      }
+                    >
+                      {o.label}
+                    </Seg>
+                  );
+                })}
               </div>
             </div>
           )}

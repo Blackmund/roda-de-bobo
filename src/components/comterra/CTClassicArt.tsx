@@ -8,7 +8,7 @@ const DEPTH = 1.25;
 export interface ClassicCell {
   x: number;
   y: number;
-  k: 1 | 2;
+  k: 1 | 2 | 3;
 }
 
 interface PieceMetrics {

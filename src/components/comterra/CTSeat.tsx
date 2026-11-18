@@ -5,6 +5,7 @@ import {
   CT_MODE_LABEL,
   boardFor,
   canPlaceAt,
+  canSabotage,
   canTarget,
   currentPlayerId,
   discardPiece,
@@ -20,9 +21,10 @@ import {
   rotateCCW,
   rotateCW,
   sabotage,
-  skipAction,
-  skipSabotage
+  skipAction
 } from '../../utils/comTerraEngine';
+import { DIABO_DISCARD_PENALTY } from '../../utils/diaboMap';
+import { CTPieceBadges, CTSquareMark, ContractList, DevilGlyph, pieceTitle } from './CTDiaboBits';
 import { sounds } from '../../utils/soundEffects';
 import { PlayerMark } from '../rdb/PlayerMark';
 import { CTBoardView, CTPieceView, ctColor } from './CTBoardView';
@@ -68,12 +70,18 @@ export const CTSeat: React.FC<CTSeatProps> = ({ state: s, players, playerId, onU
   const [target, setTarget] = useState<{ x: number; y: number } | null>(null);
   const [sabKind, setSabKind] = useState<'tree' | 'plus' | 'minus'>('tree');
   const [tokValue, setTokValue] = useState<1 | -1>(1);
+  const [sabOn, setSabOn] = useState(false);
+  const diabo = s.mode === 'diabo';
+  const penalty = diabo ? DIABO_DISCARD_PENALTY : CT_DISCARD_PENALTY;
+  const canSab = canSabotage(s, playerId);
+  const devilsLeft = s.devils?.[playerId] ?? 0;
 
   // a aba acompanha o que o jogador precisa fazer
   useEffect(() => {
     if (stage === 'pick') setTab('shop');
-    else if (stage === 'place' || stage === 'action' || stage === 'sabotage') setTab('board');
+    else if (stage === 'place' || stage === 'action') setTab('board');
     setTarget(null);
+    setSabOn(false);
     setLocked(false);
     setAskDiscard(false);
   }, [stage]);
@@ -141,7 +149,8 @@ export const CTSeat: React.FC<CTSeatProps> = ({ state: s, players, playerId, onU
   };
 
   const pendingKind = stage === 'action' ? pendingFor(s, playerId) : null;
-  const targeting = stage === 'action' || stage === 'sabotage';
+  const sabotaging = sabOn && canSab;
+  const targeting = stage === 'action' || sabotaging;
   const targetKind: CTPendingKind = stage === 'action' ? pendingKind || 'tree' : sabKind === 'tree' ? 'tree' : 'tok';
   const targetTok: 1 | -1 = stage === 'action' ? tokValue : sabKind === 'minus' ? -1 : 1;
 
@@ -152,24 +161,23 @@ export const CTSeat: React.FC<CTSeatProps> = ({ state: s, players, playerId, onU
     if (stage === 'action') onUpdate((prev) => resolveAction(prev, playerId, x, y, targetTok));
     else onUpdate((prev) => sabotage(prev, playerId, targetKind, x, y, targetTok));
     setTarget(null);
+    setSabOn(false);
   };
 
   const turnId = currentPlayerId(s);
   const statusText = (() => {
     if (stage === 'done') return 'Partida encerrada';
+    if (sabotaging) return 'Diabinho: uma árvore ou uma ficha numa casa livre';
     if (stage === 'pick') return 'Sua vez: escolha uma peça na loja';
     if (stage === 'place') return 'Posicione a peça no tabuleiro';
     if (stage === 'action') return pendingKind === 'tree' ? 'Ação ganha: plante uma árvore' : 'Ação ganha: ponha uma ficha no mapa';
-    if (stage === 'sabotage') return 'Sabotagem: uma árvore ou uma ficha no mapa';
-    if (s.phase === 'PICK') return 'Peça escolhida. Aguarde os outros';
-    if (s.phase === 'SABOTAGE') return 'Aguarde a sabotagem dos outros';
     return turnId ? `Vez de ${nameOf(turnId)}` : 'Aguarde';
   })();
 
   const rank = ranking(s);
 
   return (
-    <div className="ct-seat" data-testid={'ct-seat-' + playerId} data-stage={stage}>
+    <div className={'ct-seat' + (diabo ? ' ct-seat--diabo' : '')} data-testid={'ct-seat-' + playerId} data-stage={stage}>
       <header className="ct-seat-head">
         <span className="ct-seat-me">
           <PlayerMark p={me} />
@@ -216,6 +224,7 @@ export const CTSeat: React.FC<CTSeatProps> = ({ state: s, players, playerId, onU
               order={s.order}
               label={`Tabuleiro de ${me?.name || 'jogador'}`}
               testid="ct-my-board"
+              enableZoom={diabo}
               ghost={pose && stage === 'place' ? { m: pose.m, x: pose.x, y: pose.y, ok: !!check?.ok, playerId, locked } : null}
               canTarget={targeting ? (x, y) => canTarget(s, playerId, x, y) : undefined}
               selected={targeting ? target : null}
@@ -287,7 +296,7 @@ export const CTSeat: React.FC<CTSeatProps> = ({ state: s, players, playerId, onU
                     Posicionar peça
                   </button>
                   <button type="button" className="rdb-btn" data-testid="ct-discard-btn" onClick={() => setAskDiscard(true)}>
-                    Descartar peça (-{CT_DISCARD_PENALTY} pts)
+                    Descartar peça (-{penalty} pts)
                   </button>
                 </div>
               </div>
@@ -296,7 +305,7 @@ export const CTSeat: React.FC<CTSeatProps> = ({ state: s, players, playerId, onU
 
           {targeting && (
             <div className="ct-tools" data-testid="ct-target-tools">
-              {stage === 'sabotage' && (
+              {sabotaging && (
                 <div className="ct-tools-row">
                   {(
                     [
@@ -330,10 +339,42 @@ export const CTSeat: React.FC<CTSeatProps> = ({ state: s, players, playerId, onU
                   type="button"
                   className="rdb-btn"
                   data-testid="ct-target-skip"
-                  onClick={() => onUpdate((prev) => (stage === 'action' ? skipAction(prev, playerId) : skipSabotage(prev, playerId)))}
+                  onClick={() => {
+                    if (stage === 'action') onUpdate((prev) => skipAction(prev, playerId));
+                    else {
+                      setSabOn(false);
+                      setTarget(null);
+                    }
+                  }}
                 >
-                  {stage === 'action' ? 'Pular ação' : 'Não sabotar'}
+                  {stage === 'action' ? 'Pular ação' : 'Guardar o diabinho'}
                 </button>
+              </div>
+            </div>
+          )}
+
+          {stage === 'pick' && !sabotaging && (
+            <div className="ct-tools" data-testid="ct-pick-tools">
+              <p className="ct-hint">Sua vez: pegue uma peça na loja.</p>
+              <div className="ct-tools-row">
+                <button type="button" className="rdb-btn rdb-setup-start ct-go-shop" onClick={() => setTab('shop')}>
+                  Abrir a loja
+                </button>
+                {diabo && (
+                  <button
+                    type="button"
+                    className="rdb-btn"
+                    data-testid="ct-devil-btn"
+                    disabled={!canSab}
+                    onClick={() => {
+                      sounds.playTick();
+                      setSabOn(true);
+                      setTarget(null);
+                    }}
+                  >
+                    Usar diabinho ({devilsLeft})
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -342,7 +383,7 @@ export const CTSeat: React.FC<CTSeatProps> = ({ state: s, players, playerId, onU
             <div className="ct-tools ct-tools--hand">
               <CTPieceView shape={hand.shape} color={myColor} label={`Sua peça ${hand.size}`} />
               <p className="ct-hint">
-                Sua peça: número {hand.size}, vale {hand.pts} pts. Você coloca quando chegar a sua vez.
+                Sua peça: {pieceTitle(hand)}, vale {hand.pts} pts. Você coloca quando chegar a sua vez.
               </p>
             </div>
           )}
@@ -356,6 +397,21 @@ export const CTSeat: React.FC<CTSeatProps> = ({ state: s, players, playerId, onU
               ? 'Escolha no olho: só dá para testar no tabuleiro depois de pegar.'
               : 'Fora da sua vez: toque para deixar uma peça pré-escolhida.'}
           </p>
+          {diabo && stage === 'pick' && canSab && (
+            <button
+              type="button"
+              className="rdb-btn"
+              data-testid="ct-devil-btn-shop"
+              onClick={() => {
+                sounds.playTick();
+                setSabOn(true);
+                setTarget(null);
+                setTab('board');
+              }}
+            >
+              Antes, usar um diabinho ({devilsLeft})
+            </button>
+          )}
           <ul className="ct-shop" data-testid="ct-shop">
             {(s.shop || []).map((p) => {
               const isWish = wish === p.uid;
@@ -373,9 +429,12 @@ export const CTSeat: React.FC<CTSeatProps> = ({ state: s, players, playerId, onU
                       else if (stage !== 'done') setWish(isWish ? null : p.uid);
                     }}
                   >
-                    <span className="ct-shop-num">{p.size}</span>
-                    <CTPieceView shape={p.shape} label={`Peça ${p.size}`} />
-                    <span className="ct-shop-pts">{p.pts} pts</span>
+                    <span className="ct-shop-num">{p.devil ? <DevilGlyph title="Peça do Diabo" /> : p.size}</span>
+                    <CTPieceView shape={p.shape} label={pieceTitle(p)} />
+                    <span className="ct-shop-pts">
+                      {p.pts} pts
+                      <CTPieceBadges piece={p} />
+                    </span>
                     {isWish && <span className="rdb-tag ct-shop-tag">Pré-escolhida</span>}
                   </button>
                 </li>
@@ -395,7 +454,7 @@ export const CTSeat: React.FC<CTSeatProps> = ({ state: s, players, playerId, onU
                 onUpdate((prev) => pickPiece(prev, playerId, uid));
               }}
             >
-              {shopSel ? `Pegar peça ${(s.shop || []).find((p) => p.uid === shopSel)?.size || ''}` : 'Toque em uma peça'}
+              {shopSel ? `Pegar ${pieceTitle((s.shop || []).find((p) => p.uid === shopSel))}` : 'Toque em uma peça'}
             </button>
           )}
         </section>
@@ -413,11 +472,17 @@ export const CTSeat: React.FC<CTSeatProps> = ({ state: s, players, playerId, onU
                   <PlayerMark p={p} />
                   <span className="ct-rank-name">{p?.name || 'Jogador'}</span>
                   {piece && <span className="ct-rank-piece">peça {piece.size}</span>}
+                  {diabo && (
+                    <span className="ct-rank-piece">
+                      <CTSquareMark k={s.bestSq?.[r.playerId] || 0} /> <DevilGlyph /> {s.devils?.[r.playerId] ?? 0}
+                    </span>
+                  )}
                   <span className="ct-rank-pts">{r.points}</span>
                 </li>
               );
             })}
           </ol>
+          {diabo && s.contracts?.length ? <ContractList state={s} nameOf={nameOf} /> : null}
           {s.mode === 'arquiteto' && (
             <div className="ct-rival-boards">
               {s.boards
@@ -433,7 +498,7 @@ export const CTSeat: React.FC<CTSeatProps> = ({ state: s, players, playerId, onU
           <ul className="ct-log" data-testid="ct-log">
             {(s.log || []).slice(0, 5).map((e) => (
               <li key={e.id}>
-                <strong>{nameOf(e.playerId)}</strong> {e.text}
+                {e.playerId && <strong>{nameOf(e.playerId)}</strong>} {e.text}
                 {e.delta !== 0 && <span className={e.delta > 0 ? 'is-plus' : 'is-minus'}> {e.delta > 0 ? '+' + e.delta : e.delta}</span>}
               </li>
             ))}
@@ -472,7 +537,7 @@ export const CTSeat: React.FC<CTSeatProps> = ({ state: s, players, playerId, onU
       {askDiscard && (
         <div className="ct-veil" data-testid="ct-discard-modal">
           <div className="ct-modal" role="dialog" aria-modal="true" aria-labelledby="ct-discard-title">
-            <h3 id="ct-discard-title">Descartar a peça e perder {CT_DISCARD_PENALTY} pontos?</h3>
+            <h3 id="ct-discard-title">Descartar a peça e perder {penalty} pontos?</h3>
             <p>A peça sai do jogo e a sua vez termina.</p>
             <div className="ct-modal-actions">
               <button type="button" className="rdb-btn" data-testid="ct-discard-back" onClick={() => setAskDiscard(false)}>
@@ -488,7 +553,7 @@ export const CTSeat: React.FC<CTSeatProps> = ({ state: s, players, playerId, onU
                   setAskDiscard(false);
                 }}
               >
-                Descartar (-{CT_DISCARD_PENALTY} pts)
+                Descartar (-{penalty} pts)
               </button>
             </div>
           </div>

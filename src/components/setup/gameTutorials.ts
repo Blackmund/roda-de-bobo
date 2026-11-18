@@ -717,7 +717,7 @@ export const GAME_TUTORIALS: Record<GameId, GameTutorialDefinition> = {
     ],
     scoringSummary: [
       'Cada peça vale pelo número dela: 1, 2, 3, 5, 7, 9 ou 12 pontos. Árvore no furo +2; ficha coberta por bloco sólido soma o valor dela.',
-      'No Arquiteto, linha ou coluna cheia vale +2. No Plano do Diabo, quem pega a menor peça joga primeiro. Descartar custa 3 pontos.'
+      'No Arquiteto, linha ou coluna cheia vale +2. No Plano do Diabo, cada bloco vale 1 e quadrado da sua cor dá bônus: 2×2 +3, 3×3 +8, 4×4 +15.'
     ]
   },
   adedanha: {
