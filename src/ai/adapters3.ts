@@ -17,17 +17,20 @@ import {
   allOrientations,
   boardFor,
   canPlaceAt,
+  canSabotage,
   canTarget,
   discardPiece,
+  hasAnyPlacement,
   pendingFor,
   pickPiece,
   placePiece,
   playerStage,
+  previewPlacement,
   ranking,
   resolveAction,
   sabotage,
-  skipAction,
-  skipSabotage
+  shapeCells,
+  skipAction
 } from '../utils/comTerraEngine';
 
 type Adapter = (room: GameRoom, bot: Player) => BotMove | null;
@@ -291,6 +294,54 @@ function ctTargets(s: ComTerraState, pid: string): Array<{ x: number; y: number 
   return out;
 }
 
+/** Plano do Diabo: valor de um encaixe = pontos agora + compacidade (abre caminho para quadrados) + acao ganha. */
+function ctPlaceValue(s: ComTerraState, pid: string, m: number[][], x: number, y: number): number | null {
+  const r = previewPlacement(s, pid, m, x, y);
+  if (!r) return null;
+  let v = r.delta + (r.pending.some((p) => p.playerId === pid) ? 1.5 : 0);
+  if (s.mode === 'diabo' && !s.hand[pid]?.devil) {
+    // lados encostados em blocos seus: pecas juntas viram quadrado depois
+    const b = r.board;
+    let glue = 0;
+    for (const pc of shapeCells(m)) {
+      const cx = x + pc.dx;
+      const cy = y + pc.dy;
+      for (const [dx, dy] of [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1]
+      ]) {
+        const nx = cx + dx;
+        const ny = cy + dy;
+        if (nx < 0 || ny < 0 || nx >= b.w || ny >= b.h) continue;
+        const c = b.cells[ny * b.w + nx];
+        if (c.o === pid && !m[ny - y]?.[nx - x]) glue++;
+      }
+    }
+    v += glue * 0.35;
+  }
+  return v + Math.random() * 0.01;
+}
+
+/** Diabinho da IA: ficha -1 colada no territorio de quem lidera (ou arvore, que atrapalha pecas solidas). */
+function ctSabotageMove(s: ComTerraState, bot: Player): ComTerraState | null {
+  const leader = ranking(s).find((r) => r.playerId !== bot.id)?.playerId;
+  if (!leader) return null;
+  const b = boardFor(s, bot.id);
+  const near = ctTargets(s, bot.id).filter(({ x, y }) =>
+    [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1]
+    ].some(([dx, dy]) => b.cells[(y + dy) * b.w + x + dx]?.o === leader && x + dx >= 0 && x + dx < b.w)
+  );
+  if (!near.length) return null;
+  const t = near[Math.floor(Math.random() * near.length)];
+  return sabotage(s, bot.id, chance(0.6) ? 'tok' : 'tree', t.x, t.y, -1);
+}
+
 const comTerraOther: Adapter = (room, bot) => {
   const ct = room.comTerra as ComTerraState | undefined;
   if (!ct || ct.mode === 'arquiteto' || ct.phase === 'SUMMARY') return null;
@@ -304,8 +355,19 @@ const comTerraOther: Adapter = (room, bot) => {
       ctWith(prev, (s) => {
         const st = playerStage(s, bot.id);
         if (st === 'pick') {
-          // peca maior costuma render mais area
-          const shop = [...s.shop].sort((a, b) => b.shape.flat().filter(Boolean).length - a.shape.flat().filter(Boolean).length);
+          // diabinho: so de vez em quando, e mais quando esta perdendo
+          if (canSabotage(s, bot.id) && botParamsOf(bot).acc >= 0.4) {
+            const behind = bestOther(s, bot.id) - pointsOf(s, bot.id);
+            if (chance(behind > 5 ? 0.45 : 0.2)) {
+              const n = ctSabotageMove(s, bot);
+              if (n && n !== s) return n;
+            }
+          }
+          // peca maior costuma render mais area; a Peca do Diabo fica por ultimo; so pecas que cabem
+          const fits = s.shop.filter((p) => s.mode !== 'diabo' || hasAnyPlacement(s, bot.id, p));
+          const shop = [...(fits.length ? fits : s.shop)].sort(
+            (a, b) => (b.devil ? -1 : b.shape.flat().filter(Boolean).length) - (a.devil ? -1 : a.shape.flat().filter(Boolean).length)
+          );
           const choice = pickByLevel(shop, bot);
           return choice ? pickPiece(s, bot.id, choice.uid) : s;
         }
@@ -313,15 +375,13 @@ const comTerraOther: Adapter = (room, bot) => {
           const piece = s.hand[bot.id];
           if (!piece) return s;
           const b = boardFor(s, bot.id);
-          const before = pointsOf(s, bot.id);
           const opts: Array<{ m: number[][]; x: number; y: number; v: number }> = [];
           for (const m of allOrientations(piece.shape)) {
-            for (let y = 0; y < b.h; y++) {
-              for (let x = 0; x < b.w; x++) {
+            for (let y = -m.length + 1; y < b.h; y++) {
+              for (let x = -m[0].length + 1; x < b.w; x++) {
                 if (!canPlaceAt(s, bot.id, m, x, y).ok) continue;
-                const n = placePiece(s, bot.id, m, x, y);
-                if (n === s) continue;
-                opts.push({ m, x, y, v: pointsOf(n, bot.id) - before + (n.pending.some((p) => p.playerId === bot.id) ? 1.5 : 0) + Math.random() * 0.01 });
+                const v = ctPlaceValue(s, bot.id, m, x, y);
+                if (v !== null) opts.push({ m, x, y, v });
               }
             }
           }
@@ -341,20 +401,6 @@ const comTerraOther: Adapter = (room, bot) => {
             .sort((a, c) => c.v - a.v);
           const choice = pickByLevel(scored, bot);
           return choice ? resolveAction(s, bot.id, choice.t.x, choice.t.y, 1) : kind ? skipAction(s, bot.id) : s;
-        }
-        if (st === 'sabotage') {
-          if (botParamsOf(bot).acc < 0.4 && chance(0.5)) return skipSabotage(s, bot.id);
-          const targets = ctTargets(s, bot.id);
-          const lead = bestOther(s, bot.id) - pointsOf(s, bot.id);
-          const scored = targets
-            .map((t) => {
-              const n = sabotage(s, bot.id, 'tok', t.x, t.y, -1);
-              return { t, v: n === s ? -99 : lead - (bestOther(n, bot.id) - pointsOf(n, bot.id)) };
-            })
-            .filter((o) => o.v > -99)
-            .sort((a, c) => c.v - a.v);
-          const choice = pickByLevel(scored, bot);
-          return choice ? sabotage(s, bot.id, 'tok', choice.t.x, choice.t.y, -1) : skipSabotage(s, bot.id);
         }
         return s;
       })

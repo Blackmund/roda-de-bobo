@@ -444,6 +444,8 @@ export interface CTPiece {
   /** numero da peca (1 a 7): quantos blocos ela tem; define pontos e ordem de iniciativa */
   size: number;
   pts: number;
+  /** Plano do Diabo: Peca do Diabo (1 bloco neutro, vale -1, vai em qualquer casa livre) */
+  devil?: boolean;
 }
 
 export interface CTCell {
@@ -462,9 +464,9 @@ export interface CTCell {
   statue?: number;
   tilePts?: number;
   tileType?: BPTileType;
-  /** peca que cobre a casa: dono, tipo do bloco (1 solido, 2 furo) e id da peca */
+  /** peca que cobre a casa: dono, tipo do bloco (1 solido, 2 furo, 3 ponte) e id da peca */
   o?: string;
-  k?: 1 | 2;
+  k?: 1 | 2 | 3;
   p?: string;
 }
 
@@ -479,7 +481,7 @@ export interface CTBoard {
 
 export interface ComTerraState {
   mode: CTMode;
-  /** TURN = turnos em rodizio (Arquiteto, Fronteiras); PICK/SABOTAGE/PLACE = as 3 fases do Plano do Diabo */
+  /** TURN = turnos em rodizio (todos os modos); PICK/SABOTAGE/PLACE = fases do Plano do Diabo antigo (nao usadas mais) */
   phase: 'TURN' | 'PICK' | 'SABOTAGE' | 'PLACE' | 'SUMMARY';
   round: number;
   totalRounds: number;
@@ -504,6 +506,24 @@ export interface ComTerraState {
   bp?: BPState;
   /** visual das pecas (escolhido na configuracao) */
   skin?: CTSkin;
+  /** Plano do Diabo: diabinhos (sabotagens) que cada um ainda tem */
+  devils?: Record<string, number>;
+  /** Plano do Diabo: variantes ligadas na configuracao */
+  variants?: CTVariants;
+  /** Plano do Diabo: contratos publicos e quem ja cumpriu (1o e 2o) */
+  contracts?: Array<{ id: string; done: string[] }>;
+  /** Plano do Diabo: maior quadrado ja fechado por jogador */
+  bestSq?: Record<string, number>;
+  /** Plano do Diabo: maior territorio no fim e quem levou o bonus */
+  territory?: Record<string, number>;
+  territoryWinners?: string[];
+}
+
+export interface CTVariants {
+  /** Mare Alta: a agua avanca no fim de cada rodada */
+  mare?: boolean;
+  /** Contratos do Diabo: 3 objetivos publicos */
+  contratos?: boolean;
 }
 
 export type PintoPlayMode = 'pad' | 'tv';
@@ -718,6 +738,7 @@ export interface GameCustomConfig {
   // Com Terra
   ctMode?: CTMode; // default 'arquiteto'
   ctSkin?: CTSkin; // default 'clean'
+  ctVariants?: CTVariants; // Plano do Diabo: variantes
   // Perguntas e Verdades (O Jogo do Diabo)
   pvDeckMode: PVDeckMode; // 'assisted' (default) | 'physical'
   pvDeckStyle?: PVDeckStyle; // 'padrao' (CazéTV Ilustrado) | 'compacto' | 'holografico'
