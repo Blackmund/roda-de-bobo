@@ -41,10 +41,9 @@ const slot = (ms: number) => Math.floor(Date.now() / ms);
 function pickByLevel<T>(sorted: T[], bot: Player): T | undefined {
   if (!sorted.length) return undefined;
   const acc = botParamsOf(bot).acc;
-  if (acc >= 0.95) return sorted[0];
-  if (acc >= 0.8) return sorted[Math.floor(Math.random() * Math.min(2, sorted.length))];
-  if (acc >= 0.5) return sorted[Math.floor(Math.random() * Math.max(1, Math.ceil(sorted.length * 0.25)))];
-  return sorted[Math.floor(Math.random() * sorted.length)];
+  if (acc >= 0.9) return sorted[0];
+  if (acc >= 0.7) return sorted[Math.random() < 0.7 ? 0 : Math.min(1, sorted.length - 1)];
+  return sorted[Math.floor(Math.random() * Math.max(1, Math.ceil(sorted.length * 0.15)))];
 }
 
 // ---------------- MIMICA: a IA "faz a mimica" descrevendo gestos; ou adivinha ----------------
@@ -73,7 +72,7 @@ const mimica: Adapter = (room, bot) => {
   if (m.guesserPlayerId === bot.id || (!m.guesserPlayerId && room.players.find((p) => p.team === m.mimeTeam && p.id === bot.id))) {
     // a IA nao ve a mimica humana: a cada tentativa tem uma chance pelo nivel
     const tick = slot(5500);
-    const correct = chance(pr.acc * 0.45);
+    const correct = chance(pr.acc * 0.7);
     return {
       key: `mim|${word}|${m.currentIndex}|guess|${tick}|${bot.id}`,
       delay: thinkMs(bot, -600),
@@ -269,7 +268,7 @@ const pinto: Adapter = (room, bot) => {
       apply: (prev) => {
         const s = prev.comoEuPinto;
         if (!s || s.phase !== 'STEAL' || s.outcomes[idx] !== 'pending') return prev;
-        if (chance(pr.acc * 0.6)) return say({ ...prev, comoEuPinto: setPintoOutcome(s, idx, 'stolen') }, bot, `Roubei! É ${s.words[idx]}!`);
+        if (chance(pr.acc * 0.8)) return say({ ...prev, comoEuPinto: setPintoOutcome(s, idx, 'stolen') }, bot, `Roubei! É ${s.words[idx]}!`);
         return say(prev, bot, `É ${siblingWord(s.words[idx])}?`);
       }
     };

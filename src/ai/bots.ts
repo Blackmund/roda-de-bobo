@@ -7,10 +7,10 @@ import type { Player } from '../types/game';
 export type BotLevel = 'facil' | 'medio' | 'dificil' | 'impossivel';
 
 export const BOT_LEVELS: { value: BotLevel; label: string; hint: string }[] = [
-  { value: 'facil', label: 'Fácil', hint: 'Erra bastante e demora para responder.' },
-  { value: 'medio', label: 'Médio', hint: 'Acerta mais ou menos metade.' },
-  { value: 'dificil', label: 'Difícil', hint: 'Acerta quase sempre e chega perto.' },
-  { value: 'impossivel', label: 'Impossível', hint: 'Sabe praticamente tudo.' }
+  { value: 'facil', label: 'Fácil', hint: 'Acerta metade e às vezes demora.' },
+  { value: 'medio', label: 'Médio', hint: 'Acerta três em cada quatro.' },
+  { value: 'dificil', label: 'Difícil', hint: 'Quase não erra e joga a melhor jogada.' },
+  { value: 'impossivel', label: 'Impossível', hint: 'Não erra e responde rápido.' }
 ];
 
 export interface BotParams {
@@ -25,10 +25,10 @@ export interface BotParams {
 }
 
 export const BOT_PARAMS: Record<BotLevel, BotParams> = {
-  facil: { acc: 0.28, spread: 0.45, think: [3200, 5600], risk: 0.25 },
-  medio: { acc: 0.55, spread: 0.2, think: [2400, 4200], risk: 0.5 },
-  dificil: { acc: 0.82, spread: 0.07, think: [1700, 3000], risk: 0.65 },
-  impossivel: { acc: 0.97, spread: 0.01, think: [1100, 2000], risk: 0.8 }
+  facil: { acc: 0.5, spread: 0.25, think: [2600, 4400], risk: 0.4 },
+  medio: { acc: 0.76, spread: 0.1, think: [1900, 3300], risk: 0.6 },
+  dificil: { acc: 0.93, spread: 0.03, think: [1300, 2400], risk: 0.78 },
+  impossivel: { acc: 0.995, spread: 0.005, think: [800, 1500], risk: 0.9 }
 };
 
 const LEVEL_NAMES: Record<BotLevel, string> = { facil: 'Fácil', medio: 'Média', dificil: 'Difícil', impossivel: 'Impossível' };

@@ -38,10 +38,9 @@ const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
 function pickByLevel<T>(sorted: T[], bot: Player): T | undefined {
   if (!sorted.length) return undefined;
   const acc = botParamsOf(bot).acc;
-  if (acc >= 0.95) return sorted[0];
-  if (acc >= 0.8) return sorted[Math.floor(Math.random() * Math.min(2, sorted.length))];
-  if (acc >= 0.5) return sorted[Math.floor(Math.random() * Math.max(1, Math.ceil(sorted.length * 0.25)))];
-  return sorted[Math.floor(Math.random() * sorted.length)];
+  if (acc >= 0.9) return sorted[0];
+  if (acc >= 0.7) return sorted[Math.random() < 0.7 ? 0 : Math.min(1, sorted.length - 1)];
+  return sorted[Math.floor(Math.random() * Math.max(1, Math.ceil(sorted.length * 0.15)))];
 }
 
 // ---------------- ESTADIOS: chutar o estadio pelas pistas ----------------

@@ -82,7 +82,7 @@ const tem: Adapter = (room, bot) => {
         const total = sorted.reduce((a, x) => a + Math.max(1, x.it.votos), 0);
         let r = Math.random() * total;
         const weighted = sorted.find((x) => (r -= Math.max(1, x.it.votos)) <= 0) || sorted[0];
-        const pick = pr.acc > 0.8 ? sorted[0] : weighted;
+        const pick = pr.acc > 0.7 ? sorted[0] : weighted;
         text = pick.it.texto;
       } else {
         const wrong = (Array.isArray(data) ? (data as string[]) : []).filter((w) => findTemMatch(prev, w) === -1);
