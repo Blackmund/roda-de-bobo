@@ -29,8 +29,12 @@ export const BP_PALETTE: Record<string, { top: string; side: string; ink: string
   enclosure: { top: '#ff8a1e', side: '#9a4c0a', ink: '#2a1300' }
 };
 
+/** Peca do Diabo: bloco neutro, chumbo com tinta crimson. */
+export const CT_DEVIL_COLOR = { top: '#3a3d5c', side: '#1b1d33', ink: '#e6194b' };
+
 export function ctColor(order: string[], playerId: string | undefined | null) {
   if (playerId && BP_PALETTE[playerId]) return BP_PALETTE[playerId];
+  if (playerId === '~diabo') return CT_DEVIL_COLOR;
   const i = Math.max(0, order.indexOf(playerId || ''));
   return CT_PLAYER_COLORS[i % CT_PLAYER_COLORS.length];
 }
@@ -38,7 +42,8 @@ export function ctColor(order: string[], playerId: string | undefined | null) {
 interface PCell {
   x: number;
   y: number;
-  k: 1 | 2;
+  /** 1 solido, 2 furo, 3 ponte */
+  k: 1 | 2 | 3;
 }
 
 /** Caminho da face da peca: um quadrado por bloco, com o circulo do furo recortado. */
@@ -162,6 +167,19 @@ const PieceShape: React.FC<{
           .filter((c) => c.k === 2)
           .map((c) => (
             <circle key={c.x + ',' + c.y} cx={c.x * U + U / 2} cy={c.y * U + U / 2} r={HOLE_R + 0.25} fill="none" stroke="#000" strokeOpacity="0.3" strokeWidth="0.5" />
+          ))}
+        {cells
+          .filter((c) => c.k === 3)
+          .map((c) => (
+            <path
+              key={'pt' + c.x + ',' + c.y}
+              d={`M${c.x * U + 1.6} ${c.y * U + 3.4}h${U - 3.2}M${c.x * U + 1.6} ${c.y * U + 6.6}h${U - 3.2}`}
+              stroke={color.ink || '#0a0b1e'}
+              strokeOpacity="0.55"
+              strokeWidth="0.9"
+              strokeLinecap="square"
+              fill="none"
+            />
           ))}
         {outline && <path d={edges.outer || d} fill="none" stroke={outline} strokeWidth="0.95" strokeLinejoin="round" />}
         </>

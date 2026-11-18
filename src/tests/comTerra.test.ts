@@ -23,9 +23,7 @@ import {
   playerStage,
   resolveAction,
   rotateCW,
-  sabotage,
-  shapeCells,
-  skipSabotage
+  shapeCells
 } from '../utils/comTerraEngine.ts';
 import { GAME_LIMITS } from '../config/gameLimits.ts';
 import { usesLocalContent } from '../config/localGames.ts';
@@ -217,50 +215,6 @@ test('CT Arquiteto: depois de todas as rodadas a partida vai para o resultado', 
   assert.equal(currentPlayerId(t), 'b');
 });
 
-test('CT Plano do Diabo: 3 fases, e joga primeiro quem pegou a peca de menor numero', () => {
-  let s = buildComTerraState('diabo', P, 6, 99);
-  assert.equal(s.boards.length, 1);
-  assert.equal(s.phase, 'PICK');
-  assert.equal(s.shop.length, P.length + 2);
-  assert.deepEqual(actingPlayers(s), ['a', 'b', 'c']);
-  const bySize = [...s.shop].sort((x, y) => x.size - y.size);
-  const big = bySize[bySize.length - 1];
-  const small = bySize[0];
-  const mid = bySize[1];
-  s = pickPiece(s, 'a', big.uid);
-  // a peca que 'a' levou nao esta mais na loja para os outros
-  assert.equal(pickPiece(s, 'b', big.uid), s);
-  s = pickPiece(s, 'b', mid.uid);
-  assert.equal(s.phase, 'PICK');
-  s = pickPiece(s, 'c', small.uid);
-  assert.equal(s.phase, 'SABOTAGE');
-  assert.equal(s.shop.length, 2); // no Diabo a loja nao repoe no meio da rodada
-
-  // sabotagem: uma arvore no mapa de todos
-  const b = s.boards[0];
-  const free = b.cells.findIndex((c, i) => canTarget(s, 'a', i % b.w, Math.floor(i / b.w)));
-  const fx = free % b.w;
-  const fy = Math.floor(free / b.w);
-  s = sabotage(s, 'a', 'tree', fx, fy);
-  assert.equal(cellAt(s.boards[0], fx, fy)?.tree, true);
-  assert.equal(playerStage(s, 'a'), 'wait');
-  assert.equal(sabotage(s, 'b', 'tok', fx, fy, -1), s); // casa ja ocupada
-  s = skipSabotage(s, 'b');
-  s = skipSabotage(s, 'c');
-  assert.equal(s.phase, 'PLACE');
-  assert.equal(s.queue[0], 'c');
-  assert.equal(s.queue[s.queue.length - 1], 'a');
-  assert.equal(currentPlayerId(s), 'c');
-
-  s = discardPiece(s, 'c');
-  s = discardPiece(s, s.queue[1]);
-  s = discardPiece(s, 'a');
-  assert.equal(s.round, 2);
-  assert.equal(s.phase, 'PICK');
-  assert.equal(s.shop.length, P.length + 2);
-  assert.deepEqual(s.hand, {});
-});
-
 test('CT Fronteiras: comeca na propria base, cresce em trilha continua e nao entra na base alheia', () => {
   let s = buildComTerraState('fronteiras', [{ id: 'a' }, { id: 'b' }], 8, 5);
   const b: CTBoard = s.boards[0];
@@ -278,21 +232,6 @@ test('CT Fronteiras: comeca na propria base, cresce em trilha continua e nao ent
   s = give({ ...s, turnIdx: 0 }, 'a', piece(['1'], 'y'));
   assert.equal(canPlaceAt(s, 'a', p.shape, 10, 6).ok, false); // solta, longe da trilha
   assert.equal(canPlaceAt(s, 'a', p.shape, 7, 5).ok, true); // encostada: entra na ilha
-});
-
-test('CT: o diretor destrava a partida quando alguem some', () => {
-  let s = buildComTerraState('diabo', P, 6, 3);
-  s = pickPiece(s, 'a', s.shop[0].uid);
-  s = forceAdvance(s);
-  assert.equal(s.phase, 'SABOTAGE');
-  assert.ok(s.hand.b && s.hand.c);
-  s = forceAdvance(s);
-  assert.equal(s.phase, 'PLACE');
-  const first = currentPlayerId(s)!;
-  const before = s.pointsAwarded[first];
-  s = forceAdvance(s);
-  assert.equal(s.pointsAwarded[first], before); // pular a vez nao tira pontos
-  assert.notEqual(currentPlayerId(s), first);
 });
 
 test('CT no hub: limites, conteudo local e pontos no placar das equipes', () => {

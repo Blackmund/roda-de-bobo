@@ -4,8 +4,24 @@ import type {
   CTMode,
   CTPendingKind,
   CTPiece,
+  CTVariants,
   ComTerraState
 } from '../types/game';
+import {
+  DEVIL_OWNER,
+  DIABO_CONTRACT_REWARD,
+  DIABO_DEVILS,
+  DIABO_DISCARD_PENALTY,
+  DIABO_TERRITORY_BONUS,
+  buildDiaboBag,
+  buildDiaboMap,
+  contractDef,
+  drawContracts,
+  largestTerritory,
+  newSquare,
+  raiseTide,
+  squareBonus
+} from './diaboMap';
 
 /**
  * COM TERRA: motor puro do jogo de poliminos (sem React, sem rede).
@@ -15,7 +31,7 @@ import type {
  *
  * Tres modos:
  *  - arquiteto: um tabuleiro 8x8 por jogador; turnos em rodizio.
- *  - diabo: um tabuleiro unico; rodada em 3 fases (escolha, sabotagem, colocacao por ordem do numero da peca).
+ *  - diabo: um mapa procedural unico; turnos em rodizio com loja aberta; quadrados da mesma cor dao bonus.
  *  - fronteiras: bases 5x5 ligadas a uma ilha central 8x8; cada jogador cresce em trilha continua.
  *
  * Toda funcao que muda o estado valida a jogada e devolve o MESMO objeto quando ela e invalida,
@@ -153,11 +169,11 @@ export function allOrientations(m: number[][]): number[][][] {
   return out;
 }
 
-export function shapeCells(m: number[][]): Array<{ dx: number; dy: number; k: 1 | 2 }> {
-  const out: Array<{ dx: number; dy: number; k: 1 | 2 }> = [];
+export function shapeCells(m: number[][]): Array<{ dx: number; dy: number; k: 1 | 2 | 3 }> {
+  const out: Array<{ dx: number; dy: number; k: 1 | 2 | 3 }> = [];
   m.forEach((row, dy) =>
     row.forEach((v, dx) => {
-      if (v === 1 || v === 2) out.push({ dx, dy, k: v });
+      if (v === 1 || v === 2 || v === 3) out.push({ dx, dy, k: v });
     })
   );
   return out;
@@ -246,55 +262,6 @@ function buildArquitetoBoards(playerIds: string[], rng: Rng): CTBoard[] {
   }));
 }
 
-function buildDiaboBoard(n: number, rng: Rng): CTBoard[] {
-  const size = n <= 2 ? 9 : n === 3 ? 11 : 12;
-  const b = blankBoard('mapa', size, size, null, 1);
-  // cantos recortados: cada partida tem um contorno diferente
-  const corners: Array<[number, number, number, number]> = [
-    [0, 0, 1, 1],
-    [size - 1, 0, -1, 1],
-    [0, size - 1, 1, -1],
-    [size - 1, size - 1, -1, -1]
-  ];
-  corners.forEach(([cx, cy, sx, sy]) => {
-    const a = Math.floor(rng() * 4);
-    for (let dx = 0; dx < a; dx++)
-      for (let dy = 0; dy < a - dx; dy++) {
-        const c = cellAt(b, cx + dx * sx, cy + dy * sy);
-        if (c) c.t = 0;
-      }
-  });
-  // lagos: manchas de agua onde nada pode ser construido
-  const lakes = n + 1;
-  for (let l = 0; l < lakes; l++) {
-    let x = 1 + Math.floor(rng() * (size - 2));
-    let y = 1 + Math.floor(rng() * (size - 2));
-    const len = 2 + Math.floor(rng() * 3);
-    for (let s = 0; s < len; s++) {
-      const c = cellAt(b, x, y);
-      if (c && c.t === 1) c.t = 2;
-      const d = [
-        [1, 0],
-        [-1, 0],
-        [0, 1],
-        [0, -1]
-      ][Math.floor(rng() * 4)];
-      x = Math.min(size - 2, Math.max(1, x + d[0]));
-      y = Math.min(size - 2, Math.max(1, y + d[1]));
-    }
-  }
-  const area = b.cells.filter((c) => c.t === 1).length;
-  scatter(b, rng, {
-    trees: Math.round(area * 0.06),
-    plus1: Math.round(area * 0.06),
-    plus2: Math.round(area * 0.03),
-    minus1: Math.round(area * 0.05),
-    actTree: Math.max(1, Math.round(area * 0.02)),
-    actTok: Math.max(1, Math.round(area * 0.02))
-  });
-  return [b];
-}
-
 /** Bases em volta da ilha: cima, direita, baixo, esquerda (ate 4 jogadores). */
 const FRONT_BASES: Array<{ x: number; y: number }> = [
   { x: 6, y: 0 },
@@ -356,7 +323,8 @@ function refill(s: ComTerraState): ComTerraState {
   while (shop.length < s.shopSize) {
     if (bag.length === 0) {
       bagNo += 1;
-      bag = buildBag(mulberry32(s.seed + bagNo * 7919), 'p' + bagNo);
+      const rng = mulberry32(s.seed + bagNo * 7919);
+      bag = s.mode === 'diabo' ? buildDiaboBag(rng, 'p' + bagNo) : buildBag(rng, 'p' + bagNo);
     }
     shop.push(bag[0]);
     bag = bag.slice(1);
@@ -370,7 +338,9 @@ export function buildComTerraState(
   totalRounds: number,
   seed: number = Date.now() % 2147483647,
   /** so para testes: o Arquiteto antigo (loja e tabuleiro 8x8), antes de virar Barenpark */
-  classicArquiteto = false
+  classicArquiteto = false,
+  /** Plano do Diabo: Mare Alta e Contratos */
+  variants: CTVariants = {}
 ): ComTerraState {
   const order = players.slice(0, comTerraMaxPlayers(mode)).map((p) => p.id);
   const rng = mulberry32(seed);
@@ -378,22 +348,22 @@ export function buildComTerraState(
     mode === 'arquiteto'
       ? buildArquitetoBoards(order, rng)
       : mode === 'diabo'
-      ? buildDiaboBoard(order.length, rng)
+      ? [buildDiaboMap(order.length, rng)]
       : buildFronteirasBoard(order, rng);
   const pointsAwarded: Record<string, number> = {};
   order.forEach((id) => (pointsAwarded[id] = 0));
   const base: ComTerraState = {
     mode,
-    phase: mode === 'diabo' ? 'PICK' : 'TURN',
+    phase: 'TURN',
     round: 1,
     totalRounds: clampComTerraRounds(totalRounds),
     order,
-    queue: mode === 'diabo' ? [] : order,
+    queue: order,
     turnIdx: 0,
     shop: [],
     bag: [],
     bagNo: 0,
-    shopSize: mode === 'diabo' ? order.length + 2 : 5,
+    shopSize: mode === 'diabo' ? order.length + 3 : 5,
     hand: {},
     pickSeq: {},
     sabotaged: [],
@@ -404,6 +374,18 @@ export function buildComTerraState(
     seq: 0,
     seed
   };
+  if (mode === 'diabo') {
+    const devils: Record<string, number> = {};
+    const bestSq: Record<string, number> = {};
+    order.forEach((id) => {
+      devils[id] = DIABO_DEVILS;
+      bestSq[id] = 0;
+    });
+    base.devils = devils;
+    base.bestSq = bestSq;
+    base.variants = { mare: !!variants.mare, contratos: !!variants.contratos };
+    if (variants.contratos) base.contracts = drawContracts(mulberry32(seed ^ 0x5bd1e995));
+  }
   if (mode === 'arquiteto' && !classicArquiteto) {
     // Arquiteto = Barenpark: o estado do jogo vive em `bp`; a loja e os tabuleiros antigos nao sao usados.
     return { ...base, shop: [], bag: [], boards: [], bp: buildBPState(order, seed) };
@@ -462,40 +444,94 @@ export interface CTPlaceCheck {
   reason?: string;
 }
 
-/** Pode por a matriz `m` com o canto superior esquerdo em (x, y)? */
-export function canPlaceAt(s: ComTerraState, pid: string, m: number[][], x: number, y: number): CTPlaceCheck {
-  const b = boardFor(s, pid);
-  const cells = shapeCells(m);
+interface Fit {
+  ok: boolean;
+  reason?: string;
+  touchesOwn: boolean;
+  touchesBase: boolean;
+}
+
+const N4: Array<[number, number]> = [
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1]
+];
+
+/** Regras fisicas do encaixe (terreno, ocupacao, arvore no furo, bases) e se encosta em peca sua. */
+function fit(s: ComTerraState, b: CTBoard, pid: string, m: number[][], x: number, y: number): Fit {
   let touchesBase = false;
   let touchesOwn = false;
-  for (const pc of cells) {
+  for (const pc of shapeCells(m)) {
     const cx = x + pc.dx;
     const cy = y + pc.dy;
     const c = cellAt(b, cx, cy);
-    if (!c || c.t === 0) return { ok: false, reason: 'Fora do tabuleiro' };
-    if (c.t === 2) return { ok: false, reason: 'Não dá para construir na água' };
-    if (c.o) return { ok: false, reason: 'Já tem peça aqui' };
-    if (c.tree && pc.k !== 2) return { ok: false, reason: 'Árvore só passa pelo furo' };
+    if (!c || c.t === 0) return { ok: false, reason: 'Fora do tabuleiro', touchesOwn, touchesBase };
+    if (c.t === 2 && pc.k !== 3) return { ok: false, reason: 'Não dá para construir na água', touchesOwn, touchesBase };
+    if (c.o) return { ok: false, reason: 'Já tem peça aqui', touchesOwn, touchesBase };
+    if (c.tree && pc.k !== 2) return { ok: false, reason: 'Árvore só passa pelo furo', touchesOwn, touchesBase };
     if (s.mode === 'fronteiras') {
-      if (c.z !== pid && c.z !== 'ilha') return { ok: false, reason: 'Base de outro jogador' };
+      if (c.z !== pid && c.z !== 'ilha') return { ok: false, reason: 'Base de outro jogador', touchesOwn, touchesBase };
       if (c.z === pid) touchesBase = true;
-      if (
-        [
-          [1, 0],
-          [-1, 0],
-          [0, 1],
-          [0, -1]
-        ].some(([dx, dy]) => cellAt(b, cx + dx, cy + dy)?.o === pid)
-      )
-        touchesOwn = true;
     }
+    if (!touchesOwn && N4.some(([dx, dy]) => cellAt(b, cx + dx, cy + dy)?.o === pid)) touchesOwn = true;
   }
+  return { ok: true, touchesOwn, touchesBase };
+}
+
+/** Cache por tabuleiro (tabuleiros sao imutaveis): existe encaixe desta forma encostado em peca sua? */
+const touchCache = new WeakMap<CTBoard, Map<string, boolean>>();
+
+function canTouchOwn(s: ComTerraState, b: CTBoard, pid: string, m: number[][]): boolean {
+  const orients = allOrientations(m);
+  const key = pid + '|' + orients.map((o) => JSON.stringify(o)).sort()[0];
+  let memo = touchCache.get(b);
+  if (!memo) {
+    memo = new Map();
+    touchCache.set(b, memo);
+  }
+  const hit = memo.get(key);
+  if (hit !== undefined) return hit;
+  let found = false;
+  outer: for (const o of orients) {
+    for (let y = -o.length + 1; y < b.h; y++)
+      for (let x = -o[0].length + 1; x < b.w; x++) {
+        const f = fit(s, b, pid, o, x, y);
+        if (f.ok && f.touchesOwn) {
+          found = true;
+          break outer;
+        }
+      }
+  }
+  memo.set(key, found);
+  return found;
+}
+
+/**
+ * Pode por a matriz `m` com o canto superior esquerdo em (x, y)?
+ * `piece` e a peca que sera colocada (padrao: a da mao). No Plano do Diabo a peca precisa encostar numa
+ * peca sua quando isso for possivel; a Peca do Diabo vai em qualquer casa livre.
+ */
+export function canPlaceAt(
+  s: ComTerraState,
+  pid: string,
+  m: number[][],
+  x: number,
+  y: number,
+  piece: CTPiece | undefined = (s.hand || {})[pid]
+): CTPlaceCheck {
+  const b = boardFor(s, pid);
+  const f = fit(s, b, pid, m, x, y);
+  if (!f.ok) return { ok: false, reason: f.reason };
   if (s.mode === 'fronteiras') {
     if (!ownsAnyTile(b, pid)) {
-      if (!touchesBase) return { ok: false, reason: 'A primeira peça começa na sua base' };
-    } else if (!touchesOwn) {
+      if (!f.touchesBase) return { ok: false, reason: 'A primeira peça começa na sua base' };
+    } else if (!f.touchesOwn) {
       return { ok: false, reason: 'Encoste em uma peça sua: a trilha é contínua' };
     }
+  }
+  if (s.mode === 'diabo' && !piece?.devil && !f.touchesOwn && ownsAnyTile(b, pid) && canTouchOwn(s, b, pid, m)) {
+    return { ok: false, reason: 'Encoste em uma peça sua' };
   }
   return { ok: true };
 }
@@ -505,7 +541,7 @@ export function hasAnyPlacement(s: ComTerraState, pid: string, piece: CTPiece): 
   for (const m of allOrientations(piece.shape)) {
     for (let y = -m.length + 1; y < b.h; y++)
       for (let x = -m[0].length + 1; x < b.w; x++) {
-        if (canPlaceAt(s, pid, m, x, y).ok) return true;
+        if (canPlaceAt(s, pid, m, x, y, piece).ok) return true;
       }
   }
   return false;
@@ -537,22 +573,50 @@ function addPoints(s: ComTerraState, pid: string, delta: number): ComTerraState 
   return { ...s, pointsAwarded: { ...s.pointsAwarded, [pid]: (s.pointsAwarded[pid] || 0) + delta } };
 }
 
-function startRound(s: ComTerraState, round: number): ComTerraState {
-  if (round > s.totalRounds) {
-    return { ...s, phase: 'SUMMARY', round: s.totalRounds, queue: [], turnIdx: 0, hand: {}, pending: [] };
+/** Fim de partida: no Plano do Diabo entra o bonus do maior territorio continuo. */
+function toSummary(s: ComTerraState): ComTerraState {
+  let next: ComTerraState = { ...s, phase: 'SUMMARY', queue: [], turnIdx: 0, hand: {}, pending: [] };
+  if (s.mode === 'diabo' && !s.territoryWinners) {
+    const b = s.boards[0];
+    const territory: Record<string, number> = {};
+    s.order.forEach((pid) => (territory[pid] = largestTerritory(b, pid)));
+    const best = Math.max(0, ...Object.values(territory));
+    const winners = best > 0 ? s.order.filter((pid) => territory[pid] === best) : [];
+    const bonus = winners.length > 1 ? Math.floor(DIABO_TERRITORY_BONUS / 2) : DIABO_TERRITORY_BONUS;
+    next = { ...next, territory, territoryWinners: winners };
+    winners.forEach((pid) => {
+      next = addPoints(next, pid, bonus);
+      next = withLog(next, `maior território (${best} casas) +${bonus}`, pid, bonus);
+    });
   }
-  if (s.mode === 'diabo') {
-    return refill({ ...s, phase: 'PICK', round, queue: [], turnIdx: 0, hand: {}, pickSeq: {}, sabotaged: [], pending: [] });
+  return next;
+}
+
+function startRound(s: ComTerraState, round: number): ComTerraState {
+  if (round > s.totalRounds) return toSummary({ ...s, round: s.totalRounds });
+  let base = s;
+  if (s.mode === 'diabo' && s.variants?.mare && round > 1) {
+    const b = s.boards[0];
+    const nb: CTBoard = { ...b, cells: b.cells.map((c) => ({ ...c })) };
+    const n = raiseTide(nb, mulberry32(s.seed + round * 1013));
+    if (n > 0) base = withLog(replaceBoard(s, nb), `A maré subiu: ${n} casas viraram água`, '', 0);
   }
   const shift = (round - 1) % Math.max(1, s.order.length);
   const queue = [...s.order.slice(shift), ...s.order.slice(0, shift)];
-  return refill({ ...s, phase: 'TURN', round, queue, turnIdx: 0, hand: {}, pending: [] });
+  return refill({ ...base, phase: 'TURN', round, queue, turnIdx: 0, hand: {}, pending: [], sabotaged: [] });
+}
+
+/** Plano do Diabo: ninguem consegue encaixar nenhuma peca da loja, e a partida acaba. */
+export function isStuck(s: ComTerraState): boolean {
+  return !s.order.some((pid) => (s.shop || []).some((p) => hasAnyPlacement(s, pid, p)));
 }
 
 function endTurn(s: ComTerraState): ComTerraState {
+  const cleared = s.mode === 'diabo' ? { ...s, sabotaged: [] } : s;
+  if (s.mode === 'diabo' && isStuck(cleared)) return toSummary(cleared);
   const next = s.turnIdx + 1;
-  if (next >= (s.queue || []).length) return startRound(s, s.round + 1);
-  return { ...s, turnIdx: next };
+  if (next >= (s.queue || []).length) return startRound(cleared, s.round + 1);
+  return { ...cleared, turnIdx: next };
 }
 
 function afterPlacement(s: ComTerraState, pid: string): ComTerraState {
@@ -571,20 +635,8 @@ export function pickPiece(s: ComTerraState, pid: string, uid: string): ComTerraS
     hand: { ...(s.hand || {}), [pid]: piece },
     pickSeq: { ...(s.pickSeq || {}), [pid]: (s.seq || 0) + 1 }
   };
-  next = withLog(next, `pegou a peça ${piece.size}`, pid, 0);
-  if (s.mode !== 'diabo') return refill(next);
-  if (next.order.every((id) => next.hand[id])) next = { ...next, phase: 'SABOTAGE', sabotaged: [] };
-  return next;
-}
-
-function toPlacePhase(s: ComTerraState): ComTerraState {
-  const queue = [...s.order].sort((a, b) => {
-    const pa = s.hand[a];
-    const pb = s.hand[b];
-    if ((pa?.size || 99) !== (pb?.size || 99)) return (pa?.size || 99) - (pb?.size || 99);
-    return (s.pickSeq[a] || 0) - (s.pickSeq[b] || 0);
-  });
-  return { ...s, phase: 'PLACE', queue, turnIdx: 0 };
+  next = withLog(next, piece.devil ? 'pegou a Peça do Diabo' : `pegou a peça ${piece.size}`, pid, 0);
+  return refill(next);
 }
 
 function replaceBoard(s: ComTerraState, b: CTBoard): ComTerraState {
@@ -595,13 +647,22 @@ function sameShape(a: number[][], b: number[][]): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
-/** Confirma a peca da mao na posicao (x, y), com a matriz ja girada/espelhada. */
-export function placePiece(s: ComTerraState, pid: string, m: number[][], x: number, y: number): ComTerraState {
-  if (playerStage(s, pid) !== 'place') return s;
+export interface CTPlacementResult {
+  board: CTBoard;
+  delta: number;
+  notes: string[];
+  pending: ComTerraState['pending'];
+  /** lado do quadrado novo que deu bonus (0 = nenhum) */
+  square: number;
+}
+
+/** Calcula o efeito de um encaixe sem mudar o estado (a IA usa para comparar jogadas). */
+export function previewPlacement(s: ComTerraState, pid: string, m: number[][], x: number, y: number): CTPlacementResult | null {
+  if (playerStage(s, pid) !== 'place') return null;
   const piece = s.hand[pid];
-  if (!piece) return s;
-  if (!allOrientations(piece.shape).some((o) => sameShape(o, m))) return s;
-  if (!canPlaceAt(s, pid, m, x, y).ok) return s;
+  if (!piece) return null;
+  if (!allOrientations(piece.shape).some((o) => sameShape(o, m))) return null;
+  if (!canPlaceAt(s, pid, m, x, y).ok) return null;
 
   const board = boardFor(s, pid);
   const cells = board.cells.map((c) => ({ ...c }));
@@ -611,23 +672,32 @@ export function placePiece(s: ComTerraState, pid: string, m: number[][], x: numb
   const pending = [...(s.pending || [])];
   const touchedRows = new Set<number>();
   const touchedCols = new Set<number>();
+  const fresh = new Set<number>();
+  const owner = piece.devil ? DEVIL_OWNER : pid;
 
   shapeCells(m).forEach((pc) => {
     const cx = x + pc.dx;
     const cy = y + pc.dy;
-    const c = cells[idx(b, cx, cy)];
-    c.o = pid;
+    const i = idx(b, cx, cy);
+    const c = cells[i];
+    c.o = owner;
     c.k = pc.k;
     c.p = piece.uid;
+    fresh.add(i);
     touchedRows.add(cy);
     touchedCols.add(cx);
-    if (pc.k === 2) {
+    if (piece.devil) {
+      // a Peca do Diabo so ocupa: o que estava embaixo se perde
+      delete c.tok;
+      delete c.act;
+    } else if (pc.k === 2) {
       if (c.tree) {
         delta += CT_TREE_BONUS;
         notes.push(`árvore no furo +${CT_TREE_BONUS}`);
       }
       // ficha ou icone dentro do furo ficam a mostra e nao valem nada
-    } else {
+    } else if (c.t === 1) {
+      // bloco solido (ou ponte sobre a terra) recolhe ficha e icone
       if (c.tok !== undefined) {
         delta += c.tok;
         notes.push(`ficha ${c.tok > 0 ? '+' : ''}${c.tok}`);
@@ -657,11 +727,51 @@ export function placePiece(s: ComTerraState, pid: string, m: number[][], x: numb
     }
   }
 
+  let square = 0;
+  if (s.mode === 'diabo' && !piece.devil) {
+    square = newSquare(b, pid, fresh);
+    if (square) {
+      const v = squareBonus(square);
+      delta += v;
+      notes.push(`quadrado ${square}×${square} +${v}`);
+    }
+  }
+  return { board: b, delta, notes, pending, square };
+}
+
+/** Contratos do Diabo: quem cumpre primeiro ganha +8, o segundo +4. */
+function checkContracts(s: ComTerraState, pid: string): ComTerraState {
+  if (!s.contracts?.length) return s;
+  const b = s.boards[0];
+  const gains: Array<{ label: string; reward: number }> = [];
+  const contracts = s.contracts.map((c) => {
+    if (c.done.includes(pid) || c.done.length >= DIABO_CONTRACT_REWARD.length) return c;
+    const def = contractDef(c.id);
+    if (!def || !def.check(b, pid, s.bestSq?.[pid] || 0)) return c;
+    gains.push({ label: def.label, reward: DIABO_CONTRACT_REWARD[c.done.length] });
+    return { ...c, done: [...c.done, pid] };
+  });
+  let next: ComTerraState = { ...s, contracts };
+  gains.forEach((g) => {
+    next = addPoints(next, pid, g.reward);
+    next = withLog(next, `cumpriu o contrato "${g.label}" +${g.reward}`, pid, g.reward);
+  });
+  return next;
+}
+
+/** Confirma a peca da mao na posicao (x, y), com a matriz ja girada/espelhada. */
+export function placePiece(s: ComTerraState, pid: string, m: number[][], x: number, y: number): ComTerraState {
+  const r = previewPlacement(s, pid, m, x, y);
+  if (!r) return s;
+  const piece = s.hand[pid];
   const hand = { ...s.hand };
   delete hand[pid];
-  let next = replaceBoard({ ...s, hand, pending }, b);
-  next = addPoints(next, pid, delta);
-  next = withLog(next, `encaixou a peça ${piece.size}${notes.length ? ' (' + notes.join(', ') + ')' : ''}`, pid, delta);
+  let next = replaceBoard({ ...s, hand, pending: r.pending }, r.board);
+  next = addPoints(next, pid, r.delta);
+  if (r.square) next = { ...next, bestSq: { ...(next.bestSq || {}), [pid]: Math.max(next.bestSq?.[pid] || 0, r.square) } };
+  const what = piece.devil ? 'soltou a Peça do Diabo' : `encaixou a peça ${piece.size}`;
+  next = withLog(next, `${what}${r.notes.length ? ' (' + r.notes.join(', ') + ')' : ''}`, pid, r.delta);
+  next = checkContracts(next, pid);
   return afterPlacement(next, pid);
 }
 
@@ -672,8 +782,9 @@ export function discardPiece(s: ComTerraState, pid: string): ComTerraState {
   if (!piece) return s;
   const hand = { ...s.hand };
   delete hand[pid];
-  let next = addPoints({ ...s, hand }, pid, -CT_DISCARD_PENALTY);
-  next = withLog(next, `descartou a peça ${piece.size}`, pid, -CT_DISCARD_PENALTY);
+  const penalty = s.mode === 'diabo' ? DIABO_DISCARD_PENALTY : CT_DISCARD_PENALTY;
+  let next = addPoints({ ...s, hand }, pid, -penalty);
+  next = withLog(next, `descartou a peça ${piece.size}`, pid, -penalty);
   return afterPlacement(next, pid);
 }
 
@@ -712,13 +823,17 @@ export function skipAction(s: ComTerraState, pid: string): ComTerraState {
   return afterPlacement({ ...s, pending: s.pending.filter((_, k) => k !== i) }, pid);
 }
 
-function markSabotaged(s: ComTerraState, pid: string): ComTerraState {
-  const sabotaged = [...(s.sabotaged || []), pid];
-  const next = { ...s, sabotaged };
-  return s.order.every((id) => sabotaged.includes(id)) ? toPlacePhase(next) : next;
+/** Pode usar um diabinho agora? So na sua vez, antes de pegar a peca, um por vez, 3 por partida. */
+export function canSabotage(s: ComTerraState, pid: string): boolean {
+  return (
+    s.mode === 'diabo' &&
+    playerStage(s, pid) === 'pick' &&
+    (s.devils?.[pid] || 0) > 0 &&
+    !(s.sabotaged || []).includes(pid)
+  );
 }
 
-/** Fase de sabotagem do Plano do Diabo: uma arvore ou uma ficha no mapa de todos. */
+/** Diabinho do Plano do Diabo: uma arvore, uma ficha -1 ou uma ficha +1 numa casa livre do mapa. */
 export function sabotage(
   s: ComTerraState,
   pid: string,
@@ -727,43 +842,27 @@ export function sabotage(
   y: number,
   tokValue: 1 | -1 = -1
 ): ComTerraState {
-  if (playerStage(s, pid) !== 'sabotage') return s;
+  if (!canSabotage(s, pid)) return s;
   const applied = applyFeature(s, pid, kind, x, y, tokValue);
   if (!applied) return s;
-  const next = withLog(applied, kind === 'tree' ? 'plantou uma árvore no mapa' : `pôs uma ficha ${tokValue > 0 ? '+1' : '-1'} no mapa`, pid, 0);
-  return markSabotaged(next, pid);
-}
-
-export function skipSabotage(s: ComTerraState, pid: string): ComTerraState {
-  if (playerStage(s, pid) !== 'sabotage') return s;
-  return markSabotaged(s, pid);
+  const next: ComTerraState = {
+    ...applied,
+    sabotaged: [...(applied.sabotaged || []), pid],
+    devils: { ...(applied.devils || {}), [pid]: (applied.devils?.[pid] || 0) - 1 }
+  };
+  return withLog(
+    next,
+    kind === 'tree' ? 'usou um diabinho: árvore no mapa' : `usou um diabinho: ficha ${tokValue > 0 ? '+1' : '-1'}`,
+    pid,
+    0
+  );
 }
 
 /**
- * Diretor destrava a partida quando alguem sumiu: quem falta escolher recebe a menor peca da loja,
- * quem falta sabotar passa, e quem esta na vez perde a vez sem penalidade.
+ * Diretor destrava a partida quando alguem sumiu: quem esta na vez perde a vez sem penalidade.
  */
 export function forceAdvance(s: ComTerraState): ComTerraState {
   if (s.phase === 'SUMMARY') return s;
-  if (s.phase === 'PICK') {
-    let next = s;
-    for (const pid of s.order) {
-      if (next.phase !== 'PICK') break;
-      if (next.hand[pid]) continue;
-      const smallest = [...next.shop].sort((a, b) => a.size - b.size)[0];
-      if (!smallest) break;
-      next = pickPiece(next, pid, smallest.uid);
-    }
-    return next;
-  }
-  if (s.phase === 'SABOTAGE') {
-    let next = s;
-    for (const pid of s.order) {
-      if (next.phase !== 'SABOTAGE') break;
-      next = skipSabotage(next, pid);
-    }
-    return next;
-  }
   const pid = currentPlayerId(s);
   if (!pid) return startRound(s, s.round + 1);
   const hand = { ...s.hand };
@@ -774,7 +873,8 @@ export function forceAdvance(s: ComTerraState): ComTerraState {
 
 /** Encerra a partida agora (o diretor decide parar antes do fim). */
 export function finishNow(s: ComTerraState): ComTerraState {
-  return { ...s, phase: 'SUMMARY', queue: [], turnIdx: 0, hand: {}, pending: [] };
+  if (s.phase === 'SUMMARY') return s;
+  return toSummary(s);
 }
 
 export function ranking(s: ComTerraState): Array<{ playerId: string; points: number }> {

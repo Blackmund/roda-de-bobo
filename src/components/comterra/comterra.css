@@ -2418,3 +2418,311 @@ button.ct-shop-card:focus-visible {
 .bp-modal.is-peek .bp-modal-head { border-bottom-color: rgba(245, 242, 235, 0.1); }
 .bp-modal.is-peek .bp-modal-board > svg { filter: drop-shadow(0.7rem 1.3rem 0.8rem rgba(0, 0, 0, 0.85)); }
 .bp-mini-park { touch-action: manipulation; }
+
+/* ---------- Plano do Diabo ---------- */
+.ct-devil-glyph {
+  display: inline-block;
+  vertical-align: -0.12em;
+  color: var(--rdb-crimson);
+}
+.ct-shop-num .ct-devil-glyph {
+  color: var(--rdb-crimson);
+}
+.ct-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.2rem;
+  margin-top: 0.15rem;
+}
+.ct-badge {
+  padding: 0.05rem 0.3rem;
+  border: 1px solid rgba(245, 242, 235, 0.35);
+  color: var(--rdb-cream);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 1.3;
+}
+.ct-badge--ponte {
+  border-color: var(--rdb-teal);
+  color: var(--rdb-teal);
+}
+.ct-badge--solta {
+  border-color: var(--rdb-crimson);
+  color: #ff7d98;
+}
+.ct-sq {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--rdb-ink-2);
+  font-size: 0.8em;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ct-sq-box {
+  width: 0.7em;
+  height: 0.7em;
+  border: 2px solid currentColor;
+}
+.ct-sq.is-on {
+  color: var(--rdb-teal);
+}
+.dbt-devils {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 2.2em;
+  color: var(--rdb-ink-2);
+  font-size: 0.8em;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.ct-contracts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--rdb-heavy);
+}
+.ct-contracts li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.35rem 0.55rem;
+  border-left: 0.25rem solid var(--rdb-amber);
+  background: var(--rdb-navy-2);
+  font-weight: 800;
+  font-size: 0.85rem;
+  line-height: 1.25;
+}
+.ct-contracts li.is-closed {
+  border-left-color: rgba(245, 242, 235, 0.25);
+  color: var(--rdb-ink-2);
+  text-decoration: line-through;
+}
+.ct-contract-pay {
+  flex-shrink: 0;
+  color: var(--rdb-amber);
+  font-weight: 900;
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+/* barra da tela principal numa linha so */
+.ct-host--diabo .ct-viewbar {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.ct-host--diabo .ct-viewbar-title {
+  white-space: nowrap;
+}
+.ct-host--diabo .ct-viewbar-opts {
+  flex-wrap: nowrap;
+}
+
+/* TV: mapa na altura toda + coluna lateral */
+.dbt {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(26rem, 46%);
+  gap: 1.2rem;
+  padding: 0.7rem 0.9rem;
+  overflow: hidden;
+}
+.dbt-map {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}
+.dbt-side {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  grid-auto-rows: min-content;
+  align-content: start;
+  gap: 0.8rem 1.1rem;
+  min-height: 0;
+  overflow: hidden;
+}
+.dbt-legend,
+.dbt-block--shop,
+.dbt-side .ct-tv-director,
+.dbt-block--wide {
+  grid-column: 1 / -1;
+}
+.dbt-turn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  border-left: 0.35rem solid var(--rdb-teal);
+  background: rgba(23, 184, 184, 0.12);
+  font-family: var(--rdb-heavy);
+}
+.dbt-turn-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.dbt-turn-text strong {
+  font-weight: 900;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+}
+.dbt-turn-text span {
+  color: var(--rdb-ink-2);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.dbt-legend {
+  margin: 0;
+  color: var(--rdb-ink-2);
+  font-family: var(--rdb-heavy);
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+.dbt-block {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 0.35rem;
+}
+.dbt-shop {
+  grid-template-columns: repeat(var(--n, 7), minmax(0, 1fr));
+  gap: 0.3rem;
+}
+.dbt-shop .ct-shop-card {
+  padding: 1.5rem 0.2rem 0.2rem;
+}
+.dbt-shop .ct-piece {
+  height: 3rem;
+}
+.dbt-shop .ct-shop-pts {
+  font-size: 0.72rem;
+}
+.dbt-rank li {
+  padding: 0.35rem 0.6rem;
+}
+.dbt-log {
+  font-size: 0.8rem;
+}
+.dbt-side .ct-tv-director {
+  margin-top: 0;
+}
+
+/* o zoom do mapa fica preso no canto do proprio mapa */
+.ct-seat--diabo .ct-board-wrap {
+  position: relative;
+}
+
+/* Mesa (lugar largo): mapa grande, ferramentas ao lado, loja e placar compactos */
+@container ctbox (min-width: 900px) {
+  .ct-seat--diabo .ct-zoom-bar {
+    display: none;
+  }
+  .ct-seat--diabo {
+    gap: 0.5rem;
+  }
+  .ct-seat--diabo .ct-seat-head {
+    padding: 0.45rem 0.9rem;
+  }
+  .ct-seat--diabo .ct-panels {
+    grid-template-columns: minmax(0, 1fr) 17.5rem 15.5rem;
+    gap: 1rem;
+  }
+  .ct-seat--diabo .ct-panel--board .ct-tools-row:has(.rdb-btn) {
+    grid-template-columns: 1fr;
+  }
+  .ct-seat--diabo .ct-panel {
+    overflow: hidden;
+  }
+  .ct-seat--diabo .ct-board-wrap {
+    height: 100%;
+  }
+  .ct-seat--diabo .ct-panel--board .ct-tools {
+    width: 12.5rem;
+  }
+  .ct-seat--diabo .ct-go-shop,
+  .ct-seat--diabo [data-testid='ct-devil-btn-shop'] {
+    display: none;
+  }
+  .ct-seat--diabo .ct-shop {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+  .ct-seat--diabo .ct-shop-card {
+    padding: 0.3rem 0.3rem 0.2rem;
+  }
+  .ct-seat--diabo .ct-shop .ct-piece {
+    max-height: 3.4rem;
+  }
+  .ct-seat--diabo .ct-shop-take {
+    margin-top: 0.3rem;
+  }
+  .ct-seat--diabo .ct-rank li {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.85rem;
+  }
+  .ct-seat--diabo .ct-panel--rivals .ct-log {
+    display: none;
+  }
+}
+
+@media (max-width: 899px) {
+  .ct-host--diabo .ct-viewbar,
+  .ct-host--diabo .ct-viewbar-opts {
+    flex-wrap: wrap;
+  }
+  .dbt {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+  .dbt-map {
+    aspect-ratio: 1;
+  }
+  .dbt-side {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+  .dbt-shop {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Plano do Diabo no celular: girar, espelhar e confirmar presos no rodape; mover = tocar no mapa */
+@container ctbox (max-width: 899px) {
+  .ct-seat--diabo [data-testid='ct-place-tools'] {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    gap: 0.4rem;
+    padding: 0.5rem 0 0.6rem;
+    border-top: var(--rdb-line) solid var(--rdb-teal);
+    background: var(--rdb-navy);
+  }
+  .ct-seat--diabo [data-testid='ct-place-tools'] .ct-tools-row:first-of-type {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .ct-seat--diabo [data-testid='ct-place-tools'] .rdb-seg {
+    padding: 0 0.3rem;
+    font-size: 0.78rem;
+  }
+  .ct-seat--diabo .ct-dpad {
+    display: none;
+  }
+  .ct-seat--diabo .ct-tools-row--pad {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ct-seat--diabo .ct-commit {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: 0.4rem;
+    width: 100%;
+  }
+  .ct-seat--diabo .ct-commit .ct-fit {
+    grid-column: 1 / -1;
+  }
+}

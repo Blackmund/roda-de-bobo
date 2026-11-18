@@ -414,7 +414,14 @@ export const buildStartedRoundUpdater = ({
         if (gameId === 'com-terra') {
           // A partida inteira corre dentro do estado do jogo; "Rodadas" do setup vira o numero de rodadas internas.
           comTerraState = {
-            ...buildComTerraState(mergedCustomConfig.ctMode || 'arquiteto', nextMatchPlayers, effectiveMaxRounds),
+            ...buildComTerraState(
+              mergedCustomConfig.ctMode || 'arquiteto',
+              nextMatchPlayers,
+              effectiveMaxRounds,
+              undefined,
+              false,
+              mergedCustomConfig.ctVariants || {}
+            ),
             skin: mergedCustomConfig.ctSkin || 'clean'
           };
         }
