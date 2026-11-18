@@ -225,6 +225,7 @@ export const CTSeat: React.FC<CTSeatProps> = ({ state: s, players, playerId, onU
               label={`Tabuleiro de ${me?.name || 'jogador'}`}
               testid="ct-my-board"
               enableZoom={diabo}
+              wheelZoom={diabo}
               ghost={pose && stage === 'place' ? { m: pose.m, x: pose.x, y: pose.y, ok: !!check?.ok, playerId, locked } : null}
               canTarget={targeting ? (x, y) => canTarget(s, playerId, x, y) : undefined}
               selected={targeting ? target : null}

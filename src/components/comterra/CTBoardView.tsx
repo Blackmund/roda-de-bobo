@@ -455,6 +455,8 @@ export interface CTBoardViewProps {
   onPickExpansionSpot?: (ax: number, ay: number) => void;
   /** Permite zoom in/out vetorial (100% a 300%) + arrastar camera no mapa */
   enableZoom?: boolean;
+  /** roda do mouse amplia sem precisar do Ctrl (quando o mapa nao fica dentro de algo que rola) */
+  wheelZoom?: boolean;
   zoom?: number;
   onZoomChange?: (z: number) => void;
   label: string;
@@ -468,6 +470,16 @@ const ZOOM_CYCLE = [1, 1.5, 2, 3];
 
 let uidSeq = 0;
 
+/** Algum ancestral (ou a pagina) tem rolagem de verdade agora? Entao a roda do mouse deve rolar, nao ampliar. */
+function insideScroller(el: Element): boolean {
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    const oy = getComputedStyle(p).overflowY;
+    if ((oy === 'auto' || oy === 'scroll') && p.scrollHeight > p.clientHeight + 1) return true;
+  }
+  const doc = document.scrollingElement;
+  return !!doc && doc.scrollHeight > doc.clientHeight + 1;
+}
+
 export const CTBoardView: React.FC<CTBoardViewProps> = ({
   board,
   order,
@@ -478,6 +490,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
   bpExpansionSpots,
   onPickExpansionSpot,
   enableZoom = false,
+  wheelZoom = false,
   zoom: controlledZoom,
   onZoomChange,
   label,
@@ -698,7 +711,8 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
     const svg = svgRef.current;
     if (!enableZoom || !svg) return;
     const onWheel = (e: WheelEvent) => {
-      if (!e.ctrlKey && !e.metaKey) return; // rolagem normal continua rolando a pagina
+      // rolagem normal continua rolando a pagina; com wheelZoom, a roda amplia so quando nada em volta precisa rolar
+      if (!e.ctrlKey && !e.metaKey && !(wheelZoom && !insideScroller(svg))) return;
       e.preventDefault();
       const k = e.deltaMode === 1 ? 0.05 : 0.0035;
       const nextZ = Math.round(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, activeZoom * Math.exp(-e.deltaY * k))) * 100) / 100;
@@ -1127,7 +1141,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
           type="button"
           className="ct-zoom-btn ct-zoom-reset"
           data-testid="bp-zoom-reset"
-          aria-label="Ver o parque inteiro"
+          aria-label={isBP ? 'Ver o parque inteiro' : 'Ver o mapa inteiro'}
           disabled={activeZoom <= ZOOM_MIN}
           onClick={() => applyZoom(ZOOM_MIN)}
         >

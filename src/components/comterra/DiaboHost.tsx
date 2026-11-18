@@ -75,7 +75,7 @@ export const DiaboHost: React.FC<Props> = ({ room, state: ct, onUpdate }) => {
       {effective === 'tv' ? (
         <div className="ct-host-body dbt">
           <div className="dbt-map">
-            <CTBoardView board={ct.boards[0]} order={ct.order} label="Mapa da partida" testid="ct-tv-board-mapa" />
+            <CTBoardView board={ct.boards[0]} order={ct.order} label="Mapa da partida" testid="ct-tv-board-mapa" enableZoom wheelZoom />
           </div>
           <aside className="dbt-side">
             <p className="dbt-legend">
