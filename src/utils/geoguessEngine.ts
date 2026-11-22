@@ -2,7 +2,7 @@ import type { GeoEtapa, GeoGuessGameState, Player } from '../types/game';
 import type { GeoLocal } from '../data/geoguessBank';
 
 /**
- * GeoGuess: o mesmo lugar em 5 imagens de satelite, do close mais dificil a cidade inteira. Acertar na 1a imagem
+ * GeoGuess: cinco pistas visuais sobre o mesmo lugar. Acertar na 1a imagem
  * vale 5, na 2a vale 4, e assim por diante (como no quadro "Desafio de hoje: GeoGuessr" do programa).
  *
  * Todos chutam ao mesmo tempo pelo celular; o diretor marca acertou/errou na TV. Quem acerta fica travado com os
@@ -16,12 +16,12 @@ export const GEO_TILE_SOURCE = {
   attribution: 'Powered by Esri · Imagens: Esri, Maxar, Earthstar Geographics e comunidade GIS'
 };
 
-/** Do detalhe a cidade: close extremo, outra parte, o lugar inteiro, o entorno e a cidade. */
+/** Enquadramentos aéreos de apoio, com centros diferentes nas pistas intermediárias. */
 export const GEO_ETAPAS_PADRAO: GeoEtapa[] = [
   { z: 19, span: 2.5, dx: 40, dy: -30 },
-  { z: 18, span: 3, dx: -110, dy: 80 },
-  { z: 17, span: 3.5 },
-  { z: 15, span: 3.5 },
+  { z: 18, span: 2.5, dx: -115, dy: 85 },
+  { z: 18, span: 3.5, dx: 90, dy: -105 },
+  { z: 15, span: 3.5, dx: -360, dy: 230 },
   { z: 13, span: 3.5 }
 ];
 export const GEO_REVELACAO_PADRAO: GeoEtapa = { z: 17, span: 3 };
