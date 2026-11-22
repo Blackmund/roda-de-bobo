@@ -118,9 +118,9 @@ const PieceShape: React.FC<{
   const top = layer !== 'under';
   const skin = useCTSkin();
   const clipId = 'ctclip' + React.useId().replace(/[^a-zA-Z0-9]/g, '');
-  // skin classica: so para as pecas da Reserva (verde, viveiro, cercado)
-  const kind = skin === 'classic' ? Object.keys(BP_PALETTE).find((k) => BP_PALETTE[k].top === color.top) : undefined;
-  if (skin === 'classic' && (kind || tileType)) {
+  // Os visuais ilustrados se aplicam às peças da Reserva.
+  const kind = skin !== 'clean' ? Object.keys(BP_PALETTE).find((k) => BP_PALETTE[k].top === color.top) : undefined;
+  if (skin !== 'clean' && (kind || tileType)) {
     return (
       <ClassicPieceShape
         cells={cells}
@@ -427,7 +427,7 @@ const BPIconMark: React.FC<{ x: number; y: number; kind: string; statue?: number
   const skin = useCTSkin();
   return (
     <g pointerEvents="none" transform={`translate(${x * U} ${y * U})`}>
-      {kind === 'pit' && statue !== undefined ? (skin === 'classic' ? <ClassicMonument v={statue} /> : <BPMonument v={statue} />) : bpGlyph(kind, true)}
+      {kind === 'pit' && statue !== undefined ? (skin !== 'clean' ? <ClassicMonument v={statue} /> : <BPMonument v={statue} />) : bpGlyph(kind, true)}
     </g>
   );
 };
@@ -518,7 +518,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
   const [panning, setPanning] = useState(false);
   const isBP = board.id.startsWith('bp-');
   const skin = useCTSkin();
-  const isClassicBP = isBP && skin === 'classic';
+  const isClassicBP = isBP && skin !== 'clean';
 
   const box = useMemo(() => {
     let minX = board.w;
@@ -917,8 +917,8 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
                   : '#3aa0d8'
                 : isClassicBP
                 ? (x + y) % 2
-                  ? '#ded092'
-                  : '#e8dba0'
+                  ? '#c5c28b'
+                  : '#d8cf9d'
                 : isBP
                 ? (x + y) % 2
                   ? '#e6d8a6'
@@ -928,6 +928,12 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
                 : '#86b950'
             }
           />
+        ))}
+        {isClassicBP && cells.filter(({ c }) => c.t !== 2 && !c.o).map(({ x, y }) => (
+          <g key={'terrain' + x + ',' + y} transform={`translate(${x * U} ${y * U})`} pointerEvents="none">
+            <path d={((x + y) & 1) ? 'M1 2l.9-.5.9.4-.7.6z M7.4 7.8l1.1-.5.8.6-.8.6z' : 'M1.1 7.8l1.1-.5.7.6-.9.5z M7.4 2.1l1-.5.8.4-.8.6z'} fill="#977348" opacity=".34" />
+            <path d="M.7 3.7l.3-.8.3.8.5-.6M8.7 6.3l.2-.7.4.7.3-.6M6.9 8.7l.3-.7.3.7" fill="none" stroke="#596b36" strokeWidth=".24" opacity=".58" />
+          </g>
         ))}
         {cells
           .filter(({ c }) => c.t === 2)
@@ -1078,7 +1084,7 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
       {/* moedas e monumentos: por cima de todas as pecas */}
       {pieces.map(([uid, p]) =>
         p.ptsCell && p.ptsAt ? (
-          skin === 'classic' && p.owner === 'enclosure' ? (
+          skin !== 'clean' && p.owner === 'enclosure' ? (
             <ClassicPentagonBadge key={'coin' + uid} cx={p.ptsAt.x * U} cy={p.ptsAt.y * U} pts={p.ptsCell.pts} />
           ) : (
             <BPCoin key={'coin' + uid} cx={p.ptsAt.x * U} cy={p.ptsAt.y * U} v={p.ptsCell.pts} />

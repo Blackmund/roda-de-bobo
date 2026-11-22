@@ -488,7 +488,7 @@ export interface BPState {
 
 export type CTMode = 'arquiteto' | 'diabo' | 'fronteiras';
 /** visual das pecas da Reserva: clean (chapado, padrao) ou classic (tabuleiro ilustrado) */
-export type CTSkin = 'clean' | 'classic';
+export type CTSkin = 'clean' | 'classic' | 'cartoon';
 export type CTPendingKind = 'tree' | 'tok';
 
 export interface CTPiece {

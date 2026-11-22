@@ -4,7 +4,8 @@ import type { CTSkin } from '../../types/game';
 /**
  * Skin das pecas do Com Terra (Reserva).
  * - clean: cores chapadas (padrao)
- * - classic: tabuleiro e pecas ilustradas estilo Barenpark via CTClassicArt.
+ * - classic: ilustrações naturalistas.
+ * - cartoon: ilustrações inspiradas na estamparia brasileira.
  */
 export const CTSkinContext = createContext<CTSkin>('clean');
 export const useCTSkin = () => useContext(CTSkinContext);

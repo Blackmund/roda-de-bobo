@@ -425,7 +425,7 @@ export const buildStartedRoundUpdater = ({
               false,
               mergedCustomConfig.ctVariants || {}
             ),
-            skin: mergedCustomConfig.ctSkin || 'clean'
+            skin: mergedCustomConfig.ctSkin || 'classic'
           };
         }
 
