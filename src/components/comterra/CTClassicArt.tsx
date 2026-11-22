@@ -191,10 +191,10 @@ export const ClassicMonument: React.FC<{ v: number }> = ({ v }) => (
 const CLASSIC_BOARD_ART = `${import.meta.env.BASE_URL}assets/com-terra/board-classic`;
 // Diâmetro máximo de cada marca no tabuleiro, em unidades de uma casa de 10.
 const groundMarkSizes = new Map([
-  ['wheel', 4.5],
-  ['cement', 4.9],
-  ['excavator', 5.3],
-  ['crew', 5.5],
+  ['wheel', 4.8],
+  ['cement', 5.2],
+  ['excavator', 5.6],
+  ['crew', 5.8],
   ['pit', 8.2],
 ]);
 
