@@ -180,7 +180,8 @@ const PV_ROUND_OPTIONS: Array<{ value: number; label: string; desc: string }> = 
 const CT_MODES: CTMode[] = ['arquiteto', 'diabo'];
 const CT_SKINS: Array<{ value: CTSkin; label: string }> = [
   { value: 'clean', label: 'Clean' },
-  { value: 'classic', label: 'Clássica' }
+  { value: 'classic', label: 'Clássica' },
+  { value: 'cartoon', label: 'Cartoon BR' }
 ];
 const CT_VARIANTS: Array<{ value: 'mare' | 'contratos'; label: string }> = [
   { value: 'mare', label: 'Maré Alta' },
@@ -475,7 +476,7 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
                   <Seg
                     key={o.value}
                     testid={'ct-skin-btn-' + o.value}
-                    on={(customConfig.ctSkin || 'clean') === o.value}
+                    on={(customConfig.ctSkin || 'classic') === o.value}
                     onClick={() => onChangeCustomConfig((prev) => ({ ...prev, ctSkin: o.value }))}
                   >
                     {o.label}
