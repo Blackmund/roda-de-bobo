@@ -3,7 +3,7 @@ import { Maximize2, Minus, Plus } from 'lucide-react';
 import type { BPTileType, CTBoard, CTCell } from '../../types/game';
 import { shapeCells } from '../../utils/comTerraEngine';
 import { useCTSkin } from './CTSkin';
-import { ClassicAreaFrame, ClassicEntranceBar, ClassicMonument, ClassicPentagonBadge, ClassicPieceShape } from './CTClassicArt';
+import { classicBoardGlyph, ClassicAreaFrame, ClassicEntranceBar, ClassicMonument, ClassicPentagonBadge, ClassicPieceShape } from './CTClassicArt';
 
 /**
  * Tabuleiro e pecas do Com Terra em "2.5D": camera 100% de cima (grid sem distorcao), mas com volume:
@@ -323,11 +323,12 @@ export function bpGlyph(kind: string, onGround = false): React.ReactNode {
 }
 
 /** O mesmo icone em tamanho cheio para legenda, previa das areas e estoque. */
-export const BPIconSvg: React.FC<{ kind: string; size?: number | string; title?: string }> = ({ kind, size = '1.2em', title }) => (
-  <svg viewBox="0 0 10 10" width={size} height={size} role={title ? 'img' : undefined} aria-label={title} aria-hidden={title ? undefined : true}>
-    {bpGlyph(kind, false)}
-  </svg>
-);
+export const BPIconSvg: React.FC<{ kind: string; size?: number | string; title?: string }> = ({ kind, size = '1.2em', title }) => {
+  const skin = useCTSkin();
+  return <svg viewBox="0 0 10 10" width={size} height={size} role={title ? 'img' : undefined} aria-label={title} aria-hidden={title ? undefined : true}>
+    {(skin === 'classic' && classicBoardGlyph(kind)) || bpGlyph(kind)}
+  </svg>;
+};
 
 export const BPIconBadge: React.FC<{ icon: string; size?: number | string; title?: string }> = ({ icon, size = '1.2em', title }) => (
   <BPIconSvg kind={icon} size={size} title={title} />
@@ -390,7 +391,7 @@ const BPIconMark: React.FC<{ x: number; y: number; kind: string; statue?: number
   const skin = useCTSkin();
   return (
     <g pointerEvents="none" transform={`translate(${x * U} ${y * U})`}>
-      {kind === 'pit' && statue !== undefined ? (skin !== 'clean' ? <ClassicMonument v={statue} /> : <BPMonument v={statue} />) : bpGlyph(kind, true)}
+      {kind === 'pit' && statue !== undefined ? (skin !== 'clean' ? <ClassicMonument v={statue} /> : <BPMonument v={statue} />) : ((skin === 'classic' && classicBoardGlyph(kind, true)) || bpGlyph(kind, true))}
     </g>
   );
 };

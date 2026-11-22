@@ -1,5 +1,6 @@
 import React from 'react';
 import type { BPTileType } from '../../types/game';
+import { useCTSkin } from './CTSkin';
 import { CTTilePainting } from './CTTilePainting';
 
 /** Mesma escala em unidades SVG usada por CTBoardView e CTPieceView (1 casa = 10x10). */
@@ -187,9 +188,31 @@ export const ClassicMonument: React.FC<{ v: number }> = ({ v }) => (
   </g>
 );
 
+const CLASSIC_BOARD_ART = `${import.meta.env.BASE_URL}assets/com-terra/board-classic`;
+const paintedMarks = new Set(['wheel', 'cement', 'excavator', 'crew', 'pit']);
+
+export function classicBoardGlyph(kind: string, onGround = false) {
+  if (!paintedMarks.has(kind)) return null;
+  const inset = onGround ? .9 : .25;
+  return <image href={`${CLASSIC_BOARD_ART}/${kind}.webp`} x={inset} y={inset}
+    width={U - 2 * inset} height={U - 2 * inset} preserveAspectRatio="xMidYMid meet" />;
+}
+
 /** Portal de madeira e piso de pedra da reserva. */
 export const ClassicEntranceBar: React.FC<{ x: number; y: number; w: number; h: number }> = ({ x, y, w, h }) => {
   const width = w * U;
+  const skin = useCTSkin();
+  if (skin === 'classic') {
+    return (
+      <g transform={`translate(${x * U} ${(y + h) * U})`} pointerEvents="none">
+        <image href={`${CLASSIC_BOARD_ART}/entrance.webp`} width={width} height="3.78" preserveAspectRatio="none" />
+        <text x={width / 2} y="2.08" textAnchor="middle" fontSize="1.65" fontWeight="900" letterSpacing=".11"
+          fontFamily="'Anton','Inter','Arial Black',sans-serif" fill="#fff0c7" paintOrder="stroke" stroke="#352417" strokeWidth=".2">
+          ENTRADA DA RESERVA
+        </text>
+      </g>
+    );
+  }
   return (
     <g transform={`translate(${x * U} ${(y + h) * U})`} pointerEvents="none">
       <rect x=".12" y=".1" width={width - .24} height="3.67" fill="#a89b78" stroke="#514735" strokeWidth=".24" />
