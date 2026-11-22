@@ -1,12 +1,10 @@
 /**
  * Banco do GeoGuess: lugares por COORDENADA.
  *
- * Por que coordenada: todas as imagens de uma rodada sao recortes da mesma fonte (tiles de satelite) em volta do
- * mesmo ponto, so muda o zoom e o deslocamento. Assim a rodada nunca mistura lugares (nada de uma etapa com o Arco do
- * Triunfo e outra com outra coisa): a coerencia vem da geometria, nao de uma busca de imagens.
+ * As coordenadas identificam o lugar e definem as pistas aéreas de apoio. O carregador de fotos
+ * usa o nome e a localização para buscar vistas do mesmo lugar no Wikimedia Commons.
  *
- * Fonte das imagens: Esri World Imagery (ver `GEO_TILE_SOURCE` em utils/geoguessEngine.ts e docs/geoguess.md, com a
- * analise de licenca). Google Earth/Maps nao e usado: os termos do Google proibem tirar imagens fora das APIs dele.
+ * As vistas aéreas vêm do Esri World Imagery (ver `GEO_TILE_SOURCE` e docs/geoguess.md).
  *
  * FORMATO DE UM LUGAR (para ampliar o banco):
  *   id         identificador unico, minusculo, com hifens
@@ -26,6 +24,7 @@
  * `npm run geo:check` (scripts/checkGeoguessTiles.mjs) confere se cada etapa tem imagem na fonte.
  */
 import type { GeoEtapa } from '../types/game';
+import { GEO_EXPANSION } from './geoguessExpansion';
 
 export const GEO_REGIOES = [
   { id: 'brasil', label: 'Brasil' },
@@ -43,7 +42,11 @@ export const GEO_CATEGORIAS = [
   { id: 'cidades', label: 'Cidades' },
   { id: 'natureza', label: 'Natureza' },
   { id: 'paises', label: 'Países' },
-  { id: 'lugares-comuns', label: 'Lugares comuns' }
+  { id: 'lugares-comuns', label: 'Lugares comuns' },
+  { id: 'arquitetura', label: 'Arquitetura' },
+  { id: 'cultura', label: 'Museus e cultura' },
+  { id: 'patrimonio', label: 'Patrimônio e ruínas' },
+  { id: 'infraestrutura', label: 'Pontes e infraestrutura' }
 ] as const;
 
 export type GeoRegiao = Exclude<(typeof GEO_REGIOES)[number]['id'], 'brasil'>;
@@ -69,7 +72,7 @@ export interface GeoLocal {
 type Base = Omit<GeoLocal, 'pergunta' | 'categorias'> & Partial<Pick<GeoLocal, 'pergunta'>>;
 const L = (categorias: GeoCategoria[], b: Base): GeoLocal => ({ pergunta: 'local', ...b, categorias });
 
-export const GEO_LOCAIS: GeoLocal[] = [
+const GEO_BASE: GeoLocal[] = [
   // ESTADIOS
   L(['estadios'], { id: 'maracana', nome: 'Maracanã', lugar: 'Rio de Janeiro, Brasil', aceitas: ['Maracana', 'Mário Filho'], lat: -22.91217, lon: -43.23017, regiao: 'america-do-sul', pais: 'Brasil', dica: 'Estádio de uma final de Copa do Mundo' }),
   L(['estadios'], { id: 'mineirao', nome: 'Mineirão', lugar: 'Belo Horizonte, Brasil', aceitas: ['Mineirao'], lat: -19.86589, lon: -43.97108, regiao: 'america-do-sul', pais: 'Brasil', dica: 'Estádio no Sudeste do Brasil' }),
@@ -138,6 +141,15 @@ export const GEO_LOCAIS: GeoLocal[] = [
   L(['lugares-comuns'], { id: 'hercilio-luz', nome: 'Florianópolis', lugar: 'Ponte Hercílio Luz, Brasil', aceitas: ['Floripa', 'Florianopolis'], lat: -27.5938, lon: -48.5642, regiao: 'america-do-sul', pais: 'Brasil', pergunta: 'cidade', dica: 'Ponte pênsil ligando uma ilha' }),
   L(['lugares-comuns'], { id: 'estacao-da-luz', nome: 'São Paulo', lugar: 'Estação da Luz, Brasil', aceitas: ['Sao Paulo', 'Estação da Luz'], lat: -23.5347, lon: -46.6352, regiao: 'america-do-sul', pais: 'Brasil', pergunta: 'cidade', dica: 'Estação de trem com torre de relógio' })
 ];
+
+const placesById = new Map(GEO_BASE.map(place => [place.id, place]));
+for (const place of GEO_EXPANSION) {
+  const existing = placesById.get(place.id);
+  placesById.set(place.id, existing
+    ? { ...existing, categorias: [...new Set([...existing.categorias, ...place.categorias])] }
+    : place);
+}
+export const GEO_LOCAIS = [...placesById.values()];
 
 export const GEO_TAGS = [
   ...GEO_REGIOES.map((r) => ({ ...r, kind: 'regiao' as const })),
