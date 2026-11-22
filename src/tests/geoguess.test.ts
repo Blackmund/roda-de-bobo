@@ -13,6 +13,7 @@ import {
   submitGeoGuess
 } from '../utils/geoguessEngine.ts';
 import { GEO_CATEGORIAS, GEO_LOCAIS, GEO_REGIOES, drawGeoLocal, geoPool } from '../data/geoguessBank.ts';
+import { loadGeoPhotos } from '../utils/geoguessPhotos.ts';
 import { PONTINHOS, PONTINHOS_TEMAS, drawPontinho, normalizePontinhoKey, pontinhosPool } from '../data/pontinhosBank.ts';
 import type { GeoGuessGameState } from '../types/game.ts';
 
@@ -20,14 +21,46 @@ const ids = ['a', 'b', 'c'];
 const local = GEO_LOCAIS.find((l) => l.id === 'san-siro')!;
 const playing = (): GeoGuessGameState => ({ ...buildGeoGuessState(local), phase: 'PLAYING' });
 
-test('GeoGuess: 5 imagens do mesmo ponto, do close (zoom maior) a cidade (zoom menor)', () => {
+test('GeoGuess: cinco vistas aéreas de apoio com centros e escalas distintos', () => {
   const s = buildGeoGuessState(local);
   assert.equal(s.etapas.length, 5);
   assert.equal(s.lat, local.lat);
-  for (let i = 1; i < s.etapas.length; i++) assert.ok(s.etapas[i].z < s.etapas[i - 1].z, 'cada etapa abre mais');
+  assert.notEqual(s.etapas[1].dx, s.etapas[2].dx);
+  assert.ok(s.etapas[4].z < s.etapas[0].z, 'a última mostra a região');
   // a escala desloca todos os zooms juntos
   const big = geoEtapasDo({ escala: -2 });
   assert.deepEqual(big.etapas.map((e) => e.z), GEO_ETAPAS_PADRAO.map((e) => e.z - 2));
+});
+
+test('GeoGuess: o Cristo tem cinco fotografias distintas e creditadas', async () => {
+  const christ = GEO_LOCAIS.find(place => place.id === 'cristo-redentor')!;
+  const photos = await loadGeoPhotos(christ, new AbortController().signal);
+  assert.equal(photos.length, 5);
+  assert.equal(new Set(photos.map(photo => photo?.url)).size, 5);
+  assert.ok(photos.every(photo => photo?.source && photo.author && photo.license));
+  assert.equal(photos[0]?.detail, true);
+  assert.equal(photos[4]?.detail, false);
+});
+
+test('GeoGuess: fotos de um homônimo distante não entram na sequência', async (t) => {
+  const place = GEO_LOCAIS.find(item => item.id === 'aero-galeao')!;
+  const file = (suffix: string, lat: number) => ({
+    title: `File:Aeroporto do Galeão ${suffix}.jpg`,
+    coordinates: [{ lat, lon: place.lon }],
+    imageinfo: [{
+      width: 1280, height: 800,
+      thumburl: `https://thumb.wikimedia.org/${suffix}.jpg`,
+      descriptionurl: `https://commons.wikimedia.org/wiki/File:${suffix}.jpg`,
+      extmetadata: { Artist: { value: 'Autor' }, LicenseShortName: { value: 'CC0' } }
+    }]
+  });
+  t.mock.method(globalThis, 'fetch', async () => new Response(JSON.stringify({
+    query: { pages: [file('aerial', place.lat), file('far', place.lat + 20), file('detail', place.lat)] }
+  })));
+  const photos = await loadGeoPhotos(place, new AbortController().signal);
+  assert.equal(photos.filter(Boolean).length, 2);
+  assert.equal(photos[1]?.url, 'https://thumb.wikimedia.org/detail.jpg');
+  assert.equal(photos[4]?.url, 'https://thumb.wikimedia.org/aerial.jpg');
 });
 
 test('GeoGuess: palpite no celular, diretor julga, quem acerta leva o valor da imagem (5, 4, 3...)', () => {
@@ -100,7 +133,8 @@ test('GeoGuess: banco com ids unicos, coordenadas validas, dica que nao entrega 
     assert.ok(l.dica.length > 0 && l.dica.length <= 60, `${l.id}: dica curta`);
     assert.ok(!normalizePontinhoKey(l.dica).includes(normalizePontinhoKey(l.nome)), `${l.id}: dica entrega o nome`);
   }
-  assert.ok(GEO_LOCAIS.length >= 40);
+  assert.ok(GEO_LOCAIS.length >= 280);
+  assert.ok(geoPool(['brasil']).length >= 100);
 });
 
 test('GeoGuess: tags combinam (regioes OU, categorias OU, regiao E categoria)', () => {

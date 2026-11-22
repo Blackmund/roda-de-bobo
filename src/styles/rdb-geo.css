@@ -20,6 +20,25 @@
 }
 
 /* ---------- GeoGuess (TV) ---------- */
+.rdb-geo-filters {
+  display: grid;
+  width: min(100%, 34rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .45rem .8rem;
+}
+.rdb-geo-filters label { display: grid; gap: .3rem; min-width: 0; }
+.rdb-geo-filters .rdb-select { width: 100%; min-width: 0; }
+.rdb-geo-filters .rdb-tags-count { grid-column: 1 / -1; }
+@media (max-width: 480px) {
+  .rdb-geo-filters { grid-template-columns: minmax(0, 1fr); }
+}
+.rdb-geo-photo { position: absolute; inset: 0; display: grid; place-items: center; overflow: hidden; }
+.rdb-geo-photo img { width: 100%; height: 100%; object-fit: contain; }
+.rdb-geo-photo.is-detail img { transform-origin: 64% 35%; transform: scale(2.1); }
+.rdb-geo-photo.is-loading { color: var(--rdb-ink-2); }
+.rdb-geo-photo-credits { display: flex; flex-wrap: wrap; gap: .2rem .65rem; font-size: .68rem; }
+.rdb-geo-photo-credits a { color: var(--rdb-ink-2); text-decoration: underline; }
+
 .rdb-geo-body {
   flex: 1;
   min-height: 0;

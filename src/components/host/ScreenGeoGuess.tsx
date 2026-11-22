@@ -16,6 +16,7 @@ import {
 } from '../../utils/geoguessEngine';
 import { PlayerMark } from '../rdb/PlayerMark';
 import { SatView } from '../geoguess/SatView';
+import { GeoClueView, useGeoPhotos } from '../geoguess/GeoClueView';
 
 interface ScreenGeoGuessProps {
   room: GameRoom;
@@ -23,14 +24,16 @@ interface ScreenGeoGuessProps {
   onNextRound: () => void;
 }
 
-const ETAPA_NOME = ['Close', 'Outra parte', 'Visão ampla', 'Entorno', 'Cidade'];
+const ETAPA_NOME = ['Detalhe', 'Outro ângulo', 'Nova pista', 'Contexto', 'Vista geral'];
 
 /**
  * GeoGuess na TV: a dica, a imagem da etapa, quem ja chutou (ou os palpites) e o julgamento do diretor.
- * Formato do quadro "Desafio de hoje: GeoGuessr": 5 imagens do mesmo lugar, do close a cidade; 5, 4, 3, 2, 1 pontos.
+ * Cinco pistas visuais sobre o mesmo lugar, valendo 5, 4, 3, 2 e 1 ponto.
  */
 export const ScreenGeoGuess: React.FC<ScreenGeoGuessProps> = ({ room, onUpdateGeoState, onNextRound }) => {
   const g = room.geoguess;
+  const { photos, loading } = useGeoPhotos(g?.localId);
+  const [usingPhoto, setUsingPhoto] = React.useState(false);
   if (!g) {
     return <div className="p-6 text-center font-mono-code text-slate-300">Carregando lugar...</div>;
   }
@@ -134,21 +137,25 @@ export const ScreenGeoGuess: React.FC<ScreenGeoGuessProps> = ({ room, onUpdateGe
               {g.phase === 'READY' ? (
                 <div className="rdb-geo-ready">
                   <p>
-                    Cinco imagens do mesmo lugar, do close mais difícil até a cidade. Quem acerta na 1ª imagem leva 5 pontos.
+                    Cinco pistas visuais sobre o mesmo lugar. Quanto antes acertar, mais pontos.
                   </p>
-                  <button type="button" data-testid="geo-start-btn" className="rdb-btn rdb-setup-start" onClick={start}>
-                    Mostrar a 1ª imagem
+                  <button type="button" data-testid="geo-start-btn" className="rdb-btn rdb-setup-start" onClick={start} disabled={loading}>
+                    {loading ? 'Preparando imagens…' : 'Mostrar a 1ª imagem'}
                   </button>
                 </div>
               ) : (
                 <div className="rdb-geo-frame">
-                  <SatView
+                  {loading ? <div className="rdb-geo-photo is-loading" role="status">Preparando imagens…</div> : <GeoClueView
+                    key={`${g.localId}:${g.stage}`}
                     lat={g.lat}
                     lon={g.lon}
                     etapa={g.etapas[g.stage]}
                     prefetch={isLast ? g.revelacao : g.etapas[g.stage + 1]}
+                    photo={photos[g.stage]}
+                    nextPhoto={photos[g.stage + 1]}
+                    onSourceChange={setUsingPhoto}
                     label={`Imagem ${g.stage + 1} de ${total}`}
-                  />
+                  />}
                   <ol className="rdb-geo-pips" aria-label={`Imagem ${g.stage + 1} de ${total}`}>
                     {g.etapas.map((_, i) => (
                       <li key={i} className={i < g.stage ? 'is-past' : i === g.stage ? 'is-now' : ''}>
@@ -161,7 +168,15 @@ export const ScreenGeoGuess: React.FC<ScreenGeoGuessProps> = ({ room, onUpdateGe
               )}
             </>
           )}
-          <small className="rdb-geo-credit">{GEO_TILE_SOURCE.attribution}</small>
+          <small className="rdb-geo-credit">{!reveal && usingPhoto ? 'Fotos: Wikimedia Commons' : GEO_TILE_SOURCE.attribution}</small>
+          {reveal && photos.some(Boolean) && (
+            <div className="rdb-geo-photo-credits" aria-label="Créditos das fotos">
+              {photos.map((photo, index) => photo && (
+                <a key={photo.source} href={photo.source} target="_blank" rel="noreferrer"
+                  title={`${photo.author} · ${photo.license}`}>Foto {index + 1} · {photo.author} · {photo.license}</a>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* JOGADORES: quem chutou, palpites e o julgamento */}
