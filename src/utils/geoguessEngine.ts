@@ -18,8 +18,8 @@ export const GEO_TILE_SOURCE = {
 
 /** Enquadramentos aéreos de apoio, com centros diferentes nas pistas intermediárias. */
 export const GEO_ETAPAS_PADRAO: GeoEtapa[] = [
-  { z: 19, span: 2.5, dx: 40, dy: -30 },
-  { z: 18, span: 2.5, dx: -115, dy: 85 },
+  { z: 19, span: 0.85, dx: 35, dy: -27 },
+  { z: 19, span: 1.4, dx: -85, dy: 62 },
   { z: 18, span: 3.5, dx: 90, dy: -105 },
   { z: 15, span: 3.5, dx: -360, dy: 230 },
   { z: 13, span: 3.5 }
@@ -79,6 +79,11 @@ export const geoValueAt = (s: Pick<GeoGuessGameState, 'etapas'>, stage: number):
 export const geoValue = (s: GeoGuessGameState): number => geoValueAt(s, s.stage);
 
 export const geoSolved = (s: GeoGuessGameState, playerId: string): boolean => s.solvedAt[playerId] !== undefined;
+
+export function geoLocalTurn(s: GeoGuessGameState, players: Pick<Player, 'id'>[]) {
+  if (s.phase !== 'PLAYING') return undefined;
+  return players.find(player => !geoSolved(s, player.id) && s.guesses[player.id]?.stage !== s.stage)?.id;
+}
 
 /** Jogador manda (ou troca) o palpite da etapa atual. Quem ja acertou ou ja foi julgado nesta etapa nao muda. */
 export function submitGeoGuess(prev: GeoGuessGameState, playerId: string, text: string, now = Date.now()): GeoGuessGameState {

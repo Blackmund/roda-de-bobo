@@ -5,7 +5,6 @@ export interface GeoPhoto {
   source: string;
   author: string;
   license: string;
-  detail?: boolean;
 }
 
 interface MediaFile {
@@ -28,12 +27,12 @@ const CHRIST_PHOTOS: GeoPhoto[] = ([
   ['2/2b', 'Christ the Redeemer on Corcovado Mountain, Rio de Janeiro, Brazil.jpg', 'Wilfredor', 'CC0'],
   ['f/f9', 'Cristo Redentor on the Corcovado, Rio de Janeiro.jpg', 'Wilfredor', 'CC0'],
   ['5/5f', 'Corcovado e o Cristo.jpg', 'Vinícius94', 'CC BY-SA 4.0']
-]).map(([directory, title, author, license], index) => {
+]).map(([directory, title, author, license]) => {
   const file = encodeURIComponent(title.replaceAll(' ', '_'));
   return {
     url: `https://thumb.wikimedia.org/wikipedia/commons/thumb/${directory}/${file}/960px-${file}`,
     source: `https://commons.wikimedia.org/wiki/File:${file}`,
-    author, license, detail: index === 0
+    author, license
   };
 });
 
@@ -147,7 +146,7 @@ export async function loadGeoPhotos(local: GeoLocal, signal: AbortSignal): Promi
     const last = candidates.length - 1;
     for (let i = 0; i < 4; i++) {
       const candidate = candidates[Math.round(i * last / 3)];
-      stages[i] = { ...candidate.photo, detail: i === 0 && candidate.breadth !== 0 };
+      stages[i] = candidate.photo;
     }
   } else {
     // Abre com um detalhe aéreo se a busca só encontrou vistas reconhecíveis.
