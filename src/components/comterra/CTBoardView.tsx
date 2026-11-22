@@ -247,116 +247,79 @@ export const BP_ICON_META: Record<string, { fill: string; ink: string; name: str
   crew: { fill: '#e6194b', ink: '#f5f2eb', name: 'Equipe de Obra', gives: 'Área nova', label: 'Equipe de Obra: abre uma área nova na reserva' }
 };
 
-/**
- * Ícones no estilo do Bärenpark com pegada brasileira, em caixa 10×10.
- * `onGround = true` reduz a escala (~60%) para deixar margem folgada dentro de cada quadrado do mapa.
- */
 export function bpGlyph(kind: string, onGround = false): React.ReactNode {
-  const N = '#0a0b1e';
-  const C = '#f5f2eb';
-  const wrap = (node: React.ReactNode, groundScale = 0.76) =>
-    onGround ? <g transform={`translate(5 5) scale(${groundScale}) translate(-5 -5)`}>{node}</g> : node;
+  const ink = '#372c21';
+  const paper = '#fff0be';
+  const gold = '#edaf45';
+  const green = '#39734e';
+  const tire = '#343631';
+  let art: React.ReactNode;
 
-  if (kind === 'pit') {
-    return wrap(
-      <g>
-        <polygon points="3.6,1.6 6.4,1.6 8.4,3.6 8.4,6.4 6.4,8.4 3.6,8.4 1.6,6.4 1.6,3.6" fill="#705129" />
-        <polygon points="3.95,2.45 6.05,2.45 7.55,3.95 7.55,6.05 6.05,7.55 3.95,7.55 2.45,6.05 2.45,3.95" fill="#1d130b" stroke="#3c2614" strokeWidth="0.3" />
-        <polygon points="3.3,1.5 6.7,1.5 8.5,3.3 8.5,6.7 6.7,8.5 3.3,8.5 1.5,6.7 1.5,3.3" fill="none" stroke={C} strokeWidth="0.72" strokeLinejoin="round" />
-        <polygon points="3.3,1.5 6.7,1.5 8.5,3.3 8.5,6.7 6.7,8.5 3.3,8.5 1.5,6.7 1.5,3.3" fill="none" stroke="#e6194b" strokeWidth="0.72" strokeDasharray="1.1 1.1" strokeLinejoin="round" />
-        {[
-          [3.3, 1.5], [6.7, 1.5], [8.5, 3.3], [8.5, 6.7],
-          [6.7, 8.5], [3.3, 8.5], [1.5, 6.7], [1.5, 3.3]
-        ].map(([px, py], i) => (
-          <circle key={i} cx={px} cy={py} r="0.34" fill="#2c1d10" stroke={C} strokeWidth="0.12" />
-        ))}
-      </g>,
-      0.82
-    );
+  switch (kind) {
+    case 'wheel':
+      art = <>
+        <path d="M1 5.6l2.4.8 3.8.3M4 6.6l-.7 1.6" fill="none" strokeWidth=".48" />
+        <circle cx="7.9" cy="7.5" r="1.05" fill={tire} />
+        <circle cx="7.9" cy="7.5" r=".38" fill={paper} stroke="none" />
+        <path d="M3 5h5.3L7 6.8H4z" fill={green} />
+        <path d="M3.6 5.38h3.8" stroke="#a8c47b" />
+        <path d="M4 4.95c.08-.59.53-1 1.13-.92.43-.5 1.27-.4 1.64.15l.53.77" fill="#a56a3c" />
+        <path d="M5.8 4.1V2.15m0 1.05c-1.2.12-1.76-.65-1.69-1.35 1.02-.04 1.52.46 1.69 1.35zm0-.45c.07-.95.79-1.43 1.65-1.32.06.75-.46 1.4-1.65 1.32z" fill="#76a653" />
+      </>;
+      break;
+    case 'cement':
+      art = <>
+        <path d="M1 6.75h8v.96H1z" fill="#466e68" />
+        <path d="M1 6.75V4.5l1-1.16h1.48v3.41z" fill={paper} />
+        <path d="M1.36 4.68l.85-.96h.83v1.42H1.36z" fill="#597b76" />
+        <path d="M3.65 5.04c.27-1.28 1.47-1.83 2.82-1.68l1.62.83.37 1.19-1.39 1.27c-1.54.37-2.98-.21-3.42-1.61z" fill="#f3dfac" />
+        <path d="M4.58 3.7c.04 1.07.5 1.96 1.37 2.95m.19-3.29c.11 1.05.55 1.8 1.36 2.55" stroke="#538273" strokeWidth=".5" fill="none" />
+        <path d="M8.15 4.56l.87.15.42 1.67-1.2-.1" fill={gold} />
+        {[2.08, 6.63, 8.13].map(x => <g key={x}><circle cx={x} cy="7.75" r=".69" fill={tire} /><circle cx={x} cy="7.75" r=".26" fill={paper} stroke="none" /></g>)}
+      </>;
+      break;
+    case 'excavator':
+      art = <>
+        <rect x="1" y="6.63" width="5.1" height="1.57" rx=".75" fill={tire} />
+        <path d="M1.8 7.4h3.55" stroke="#9d9979" strokeDasharray=".46 .47" strokeWidth=".45" />
+        <path d="M1.44 6.65v-1.2h1.67V3.7h2.22l.57 2.96z" fill={gold} />
+        <path d="M3.55 4.14h1.47l.22 1.52H3.55z" fill="#567777" />
+        <path d="M5.5 5.67L6.7 2.5l2.03 2.81-.55.42L6.8 3.94l-.62 2.12z" fill={gold} />
+        <path d="M8.8 5.15l.65.19-.19 1.45-1.93-.36.55-1.13z" fill="#806b55" />
+      </>;
+      break;
+    case 'crew':
+      art = <>
+        <path d="M2.3 6.5l-.2 1.68m1.05-1.68.3 1.68m1.78-1.15-.12 1.17m.91-1.17.18 1.17" fill="none" strokeWidth=".52" />
+        <path d="M2.12 4.05h1.05l.6 2.65H1.7z" fill="#ce7650" />
+        <path d="M4.96 4.81h1.34l.42 2.3H4.54z" fill="#467d71" />
+        <path d="M2.35 4.5l.04 1.78m3-.99-.07 1.34" stroke={paper} strokeWidth=".4" />
+        <circle cx="2.66" cy="3.42" r=".64" fill="#ae754f" />
+        <circle cx="5.65" cy="4.17" r=".64" fill="#d6a079" />
+        <path d="M1.82 3.29a.84.73 0 0 1 1.68 0zm2.99.75a.84.73 0 0 1 1.68 0z" fill={gold} />
+        <path d="M6.79 7.97l1.16-2.78 1.17 2.78M7.95 5.19v2.98" fill="none" />
+        <path d="M7.26 4.53h1.38v.72H7.26z" fill={paper} />
+      </>;
+      break;
+    case 'pit':
+      art = <>
+        <path d="M3.1 1.45h3.8l1.65 1.65v3.8L6.9 8.55H3.1L1.45 6.9V3.1z" fill="#ac8a59" />
+        <path d="M3.5 2.35h3l1.15 1.15v3L6.5 7.65h-3L2.35 6.5v-3z" fill="#3a2a20" />
+        <path d="M3.5 2.65h3l.85.85-.68.8H3.3l-.65-.8z" fill="#674d32" stroke="none" />
+        <path d="M3.1 1.45h3.8l1.65 1.65v3.8L6.9 8.55H3.1L1.45 6.9V3.1z" fill="none" stroke={paper} strokeWidth=".5" />
+        <path d="M3.1 1.45h3.8l1.65 1.65v3.8L6.9 8.55H3.1L1.45 6.9V3.1z" fill="none" stroke="#b45e3f" strokeWidth=".5" strokeDasharray=".85 .76" />
+      </>;
+      break;
+    default:
+      return null;
   }
 
-  if (kind === 'wheel') {
-    return wrap(
-      <g>
-        <ellipse cx="5.2" cy="7.95" rx="3.4" ry="0.75" fill="#4f391c" opacity="0.32" />
-        <path d="M1.3 5.15 L3.6 5.8 M1.7 5.75 L3.8 6.4 M3.7 6.1 L3.5 7.9" stroke="#3a2412" strokeWidth="0.58" strokeLinecap="round" />
-        <circle cx="7.4" cy="7.0" r="1.15" fill="#1d222b" stroke={N} strokeWidth="0.32" />
-        <circle cx="7.4" cy="7.0" r="0.46" fill={C} />
-        <path d="M3.9 4.2 Q5.45 3.1 7.0 4.2 Z" fill="#7c4f24" />
-        <path d="M5.45 4.0 V1.95" stroke="#462b12" strokeWidth="0.48" strokeLinecap="round" />
-        <circle cx="4.7" cy="2.35" r="0.82" fill="#2ea44f" stroke="#0d3318" strokeWidth="0.22" />
-        <circle cx="6.15" cy="2.25" r="0.82" fill="#3fbf6f" stroke="#0d3318" strokeWidth="0.22" />
-        <circle cx="5.45" cy="1.5" r="0.92" fill="#288e46" stroke="#0d3318" strokeWidth="0.22" />
-        <circle cx="5.9" cy="1.7" r="0.32" fill="#ffc93c" />
-        <circle cx="4.8" cy="2.0" r="0.26" fill="#ffc93c" />
-        <path d="M3.35 4.2 H7.75 L6.8 6.35 H3.95 Z" fill="#1e8a42" stroke="#0d3318" strokeWidth="0.4" strokeLinejoin="round" />
-        <path d="M3.9 4.65 H7.1" stroke="#85ebaa" strokeWidth="0.32" strokeLinecap="round" />
-      </g>
-    );
-  }
-
-  if (kind === 'cement') {
-    return wrap(
-      <g>
-        <ellipse cx="5.0" cy="7.9" rx="3.7" ry="0.72" fill="#4f391c" opacity="0.32" />
-        <rect x="1.55" y="6.0" width="6.7" height="0.82" rx="0.22" fill="#2b3142" stroke={N} strokeWidth="0.28" />
-        <path d="M1.55 6.0 V4.05 L2.45 3.05 H3.85 V6.0 Z" fill={C} stroke={N} strokeWidth="0.36" strokeLinejoin="round" />
-        <path d="M1.88 4.25 L2.55 3.45 H3.5 V4.6 H1.88 Z" fill="#1a3454" />
-        <rect x="1.78" y="5.05" width="1.8" height="0.52" fill="#17b8b8" />
-        <g transform="rotate(-11 5.95 4.35)">
-          <ellipse cx="5.95" cy="4.35" rx="2.18" ry="1.45" fill={C} stroke={N} strokeWidth="0.38" />
-          <path d="M4.95 3.1 Q5.45 4.35 4.95 5.6" fill="none" stroke="#17b8b8" strokeWidth="0.62" />
-          <path d="M6.35 2.98 Q6.78 4.35 6.35 5.72" fill="none" stroke="#ffc93c" strokeWidth="0.54" />
-          <path d="M7.9 3.75 L8.6 4.45 L7.85 4.85" fill="#9ea6b5" stroke={N} strokeWidth="0.26" strokeLinejoin="round" />
-        </g>
-        {[2.45, 5.55, 7.15].map((wx) => (
-          <g key={wx}>
-            <circle cx={wx} cy="6.95" r="0.78" fill="#181c24" stroke={N} strokeWidth="0.2" />
-            <circle cx={wx} cy="6.95" r="0.3" fill="#cfd6e2" />
-          </g>
-        ))}
-      </g>
-    );
-  }
-
-  if (kind === 'excavator') {
-    return wrap(
-      <g>
-        <ellipse cx="4.85" cy="8.0" rx="3.5" ry="0.72" fill="#4f391c" opacity="0.32" />
-        <rect x="1.6" y="6.2" width="4.4" height="1.38" rx="0.68" fill="#1e222b" stroke={N} strokeWidth="0.32" />
-        {[2.35, 3.8, 5.25].map((rx) => (
-          <circle key={rx} cx={rx} cy="6.88" r="0.34" fill="#9ca4b4" />
-        ))}
-        <rect x="1.95" y="4.05" width="3.45" height="2.15" rx="0.42" fill="#ff9f1c" stroke="#522b00" strokeWidth="0.36" />
-        <rect x="3.3" y="4.38" width="1.45" height="1.1" rx="0.2" fill="#18233a" />
-        <rect x="2.18" y="5.58" width="3.0" height="0.34" fill={N} opacity="0.3" />
-        <path d="M4.85 4.75 L6.75 1.85 L8.1 4.45" fill="none" stroke="#ff9f1c" strokeWidth="0.88" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M4.85 4.75 L6.75 1.85 L8.1 4.45" fill="none" stroke="#522b00" strokeWidth="0.24" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M7.45 4.35 H8.75 L8.38 5.85 L7.15 5.35 Z" fill="#3a4152" stroke={N} strokeWidth="0.3" strokeLinejoin="round" />
-      </g>
-    );
-  }
-
-  if (kind === 'crew') {
-    return wrap(
-      <g>
-        <ellipse cx="5.0" cy="7.9" rx="3.6" ry="0.75" fill="#4f391c" opacity="0.32" />
-        <circle cx="2.75" cy="3.6" r="0.66" fill="#f3cda4" stroke={N} strokeWidth="0.2" />
-        <path d="M1.95 3.55 a0.8 0.68 0 0 1 1.6 0 Z" fill="#ffc93c" stroke={N} strokeWidth="0.24" />
-        <path d="M2.0 6.85 L2.25 4.35 H3.25 L3.5 6.85 Z" fill="#17b8b8" stroke={N} strokeWidth="0.28" />
-        <circle cx="5.1" cy="3.1" r="0.68" fill="#f3cda4" stroke={N} strokeWidth="0.2" />
-        <path d="M4.28 3.05 a0.82 0.7 0 0 1 1.64 0 Z" fill="#ff8a1e" stroke={N} strokeWidth="0.24" />
-        <path d="M4.35 6.45 L4.6 3.9 H5.6 L5.85 6.45 Z" fill="#23395d" stroke={N} strokeWidth="0.28" />
-        <path d="M7.35 4.8 L6.65 7.1 M7.35 4.8 L8.05 7.1 M7.35 4.8 V7.15" stroke="#4a3824" strokeWidth="0.3" strokeLinecap="round" />
-        <rect x="6.75" y="4.1" width="1.2" height="0.72" fill="#ffc93c" stroke={N} strokeWidth="0.24" />
-        <path d="M3.9 5.55 L4.48 7.35 H3.32 Z" fill="#e6194b" stroke={N} strokeWidth="0.22" />
-        <path d="M3.68 6.32 H4.12" stroke={C} strokeWidth="0.34" />
-        <path d="M7.95 6.0 L8.4 7.45 H7.5 Z" fill="#e6194b" stroke={N} strokeWidth="0.22" />
-        <path d="M7.78 6.62 H8.12" stroke={C} strokeWidth="0.28" />
-      </g>
-    );
-  }
-  return null;
+  return (
+    <g transform={onGround ? 'translate(5 5) scale(.85) translate(-5 -5)' : undefined} stroke={ink} strokeWidth=".28" strokeLinecap="round" strokeLinejoin="round">
+      {kind !== 'pit' && <path d="M1.4 8.52h7.25" stroke="#9d895c" strokeWidth=".44" opacity=".56" />}
+      {art}
+    </g>
+  );
 }
 
 /** O mesmo icone em tamanho cheio para legenda, previa das areas e estoque. */

@@ -187,34 +187,31 @@ export const ClassicMonument: React.FC<{ v: number }> = ({ v }) => (
   </g>
 );
 
-/** Faixa classica da Entrada estilo Barenpark + calcada azulada das bilheterias. */
-export const ClassicEntranceBar: React.FC<{ x: number; y: number; w: number; h: number }> = ({ x, y, w, h }) => (
-  <g pointerEvents="none">
-    <rect x={x * U} y={(y + h) * U + 0.08} width={w * U} height="2.45" rx="0.25" fill="#f59e0b" stroke="#5a3d22" strokeWidth="0.32" />
-    <rect x={x * U + 0.4} y={(y + h) * U + 0.3} width={w * U - 0.8} height="0.7" fill="#ffd25e" opacity="0.55" />
-    <circle cx={x * U + 2.7} cy={(y + h) * U + 1.3} r="0.82" fill="#9c5a08" stroke="#3c1e03" strokeWidth="0.22" />
-    <circle cx={(x + w) * U - 2.7} cy={(y + h) * U + 1.3} r="0.82" fill="#9c5a08" stroke="#3c1e03" strokeWidth="0.22" />
-    <text
-      x={(x + w / 2) * U}
-      y={(y + h) * U + 1.85}
-      textAnchor="middle"
-      fontSize="1.75"
-      fontWeight="900"
-      letterSpacing="0.14"
-      fontFamily="'Anton','Inter','Arial Black',sans-serif"
-      fill="#221003"
-    >
-      ENTRADA DA RESERVA
-    </text>
-    <rect x={x * U} y={(y + h) * U + 2.55} width={w * U} height="1.15" rx="0.15" fill="#9b8e72" stroke="#514738" strokeWidth="0.24" />
-    <path
-      d={`M${x * U + 3} ${(y + h) * U + 3.12}h3.5 M${(x + w) * U - 6.5} ${(y + h) * U + 3.12}h3.5`}
-      stroke="#f2dfb0"
-      strokeWidth="0.36"
-      strokeDasharray="0.9 0.7"
-    />
-  </g>
-);
+/** Portal de madeira e piso de pedra da reserva. */
+export const ClassicEntranceBar: React.FC<{ x: number; y: number; w: number; h: number }> = ({ x, y, w, h }) => {
+  const width = w * U;
+  return (
+    <g transform={`translate(${x * U} ${(y + h) * U})`} pointerEvents="none">
+      <rect x=".12" y=".1" width={width - .24} height="3.67" fill="#a89b78" stroke="#514735" strokeWidth=".24" />
+      <path d={`M.2 2.63H${width - .2}M.2 3.2H${width - .2}`} stroke="#dfcba0" strokeWidth=".14" />
+      {Array.from({ length: Math.floor(width / 2) - 1 }, (_, i) => (
+        <path key={i} d={`M${2 + i * 2} 2.63v.58m1 0v.52`} stroke="#71654d" strokeWidth=".13" />
+      ))}
+      <path d={`M1.1 .6H${width - 1.1}v1.98H1.1z`} fill="#67432d" stroke="#3c2b20" strokeWidth=".3" />
+      <path d={`M1.4 .81H${width - 1.4}`} stroke="#b57b46" strokeWidth=".17" />
+      {[1.2, width - 5.3].map(post => (
+        <g key={post} transform={`translate(${post} 0)`}>
+          <path d="M.35 2.61h3.5l-.34.55H.69z" fill="#82533b" stroke="#4a3825" strokeWidth=".18" />
+          <path d="M2.08 2.65V.8M2.04 2.42C.75 2.24.7 1.18.54.89c.93.11 1.4.56 1.5 1.53zm.03-.26c.09-1.07.81-1.48 1.65-1.5-.23.95-.77 1.38-1.65 1.5z" fill="#739457" stroke="#304932" strokeWidth=".18" />
+          <path d="M2.06 1.76C1.45 1.2 1.62.7 2.08.32c.55.52.59.94-.02 1.44z" fill="#aeb871" stroke="#304932" strokeWidth=".17" />
+        </g>
+      ))}
+      <text x={width / 2} y="2.08" textAnchor="middle" fontSize="1.65" fontWeight="900" letterSpacing=".11" fontFamily="'Anton','Inter','Arial Black',sans-serif" fill="#fff0c7">
+        ENTRADA DA RESERVA
+      </text>
+    </g>
+  );
+};
 
 /** Moldura de calcada de pedra e portal laranja classico da Entrada na skin Classica. */
 export const ClassicAreaFrame: React.FC<{ x: number; y: number; w: number; h: number; entrance?: boolean }> = ({
