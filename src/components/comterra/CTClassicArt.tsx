@@ -193,7 +193,7 @@ const paintedMarks = new Set(['wheel', 'cement', 'excavator', 'crew', 'pit']);
 
 export function classicBoardGlyph(kind: string, onGround = false) {
   if (!paintedMarks.has(kind)) return null;
-  const inset = onGround ? .9 : .25;
+  const inset = onGround ? (kind === 'pit' ? .9 : 2.15) : .25;
   return <image href={`${CLASSIC_BOARD_ART}/${kind}.webp`} x={inset} y={inset}
     width={U - 2 * inset} height={U - 2 * inset} preserveAspectRatio="xMidYMid meet" />;
 }
@@ -205,7 +205,7 @@ export const ClassicEntranceBar: React.FC<{ x: number; y: number; w: number; h: 
   if (skin === 'classic') {
     return (
       <g transform={`translate(${x * U} ${(y + h) * U})`} pointerEvents="none">
-        <image href={`${CLASSIC_BOARD_ART}/entrance.webp`} width={width} height="3.78" preserveAspectRatio="none" />
+        <image href={`${CLASSIC_BOARD_ART}/entrance.webp`} x={width * .09} y=".16" width={width * .82} height="3.48" preserveAspectRatio="none" />
         <text x={width / 2} y="2.08" textAnchor="middle" fontSize="1.65" fontWeight="900" letterSpacing=".11"
           fontFamily="'Anton','Inter','Arial Black',sans-serif" fill="#fff0c7" paintOrder="stroke" stroke="#352417" strokeWidth=".2">
           ENTRADA DA RESERVA
