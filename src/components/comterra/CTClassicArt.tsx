@@ -189,13 +189,22 @@ export const ClassicMonument: React.FC<{ v: number }> = ({ v }) => (
 );
 
 const CLASSIC_BOARD_ART = `${import.meta.env.BASE_URL}assets/com-terra/board-classic`;
-const paintedMarks = new Set(['wheel', 'cement', 'excavator', 'crew', 'pit']);
+// Diâmetro máximo de cada marca no tabuleiro, em unidades de uma casa de 10.
+const groundMarkSizes = new Map([
+  ['wheel', 4.5],
+  ['cement', 4.9],
+  ['excavator', 5.3],
+  ['crew', 5.5],
+  ['pit', 8.2],
+]);
 
 export function classicBoardGlyph(kind: string, onGround = false) {
-  if (!paintedMarks.has(kind)) return null;
-  const inset = onGround ? (kind === 'pit' ? .9 : 2.15) : .25;
+  const groundSize = groundMarkSizes.get(kind);
+  if (groundSize === undefined) return null;
+  const size = onGround ? groundSize : 9.5;
+  const inset = (U - size) / 2;
   return <image href={`${CLASSIC_BOARD_ART}/${kind}.webp`} x={inset} y={inset}
-    width={U - 2 * inset} height={U - 2 * inset} preserveAspectRatio="xMidYMid meet" />;
+    width={size} height={size} preserveAspectRatio="xMidYMid meet" />;
 }
 
 /** Portal de madeira e piso de pedra da reserva. */
