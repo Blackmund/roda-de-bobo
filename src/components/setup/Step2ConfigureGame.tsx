@@ -38,17 +38,50 @@ import { GEO_CATEGORIAS, GEO_REGIOES, geoPool } from '../../data/geoguessBank';
 import { PONTINHOS_TEMAS, pontinhosPool } from '../../data/pontinhosBank';
 
 type TagGroup = { label: string; tags: ReadonlyArray<{ id: string; label: string }> };
-const GEO_TAG_GROUPS: TagGroup[] = [
-  { label: 'Onde', tags: GEO_REGIOES },
-  { label: 'O quê', tags: GEO_CATEGORIAS }
-];
 const PON_TAG_GROUPS: TagGroup[] = [{ label: 'Temas', tags: PONTINHOS_TEMAS.map((t) => ({ id: t, label: t })) }];
 
-/**
- * Temas como tags de selecao multipla. Nenhuma tag num grupo = tudo daquele grupo ("Todos os países").
- * No GeoGuess, tags do mesmo grupo somam (Europa + America do Sul) e grupos diferentes cruzam
- * (Brasil + Pontos turisticos = pontos turisticos do Brasil).
- */
+const GeoFilters: React.FC<{ tags: string[]; onChange: (tags: string[]) => void }> = ({ tags, onChange }) => {
+  const regionTags = tags.filter(id => GEO_REGIOES.some(region => region.id === id));
+  const categoryTags = tags.filter(id => GEO_CATEGORIAS.some(category => category.id === id));
+  const selection = (ids: string[]) => ids.length > 1 ? '__multiple' : ids[0] || '';
+  const count = geoPool(tags).length;
+
+  return (
+    <div className="rdb-opt" data-testid="geo-tags">
+      <div className="rdb-geo-filters">
+        <label>
+          <span className="rdb-opt-label">Tema · Região</span>
+          <select className="rdb-select" data-testid="geo-region" value={selection(regionTags)} onChange={event => {
+            const regions = event.target.value ? [event.target.value] : [];
+            const next = [...regions, ...categoryTags];
+            onChange(geoPool(next).length ? next : regions);
+          }}>
+            <option value="">Mundo todo</option>
+            {regionTags.length > 1 && <option value="__multiple" disabled>Várias regiões salvas</option>}
+            {GEO_REGIOES.map(region => <option key={region.id} value={region.id}>{region.label}</option>)}
+          </select>
+        </label>
+        <label>
+          <span className="rdb-opt-label">Subtema · Tipo de lugar</span>
+          <select className="rdb-select" data-testid="geo-category" value={selection(categoryTags)} onChange={event =>
+            onChange(event.target.value ? [...regionTags, event.target.value] : regionTags)
+          }>
+            <option value="">Todos os tipos</option>
+            {categoryTags.length > 1 && <option value="__multiple" disabled>Vários tipos salvos</option>}
+            {GEO_CATEGORIAS.map(category => {
+              const amount = geoPool([...regionTags, category.id]).length;
+              return <option key={category.id} value={category.id} disabled={!amount}>{category.label} ({amount})</option>;
+            })}
+          </select>
+        </label>
+        <span className="rdb-tags-count" data-testid="geo-tags-count" aria-live="polite">
+          {count ? `${count} ${count === 1 ? 'lugar disponível' : 'lugares disponíveis'}` : 'Sem lugares neste filtro salvo. Selecione outro tipo.'}
+        </span>
+      </div>
+    </div>
+  );
+};
+
 const TagPicker: React.FC<{
   testid: string;
   groups: TagGroup[];
@@ -504,16 +537,20 @@ export const Step2ConfigureGame: React.FC<Step2ConfigureGameProps> = React.memo(
             </div>
           )}
 
-          {usesTags && (
+          {isGeo && (
+            <GeoFilters
+              tags={customConfig.geoTags || []}
+              onChange={(next) => onChangeCustomConfig((prev) => ({ ...prev, geoTags: next }))}
+            />
+          )}
+          {isPon && (
             <TagPicker
-              testid={isGeo ? 'geo-tags' : 'pon-tags'}
-              groups={isGeo ? GEO_TAG_GROUPS : PON_TAG_GROUPS}
-              selected={(isGeo ? customConfig.geoTags : customConfig.pontinhosTemas) || []}
-              count={(sel) => (isGeo ? geoPool(sel).length : pontinhosPool(sel).length)}
-              noun={isGeo ? ['lugar', 'lugares'] : ['resposta', 'respostas']}
-              onChange={(next) =>
-                onChangeCustomConfig((prev) => (isGeo ? { ...prev, geoTags: next } : { ...prev, pontinhosTemas: next }))
-              }
+              testid="pon-tags"
+              groups={PON_TAG_GROUPS}
+              selected={customConfig.pontinhosTemas || []}
+              count={(sel) => pontinhosPool(sel).length}
+              noun={['resposta', 'respostas']}
+              onChange={(next) => onChangeCustomConfig((prev) => ({ ...prev, pontinhosTemas: next }))}
             />
           )}
 
