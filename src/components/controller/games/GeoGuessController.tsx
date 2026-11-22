@@ -89,10 +89,10 @@ export const GeoGuessController: React.FC<GeoGuessControllerProps> = ({ room, pl
         )}
       </div>
 
-      <div className="rdb-geo-ctl-hint">
+      {g.phase === 'PLAYING' && g.stage >= 2 && <div className="rdb-geo-ctl-hint">
         <span>Dica</span>
         <strong>{g.dica}</strong>
-      </div>
+      </div>}
 
       <p
         data-testid="controller-geo-status"

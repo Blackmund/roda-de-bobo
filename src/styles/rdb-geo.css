@@ -34,10 +34,10 @@
 }
 .rdb-geo-photo { position: absolute; inset: 0; display: grid; place-items: center; overflow: hidden; }
 .rdb-geo-photo img { width: 100%; height: 100%; object-fit: contain; }
-.rdb-geo-photo.is-detail img { transform-origin: 64% 35%; transform: scale(2.1); }
 .rdb-geo-photo.is-loading { color: var(--rdb-ink-2); }
-.rdb-geo-photo-credits { display: flex; flex-wrap: wrap; gap: .2rem .65rem; font-size: .68rem; }
-.rdb-geo-photo-credits a { color: var(--rdb-ink-2); text-decoration: underline; }
+.rdb-geo-photo-credits { font-size: .72rem; color: var(--rdb-ink-2); max-height: 5rem; overflow: auto; }
+.rdb-geo-photo-credits summary { cursor: pointer; }
+.rdb-geo-photo-credits a { display: block; color: inherit; text-decoration: underline; }
 
 .rdb-geo-body {
   flex: 1;
@@ -251,6 +251,26 @@
 .rdb-geo-side-head span:last-child {
   color: var(--rdb-teal);
 }
+.rdb-geo-turn {
+  display: grid;
+  gap: .45rem;
+  padding: .65rem;
+  background: var(--rdb-navy-2);
+  border-block: 1px solid var(--rdb-teal);
+}
+.rdb-geo-turn label { color: var(--rdb-teal); font-weight: 800; }
+.rdb-geo-turn input {
+  width: 100%;
+  min-width: 0;
+  padding: .45rem .55rem;
+  border: 1px solid var(--rdb-teal);
+  color: var(--rdb-cream);
+  background: var(--rdb-navy);
+}
+.rdb-geo-turn input:focus-visible { outline: 2px solid var(--rdb-cream); outline-offset: 2px; }
+.rdb-geo-turn-actions { display: flex; flex-wrap: wrap; gap: .35rem; }
+.rdb-geo-turn-actions .rdb-btn { font-size: .75rem; min-height: 2rem; }
+.rdb-geo-judge-note { padding: .5rem .65rem; margin: 0; color: var(--rdb-ink-2); font-size: .85rem; }
 .rdb-geo-side ul {
   flex: 1;
   min-height: 0;
@@ -270,6 +290,9 @@
 .rdb-geo-row.is-sent {
   border-left-color: var(--rdb-cream);
 }
+.rdb-geo-row.is-waiting .rdb-geo-row-name { color: var(--rdb-ink-2); }
+.rdb-geo-row.is-current { border-left-color: var(--rdb-teal); background: rgba(23, 184, 184, .14); }
+.rdb-geo-row.is-current .rdb-geo-row-name { color: var(--rdb-teal); }
 .rdb-geo-row.is-right {
   border-left-color: var(--rdb-teal);
   background: rgba(23, 184, 184, 0.12);

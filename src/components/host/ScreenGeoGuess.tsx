@@ -6,13 +6,16 @@ import { sounds } from '../../utils/soundEffects';
 import {
   GEO_PERGUNTA_TEXTO,
   GEO_TILE_SOURCE,
+  geoLocalTurn,
   geoPlayersWithGuess,
   geoSolved,
   geoValue,
   geoValueAt,
   judgeGeoGuess,
   nextGeoStage,
-  revealGeo
+  pendingGeoGuesses,
+  revealGeo,
+  submitGeoGuess
 } from '../../utils/geoguessEngine';
 import { PlayerMark } from '../rdb/PlayerMark';
 import { SatView } from '../geoguess/SatView';
@@ -44,6 +47,28 @@ export const ScreenGeoGuess: React.FC<ScreenGeoGuessProps> = ({ room, onUpdateGe
   const reveal = g.phase === 'REVEAL';
   const guessed = geoPlayersWithGuess(g, players);
   const isLast = g.stage >= total - 1;
+  const localPlay = (room.connectionMode || room.customConfig?.connectionMode || 'local') === 'local';
+  const turnId = localPlay ? geoLocalTurn(g, players) : undefined;
+  const turn = players.find(player => player.id === turnId);
+  const localReview = localPlay && g.phase === 'PLAYING' && !turnId;
+  const waitingForJudgment = localReview && pendingGeoGuesses(g).length > 0;
+
+  const sendLocalGuess = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const text = String(new FormData(event.currentTarget).get('guess') || '').trim();
+    if (!turnId || !text) return;
+    sounds.playTick();
+    onUpdateGeoState(prev => prev.localId === g.localId && prev.stage === g.stage && geoLocalTurn(prev, players) === turnId
+      ? submitGeoGuess(prev, turnId, text)
+      : prev);
+  };
+
+  const passLocalTurn = () => {
+    if (!turnId) return;
+    onUpdateGeoState(prev => prev.localId === g.localId && prev.stage === g.stage && geoLocalTurn(prev, players) === turnId
+      ? judgeGeoGuess(prev, turnId, false, ids)
+      : prev);
+  };
 
   const start = () => {
     sounds.playPowerup();
@@ -86,7 +111,7 @@ export const ScreenGeoGuess: React.FC<ScreenGeoGuessProps> = ({ room, onUpdateGe
         <span
           className="rdb-lim-rule"
           tabIndex={0}
-          data-tip="Todos chutam pelo celular. Abra os palpites e marque quem acertou; quem errou chuta de novo na próxima imagem, que vale 1 ponto a menos."
+          data-tip={localPlay ? 'Cada jogador digita na sua vez. Depois dos palpites, marque os acertos.' : 'Todos chutam pelo celular. Abra os palpites e marque quem acertou.'}
         >
           <Info size={16} />
         </span>
@@ -130,8 +155,10 @@ export const ScreenGeoGuess: React.FC<ScreenGeoGuessProps> = ({ room, onUpdateGe
           ) : (
             <>
               <div className="rdb-geo-hint">
-                <span className="rdb-tag">Dica</span>
-                <strong data-testid="geo-dica">{g.dica}</strong>
+                {g.phase === 'PLAYING' && g.stage >= 2 && <>
+                  <span className="rdb-tag">Dica</span>
+                  <strong data-testid="geo-dica">{g.dica}</strong>
+                </>}
                 <span className="rdb-geo-q">{GEO_PERGUNTA_TEXTO[g.pergunta]}</span>
               </div>
               {g.phase === 'READY' ? (
@@ -152,6 +179,7 @@ export const ScreenGeoGuess: React.FC<ScreenGeoGuessProps> = ({ room, onUpdateGe
                     etapa={g.etapas[g.stage]}
                     prefetch={isLast ? g.revelacao : g.etapas[g.stage + 1]}
                     photo={photos[g.stage]}
+                    stage={g.stage}
                     nextPhoto={photos[g.stage + 1]}
                     onSourceChange={setUsingPhoto}
                     label={`Imagem ${g.stage + 1} de ${total}`}
@@ -168,14 +196,15 @@ export const ScreenGeoGuess: React.FC<ScreenGeoGuessProps> = ({ room, onUpdateGe
               )}
             </>
           )}
-          <small className="rdb-geo-credit">{!reveal && usingPhoto ? 'Fotos: Wikimedia Commons' : GEO_TILE_SOURCE.attribution}</small>
+          {(reveal || (g.phase === 'PLAYING' && !usingPhoto)) && <small className="rdb-geo-credit">{GEO_TILE_SOURCE.attribution}</small>}
           {reveal && photos.some(Boolean) && (
-            <div className="rdb-geo-photo-credits" aria-label="Créditos das fotos">
+            <details className="rdb-geo-photo-credits">
+              <summary>Fontes das fotos recortadas</summary>
               {photos.map((photo, index) => photo && (
                 <a key={photo.source} href={photo.source} target="_blank" rel="noreferrer"
                   title={`${photo.author} · ${photo.license}`}>Foto {index + 1} · {photo.author} · {photo.license}</a>
               ))}
-            </div>
+            </details>
           )}
         </section>
 
@@ -189,19 +218,33 @@ export const ScreenGeoGuess: React.FC<ScreenGeoGuessProps> = ({ room, onUpdateGe
               </span>
             )}
           </div>
+          {turn && (
+            <form key={`${room.roundNumber}:${g.stage}:${turn.id}`} className="rdb-geo-turn" onSubmit={sendLocalGuess}>
+              <label htmlFor="geo-local-guess" aria-live="polite">Vez de <strong>{turn.name}</strong></label>
+              <input id="geo-local-guess" name="guess" data-testid="geo-local-input" placeholder="Digite seu palpite"
+                maxLength={60} autoFocus autoComplete="off" enterKeyHint="send" required />
+              <div className="rdb-geo-turn-actions">
+                <button className="rdb-btn rdb-pro-hit" type="submit">Enviar palpite</button>
+                <button className="rdb-btn" type="button" onClick={passLocalTurn}>Passar</button>
+              </div>
+            </form>
+          )}
+          {waitingForJudgment && <p className="rdb-geo-judge-note">Marque quem acertou antes da próxima imagem.</p>}
           <ul>
             {players.map((p) => {
               const solved = geoSolved(g, p.id);
               const guess = g.guesses[p.id];
               const now = guess && guess.stage === g.stage ? guess : undefined;
               const wrongNow = now?.verdict === 'wrong';
-              const canJudge = g.phase === 'PLAYING' && !solved && !wrongNow;
-              const showText = reveal || g.showGuesses || solved || wrongNow;
+              const canJudge = g.phase === 'PLAYING' && !solved && !wrongNow && (!localPlay || (localReview && !!now));
+              const showText = reveal || localReview || g.showGuesses || solved || wrongNow;
               return (
                 <li
                   key={p.id}
                   data-testid={`geo-row-${p.id}`}
-                  className={'rdb-geo-row' + (solved ? ' is-right' : wrongNow ? ' is-wrong' : now ? ' is-sent' : '')}
+                  aria-current={turnId === p.id ? 'true' : undefined}
+                  className={'rdb-geo-row' + (solved ? ' is-right' : wrongNow ? ' is-wrong' : now ? ' is-sent' : '') +
+                    (turnId === p.id ? ' is-current' : turnId ? ' is-waiting' : '')}
                 >
                   <PlayerMark p={p} />
                   <div className="rdb-geo-row-main">
@@ -211,11 +254,11 @@ export const ScreenGeoGuess: React.FC<ScreenGeoGuessProps> = ({ room, onUpdateGe
                         ? `Acertou na ${g.solvedAt[p.id] + 1}ª${guess?.text ? ': ' + guess.text : ''}`
                         : now
                         ? showText
-                          ? (wrongNow ? 'Errou: ' : '') + (now.text || 'chute falado')
+                          ? (localPlay && wrongNow && !now.text ? 'Passou' : (wrongNow ? 'Errou: ' : '') + (now.text || 'chute falado'))
                           : 'Já chutou'
                         : reveal
                         ? 'Não acertou'
-                        : 'Pensando...'}
+                        : turnId === p.id ? 'Sua vez' : turnId ? 'Aguardando' : 'Pensando...'}
                     </span>
                   </div>
                   {solved ? (
@@ -265,7 +308,7 @@ export const ScreenGeoGuess: React.FC<ScreenGeoGuessProps> = ({ room, onUpdateGe
             <button type="button" data-testid="geo-reveal-btn" className="rdb-btn" onClick={doReveal}>
               Revelar
             </button>
-            <button type="button" data-testid="geo-next-btn" className="rdb-btn rdb-pro-hit" onClick={advance}>
+            <button type="button" data-testid="geo-next-btn" className="rdb-btn rdb-pro-hit" onClick={advance} disabled={Boolean(turnId || waitingForJudgment)}>
               {isLast ? 'Revelar o lugar' : `Próxima imagem (vale ${geoValueAt(g, g.stage + 1)})`}
               <ArrowRight size={18} />
             </button>

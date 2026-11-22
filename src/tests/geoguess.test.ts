@@ -4,6 +4,7 @@ import {
   GEO_ETAPAS_PADRAO,
   buildGeoGuessState,
   geoEtapasDo,
+  geoLocalTurn,
   geoPixel,
   geoTilesFor,
   geoValue,
@@ -14,6 +15,7 @@ import {
 } from '../utils/geoguessEngine.ts';
 import { GEO_CATEGORIAS, GEO_LOCAIS, GEO_REGIOES, drawGeoLocal, geoPool } from '../data/geoguessBank.ts';
 import { loadGeoPhotos } from '../utils/geoguessPhotos.ts';
+import { geoClueCrop, geoTextRegions } from '../utils/geoguessClueArtwork.ts';
 import { PONTINHOS, PONTINHOS_TEMAS, drawPontinho, normalizePontinhoKey, pontinhosPool } from '../data/pontinhosBank.ts';
 import type { GeoGuessGameState } from '../types/game.ts';
 
@@ -38,8 +40,27 @@ test('GeoGuess: o Cristo tem cinco fotografias distintas e creditadas', async ()
   assert.equal(photos.length, 5);
   assert.equal(new Set(photos.map(photo => photo?.url)).size, 5);
   assert.ok(photos.every(photo => photo?.source && photo.author && photo.license));
-  assert.equal(photos[0]?.detail, true);
-  assert.equal(photos[4]?.detail, false);
+});
+
+test('GeoGuess: recortes fechados nas primeiras pistas e leitura de áreas de texto', () => {
+  assert.deepEqual(geoClueCrop(1000, 600, 0), { x: 530, y: 210, w: 180, h: 108 });
+  assert.equal(geoClueCrop(1000, 600, 1).w, 280);
+  assert.equal(geoClueCrop(1000, 600, 4).w, 1000);
+  assert.deepEqual(geoTextRegions('5\t1\t1\t1\t1\t1\t30\t60\t40\t20\t43\tPlanalto'), [{ x: 30, y: 60, w: 40, h: 20 }]);
+});
+
+test('GeoGuess: turno local avança com palpite ou passe e ignora quem já acertou', () => {
+  const players = ids.map(id => ({ id }));
+  let s = playing();
+  assert.equal(geoLocalTurn(s, players), 'a');
+  s = submitGeoGuess(s, 'a', 'San Siro');
+  assert.equal(geoLocalTurn(s, players), 'b');
+  s = judgeGeoGuess(s, 'b', false, ids);
+  assert.equal(geoLocalTurn(s, players), 'c');
+  s = submitGeoGuess(s, 'c', 'Wembley');
+  assert.equal(geoLocalTurn(s, players), undefined);
+  s = nextGeoStage(judgeGeoGuess(s, 'a', true, ids));
+  assert.equal(geoLocalTurn(s, players), 'b');
 });
 
 test('GeoGuess: fotos de um homônimo distante não entram na sequência', async (t) => {
