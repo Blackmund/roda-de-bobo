@@ -879,6 +879,8 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
                 ? (x + y) % 2
                   ? '#2f93cf'
                   : '#3aa0d8'
+                : isClassicBP && skin === 'classic'
+                ? ((x + y) % 2 ? '#b8ac75' : '#c2b67e')
                 : isClassicBP
                 ? (x + y) % 2
                   ? '#c5c28b'
@@ -893,7 +895,12 @@ export const CTBoardView: React.FC<CTBoardViewProps> = ({
             }
           />
         ))}
-        {isClassicBP && cells.filter(({ c }) => c.t !== 2 && !c.o).map(({ x, y }) => (
+        {isClassicBP && skin === 'classic' && cells.filter(({ c }) => c.t !== 2 && !c.o).map(({ x, y }) => (
+          <path key={'field' + x + ',' + y} transform={`translate(${x * U} ${y * U})`} pointerEvents="none"
+            d={((x + y) & 1) ? 'M.4 3.1q4.6-.9 9.2 0M.7 7.3q4.5-.65 8.4-.3' : 'M.5 2.5q4.4.5 9.1-.25M.45 6.8q4.4-.8 8.9 0'}
+            fill="none" stroke="#e6d8a4" strokeWidth=".48" opacity=".23" />
+        ))}
+        {isClassicBP && skin !== 'classic' && cells.filter(({ c }) => c.t !== 2 && !c.o).map(({ x, y }) => (
           <g key={'terrain' + x + ',' + y} transform={`translate(${x * U} ${y * U})`} pointerEvents="none">
             <path d={((x + y) & 1) ? 'M1 2l.9-.5.9.4-.7.6z M7.4 7.8l1.1-.5.8.6-.8.6z' : 'M1.1 7.8l1.1-.5.7.6-.9.5z M7.4 2.1l1-.5.8.4-.8.6z'} fill="#977348" opacity=".34" />
             <path d="M.7 3.7l.3-.8.3.8.5-.6M8.7 6.3l.2-.7.4.7.3-.6M6.9 8.7l.3-.7.3.7" fill="none" stroke="#596b36" strokeWidth=".24" opacity=".58" />
