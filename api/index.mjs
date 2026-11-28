@@ -79111,6 +79111,19 @@ Responda em portugu\xEAs do Brasil, de forma direta e curta (1 frase de at\xE9 1
     });
   }
 });
+var BOT_STRATEGY = {
+  adedanha: "Estrat\xE9gia da Adedanha: resposta s\xF3 sua vale 10 e repetida vale 5; prefira respostas v\xE1lidas e conhecidas, mas n\xE3o as mais \xF3bvias (fuja do primeiro nome que todo mundo pensa). Respeite exatamente a categoria e a letra inicial.",
+  repetente: "Estrat\xE9gia do Repetente: o objetivo \xE9 escrever a MESMA palavra que o parceiro; pense no que a maioria dos brasileiros escreveria primeiro, no singular e sem artigo.",
+  respostas: "Estrat\xE9gia: use as palavras reveladas e a categoria para reconstruir a pergunta mais prov\xE1vel; responda o que a pergunta pede (nome, n\xFAmero, lugar), curto.",
+  wrong: "Voc\xEA vai errar de prop\xF3sito, mas de forma cr\xEDvel: diga respostas que uma pessoa realmente daria nessa pesquisa, do mesmo tipo das corretas, e que n\xE3o estejam na lista de corretas.",
+  "nota-clue": "Estrat\xE9gia do Jogo da Nota: a dica precisa apontar para a nota sem diz\xEA-la; use exemplos concretos e conhecidos que todo mundo concorda que valem aquela nota na escala.",
+  "proibido-clues": "Estrat\xE9gia do Proibido (Taboo): dicas curtas e diretas, que levem \xE0 palavra em poucos segundos; comece pelo uso ou caracter\xEDstica mais marcante; nunca use palavras proibidas, a palavra-alvo ou partes dela.",
+  list: "Estrat\xE9gia do Duvido: liste itens corretos, conhecidos e verific\xE1veis, sem repetir e sem inventar.",
+  "mega-clues": "Estrat\xE9gia da Mega Resenha: cada dica \xE9 UMA palavra; comece pela associa\xE7\xE3o mais forte e direta com a palavra-alvo.",
+  "mega-guess": "Estrat\xE9gia: procure a palavra que liga TODAS as dicas ao mesmo tempo.",
+  "mimica-acts": "Estrat\xE9gia da M\xEDmica: descreva gestos visuais e marcantes, do mais revelador ao complementar.",
+  "pinto-draw": "Estrat\xE9gia do Como Eu Pinto: desenhe o contorno mais reconhec\xEDvel do objeto, com poucos tra\xE7os e bem proporcionados."
+};
 app.post("/api/bot-think", async (req, res) => {
   const { kind = "", input = {} } = req.body || {};
   const s2 = (v, max = 400) => String(v ?? "").replace(/\s+/g, " ").trim().slice(0, max);
@@ -79152,6 +79165,45 @@ app.post("/api/bot-think", async (req, res) => {
       count = 3;
       task = `Jogo Mega Resenha: seu parceiro deu estas dicas de uma palavra cada: ${arr(input.clues, 10).join(", ")}. Qual \xE9 a palavra? D\xEA ${count} chutes de UMA palavra, do mais prov\xE1vel ao menos prov\xE1vel.`;
       break;
+    case "mimica-acts":
+      count = 4;
+      task = `Jogo da M\xEDmica: voc\xEA precisa fazer a m\xEDmica da palavra "${s2(input.word, 60)}" sem falar, mas aqui vai DESCREVER em texto os gestos que faria. Liste ${count} gestos curtos (at\xE9 10 palavras cada), come\xE7ando por verbos de a\xE7\xE3o (ex.: "abre os bra\xE7os e bate como asas"), sem dizer a palavra nem partes dela.`;
+      break;
+    case "pinto-draw":
+      count = 10;
+      task = `Jogo Como Eu Pinto: desenhe "${s2(input.word, 60)}" como um desenho simples de linha (estilo rabisco de quadro). Cada item \xE9 UM tra\xE7o cont\xEDnuo, escrito como pontos "x,y" separados por espa\xE7o, com x e y de 0 a 100 (0,0 no canto superior esquerdo; a \xE1rea \xE9 larga, 16:9). Use de 4 a ${count} tra\xE7os, cada um com 4 a 24 pontos, formando um desenho reconhec\xEDvel e centralizado. N\xE3o escreva letras nem a palavra.`;
+      break;
+    case "pinto-guess": {
+      const img = String(input.image || "");
+      const m2 = /^data:image\/(png|jpeg);base64,([A-Za-z0-9+/=]+)$/.exec(img);
+      if (!m2 || img.length > 4e5) return res.status(400).json({ items: [] });
+      const apiKeyImg = process.env.GEMINI_API_KEY;
+      if (!apiKeyImg || apiKeyImg === "MY_GEMINI_API_KEY" || apiKeyImg.trim() === "") return res.status(200).json({ items: [], fallback: true });
+      try {
+        const ai = new GoogleGenAI2({ apiKey: apiKeyImg, httpOptions: { headers: { "User-Agent": "aistudio-build" } } });
+        const response = await generateContentWithFallback(ai, {
+          contents: [
+            {
+              role: "user",
+              parts: [
+                { text: "Jogo Como Eu Pinto (party game brasileiro). Olhe este desenho feito \xE0 m\xE3o e chute qual palavra ele representa. Responda com at\xE9 3 chutes de UMA ou DUAS palavras em portugu\xEAs do Brasil, do mais prov\xE1vel ao menos prov\xE1vel, no JSON pedido." },
+                { inlineData: { mimeType: `image/${m2[1]}`, data: m2[2] } }
+              ]
+            }
+          ],
+          config: {
+            temperature: 0.4,
+            responseMimeType: "application/json",
+            responseSchema: { type: Type.OBJECT, properties: { items: { type: Type.ARRAY, items: { type: Type.STRING } } }, required: ["items"] }
+          }
+        });
+        const parsed = JSON.parse(response.text || "{}");
+        const items = Array.isArray(parsed.items) ? parsed.items.slice(0, 3).map((x2) => sanitizeCleanGameText(s2(x2, 60))) : [];
+        return res.status(200).json({ items, source: "ai" });
+      } catch (err) {
+        return res.status(200).json({ items: [], fallback: true, error: err?.message });
+      }
+    }
     case "list":
       count = Math.min(25, Math.max(3, Number(input.count) || 10));
       task = `Jogo do Duvido. Categoria: "${s2(input.category)}"${input.rule ? ` (regra: ${s2(input.rule)})` : ""}. Liste ${count} itens reais e diferentes que pertencem a essa categoria. Um item por posi\xE7\xE3o, curto.`;
@@ -79166,7 +79218,10 @@ app.post("/api/bot-think", async (req, res) => {
   try {
     const ai = new GoogleGenAI2({ apiKey, httpOptions: { headers: { "User-Agent": "aistudio-build" } } });
     const response = await generateContentWithFallback(ai, {
-      contents: `Voc\xEA \xE9 um jogador de party games brasileiro jogando o "Roda de Bobo". ${task}
+      contents: `Voc\xEA \xE9 um jogador experiente e competitivo de party games brasileiros, jogando o "Roda de Bobo" num programa no estilo Caz\xE9TV. Voc\xEA conhece muito bem cultura pop, futebol, m\xFAsica, TV e o dia a dia do Brasil, e quer GANHAR.
+Regras de ouro: nunca responda "n\xE3o sei", "passo", "nenhum" ou algo vago; d\xEA sempre respostas concretas, reais e espec\xEDficas, escritas como um brasileiro escreveria (com acento, sem explica\xE7\xE3o, sem numera\xE7\xE3o).
+${BOT_STRATEGY[kind] || ""}
+${task}
 Responda s\xF3 com o JSON pedido.`,
       config: {
         temperature: 0.7,
