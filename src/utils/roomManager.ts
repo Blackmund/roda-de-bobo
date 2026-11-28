@@ -138,10 +138,8 @@ export function useGameRoom(roomId: string, currentUserId: string, isHost: boole
       const hasPlayers = (saved.players || []).length >= 2;
       return {
         ...base,
-        // UX-02: o jogo ativo (activeGame) não é restaurado aqui, então qualquer tela de jogo
-        // (rules, setup, playing, game-over…) ficaria em branco. Sempre volta ao lobby; a partida
-        // salva é oferecida em "Retomar partida" (resumableRoom).
-        screen: hasPlayers ? 'lobby' : 'mode-select',
+        // UX-02: restaura o preparo da sala diretamente e oferece partidas salvas no lobby.
+        screen: saved.screen === 'mode-select' || !hasPlayers ? 'mode-select' : 'lobby',
         connectionMode: saved.connectionMode || base.connectionMode,
         teamCount: saved.teamCount || base.teamCount,
         players: saved.players || [],
@@ -667,11 +665,13 @@ export function useGameRoom(roomId: string, currentUserId: string, isHost: boole
                 sessionStats: candidateSaved.sessionStats || prev.sessionStats
               }));
             }
-          } else if (serverState && lastLocalUpdateRef.current === 0) {
-            applyRemoteState(serverState);
           } else if (lastLocalUpdateRef.current === 0) {
-            const initial = createDefaultRoom(roomId, currentUserId);
-            setRoom(initial);
+            if (candidateSaved === localSaved && localSaved?.screen === 'mode-select') return;
+            if (serverState) {
+              applyRemoteState(serverState);
+            } else {
+              setRoom(createDefaultRoom(roomId, currentUserId));
+            }
           }
         } else if (serverState) {
           applyRemoteState(serverState);

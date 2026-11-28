@@ -75,7 +75,7 @@ export function isRoomWorthSaving(room: GameRoom | null | undefined): boolean {
  * that should trigger the 'Resume Game' prompt in the Lobby after a browser refresh.
  */
 export function isResumableGame(room: GameRoom | null | undefined): boolean {
-  if (!room || !room.roomId) return false;
+  if (!room || !room.roomId || room.screen === 'mode-select') return false;
   return (
     room.screen !== 'lobby' ||
     room.activeGame !== null ||

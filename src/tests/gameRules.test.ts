@@ -1,5 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { createElement } from 'react';
+import { renderToString } from 'react-dom/server';
+import { useGameRoom } from '../utils/roomManager.ts';
 import { CURATED_LIMITE, CURATED_TEM_OU_NAO_TEM } from '../data/curatedRounds.ts';
 import { normalizeTemVotesTo100 } from '../utils/aiGameGenerator.ts';
 import {
@@ -264,6 +267,43 @@ test('Curated Limite rounds all have positive exact values and explanations', ()
     assert.ok(typeof round.valor_exato === 'number' && round.valor_exato > 0);
     assert.ok(typeof round.curiosidade_explicacao === 'string' && round.curiosidade_explicacao.length > 5);
   });
+});
+
+test('Host refresh keeps a saved room setup open without offering to resume a match', (t) => {
+  const store = new Map<string, string>();
+  const storage = {
+    getItem: (key: string) => store.get(key) ?? null,
+    setItem: (key: string, value: string) => store.set(key, value)
+  };
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: { localStorage: storage } });
+  t.after(() => { Reflect.deleteProperty(globalThis, 'window'); });
+  const savedSetup = createMockRoom({
+    screen: 'mode-select',
+    connectionMode: 'local',
+    players: (['A', 'B'] as const).map((team) => ({
+      id: team,
+      name: `Player ${team}`,
+      avatar: '',
+      color: '',
+      team,
+      isVip: false,
+      score: 0,
+      powerCards: { ligacao: false, troca: false, x2: false, menos1: false },
+      connected: true,
+      lastActive: 1000
+    }))
+  });
+  assert.equal(saveRoomStateToStorage(savedSetup, storage), true);
+
+  function ReloadedHost() {
+    const { room, resumableRoom } = useGameRoom(savedSetup.roomId, savedSetup.hostId, true);
+    assert.equal(resumableRoom, null);
+    assert.equal(room.screen, 'mode-select');
+    assert.deepEqual(room.players, savedSetup.players);
+    return null;
+  }
+
+  renderToString(createElement(ReloadedHost));
 });
 
 test('Persistence Layer: saves, loads, and clears active room state in localStorage', () => {
