@@ -75,26 +75,32 @@ export const ScreenTemOuNaoTem: React.FC<ScreenTemOuNaoTemProps> = ({
           undefined,
           room.theme
         );
-        onUpdateTemOuNaoTemState((prev) => ({
-          ...prev,
-          roundData: {
-            ...data,
-            respostas: normalizedRespostas
-          },
-          items: normalizedRespostas.map((r: any) => ({
-            texto: r.texto,
-            sinonimos_aceitos: r.sinonimos_aceitos || [],
-            votos: r.votos,
-            revealed: false
-          })),
-          strikes: { A: 0, B: 0, C: 0, D: 0 },
-          eliminatedTeams: [],
-          freeDomainTeam: null,
-          roundScore: { A: 0, B: 0, C: 0, D: 0 },
-          turnStepIndex: 0,
-          lastGuessFeedback: undefined
-        }));
+        onUpdateTemOuNaoTemState((prev) => {
+          if (prev.phase !== tem.phase || prev.turnStepIndex !== tem.turnStepIndex) return prev;
+          return {
+            ...prev,
+            phase: 'GUESSING',
+            roundData: {
+              ...data,
+              respostas: normalizedRespostas
+            },
+            items: normalizedRespostas.map((r: any) => ({
+              texto: r.texto,
+              sinonimos_aceitos: r.sinonimos_aceitos || [],
+              votos: r.votos,
+              revealed: false
+            })),
+            strikes: { A: 0, B: 0, C: 0, D: 0 },
+            eliminatedTeams: [],
+            freeDomainTeam: null,
+            roundScore: { A: 0, B: 0, C: 0, D: 0 },
+            turnStepIndex: 0,
+            lastGuessFeedback: undefined
+          };
+        });
       }
+    } catch {
+      sounds.playBuzzer();
     } finally {
       setIsSwappingQuestion(false);
     }

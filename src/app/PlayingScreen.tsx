@@ -11,6 +11,7 @@ import { PhaseStinger } from '../components/art/PhaseStinger';
 import { ActiveTurnBanner } from '../components/ActiveTurnBanner';
 import { useBotDriver } from '../ai/useBotDriver';
 import { BotSpeech } from '../components/ai/BotSpeech';
+import { updateActiveRound } from './updateActiveRound';
 
 /** Jogos que ainda nao desenham a propria faixa "Vez de": ela entra aqui, acima do jogo. */
 const TURN_BAR_GAMES: GameId[] = [
@@ -80,10 +81,7 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
                   room={room}
                   isTvMode={isTvMode}
                   onUpdateLimiteState={(updater) =>
-                    broadcastState((prev) => ({
-                      ...prev,
-                      limite: prev.limite ? updater(prev.limite) : undefined
-                    }))
+                    broadcastState((prev) => updateActiveRound(prev, room, 'limite', updater))
                   }
                   onNextRound={handleNextRound}
                 />
@@ -260,10 +258,7 @@ export const PlayingScreen: React.FC<PlayingScreenProps> = ({
                   room={room}
                   isTvMode={isTvMode}
                   onUpdateTemOuNaoTemState={(updater) =>
-                    broadcastState((prev) => ({
-                      ...prev,
-                      temOuNaoTem: prev.temOuNaoTem ? updater(prev.temOuNaoTem) : undefined
-                    }))
+                    broadcastState((prev) => updateActiveRound(prev, room, 'temOuNaoTem', updater))
                   }
                   onNextRound={handleNextRound}
                 />

@@ -224,6 +224,7 @@ export function useGameRoom(roomId: string, currentUserId: string, isHost: boole
   const broadcastState = useCallback((stateUpdater: (prev: GameRoom) => GameRoom) => {
     setRoom((prev) => {
       const updated = stateUpdater(prev);
+      if (updated === prev) return prev;
       const nextTs = Math.max(Date.now(), (prev?.lastUpdated || 0) + 1, lastLocalUpdateRef.current + 1);
       updated.lastUpdated = nextTs;
       lastLocalUpdateRef.current = nextTs;

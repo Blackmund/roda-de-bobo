@@ -23,6 +23,7 @@ interface LimitePlayingViewProps {
   setSelectedPowerPlayerId: React.Dispatch<React.SetStateAction<string>>;
   setIsPowerModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleRerollLimiteQuestion: () => Promise<void>;
+  isRerolling: boolean;
   handleImmediateReveal: () => void;
   drumrolling: boolean;
   handleTriggerReveal: () => void;
@@ -52,6 +53,7 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
   setSelectedPowerPlayerId,
   setIsPowerModalOpen,
   handleRerollLimiteQuestion,
+  isRerolling,
   handleImmediateReveal,
   drumrolling,
   handleTriggerReveal,
@@ -242,6 +244,8 @@ export const LimitePlayingView: React.FC<LimitePlayingViewProps> = ({
             className="rdb-lim-icon"
             data-tip="Trocar a pergunta"
             aria-label="Trocar a pergunta"
+            disabled={isRerolling}
+            aria-busy={isRerolling}
             onClick={handleRerollLimiteQuestion}
           >
             <RotateCcw size={16} />

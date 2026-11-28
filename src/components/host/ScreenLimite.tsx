@@ -41,6 +41,7 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
 }) => {
   const limite = room.limite;
   const [drumrolling, setDrumrolling] = useState(false);
+  const [isRerolling, setIsRerolling] = useState(false);
   const [isPowerModalOpen, setIsPowerModalOpen] = useState(false);
   const [selectedPowerPlayerId, setSelectedPowerPlayerId] = useState<string>(
     room.players[0]?.id || ''
@@ -230,6 +231,7 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
   };
 
   const handleRerollLimiteQuestion = async () => {
+    if (isRerolling) return;
     sounds.playPowerup();
     setTvDraftGuesses({});
     setEditingSecretPlayers({});
@@ -237,19 +239,27 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
       onRerollQuestion();
       return;
     }
+    setIsRerolling(true);
+    const excluded = [...(room.usedRoundSignatures || []), limite.roundData.pergunta];
     try {
-      const generated = await generateRoundContent('limite', room.theme, room.customConfig, [
-        limite.roundData.pergunta
-      ]);
-      const data = generated.data as any;
-      if (data && data.pergunta) {
-        onUpdateLimiteState((prev) => ({
+      let data: LimiteGameState['roundData'] | undefined;
+      try {
+        const generated = await generateRoundContent('limite', room.theme, room.customConfig, excluded);
+        data = generated.data as LimiteGameState['roundData'];
+      } catch {
+        // Se a geração falhar, tente o banco local.
+      }
+      if (!data?.pergunta) {
+        const fallback = generateThemeStrictFallbackRound('limite', room.theme, room.theme, room.customConfig, excluded);
+        data = fallback.data as LimiteGameState['roundData'];
+      }
+      const roundData = { ...data, pergunta: sanitizeCleanGameText(data.pergunta, 'limite') };
+      onUpdateLimiteState((prev) => {
+        if (prev.phase !== limite.phase || prev.revealCountdown !== limite.revealCountdown) return prev;
+        return {
           ...prev,
           phase: 'SECRET_GUESS',
-          roundData: {
-            ...data,
-            pergunta: sanitizeCleanGameText(data.pergunta, 'limite')
-          },
+          roundData,
           guesses: {},
           submittedPlayers: [],
           winners: [],
@@ -259,36 +269,13 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
           timerSeconds: room.timerConfig,
           timerActive: room.timerConfig > 0,
           revealCountdown: null
-        }));
-        return;
-      }
+        };
+      });
     } catch {
-      // fallback below
+      sounds.playBuzzer();
+    } finally {
+      setIsRerolling(false);
     }
-    onUpdateLimiteState((prev) => {
-      const fb = generateThemeStrictFallbackRound(
-        'limite',
-        room.theme,
-        room.theme,
-        room.customConfig,
-        [...(room.usedRoundSignatures || []), prev.roundData.pergunta]
-      );
-      const picked = (fb.data as any) || prev.roundData;
-      return {
-        ...prev,
-        phase: 'SECRET_GUESS',
-        roundData: picked,
-        guesses: {},
-        submittedPlayers: [],
-        winners: [],
-        bustedPlayers: [],
-        pointsAwarded: {},
-        revealedOrder: false,
-        timerSeconds: room.timerConfig,
-        timerActive: room.timerConfig > 0,
-        revealCountdown: null
-      };
-    });
   };
 
   const parseDraftGuess = (rawVal: string): number | null => {
@@ -437,6 +424,6 @@ export const ScreenLimite: React.FC<ScreenLimiteProps> = ({
         selectedModalPlayer.powerCardUsed)
   );
 
-  return <LimitePlayingView limite={limite} room={room} isTimeExpired={isTimeExpired} handleTogglePlayMode={handleTogglePlayMode} playMode={playMode} selectedPowerPlayerId={selectedPowerPlayerId} setSelectedPowerPlayerId={setSelectedPowerPlayerId} setIsPowerModalOpen={setIsPowerModalOpen} handleRerollLimiteQuestion={handleRerollLimiteQuestion} handleImmediateReveal={handleImmediateReveal} drumrolling={drumrolling} handleTriggerReveal={handleTriggerReveal} handleAwardDirectMesaVictory={handleAwardDirectMesaVictory} editingSecretPlayers={editingSecretPlayers} setEditingSecretPlayers={setEditingSecretPlayers} setTvDraftGuesses={setTvDraftGuesses} tvDraftGuesses={tvDraftGuesses} handleSubmitSecretTvGuess={handleSubmitSecretTvGuess} onNextRound={onNextRound} isPowerModalOpen={isPowerModalOpen} handleRedrawPowerCardsOnTV={handleRedrawPowerCardsOnTV} selectedModalPlayer={selectedModalPlayer} selectedPlayerCardMeta={selectedPlayerCardMeta} isSelectedPlayerCardUsed={isSelectedPlayerCardUsed} handleActivatePowerCardOnTV={handleActivatePowerCardOnTV} selectedPlayerAssignedCard={selectedPlayerAssignedCard} />;
+  return <LimitePlayingView limite={limite} room={room} isTimeExpired={isTimeExpired} handleTogglePlayMode={handleTogglePlayMode} playMode={playMode} selectedPowerPlayerId={selectedPowerPlayerId} setSelectedPowerPlayerId={setSelectedPowerPlayerId} setIsPowerModalOpen={setIsPowerModalOpen} handleRerollLimiteQuestion={handleRerollLimiteQuestion} isRerolling={isRerolling} handleImmediateReveal={handleImmediateReveal} drumrolling={drumrolling} handleTriggerReveal={handleTriggerReveal} handleAwardDirectMesaVictory={handleAwardDirectMesaVictory} editingSecretPlayers={editingSecretPlayers} setEditingSecretPlayers={setEditingSecretPlayers} setTvDraftGuesses={setTvDraftGuesses} tvDraftGuesses={tvDraftGuesses} handleSubmitSecretTvGuess={handleSubmitSecretTvGuess} onNextRound={onNextRound} isPowerModalOpen={isPowerModalOpen} handleRedrawPowerCardsOnTV={handleRedrawPowerCardsOnTV} selectedModalPlayer={selectedModalPlayer} selectedPlayerCardMeta={selectedPlayerCardMeta} isSelectedPlayerCardUsed={isSelectedPlayerCardUsed} handleActivatePowerCardOnTV={handleActivatePowerCardOnTV} selectedPlayerAssignedCard={selectedPlayerAssignedCard} />;
 };
 
