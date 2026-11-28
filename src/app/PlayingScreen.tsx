@@ -23,7 +23,6 @@ const TURN_BAR_GAMES: GameId[] = [
   'respostas-sem-perguntas',
   'pontinhos',
   'como-eu-pinto',
-  'perguntas-e-verdades',
   'com-terra'
 ];
 
