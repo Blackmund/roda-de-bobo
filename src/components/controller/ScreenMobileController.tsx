@@ -523,7 +523,7 @@ export const ScreenMobileController: React.FC<ScreenMobileControllerProps> = ({
           )}
         </div>
       ) : (
-        /* Quando a TV está em qualquer um dos 14 jogos (playing / game-over), renderiza o controle do jogo */
+        /* Quando a TV está em qualquer um dos 16 jogos (playing / game-over), renderiza o controle do jogo */
         <div className="flex-1 flex flex-col justify-between gap-3">{children}</div>
       )}
 

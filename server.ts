@@ -1639,22 +1639,13 @@ ${buildTemOuNaoTemPrompt(
             if (!cleanText || !normKey || seenAns.has(normKey)) continue;
             seenAns.add(normKey);
 
-            // Rescue secondary names into sinonimos_aceitos
-            const extraAliases: string[] = [];
-            const parts = raw.split(/[\/,]|\s+ou\s+/i);
-            for (let p = 1; p < parts.length; p++) {
-              const alt = sanitizeCleanGameText(parts[p]).toLowerCase().trim();
-              if (alt && !extraAliases.includes(alt)) extraAliases.push(alt);
-            }
-
             const existingSynonyms = Array.isArray(r?.sinonimos_aceitos)
               ? r.sinonimos_aceitos.map((s: any) => sanitizeCleanGameText(String(s || '')).toLowerCase()).filter(Boolean)
               : [];
-            const mergedSynonyms = Array.from(new Set([...existingSynonyms, ...extraAliases]));
 
             uniqueRespostas.push({
               texto: cleanText,
-              sinonimos_aceitos: mergedSynonyms,
+              sinonimos_aceitos: Array.from(new Set(existingSynonyms)),
               votos: Number(r?.votos) || 10
             });
           }

@@ -3,9 +3,11 @@ import assert from 'node:assert/strict';
 import { applyRoundResults, mergeRoundExtras, GAME_EXTRAS } from '../utils/matchExtras.ts';
 import { buildVictoryModel } from '../app/victory/victoryModel.ts';
 import { GAME_NAMES } from '../app/gameNames.ts';
+import { buildNextRoundUpdater } from '../app/buildNextRoundUpdater.ts';
+import type { TeamId } from '../types/game.ts';
 
 const team = (id: string, name: string, score: number) => ({ id, name, score, members: [] });
-const player = (id: string, name: string, teamId: string, score: number, extra: Record<string, unknown> = {}) => ({
+const player = (id: string, name: string, teamId: TeamId, score: number, extra: Record<string, unknown> = {}) => ({
   id,
   name,
   avatar: '',
@@ -15,7 +17,7 @@ const player = (id: string, name: string, teamId: string, score: number, extra: 
   score,
   connected: true,
   lastActive: 0,
-  powerCards: {},
+  powerCards: { ligacao: false, troca: false, x2: false, menos1: false },
   ...extra
 });
 const baseRoom = (over: Record<string, unknown>): any => ({
@@ -37,6 +39,28 @@ test('vitoria: todo jogo tem extras com rotulo e regra de soma', () => {
     assert.ok(Array.isArray(defs) && defs.length > 0, `${id} sem extras`);
     defs.forEach((d: any) => assert.ok(d.label && ['sum', 'max', 'min'].includes(d.agg)));
   }
+});
+
+test('Limite em empate avança para o desempate e abre a vitória quando sai um campeão', () => {
+  const update = buildNextRoundUpdater({ setSuddenDeathBanner: () => {}, duvidoEndsEarly: false });
+  const room = baseRoom({
+    screen: 'playing',
+    activeGame: 'limite',
+    roundNumber: 3,
+    teams: { A: team('A', 'Alfa', 0), B: team('B', 'Bravo', 0) },
+    players: [player('a', 'Ana', 'A', 1), player('b', 'Beto', 'B', 1)]
+  });
+  const tied = update(room);
+  assert.equal(tied.screen, 'playing');
+  assert.equal(tied.roundNumber, 4);
+  assert.equal(tied.maxRounds, 4);
+
+  const completed = update({
+    ...tied,
+    players: [player('a', 'Ana', 'A', 2), player('b', 'Beto', 'B', 1)]
+  });
+  assert.equal(completed.screen, 'game-over');
+  assert.deepEqual(buildVictoryModel(completed).champions.map((entry) => entry.id), ['a']);
 });
 
 test('vitoria: Limite soma cravadas e estouros rodada a rodada', () => {

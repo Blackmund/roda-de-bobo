@@ -10,15 +10,11 @@ import { applyRoundResults, mergeRoundExtras } from '../utils/matchExtras';
 import { accumulateRoundPlayerScores, buildMatchMVPSnapshot, buildTeamCollectiveMVPSnapshot, buildRoundActivityEvent } from '../utils/sessionPersistence';
 
 interface buildNextRoundUpdaterDeps {
-  shouldStartNextRound: boolean;
-  nextMaxRoundsTarget: number;
   setSuddenDeathBanner: React.Dispatch<React.SetStateAction<string | null>>;
   duvidoEndsEarly: boolean;
 }
 
 export const buildNextRoundUpdater = ({
-  shouldStartNextRound,
-  nextMaxRoundsTarget,
   setSuddenDeathBanner,
   duvidoEndsEarly
 }: buildNextRoundUpdaterDeps): ((prev: GameRoom) => GameRoom) =>
@@ -105,6 +101,7 @@ export const buildNextRoundUpdater = ({
       const topTeams = activeTeamScores.filter((t) => t.score === maxTeamScore);
 
       const isTiedAtEnd =
+        !duvidoEndsEarly &&
         nextRoundNum > prev.maxRounds &&
         prev.roundNumber <= 12 &&
         (isIndividualGame
@@ -112,8 +109,6 @@ export const buildNextRoundUpdater = ({
           : maxTeamScore > 0 && topTeams.length > 1);
 
       if (isTiedAtEnd) {
-        shouldStartNextRound = true;
-        nextMaxRoundsTarget = prev.maxRounds + 1;
         setSuddenDeathBanner('⚡ EMPATE NO TOPO! RODADA DE MORTE SÚBITA ATIVADA!');
         return {
           ...prev,
@@ -212,7 +207,6 @@ export const buildNextRoundUpdater = ({
         return updatedMatchRoom;
       }
 
-      shouldStartNextRound = true;
       return {
         ...prev,
         roundNumber: nextRoundNum,

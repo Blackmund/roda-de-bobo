@@ -3,7 +3,7 @@ import type { GameId } from '../../types/game';
 
 /**
  * Arte dos cards do catalogo, na identidade do programa (navy, creme, teal e crimson, tudo chapado).
- * Os 14 jogos tem vinhetas em SVG no mesmo estilo: tipografia grossa e objetos, como as cartelas do programa
+ * Os 16 jogos tem vinhetas em SVG no mesmo estilo: tipografia grossa e objetos, como as cartelas do programa
  * (MEGA RESENHA, Gartic, GeoGuessr). Os bonecos de 07/11, que ilustravam os 6 jogos classicos, estao guardados em
  * `_master/cazetv/` (PNG) e `public/assets/cazetv/` (WebP), e o codigo que os usava esta na tag `cards-bonecos-0711`.
  * O movimento fica em `styles/rdb.css` (classes `rdbv-*`): calmo em repouso, mais vivo com o card em foco.

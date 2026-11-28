@@ -86,6 +86,7 @@ import { isApiAvailable } from './apiAvailability';
 import {
   clearSeenMemory,
   contentRepeated,
+  flushSeenMemory,
   isSeen,
   looksRepeated,
   markContentSeen,
@@ -93,6 +94,7 @@ import {
   normalizeSeenText,
   seenOrder
 } from './seenMemory';
+import { isRetiredTemQuestion } from './temQuestionHistory';
 
 export {
   LIMITE_GOLDEN_QUESTIONS,
@@ -406,24 +408,11 @@ export function normalizeTemVotesTo100(
     if (!key || seenTexts.has(key)) continue;
     seenTexts.add(key);
 
-    // Extract any extra aliases from slash, comma, or "ou" split into synonyms
-    const extraAliases: string[] = [];
-    const parts = it.texto.split(/[\/,]|\s+ou\s+/i);
-    for (let p = 1; p < parts.length; p++) {
-      const alt = parts[p].trim().toLowerCase();
-      if (alt && !extraAliases.includes(alt)) extraAliases.push(alt);
-    }
-
-    const mergedSynonyms = Array.from(
-      new Set([
-        ...(Array.isArray(it.sinonimos_aceitos) ? it.sinonimos_aceitos : []),
-        ...extraAliases
-      ])
-    );
-
     pool.push({
       texto: rawClean,
-      sinonimos_aceitos: mergedSynonyms,
+      sinonimos_aceitos: Array.isArray(it.sinonimos_aceitos)
+        ? Array.from(new Set(it.sinonimos_aceitos))
+        : [],
       votos: Number(it.votos) || 10
     });
   }
@@ -998,15 +987,23 @@ function drawFallbackRound(
 
   // 1. Tem ou Não Tem
   if (gameId === 'tem-ou-nao-tem') {
-    const categoryBank = [
-      ...(TEM_BANKS_BY_CATEGORY[category] || POP_GERAL_TEM_OU_NAO_TEM),
-      ...(goldenFor('tem', category) as TemOuNaoTemRoundData[])
-    ];
+    const general = isGeneralTheme(customTheme);
+    const localQuestions = general
+      ? Object.values(TEM_BANKS_BY_CATEGORY).flat()
+      : TEM_BANKS_BY_CATEGORY[category] || POP_GERAL_TEM_OU_NAO_TEM;
+    const questions = [...localQuestions, ...(goldenFor('tem', category) as TemOuNaoTemRoundData[])];
+    const seenInBank = new Set<string>();
+    const categoryBank = questions.filter((item) => {
+      const question = stripPerguntamosPrefix(item.pergunta);
+      if (seenInBank.has(question) || isRetiredTemQuestion(question)) return false;
+      seenInBank.add(question);
+      return true;
+    });
     const picked = pickUnused(
       categoryBank,
       (it) => `${category}-tem-${it.pergunta}`,
       (it) => {
-        if (subKeywords.length === 0) return false;
+        if (general || subKeywords.length === 0) return false;
         const text = `${it.pergunta} ${it.respostas.map((r) => r.texto).join(' ')}`
           .toLowerCase()
           .normalize('NFD')
@@ -1378,10 +1375,12 @@ export function getCacheKey(
 ): string {
   const normTheme = (userTheme || 'geral').trim().toLowerCase().replace(/\s+/g, ' ');
   const diff = (difficulty || config?.difficulty || '').toLowerCase().trim();
+  // As entradas anteriores do Tem podiam guardar outras respostas como sinônimos.
+  const prefix = gameId === 'tem-ou-nao-tem' ? 'tem-ou-nao-tem-v2' : gameId;
   if (diff && diff !== 'dificil') {
-    return `${gameId}::${normTheme}::${diff}`;
+    return `${prefix}::${normTheme}::${diff}`;
   }
-  return `${gameId}::${normTheme}`;
+  return `${prefix}::${normTheme}`;
 }
 
 function loadRoundCacheFromStorage(): void {
@@ -1604,6 +1603,7 @@ function consumeFreshCachedRound(
   for (const candidate of queued) {
     const isFresh =
       !excludedSet.has(candidate.signature) &&
+      !(gameId === 'tem-ou-nao-tem' && isRetiredTemQuestion((candidate.data as TemOuNaoTemRoundData)?.pergunta)) &&
       SessionMemoryManager.isContentFresh(gameId, candidate.data, excludeSignatures) &&
       !contentRepeated(gameId, candidate.data);
     if (!isFresh) continue;
@@ -1786,7 +1786,8 @@ async function fetchBatchFromApi(
       const primary = sanitizeAndFormatRoundItem(gameId, json.data, customConfig, theme);
       if (primary) {
         const resolvedSubtheme = json.subthemeUsed || subtheme;
-        const primaryRepeated = contentRepeated(gameId, primary.data);
+        const primaryRepeated = allExcluded.includes(primary.signature) || contentRepeated(gameId, primary.data) ||
+          (gameId === 'tem-ou-nao-tem' && isRetiredTemQuestion(primary.signature));
 
         // Aggressive Caching: Save any extraRounds returned by the batch into RoundContentCache
         const extraRaw: any[] = Array.isArray(json.extraRounds) ? json.extraRounds : [];
@@ -1796,6 +1797,7 @@ async function fetchBatchFromApi(
           if (
             formattedExtra &&
             formattedExtra.signature !== primary.signature &&
+            !(gameId === 'tem-ou-nao-tem' && isRetiredTemQuestion(formattedExtra.signature)) &&
             !contentRepeated(gameId, formattedExtra.data)
           ) {
             extraCacheEntries.push({
@@ -2053,6 +2055,7 @@ export async function generateRoundContent(
   }
   // Memoria de vistos (longo prazo): o que sai daqui nao deve voltar tao cedo, venha do banco, do cache ou da IA.
   markContentSeen(gameId, round.data);
+  if (gameId === 'tem-ou-nao-tem') flushSeenMemory();
   return round;
 }
 
@@ -2399,13 +2402,14 @@ async function generateRoundContentCore(
   // 4. Fallback to 100% theme-strict local bank ONLY if offline or API key unavailable after retries
   const activeFallbackAngle = explicitSubAngle || SessionMemoryManager.drawRandomSubAngle(theme);
   const subtheme = activeFallbackAngle.label || pickNextRandomSubtheme(theme);
-  const fallback = generateThemeStrictFallbackRound(
+  const fallback = drawFallbackRound(
     gameId,
     theme,
     subtheme,
     customConfig,
     Array.from(allExcludedSet),
-    effectiveDifficulty
+    effectiveDifficulty,
+    false
   );
 
   SessionMemoryManager.recordRoundData(gameId, fallback.data, theme, activeFallbackAngle);

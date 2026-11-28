@@ -1,17 +1,28 @@
-import type { GameRoom, TeamId } from '../types/game';
+import type { GameRoom, TeamId, TemOuNaoTemGameState } from '../types/game';
 import { getActiveTeamIds, getNextTeamId } from './teamUtils';
-import { checkAnswerFuzzyMatch } from './fuzzyMatch';
+import { checkAnswerFuzzyMatch, normalizeFuzzyString } from './fuzzyMatch';
 
 /** Qual item (ainda escondido) do painel o palpite acerta; -1 = nenhum. */
 export function findTemMatch(room: GameRoom, guessText: string): number {
-  const tem = room.temOuNaoTem;
-  if (!tem) return -1;
-  for (let i = 0; i < tem.items.length; i++) {
-    const item = tem.items[i];
-    if (item.revealed) continue;
-    if (checkAnswerFuzzyMatch(guessText, item.texto, item.sinonimos_aceitos)) return i;
-  }
-  return -1;
+  return room.temOuNaoTem ? findTemItemMatch(room.temOuNaoTem.items, guessText) : -1;
+}
+
+export function findTemItemMatch(items: TemOuNaoTemGameState['items'], guessText: string): number {
+  const guess = normalizeFuzzyString(guessText);
+  if (!guess) return -1;
+  // Uma resposta exata, mesmo já revelada, tem precedência sobre um palpite aproximado.
+  const exact = items.findIndex((item) => normalizeFuzzyString(item.texto) === guess);
+  if (exact !== -1) return items[exact].revealed ? -1 : exact;
+
+  const aliases = items.flatMap((item, index) =>
+    item.sinonimos_aceitos?.some((alias) => normalizeFuzzyString(alias) === guess) ? [index] : []
+  );
+  if (aliases.length) return aliases.length === 1 && !items[aliases[0]].revealed ? aliases[0] : -1;
+
+  const matches = items.flatMap((item, index) =>
+    checkAnswerFuzzyMatch(guess, item.texto, item.sinonimos_aceitos) ? [index] : []
+  );
+  return matches.length === 1 && !items[matches[0]].revealed ? matches[0] : -1;
 }
 
 /**

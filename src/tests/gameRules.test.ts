@@ -57,6 +57,21 @@ import {
   drawRandomScoreCSPRNG
 } from '../components/SpinningNumberWheel.tsx';
 import { checkAnswerFuzzyMatch } from '../utils/fuzzyMatch.ts';
+import { findTemItemMatch } from '../utils/temGuess.ts';
+
+test('Tem ou Não Tem rejeita nomes distintos e dá prioridade à resposta exata', () => {
+  assert.equal(checkAnswerFuzzyMatch('Marina Senna', 'Marília Mendonça', ['Marília', 'Mendonça']), false);
+  assert.equal(checkAnswerFuzzyMatch('Marina Mendonça', 'Marília Mendonça', ['Mendonça']), false);
+  assert.equal(checkAnswerFuzzyMatch('Marilia Mendonsa', 'Marília Mendonça'), true);
+  assert.equal(checkAnswerFuzzyMatch('Harry Harry', 'Harry Potter'), false);
+
+  const items = [
+    { texto: 'Bicicleta', sinonimos_aceitos: ['Bike'], votos: 60, revealed: false },
+    { texto: 'Bicicletário', sinonimos_aceitos: ['Bike'], votos: 40, revealed: false }
+  ];
+  assert.equal(findTemItemMatch(items, 'Bike'), -1);
+  assert.equal(findTemItemMatch(items, 'Bicicletário'), 1);
+});
 import { getTeamCount, getActiveTeamIds } from '../utils/teamUtils.ts';
 import {
   UNAMBIGUOUS_ROOM_CHARS,
@@ -224,7 +239,7 @@ test('Tem ou Não Tem: Curated rounds all have 5 answers and votes sum exactly t
   });
 });
 
-test('Tem ou Não Tem: normalizeTemVotesTo100 strips slashes, "ou", and separates synonyms', () => {
+test('Tem ou Não Tem mantém sinônimos explícitos sem aceitar outras respostas na mesma posição', () => {
   const dirtyItems = [
     { texto: 'Neymar Jr / Gabigol / Raphael Veiga', votos: 40, sinonimos_aceitos: ['neymar'] },
     { texto: 'Chaves ou Chapolin', votos: 30, sinonimos_aceitos: [] },
@@ -233,11 +248,10 @@ test('Tem ou Não Tem: normalizeTemVotesTo100 strips slashes, "ou", and separate
 
   const cleaned = normalizeTemVotesTo100(dirtyItems);
   assert.equal(cleaned[0].texto, 'Neymar Jr');
-  assert.ok(cleaned[0].sinonimos_aceitos.includes('gabigol'));
-  assert.ok(cleaned[0].sinonimos_aceitos.includes('raphael veiga'));
+  assert.deepEqual(cleaned[0].sinonimos_aceitos, ['neymar']);
 
   assert.equal(cleaned[1].texto, 'Chaves');
-  assert.ok(cleaned[1].sinonimos_aceitos.includes('chapolin'));
+  assert.deepEqual(cleaned[1].sinonimos_aceitos, []);
 
   assert.equal(cleaned[2].texto, 'Pizza de Mussarela');
 });

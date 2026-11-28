@@ -1,7 +1,7 @@
 import React from 'react';
 import { GameRoom, Player } from '../../types/game';
 import { SpinningNumberWheel } from '../SpinningNumberWheel';
-import { evaluateLimiteRoundReveal } from '../host/ScreenLimite';
+import { evaluateLimiteRoundReveal } from '../../utils/limiteRound';
 import { sounds } from '../../utils/soundEffects';
 import {
   Crown,

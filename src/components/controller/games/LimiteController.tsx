@@ -3,7 +3,7 @@ import { ConfirmSendButton } from '../ConfirmSendButton';
 import { GameRoom, Player, LimitePowerCardType } from '../../../types/game';
 import { sounds } from '../../../utils/soundEffects';
 import { Lock } from 'lucide-react';
-import { LIMITE_POWER_CARD_META } from '../../host/ScreenLimite';
+import { LIMITE_POWER_CARD_META } from '../../../utils/limiteRound';
 import { resolveSwapPair } from '../../../utils/limiteSwap';
 import { PlayerMark } from '../../rdb/PlayerMark';
 

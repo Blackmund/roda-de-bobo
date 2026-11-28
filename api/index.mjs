@@ -77714,13 +77714,14 @@ var TEM_OU_NAO_TEM_SIX_GOLDEN_LAWS = `AS REGRAS DE OURO PARA FORMULAR PESQUISAS 
    - Cada item do painel deve ser um substantivo, nome pr\xF3prio ou a\xE7\xE3o curt\xEDssima (ex: "Cristiano Ronaldo", "P\xE3o de Alho", "Dormir", "Chaves").
 6. DICION\xC1RIO RICO DE SIN\xD4NIMOS ACEITOS ("sinonimos_aceitos"):
    - Para que a valida\xE7\xE3o digital funcione perfeitamente quando o jogador digitar o palpite, cada resposta DEVE trazer um array "sinonimos_aceitos" contendo apelidos, nomes completos, varia\xE7\xF5es sem acento e termos equivalentes em letras min\xFAsculas.
+   - Inclua apenas formas de nomear a mesma pessoa ou o mesmo item. Outra pessoa, personagem ou objeto relacionado deve ocupar uma posi\xE7\xE3o pr\xF3pria, se tiver votos.
 7. LEI DA CATEGORIA ABERTA (ESTRITAMENTE PROIBIDO PERGUNTA TRIVIA COM RESPOSTA \xDANICA):
    - O Tem ou N\xE3o Tem \xE9 uma pesquisa aberta de audit\xF3rio (Family Feud / 100 Brasileiros Dizem). NUNCA fa\xE7a uma pergunta de curiosidade/conhecimento geral que tenha apenas 1 \xFAnico fato verdadeiro no mundo real.
    - \u274C TERMINANTEMENTE PROIBIDO: "Qual evento hist\xF3rico \xE9 lembrado por ter sido o maior desastre mar\xEDtimo de todos os tempos em sua viagem inaugural?" (Isso \xE9 pergunta de quiz escolar! S\xF3 existe o Titanic como resposta verdadeira, o que for\xE7a o painel a inventar itens desconexos e sem sentido como "Afundamento", "Iceberg", "1912", "Passageiros").
    - \u274C PROIBIDO: "Quem descobriu o Brasil?" (S\xF3 existe Cabral).
    - \u274C PROIBIDO: "Qual o maior pa\xEDs da Am\xE9rica do Sul?" (S\xF3 existe Brasil).
    - \u2705 CORRETO SE O TEMA FOR UMA COISA ESPEC\xCDFICA (ex: Titanic): Pergunte associa\xE7\xF5es diretas: "Quando voc\xEA pensa no Titanic, o que vem primeiro \xE0 sua mente?" -> 1. Iceberg (35), 2. Leonardo DiCaprio / Jack (25), 3. Rose (18), 4. Naufr\xE1gio / Afundar (12), 5. Violino / M\xFAsicos (6), 6. M\xFAsica da C\xE9line Dion (4).
-   - \u2705 CORRETO SE O TEMA FOR UMA CLASSE ABERTA: Pergunte itens dessa classe: "Cite um desastre hist\xF3rico marcante que as pessoas mais lembram" -> 1. Titanic, 2. Chernobyl, 3. 11 de Setembro, 4. Pompeia, 5. Hiroshima.
+   - Se o tema for uma classe aberta, pe\xE7a exemplos dessa classe. Dentro do tema que o jogador escolheu, varie a situa\xE7\xE3o e os itens entre as rodadas.
    - Cada posi\xE7\xE3o do ranking deve ser do mesmo tipo/categoria e fazer sentido comparativo total.`;
 var TEM_OU_NAO_TEM_GOLDEN_QUESTIONS = [
   {
@@ -79110,6 +79111,80 @@ Responda em portugu\xEAs do Brasil, de forma direta e curta (1 frase de at\xE9 1
     });
   }
 });
+app.post("/api/bot-think", async (req, res) => {
+  const { kind = "", input = {} } = req.body || {};
+  const s2 = (v, max = 400) => String(v ?? "").replace(/\s+/g, " ").trim().slice(0, max);
+  const arr = (v, max = 30) => Array.isArray(v) ? v.slice(0, max).map((x2) => s2(x2, 120)).filter(Boolean) : [];
+  let task = "";
+  let count = 6;
+  switch (kind) {
+    case "adedanha": {
+      const cats = arr(input.categories, 12);
+      count = cats.length;
+      task = `Jogo Adedanha (Stop). Letra: "${s2(input.letter, 2)}". Para cada categoria abaixo, na mesma ordem, escreva UMA resposta real em portugu\xEAs do Brasil que comece com a letra "${s2(input.letter, 2)}" (sem artigo). Categorias: ${cats.map((c, i2) => `${i2 + 1}) ${c}`).join("; ")}. Devolva exatamente ${cats.length} itens, um por categoria.`;
+      break;
+    }
+    case "repetente":
+      count = 6;
+      task = `Jogo Repetente: duas pessoas escrevem em segredo UMA palavra para o tema e pontuam se escreverem a mesma. Tema: "${s2(input.theme)}"${input.category ? ` (categoria: ${s2(input.category)})` : ""}. Liste ${count} palavras \xFAnicas (uma palavra cada, sem artigo), da mais \xF3bvia \u2014 a que a maioria dos brasileiros escreveria \u2014 para a menos \xF3bvia.`;
+      break;
+    case "respostas":
+      count = 3;
+      task = `Jogo "Respostas sem perguntas": a pergunta est\xE1 parcialmente escondida. Categoria: "${s2(input.category)}". Pergunta com palavras escondidas (___): "${s2(input.masked)}". D\xEA ${count} chutes curtos da RESPOSTA para essa pergunta, do mais prov\xE1vel ao menos prov\xE1vel.`;
+      break;
+    case "wrong":
+      count = 5;
+      task = `Party game brasileiro. Pergunta: "${s2(input.question)}". Respostas corretas (n\xE3o use nenhuma delas nem sin\xF4nimos): ${arr(input.avoid, 20).join(", ") || "\u2014"}. Escreva ${count} respostas curtas que uma pessoa daria e que pare\xE7am plaus\xEDveis, mas que N\xC3O est\xE3o entre as corretas.`;
+      break;
+    case "nota-clue":
+      count = 2;
+      task = `Jogo da Nota: o jogador viu uma nota secreta ${Number(input.score) || 5} numa escala de ${Number(input.min) || 1} a ${Number(input.max) || 10} e precisa dar dicas para os outros adivinharem a nota. Pergunta/eixo da rodada: "${s2(input.question)}". Escreva ${count} dicas curtas (at\xE9 12 palavras cada) em portugu\xEAs do Brasil, cada uma citando algo concreto que vale essa nota nessa escala, sem dizer o n\xFAmero.`;
+      break;
+    case "proibido-clues":
+      count = 4;
+      task = `Jogo do Proibido (Taboo). Palavra a ser adivinhada: "${s2(input.word, 60)}". Palavras proibidas (n\xE3o use nenhuma delas, nem a palavra-alvo, nem partes delas): ${arr(input.forbidden, 10).join(", ")}. Escreva ${count} dicas curtas (at\xE9 10 palavras cada) em portugu\xEAs do Brasil, da mais reveladora para a menos.`;
+      break;
+    case "mega-clues":
+      count = 6;
+      task = `Jogo Mega Resenha: voc\xEA d\xE1 dicas para o parceiro adivinhar a palavra "${s2(input.word, 60)}". Cada dica \xE9 UMA palavra s\xF3 (sem frase, sem nome composto), diferente da palavra-alvo e sem o mesmo radical dela. Liste ${count} dicas de uma palavra, da mais reveladora para a menos.`;
+      break;
+    case "mega-guess":
+      count = 3;
+      task = `Jogo Mega Resenha: seu parceiro deu estas dicas de uma palavra cada: ${arr(input.clues, 10).join(", ")}. Qual \xE9 a palavra? D\xEA ${count} chutes de UMA palavra, do mais prov\xE1vel ao menos prov\xE1vel.`;
+      break;
+    case "list":
+      count = Math.min(25, Math.max(3, Number(input.count) || 10));
+      task = `Jogo do Duvido. Categoria: "${s2(input.category)}"${input.rule ? ` (regra: ${s2(input.rule)})` : ""}. Liste ${count} itens reais e diferentes que pertencem a essa categoria. Um item por posi\xE7\xE3o, curto.`;
+      break;
+    default:
+      return res.status(400).json({ items: [] });
+  }
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey.trim() === "") {
+    return res.status(200).json({ items: [], fallback: true });
+  }
+  try {
+    const ai = new GoogleGenAI2({ apiKey, httpOptions: { headers: { "User-Agent": "aistudio-build" } } });
+    const response = await generateContentWithFallback(ai, {
+      contents: `Voc\xEA \xE9 um jogador de party games brasileiro jogando o "Roda de Bobo". ${task}
+Responda s\xF3 com o JSON pedido.`,
+      config: {
+        temperature: 0.7,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: { items: { type: Type.ARRAY, items: { type: Type.STRING } } },
+          required: ["items"]
+        }
+      }
+    });
+    const parsed = JSON.parse(response.text || "{}");
+    const items = Array.isArray(parsed.items) ? parsed.items.slice(0, Math.max(count, 1) + 2).map((x2) => sanitizeCleanGameText(s2(x2, 140))) : [];
+    return res.status(200).json({ items, source: "ai" });
+  } catch (err) {
+    return res.status(200).json({ items: [], fallback: true, error: err?.message });
+  }
+});
 app.post("/api/onde-estou-moments", async (req, res) => {
   const { theme: rawTheme, count: rawCount, exclude = [] } = req.body || {};
   const theme = String(rawTheme || "").trim();
@@ -79423,17 +79498,10 @@ ${buildTemOuNaoTemPrompt(
           const normKey = cleanText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
           if (!cleanText || !normKey || seenAns.has(normKey)) continue;
           seenAns.add(normKey);
-          const extraAliases = [];
-          const parts = raw.split(/[\/,]|\s+ou\s+/i);
-          for (let p2 = 1; p2 < parts.length; p2++) {
-            const alt = sanitizeCleanGameText(parts[p2]).toLowerCase().trim();
-            if (alt && !extraAliases.includes(alt)) extraAliases.push(alt);
-          }
           const existingSynonyms = Array.isArray(r2?.sinonimos_aceitos) ? r2.sinonimos_aceitos.map((s2) => sanitizeCleanGameText(String(s2 || "")).toLowerCase()).filter(Boolean) : [];
-          const mergedSynonyms = Array.from(/* @__PURE__ */ new Set([...existingSynonyms, ...extraAliases]));
           uniqueRespostas.push({
             texto: cleanText,
-            sinonimos_aceitos: mergedSynonyms,
+            sinonimos_aceitos: Array.from(new Set(existingSynonyms)),
             votos: Number(r2?.votos) || 10
           });
         }

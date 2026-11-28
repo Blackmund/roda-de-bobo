@@ -43,8 +43,8 @@ import {
   applyProibidoCardOutcome,
   getProibidoPlayerRole,
   getNextProibidoTurnInfo
-} from '../host/ScreenProibido';
-import { LIMITE_POWER_CARD_META } from '../host/ScreenLimite';
+} from '../../utils/proibidoRound';
+import { LIMITE_POWER_CARD_META } from '../../utils/limiteRound';
 import { RetroAvatarPicker, RetroAvatarModal } from '../RetroAvatarPicker';
 import {
   RETRO_AVATARS,
@@ -76,7 +76,6 @@ import {
   getNextTeamId,
   resolveCurrentTurnSpotlight
 } from '../../utils/teamUtils';
-import { checkAnswerFuzzyMatch } from '../../utils/fuzzyMatch';
 import { repetenteWriters, submitRepetenteAnswer } from '../../utils/repetenteEngine';
 import { currentValue as respostasValue, pickPosition as respostasPick } from '../../utils/respostasEngine';
 import { AdedanhaController } from './games/AdedanhaController';

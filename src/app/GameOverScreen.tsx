@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from 'motion/react';
 import { GameRoom } from '../types/game';
 import { sounds } from '../utils/soundEffects';
@@ -44,6 +44,40 @@ const PANEL_TITLES: Record<ExtraPanel, string> = {
   'activity-log': 'Rodada a rodada',
   history: 'Histórico da sessão'
 };
+
+/** Curva de saida usada em toda a entrada (rapida no comeco, assenta devagar). */
+const EASE_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+/**
+ * Conta de 0 ate o placar final quando a carta assenta. So apresentacao: o valor final e sempre `target`
+ * e, com movimento reduzido (ou antes de assentar), mostra direto o numero certo.
+ */
+function useCountUp(target: number, run: boolean, instant: boolean, durationMs = 900, delayMs = 350): number {
+  const [value, setValue] = useState(target);
+  const started = useRef(false);
+  useEffect(() => {
+    if (instant || !run || started.current || target <= 0) {
+      setValue(target);
+      return;
+    }
+    started.current = true;
+    let raf = 0;
+    let t0 = 0;
+    setValue(0);
+    const step = (now: number) => {
+      if (!t0) t0 = now;
+      const k = Math.min(1, Math.max(0, (now - t0 - delayMs) / durationMs));
+      setValue(Math.round(target * (1 - Math.pow(1 - k, 3))));
+      if (k < 1) raf = window.requestAnimationFrame(step);
+    };
+    raf = window.requestAnimationFrame(step);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      setValue(target);
+    };
+  }, [target, run, instant, durationMs, delayMs]);
+  return value;
+}
 
 /** Marca(s) de quem esta na entrada: ilustracao quando houver, senao o bloco com iniciais. */
 const EntryMarks: React.FC<{ entry: VictoryEntry; max?: number }> = ({ entry, max = 4 }) => {
@@ -98,12 +132,12 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
       sounds.playFanfare();
       return;
     }
-    const t1 = window.setTimeout(() => setPhase('spark'), 600);
+    const t1 = window.setTimeout(() => setPhase('spark'), 700);
     const t2 = window.setTimeout(() => {
       setPhase('burst');
       sounds.playFanfare();
-    }, 1100);
-    const t3 = window.setTimeout(() => setPhase('done'), 1750);
+    }, 1200);
+    const t3 = window.setTimeout(() => setPhase('done'), 1900);
     return () => {
       window.clearTimeout(t1);
       window.clearTimeout(t2);
@@ -148,6 +182,10 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
   const settled = phase === 'done';
   const burst = phase === 'burst' || phase === 'done';
   const bigRanking = others.length > 6;
+  const shownScore = useCountUp(hero?.score ?? 0, settled, !!reduceMotion);
+  /** Atraso de cada linha da classificacao (entra em cascata depois da carta). */
+  const rowDelay = (i: number) => (reduceMotion ? 0 : 0.25 + Math.min(i, 9) * 0.06);
+  const actionsDelay = reduceMotion ? 0 : rowDelay(Math.min(others.length, 9)) + 0.1;
 
   return (
     <motion.div
@@ -166,7 +204,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
         aria-hidden="true"
         initial={false}
         animate={{ opacity: burst ? 1 : 0, scale: burst ? 1 : 0.4 }}
-        transition={{ duration: reduceMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: reduceMotion ? 0 : 0.6, ease: EASE_OUT }}
       >
         <div className="vic-bg-rays" />
       </motion.div>
@@ -194,20 +232,21 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
               transition={{ duration: 0.2 }}
               aria-hidden="true"
             >
-              {model.ranking.slice(0, 10).map((e) => {
+              {model.ranking.slice(0, 10).map((e, i) => {
                 const isHero = e.id === hero?.id;
                 return (
                   <motion.div
                     key={e.id}
                     layoutId={isHero ? 'vic-hero' : undefined}
-                    className={`vic-box${isHero && burst ? ' is-lit' : ''}`}
-                    initial={{ opacity: 0, y: 24 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    className={`vic-box${isHero ? ' is-hero' : ''}${isHero && burst ? ' is-lit' : ''}`}
+                    initial={{ opacity: 0, y: -36, scale: 0.7 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 520, damping: 24, delay: Math.min(i * 0.06, 0.45) }}
                   >
                     <EntryMarks entry={e} max={2} />
                     {isHero && phase !== 'pile' && <span className="vic-spark" />}
                     {isHero && burst && <span className="vic-burst" />}
+                    {isHero && burst && <span className="vic-ring" />}
                   </motion.div>
                 );
               })}
@@ -221,8 +260,8 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
             className="vic-card"
             data-testid="gameover-winner-centerpiece"
             initial={false}
-            animate={settled ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ duration: reduceMotion ? 0 : 0.15 }}
+            animate={settled ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 28, scale: 0.94 }}
+            transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 28 }}
           >
             <div className="vic-art">
               <div className="vic-art-rays" aria-hidden="true" />
@@ -237,16 +276,18 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                   className={`vic-hero-marks n${heroMarkCount}`}
                   transition={{ type: 'spring', stiffness: 260, damping: 26 }}
                 >
-                  {heroes.map((h) => (
-                    <EntryMarks key={h.id} entry={h} max={model.tie ? 1 : 4} />
-                  ))}
+                  <span className="vic-hero-bob">
+                    {heroes.map((h) => (
+                      <EntryMarks key={h.id} entry={h} max={model.tie ? 1 : 4} />
+                    ))}
+                  </span>
                 </motion.div>
               )}
             </div>
 
             <div className="vic-card-foot">
-              <span className="vic-kicker">{model.kicker}</span>
-              <h1 data-testid="gameover-winner-name" className={`vic-name${model.tie ? ' is-tie' : ''}`}>
+              <span className="vic-kicker vic-in vic-in--1">{model.kicker}</span>
+              <h1 data-testid="gameover-winner-name" className={`vic-name vic-in vic-in--2${model.tie ? ' is-tie' : ''}`}>
                 {model.tie
                   ? heroes.map((h) => (
                       <span key={h.id} className="vic-name-line">
@@ -255,9 +296,9 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                     ))
                   : heroName}
               </h1>
-              <div className="vic-scoreline">
+              <div className="vic-scoreline vic-in vic-in--3">
                 <span className="vic-score">
-                  {hero?.score ?? 0}
+                  {shownScore}
                   <small>pts</small>
                 </span>
                 {(membersLine || model.line) && (
@@ -274,13 +315,20 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
           <motion.aside
             className="vic-side"
             initial={false}
-            animate={settled ? { opacity: 1, x: 0 } : { opacity: 0, x: -40 }}
-            transition={{ duration: reduceMotion ? 0 : 0.35, ease: [0.16, 1, 0.3, 1], delay: reduceMotion ? 0 : 0.15 }}
+            animate={settled ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.15 }}
           >
             {others.length > 0 && (
               <ol className={`vic-rank${bigRanking ? ' is-two-col' : ''}`} aria-label="Classificação">
-                {others.map((e) => (
-                  <li key={e.id} className="vic-row" data-testid={`vic-rank-row-${e.id}`}>
+                {others.map((e, i) => (
+                  <motion.li
+                    key={e.id}
+                    className="vic-row"
+                    data-testid={`vic-rank-row-${e.id}`}
+                    initial={false}
+                    animate={settled ? { opacity: 1, x: 0 } : { opacity: 0, x: 56 }}
+                    transition={reduceMotion ? { duration: 0 } : { duration: 0.4, ease: EASE_OUT, delay: rowDelay(i) }}
+                  >
                     <span className="vic-row-pos" aria-label={`${e.rank}º lugar`}>
                       {e.rank}
                     </span>
@@ -289,12 +337,17 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                     </span>
                     <span className="vic-row-name">{e.name}</span>
                     <span className="vic-row-pts">{e.score}</span>
-                  </li>
+                  </motion.li>
                 ))}
               </ol>
             )}
 
-            <div className="vic-actions">
+            <motion.div
+              className="vic-actions"
+              initial={false}
+              animate={settled ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
+              transition={reduceMotion ? { duration: 0 } : { duration: 0.35, ease: EASE_OUT, delay: actionsDelay }}
+            >
               <button type="button" className="rdb-btn rdb-btn--lg" onClick={handleReturnToLobby}>
                 <Dice />
                 <span>Trocar de jogo</span>
@@ -308,7 +361,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
               {handleRematch && (
                 <button
                   type="button"
-                  className="rdb-btn rdb-btn--lg rdb-btn--solid"
+                  className="rdb-btn rdb-btn--lg rdb-btn--solid vic-nudge"
                   data-testid="gameover-rematch-btn"
                   onClick={handleRematch}
                   autoFocus
@@ -317,7 +370,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                   <span>Revanche</span>
                 </button>
               )}
-            </div>
+            </motion.div>
           </motion.aside>
         </div>
       </LayoutGroup>
@@ -328,7 +381,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
         data-testid="mvp-performance-metrics"
         initial={false}
         animate={settled ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-        transition={{ duration: reduceMotion ? 0 : 0.3, delay: reduceMotion ? 0 : 0.3 }}
+        transition={reduceMotion ? { duration: 0 } : { duration: 0.3, ease: EASE_OUT, delay: actionsDelay + 0.1 }}
       >
         <button
           type="button"
@@ -357,7 +410,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: reduceMotion ? 0 : 0.28, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: reduceMotion ? 0 : 0.28, ease: EASE_OUT }}
             >
               <div className="vic-cells">
                 {model.stats.map((s) => (

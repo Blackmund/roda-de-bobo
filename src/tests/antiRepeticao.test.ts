@@ -13,6 +13,7 @@ const store = new Map<string, string>();
 
 const gen = await import('../utils/aiGameGenerator.ts');
 const seen = await import('../utils/seenMemory.ts');
+const { isRetiredTemQuestion } = await import('../utils/temQuestionHistory.ts');
 await (await import('../data/extraBanks.ts')).loadExtraBanks(); // como o App faz 1,5 s depois de abrir
 
 function key(gameId: string, data: any): string {
@@ -44,6 +45,49 @@ test('banco: proibido nao repete palavra-alvo entre rodadas seguidas', () => {
       words.add(c.palavra_alvo);
     }
   }
+});
+
+test('Tem ou Não Tem em Geral usa um banco amplo e exclui as cinco perguntas reportadas', () => {
+  gen.clearUsedRoundSignatures();
+  [
+    'Quando você pensa em um desastre histórico marcante que todos lembram, o que vem primeiro à sua mente?',
+    'Qual brinquedo ou acessório da infância dos anos 80, 90 ou 2000 as pessoas sentem mais falta hoje em dia?',
+    'Qual cientista genial é a primeira referência que vem à mente das pessoas quando o assunto é inteligência superior?',
+    'Cite uma gíria popular que os jovens brasileiros usam atualmente para dizer que algo é muito legal',
+    'Cite algo essencial que todo mundo carrega dentro de uma mochila para o trabalho ou escola'
+  ].forEach((question) => assert.ok(isRetiredTemQuestion(question), question));
+  const questions = new Set<string>();
+  for (let i = 0; i < 30; i++) {
+    const round = gen.generateThemeStrictFallbackRound('tem-ou-nao-tem', 'Geral');
+    const question = (round.data as { pergunta: string }).pergunta;
+    assert.ok(!isRetiredTemQuestion(question), question);
+    assert.ok(!questions.has(question), question);
+    questions.add(question);
+  }
+});
+
+test('Tem ou Não Tem ignora o cache antigo e descarta a pergunta retirada se estiver na fila atual', async () => {
+  gen.clearUsedRoundSignatures();
+  const { DEFAULT_GAME_CUSTOM_CONFIG } = await import('../types/game.ts');
+  const config = { ...DEFAULT_GAME_CUSTOM_CONFIG, temItemsCount: 5, contentSource: 'ai' as const };
+  const key = gen.getCacheKey('tem-ou-nao-tem', 'Geral', config);
+  const oldQuestion = 'Qual gíria popular os jovens usam para dizer que algo é legal?';
+  const freshQuestion = 'Qual objeto costuma virar instrumento musical numa roda de samba?';
+  const respostas = ['Mesa', 'Colher', 'Copo', 'Garrafa', 'Balde'].map((texto) => ({
+    texto, votos: 20, sinonimos_aceitos: []
+  }));
+  store.set(`rb_ai_cache::${key.replace('tem-ou-nao-tem-v2', 'tem-ou-nao-tem')}`, JSON.stringify([{
+    data: { pergunta: 'Pergunta do cache antigo', respostas },
+    signature: 'versao-antiga',
+    createdAt: Date.now()
+  }]));
+  store.set(`rb_ai_cache::${key}`, JSON.stringify([oldQuestion, freshQuestion].map((pergunta, i) => ({
+    data: { pergunta, respostas },
+    signature: `cache-${i}`,
+    createdAt: Date.now()
+  }))));
+  const round = await gen.generateRoundContent('tem-ou-nao-tem', 'Geral', config);
+  assert.equal((round.data as { pergunta: string }).pergunta, freshQuestion);
 });
 
 test('banco esgotado: a primeira repeticao e de um item dos mais antigos', () => {

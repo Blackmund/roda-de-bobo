@@ -36,6 +36,24 @@ test('IA repetiu algo que o jogador ja viu: a rodada e descartada e a IA tenta d
   assert.ok(aiCalls >= 2, 'houve nova tentativa depois da repeticao');
 });
 
+test('Tem ou Não Tem descarta a pergunta retirada mesmo quando a IA insiste', async () => {
+  gen.clearUsedRoundSignatures();
+  const question = 'Quando você pensa em um desastre histórico marcante, o que vem primeiro à mente?';
+  script = () => ({
+    pergunta: question,
+    respostas: ['Titanic', 'Chernobyl', 'Pompeia', 'Hiroshima', 'Lisboa'].map((texto) => ({
+      texto, votos: 20, sinonimos_aceitos: []
+    }))
+  });
+  const { DEFAULT_GAME_CUSTOM_CONFIG } = await import('../types/game.ts');
+  const result = await gen.generateRoundContent('tem-ou-nao-tem', 'Geral', {
+    ...DEFAULT_GAME_CUSTOM_CONFIG,
+    contentSource: 'ai'
+  });
+  assert.equal(result.source, 'curated');
+  assert.notEqual((result.data as { pergunta: string }).pergunta, question);
+});
+
 test('IA repetindo sempre: cai no banco em vez de mostrar o que ja foi visto', async () => {
   gen.clearUsedRoundSignatures();
   aiCalls = 0;

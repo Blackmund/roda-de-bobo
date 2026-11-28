@@ -148,6 +148,56 @@
   70% { opacity: 1; }
   100% { transform: scale(1.2) rotate(0deg); opacity: 0; }
 }
+/* a faisca encosta: a caixa do campeao treme antes de estourar */
+.vic[data-phase='spark'] .vic-box.is-hero {
+  animation: vic-shake 0.5s steps(2, jump-none) infinite;
+}
+@keyframes vic-shake {
+  0%, 100% { translate: 0 0; }
+  25% { translate: -3px 1px; }
+  50% { translate: 2px -2px; }
+  75% { translate: -1px 2px; }
+}
+/* quem perdeu apaga e encolhe quando a faisca escolhe o campeao */
+.vic-box:not(.is-hero) {
+  transition: background-color 0.15s ease-out, filter 0.15s ease-out, opacity 0.35s ease-out, scale 0.35s ease-out;
+}
+.vic[data-phase='spark'] .vic-box:not(.is-hero),
+.vic[data-phase='burst'] .vic-box:not(.is-hero) {
+  opacity: 0.3;
+  scale: 0.86;
+}
+/* a caixa do campeao da um soco pra fora no estouro */
+.vic-box.is-lit {
+  animation: vic-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes vic-pop {
+  0% { scale: 1; }
+  35% { scale: 1.28; }
+  100% { scale: 1.12; }
+}
+/* onda quadrada creme que sai da caixa no estouro (linha chapada, sem brilho) */
+.vic-ring {
+  position: absolute;
+  inset: -6px;
+  border: calc(var(--rdb-line) * 2) solid var(--rdb-cream);
+  pointer-events: none;
+  animation: vic-ring 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes vic-ring {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+/* o estouro sacode a tela inteira por um instante */
+.vic[data-phase='burst'] {
+  animation: vic-jolt 0.32s steps(4, jump-none) both;
+}
+@keyframes vic-jolt {
+  0%, 100% { translate: 0 0; }
+  25% { translate: 6px -4px; }
+  50% { translate: -5px 3px; }
+  75% { translate: 3px 2px; }
+}
 
 /* ---------- Palco: carta + classificacao ---------- */
 .vic-stage {
@@ -225,6 +275,43 @@
 .vic-hero-marks.n4 { font-size: clamp(36px, min(4.2vw, 9.5vh), 120px); }
 .vic-hero-marks .rdb-mark {
   border: calc(var(--rdb-line) * 2) solid var(--rdb-navy);
+}
+/* depois de pousar na carta, a marca flutua devagar (camada propria: o layoutId usa o transform do pai) */
+.vic-hero-bob {
+  display: inherit;
+  align-items: inherit;
+  gap: inherit;
+}
+.vic[data-phase='done'] .vic-hero-bob {
+  animation: vic-bob 3.2s ease-in-out 0.9s infinite;
+}
+@keyframes vic-bob {
+  0%, 100% { translate: 0 0; rotate: 0deg; }
+  50% { translate: 0 -0.06em; rotate: -1.2deg; }
+}
+
+/* rodape da carta: selo, nome e placar entram em cascata quando a carta assenta */
+.vic-in {
+  opacity: 0;
+}
+.vic[data-phase='done'] .vic-in {
+  animation: vic-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.vic[data-phase='done'] .vic-in--1 { animation-delay: 0.08s; }
+.vic[data-phase='done'] .vic-in--2 {
+  animation-name: vic-wipe;
+  animation-duration: 0.55s;
+  animation-delay: 0.16s;
+}
+.vic[data-phase='done'] .vic-in--3 { animation-delay: 0.3s; }
+@keyframes vic-in {
+  from { opacity: 0; translate: -0.6em 0; }
+  to { opacity: 1; translate: 0 0; }
+}
+/* o nome e revelado da esquerda pra direita, como uma faixa sendo puxada */
+@keyframes vic-wipe {
+  from { opacity: 1; clip-path: inset(0 100% 0 0); translate: -0.25em 0; }
+  to { opacity: 1; clip-path: inset(0 0 0 0); translate: 0 0; }
 }
 .vic-sprite {
   height: 2.4em;
@@ -352,6 +439,26 @@
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: clamp(8px, 0.8vw, 16px);
+}
+/* Revanche chama atencao duas vezes depois que a tela monta: contorno creme que se afasta e some.
+   Fica num pseudo-elemento para nao brigar com o contorno de foco do botao. */
+.vic-nudge {
+  position: relative;
+}
+.vic-nudge::after {
+  content: '';
+  position: absolute;
+  inset: calc(var(--rdb-line) * -1);
+  border: 3px solid var(--rdb-cream);
+  opacity: 0;
+  pointer-events: none;
+}
+.vic[data-phase='done'] .vic-nudge::after {
+  animation: vic-nudge 1.1s cubic-bezier(0.16, 1, 0.3, 1) 1.4s 2 both;
+}
+@keyframes vic-nudge {
+  0% { opacity: 0.9; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.14, 1.5); }
 }
 
 /* ---------- Faixa de numeros (recolhivel) ---------- */
@@ -547,9 +654,22 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .vic,
   .vic-bg-rays,
   .vic-spark,
-  .vic-burst {
-    animation: none;
+  .vic-burst,
+  .vic-ring,
+  .vic-box,
+  .vic-hero-bob,
+  .vic .vic-nudge::after,
+  .vic .vic-in,
+  .vic[data-phase] {
+    animation: none !important;
+  }
+  .vic .vic-in {
+    opacity: 1;
+  }
+  .vic-box {
+    transition: none;
   }
 }

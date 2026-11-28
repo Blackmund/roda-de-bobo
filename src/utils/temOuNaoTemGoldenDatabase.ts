@@ -45,13 +45,14 @@ export const TEM_OU_NAO_TEM_SIX_GOLDEN_LAWS = `AS REGRAS DE OURO PARA FORMULAR P
    - Cada item do painel deve ser um substantivo, nome próprio ou ação curtíssima (ex: "Cristiano Ronaldo", "Pão de Alho", "Dormir", "Chaves").
 6. DICIONÁRIO RICO DE SINÔNIMOS ACEITOS ("sinonimos_aceitos"):
    - Para que a validação digital funcione perfeitamente quando o jogador digitar o palpite, cada resposta DEVE trazer um array "sinonimos_aceitos" contendo apelidos, nomes completos, variações sem acento e termos equivalentes em letras minúsculas.
+   - Inclua apenas formas de nomear a mesma pessoa ou o mesmo item. Outra pessoa, personagem ou objeto relacionado deve ocupar uma posição própria, se tiver votos.
 7. LEI DA CATEGORIA ABERTA (ESTRITAMENTE PROIBIDO PERGUNTA TRIVIA COM RESPOSTA ÚNICA):
    - O Tem ou Não Tem é uma pesquisa aberta de auditório (Family Feud / 100 Brasileiros Dizem). NUNCA faça uma pergunta de curiosidade/conhecimento geral que tenha apenas 1 único fato verdadeiro no mundo real.
    - ❌ TERMINANTEMENTE PROIBIDO: "Qual evento histórico é lembrado por ter sido o maior desastre marítimo de todos os tempos em sua viagem inaugural?" (Isso é pergunta de quiz escolar! Só existe o Titanic como resposta verdadeira, o que força o painel a inventar itens desconexos e sem sentido como "Afundamento", "Iceberg", "1912", "Passageiros").
    - ❌ PROIBIDO: "Quem descobriu o Brasil?" (Só existe Cabral).
    - ❌ PROIBIDO: "Qual o maior país da América do Sul?" (Só existe Brasil).
    - ✅ CORRETO SE O TEMA FOR UMA COISA ESPECÍFICA (ex: Titanic): Pergunte associações diretas: "Quando você pensa no Titanic, o que vem primeiro à sua mente?" -> 1. Iceberg (35), 2. Leonardo DiCaprio / Jack (25), 3. Rose (18), 4. Naufrágio / Afundar (12), 5. Violino / Músicos (6), 6. Música da Céline Dion (4).
-   - ✅ CORRETO SE O TEMA FOR UMA CLASSE ABERTA: Pergunte itens dessa classe: "Cite um desastre histórico marcante que as pessoas mais lembram" -> 1. Titanic, 2. Chernobyl, 3. 11 de Setembro, 4. Pompeia, 5. Hiroshima.
+   - Se o tema for uma classe aberta, peça exemplos dessa classe. Dentro do tema que o jogador escolheu, varie a situação e os itens entre as rodadas.
    - Cada posição do ranking deve ser do mesmo tipo/categoria e fazer sentido comparativo total.`;
 
 export const TEM_OU_NAO_TEM_GOLDEN_QUESTIONS: TemOuNaoTemQuestion[] = [

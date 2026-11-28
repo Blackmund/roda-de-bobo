@@ -190,13 +190,16 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
   );
   const whatsappUrl = `https://wa.me/?text=${whatsappText}`;
 
-  const handleCopyLink = () => {
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(joinUrl);
-      setCopiedLink(true);
-      sounds.playSuccess();
-      setTimeout(() => setCopiedLink(false), 2000);
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(joinUrl);
+    } catch {
+      window.prompt('Selecione e copie o link da sala.', joinUrl);
+      return;
     }
+    setCopiedLink(true);
+    sounds.playSuccess();
+    setTimeout(() => setCopiedLink(false), 2000);
   };
 
   const handleSelectModeClick = (mode: ConnectionMode) => {
@@ -269,7 +272,7 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
   return (
     <div
       data-testid="screen-mode-select"
-      className="rdb-wide mx-auto w-full h-full flex flex-col overflow-hidden gap-3 lg:gap-4 text-[#F5F2EB] select-none"
+      className={`rdb-wide mx-auto w-full h-full flex flex-col overflow-hidden gap-3 lg:gap-4 text-[#F5F2EB] select-none ${step === 'players' && activeMode !== 'local' ? 'rdb-remote-setup' : ''}`}
     >
       {/* Barra da tela: etiqueta, os 2 passos e o estado da conexao */}
       <div className="rdb-toolbar shrink-0">
@@ -379,9 +382,9 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
 
         {/* MODO TV + CELULARES OU MODO 100% MOBILE: EXIBE QR CODE + CONECTADOS */}
         {activeMode !== 'local' && (
-          <div className="h-full flex flex-col md:flex-row gap-3 overflow-y-auto md:overflow-hidden">
-            {/* Coluna Esquerda: QR Code + Código da Sala + Links (Sem barra de rolagem, compacto e 100% legível) */}
-            <div className="w-full md:w-72 lg:w-80 shrink-0 bg-black/75 border border-rose-500/40 p-2.5 flex flex-col justify-between items-center text-center overflow-hidden gap-1.5">
+          <div className="h-full flex flex-col md:flex-row gap-3 overflow-y-auto">
+            {/* Convite com código da sala, QR e ações de compartilhamento */}
+            <div className="rdb-room-invite w-full md:w-72 lg:w-80 shrink-0 min-h-max bg-black/75 border border-rose-500/40 p-2.5 flex flex-col justify-between items-center text-center gap-1.5">
               <div className="space-y-0.5 shrink-0">
                 <div className="text-[10px] font-mono-code text-rose-300 font-bold uppercase tracking-wider">
                   ENTRE PELO CELULAR
@@ -397,7 +400,7 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
               {/* QR Code Container */}
               <div
                 data-testid="mode-select-qr-container"
-                className="p-2 bg-white rounded shadow-[0_0_20px_rgba(255,255,255,0.18)] shrink-0 flex items-center justify-center"
+                className="rdb-room-qr p-2 bg-white rounded shadow-[0_0_20px_rgba(255,255,255,0.18)] shrink-0 flex items-center justify-center"
               >
                 <DynamicQRCode url={joinUrl} size={145} />
               </div>
@@ -446,7 +449,7 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
                   data-testid="mode-select-copy-link-btn"
                   onClick={handleCopyLink}
                   title={copiedLink ? 'Link copiado!' : 'Copiar link do celular'}
-                  aria-label="Copiar link do celular"
+                  aria-label={copiedLink ? 'Link copiado' : 'Copiar link do celular'}
                   className={`h-9 flex items-center justify-center transition-all cursor-pointer border shadow-sm ${
                     copiedLink
                       ? 'bg-emerald-400 text-black border-emerald-300'
@@ -489,46 +492,46 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
             </div>
 
             {/* Coluna Direita: Jogadores Conectados no Celular + Adição Rápida */}
-            <div className="flex-1 min-w-0 flex flex-col justify-between overflow-hidden bg-black/40 border border-slate-800 p-3 space-y-2">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2 shrink-0">
-                <div className="flex items-center gap-2">
-                  <Users size={16} className="text-cyan-300" />
-                  <h3 className="font-anton text-base uppercase text-white tracking-wider">
+            <div className="flex-none md:flex-1 min-h-min min-w-0 flex flex-col justify-between bg-black/40 border border-slate-800 p-3 space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 border-b border-white/10 pb-1.5 sm:pb-2 shrink-0 min-w-0">
+                <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                  <Users size={15} className="text-cyan-300 shrink-0" />
+                  <h3 className="font-anton text-sm sm:text-base uppercase text-white tracking-wider truncate">
                     JOGADORES CONECTADOS ({room.players.length})
                   </h3>
                 </div>
 
-                <div className="text-[11px] font-mono-code text-cyan-300 font-bold uppercase">
+                <div className="text-[10px] sm:text-[11px] font-mono-code text-cyan-300 font-bold uppercase shrink-0">
                   {room.players.length >= 2 ? '✓ Sala Pronta' : 'Aguardando Jogadores'}
                 </div>
               </div>
 
               {/* Lista dos Jogadores Conectados */}
-              <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1">
+              <div className="flex-1 min-h-20 overflow-y-auto space-y-1.5 pr-1">
                 {room.players.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center p-4 text-slate-400 space-y-2">
-                    <Smartphone size={32} className="text-rose-400 animate-pulse" />
-                    <p className="font-anton text-base uppercase text-white">
+                  <div className="min-h-full flex flex-col items-center justify-center text-center p-2 sm:p-4 text-slate-400 space-y-1.5 sm:space-y-2">
+                    <Smartphone size={24} className="text-rose-400 animate-pulse shrink-0 sm:w-8 sm:h-8" />
+                    <p className="font-anton text-sm sm:text-base uppercase text-white">
                       NENHUM JOGADOR CONECTOU AINDA
                     </p>
-                    <p className="text-xs font-mono-code text-slate-300 max-w-sm">
+                    <p className="text-[11px] sm:text-xs font-mono-code text-slate-300 max-w-sm">
                       Abra a câmera do celular e aponte para o QR Code ao lado, ou adicione convidados diretamente nos botões abaixo.
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-2">
                     {room.players.map((p) => {
                       return (
                         <div
                           key={p.id}
                           data-testid={`mode-select-player-card-${p.id}`}
-                          className="p-2 border border-white/15 bg-black/80 flex items-center justify-between gap-2 shadow-sm"
+                          className="min-w-0 p-1.5 sm:p-2 border border-white/15 bg-black/80 flex items-center justify-between gap-2 shadow-sm"
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-xl shrink-0"><PlayerMark p={p} /></span>
+                            <span className="text-lg sm:text-xl shrink-0"><PlayerMark p={p} /></span>
                             <div className="min-w-0">
-                              <div className="font-anton text-sm text-white uppercase truncate flex items-center gap-1">
-                                <span>{p.name}</span>
+                              <div className="font-anton text-sm text-white uppercase flex items-center gap-1 min-w-0">
+                                <span className="truncate">{p.name}</span>
                                 {p.isVip && <Crown size={12} className="text-amber-300 shrink-0" />}
                               </div>
                               <span className="text-[10px] font-mono-code text-cyan-300">
@@ -543,8 +546,9 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
                               sounds.playFlip();
                               onRemovePlayer(p.id);
                             }}
-                            className="p-1 text-slate-500 hover:text-rose-400 transition-colors cursor-pointer"
+                            className="p-1 text-slate-500 hover:text-rose-400 transition-colors cursor-pointer shrink-0"
                             title="Remover jogador"
+                            aria-label={`Remover ${p.name} da sala`}
                           >
                             <Trash2 size={13} />
                           </button>
@@ -556,10 +560,10 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
               </div>
 
               {/* Ações Rápidas: Jogadores da Casa + Adicionar Convidado Local */}
-              <div className="border-t border-white/10 pt-2 shrink-0 space-y-2">
+              <div className="border-t border-white/10 pt-2 shrink-0 space-y-1.5 sm:space-y-2 min-w-0">
                 {/* Jogadores da Casa */}
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] font-mono-code text-amber-300 uppercase font-bold flex items-center gap-1 mr-1">
+                <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 min-w-0">
+                  <span className="text-[10px] font-mono-code text-amber-300 uppercase font-bold flex items-center gap-1 mr-0.5 sm:mr-1 shrink-0">
                     <Star size={11} />
                     <span>Amigos da Casa:</span>
                   </span>
@@ -573,6 +577,7 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
                       <button
                         key={fp.id}
                         type="button"
+                        aria-pressed={isConnected}
                         onClick={() => handleToggleFixedPlayer(fp)}
                         className={`px-2 py-0.5 text-[10px] font-mono-code font-bold border flex items-center gap-1 cursor-pointer transition-colors ${
                           isConnected
@@ -589,25 +594,31 @@ export const ScreenModeSelect: React.FC<ScreenModeSelectProps> = ({
                 </div>
 
                 {/* Input de Convidado Local */}
-                <form onSubmit={handleAddRemoteGuest} className="flex gap-2">
+                <form onSubmit={handleAddRemoteGuest} className="flex items-stretch gap-1.5 sm:gap-2 w-full min-w-0">
                   <input
                     type="text"
                     value={remoteGuestName}
-                    onChange={(e) => setRemoteGuestName(e.target.value)}
+                    aria-label="Nome do convidado"
+                    aria-invalid={Boolean(duplicateWarning)}
+                    aria-describedby={duplicateWarning ? 'remote-guest-error' : undefined}
+                    onChange={(e) => {
+                      setRemoteGuestName(e.target.value);
+                      setDuplicateWarning(null);
+                    }}
                     placeholder="Adicionar jogador sem celular (ex: Roberto)..."
                     maxLength={20}
-                    className="flex-1 bg-black border border-slate-700 px-2.5 py-1 text-xs font-mono-code text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none"
+                    className="flex-1 min-w-0 w-0 bg-black border border-slate-500 px-2 sm:px-2.5 py-1.5 sm:py-1 text-xs font-mono-code text-white placeholder-slate-400 focus-visible:outline-2 focus-visible:outline-cyan-400"
                   />
                   <button
                     type="submit"
-                    className="px-3 py-1 bg-cyan-500 hover:bg-cyan-400 text-black font-anton text-xs uppercase tracking-wider flex items-center gap-1 cursor-pointer shrink-0"
+                    className="px-2.5 sm:px-3 py-1.5 sm:py-1 bg-cyan-500 hover:bg-cyan-400 text-black font-anton text-xs uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer shrink-0"
                   >
                     <UserPlus size={13} />
                     <span>Adicionar</span>
                   </button>
                 </form>
                 {duplicateWarning && (
-                  <p className="text-[10px] font-mono-code text-rose-400">{duplicateWarning}</p>
+                  <p id="remote-guest-error" role="alert" className="text-[10px] font-mono-code text-rose-400">{duplicateWarning}</p>
                 )}
               </div>
             </div>

@@ -3,7 +3,7 @@ import { GameRoom, Player, GameId } from '../../../types/game';
 import { sounds } from '../../../utils/soundEffects';
 import { Minus, CheckCircle2 } from 'lucide-react';
 import { ensureStrictForbiddenWordsCount } from '../../../utils/proibidoGoldenDatabase';
-import { applyProibidoCardOutcome } from '../../host/ScreenProibido';
+import { applyProibidoCardOutcome } from '../../../utils/proibidoRound';
 import { getActiveTeamIds, getNextTeamId } from '../../../utils/teamUtils';
 
 interface MasterRemoteControllerProps {

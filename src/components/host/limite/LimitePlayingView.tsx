@@ -3,7 +3,7 @@ import {
   isLimiteGuessExact,
   computeLimiteWinnerPoints,
   LIMITE_POWER_CARD_META
-} from '../ScreenLimite';
+} from '../../../utils/limiteRound';
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { GameRoom, LimiteGameState, LimitePowerCardType, Player } from '../../../types/game';

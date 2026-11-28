@@ -4,7 +4,7 @@ import { GameRoom, Player } from '../../../types/game';
 import { sounds } from '../../../utils/soundEffects';
 import { AlertTriangle, ArrowRight } from 'lucide-react';
 import { ensureStrictForbiddenWordsCount } from '../../../utils/proibidoGoldenDatabase';
-import { applyProibidoCardOutcome, getProibidoPlayerRole, getNextProibidoTurnInfo } from '../../host/ScreenProibido';
+import { applyProibidoCardOutcome, getProibidoPlayerRole, getNextProibidoTurnInfo } from '../../../utils/proibidoRound';
 
 interface ProibidoControllerProps {
   room: GameRoom;

@@ -711,6 +711,35 @@
 .rdb-wide {
   max-width: min(97vw, 112rem);
 }
+@media (pointer: coarse) {
+  .rdb-remote-setup :is(button, a[href], input) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+@media (min-width: 768px) and (max-height: 500px) {
+  .rdb-room-invite {
+    display: grid;
+    width: min(48%, 27rem);
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: center;
+  }
+  .rdb-room-invite > * {
+    grid-column: 2;
+  }
+  .rdb-room-invite > .rdb-room-qr {
+    grid-area: 1 / 1 / span 4;
+  }
+}
+/* Em paisagem baixa, cabeçalho e rodapé também rolam para dar espaço ao QR. */
+@media (max-height: 360px) {
+  .rdb-remote-setup {
+    overflow-y: auto;
+  }
+  .rdb-remote-setup > .rdb-players {
+    flex: none;
+  }
+}
 @media (min-width: 1100px) {
   .rdb-setup-cols {
     column-count: 2;

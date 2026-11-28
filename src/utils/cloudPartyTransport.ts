@@ -9,7 +9,7 @@
  * Supabase API keys or manual network setup.
  */
 
-import mqtt, { MqttClient, IClientOptions } from 'mqtt';
+import type { MqttClient, IClientOptions } from 'mqtt';
 import { GameRoom } from '../types/game';
 import { getMqttConfig, getAllBrokerEndpoints, getRoomMqttTopic } from '../config/mqttConfig';
 import { isRoomApiAvailable, postToApi } from './apiAvailability';
@@ -251,7 +251,7 @@ export class CloudPartyTransport {
     }
   }
 
-  private connectMqtt() {
+  private async connectMqtt() {
     if (this.isDestroyed) return;
     const config = getMqttConfig();
     const brokerUrl = this.brokerList[this.currentBrokerIndex] || config.primaryBrokerUrl;
@@ -284,6 +284,8 @@ export class CloudPartyTransport {
         clientOptions.password = config.password;
       }
 
+      const { default: mqtt } = await import('mqtt');
+      if (this.isDestroyed) return;
       const client = mqtt.connect(brokerUrl, clientOptions);
       this.client = client;
 

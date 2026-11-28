@@ -61,7 +61,6 @@ import {
   fetchAndCacheLanOrigin,
   generateUnique6CharRoomCode
 } from './utils/multiplayerRoomEngine';
-import { drawLimitePowerCardsForPlayers } from './components/host/ScreenLimite';
 import {
   ScreenLimite,
   ScreenDuvido,
@@ -81,7 +80,6 @@ import {
 } from './app/lazyScreens';
 import { GAME_NAMES } from './app/gameNames';
 import { drawRandomScoreCSPRNG } from './components/SpinningNumberWheel';
-import { ControllerView } from './components/controller/ControllerView';
 import { GlobalStats } from './components/GlobalStats';
 import { PartyAchievements } from './components/PartyAchievements';
 import { FixedPlayersHallOfFame } from './components/FixedPlayersHallOfFame';
@@ -129,6 +127,8 @@ import { PlayingScreen } from './app/PlayingScreen';
 import { buildNextRoundUpdater } from './app/buildNextRoundUpdater';
 import { useDevMode } from './app/devMode';
 import { buildStartedRoundUpdater } from './app/buildStartedRoundUpdater';
+
+const ControllerView = lazy(() => import('./components/controller/ControllerView').then(m => ({ default: m.ControllerView })));
 
 export default function App() {
   const parsedQuery = parseRoomQueryParams(window.location.search);
@@ -463,10 +463,24 @@ export default function App() {
     preloadGameScreen(room.activeGame);
   }, [room.activeGame]);
 
+  const pendingRoundAdvance = useRef<{ roomId: string; roundNumber: number } | null>(null);
+  useEffect(() => {
+    const pending = pendingRoundAdvance.current;
+    if (!pending) return;
+    if (room.roomId !== pending.roomId || room.screen !== 'playing' || !room.activeGame) {
+      pendingRoundAdvance.current = null;
+      return;
+    }
+    if (room.roundNumber <= pending.roundNumber) return;
+    pendingRoundAdvance.current = null;
+    void prepareAndStartRound(
+      room.activeGame, room.theme, room.timerConfig, room.maxRounds, room.customConfig, room.usedRoundSignatures
+    );
+  }, [room]);
+
   const handleNextRound = () => {
+    if (pendingRoundAdvance.current || isLoadingRound) return;
     sounds.playPowerup();
-    let shouldStartNextRound = false;
-    let nextMaxRoundsTarget = room.maxRounds;
     // REG-01: no Duvido do programa a partida acaba quando uma equipe chega a 5 temas (decidido aqui, fora do
     // updater, para também impedir o disparo da próxima rodada logo abaixo).
     const duvidoEndsEarly =
@@ -483,18 +497,8 @@ export default function App() {
 
     // Com Terra: a partida inteira e uma rodada do hub (as rodadas do jogo correm dentro do proprio estado).
     const endsNow = duvidoEndsEarly || room.activeGame === 'com-terra';
-    broadcastState(buildNextRoundUpdater({ shouldStartNextRound, nextMaxRoundsTarget, setSuddenDeathBanner, duvidoEndsEarly: endsNow }));
-
-    if (room.activeGame && !endsNow && (room.roundNumber < room.maxRounds || shouldStartNextRound)) {
-      prepareAndStartRound(
-        room.activeGame,
-        room.theme,
-        room.timerConfig,
-        nextMaxRoundsTarget,
-        room.customConfig,
-        room.usedRoundSignatures || []
-      );
-    }
+    pendingRoundAdvance.current = { roomId: room.roomId, roundNumber: room.roundNumber };
+    broadcastState(buildNextRoundUpdater({ setSuddenDeathBanner, duvidoEndsEarly: endsNow }));
   };
 
   /** Zera o placar e o estado dos jogos para uma partida nova (mantem jogadores, equipes e sessao). */
@@ -676,21 +680,23 @@ export default function App() {
           )}
         </div>
 
-        <ControllerView
-          room={room}
-          currentPlayerId={currentUserId}
-          connectionStatus={connectionStatus}
-          isPadMode={isPadRoute}
-          onRegisterPlayer={registerPlayer}
-          onUpdateRoom={broadcastState}
-          onSwitchToHostMode={() => setViewMode('host')}
-          onBuzzReady={buzzReadyOnTv}
-          onStartMatchFromController={(gId, th) => {
-            prepareAndStartRound(gId, th, room.timerConfig, room.maxRounds, room.customConfig);
-          }}
-          onNextRound={handleNextRound}
-          onForceSync={forceSync}
-        />
+        <Suspense fallback={<p role="status">Carregando controle...</p>}>
+          <ControllerView
+            room={room}
+            currentPlayerId={currentUserId}
+            connectionStatus={connectionStatus}
+            isPadMode={isPadRoute}
+            onRegisterPlayer={registerPlayer}
+            onUpdateRoom={broadcastState}
+            onSwitchToHostMode={() => setViewMode('host')}
+            onBuzzReady={buzzReadyOnTv}
+            onStartMatchFromController={(gId, th) => {
+              prepareAndStartRound(gId, th, room.timerConfig, room.maxRounds, room.customConfig);
+            }}
+            onNextRound={handleNextRound}
+            onForceSync={forceSync}
+          />
+        </Suspense>
 
         {renderJoinRoomModal()}
       </div>

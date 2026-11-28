@@ -216,7 +216,7 @@ const GAMES: Array<{
     id: 'perguntas-e-verdades',
     name: 'PERGUNTAS E VERDADES',
     tagline: '8 CARTAS SECRETAS, LEILÃO DE TOKENS E 11 PERGUNTAS',
-    badge: '2 A 6 JOGADORES',
+    badge: 'INDIVIDUAL',
     color: '#FF1E56',
     renderArt: (cls) => (
       <PerguntasEVerdadesArt
@@ -806,6 +806,7 @@ const ScreenLobbyComponent: React.FC<ScreenLobbyProps> = ({
                   <div
                     key={pageIdx}
                     aria-hidden={!isActive}
+                    inert={!isActive}
                     className={`rdb-grid rdb-catalog-page ${items.length + (isLast ? 1 : 0) <= 3 ? 'rdb-grid--row' : ''}`}
                   >
                     {items.map((game) => (

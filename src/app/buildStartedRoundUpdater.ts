@@ -20,7 +20,7 @@ import { buildGeoGuessState } from '../utils/geoguessEngine';
 import { drawRespostaQuestion, normalizeRespostaKey } from '../data/respostasSemPerguntas';
 import { drawRepetenteTheme, normalizeThemeKey } from '../data/repetenteThemes';
 import { normalizeIdentity, type QuemSouEuIdentity } from '../data/quemSouEuIdentities';
-import { drawLimitePowerCardsForPlayers } from '../components/host/ScreenLimite';
+import { drawLimitePowerCardsForPlayers } from '../utils/limiteRound';
 import { drawRandomScoreCSPRNG } from '../components/SpinningNumberWheel';
 import { limiteExactBonusFor } from '../config/rulesets';
 

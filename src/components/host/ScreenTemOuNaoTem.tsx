@@ -17,7 +17,7 @@ import {
   getActiveTeamIds,
   getNextTeamId
 } from '../../utils/teamUtils';
-import { checkAnswerFuzzyMatch } from '../../utils/fuzzyMatch';
+import { findTemItemMatch } from '../../utils/temGuess';
 import { PlayerMark } from '../rdb/PlayerMark';
 
 interface ScreenTemOuNaoTemProps {
@@ -102,21 +102,10 @@ export const ScreenTemOuNaoTem: React.FC<ScreenTemOuNaoTemProps> = ({
 
   const activeTeamIds = getActiveTeamIds(room);
 
-  // Check if string matches answer or any of its synonyms with full PT-BR fuzzy tolerance
-  const checkAnswerMatch = (input: string, itemText: string, synonyms: string[] = []) => {
-    return checkAnswerFuzzyMatch(input, itemText, synonyms);
-  };
-
   const handleProcessGuess = (guessText: string, team: TeamId) => {
     if (!guessText.trim()) return;
 
-    let matchedIndex = -1;
-    for (let i = 0; i < tem.items.length; i++) {
-      if (!tem.items[i].revealed && checkAnswerMatch(guessText, tem.items[i].texto, tem.items[i].sinonimos_aceitos)) {
-        matchedIndex = i;
-        break;
-      }
-    }
+    const matchedIndex = findTemItemMatch(tem.items, guessText);
 
     if (matchedIndex !== -1) {
       // Correct!

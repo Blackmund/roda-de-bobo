@@ -401,7 +401,7 @@ export const ScreenMobileJoin: React.FC<ScreenMobileJoinProps> = ({
           Sem código ainda? Crie uma sala como Host.
         </div>
         <p className="text-[11px] text-slate-400 leading-relaxed">
-          Abra a tela principal na TV ou computador para gerar o código e comandar os 14 jogos.
+          Abra a tela principal na TV ou computador para gerar o código e comandar os 16 jogos.
         </p>
         {onSwitchToHostMode && (
           <button

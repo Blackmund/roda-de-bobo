@@ -6,7 +6,7 @@
  * - Variações fonéticas (ex: "bicicreta" -> "bicicleta", "einsteim" -> "einstein")
  * - Erros de 1 a 3 letras para palavras médias e longas (ex: "spiber" -> "spielberg")
  * - Remoção completa de acentos, pontuações e caixa alta/baixa
- * - Correspondência por token ou substring para nomes compostos ("albert einstein" <-> "einstein")
+ * - Um sobrenome sozinho pode identificar uma resposta composta ("albert einstein" <-> "einstein")
  */
 
 /**
@@ -103,16 +103,16 @@ export function maxAllowedDistance(length: number): number {
 /**
  * Compara dois termos individuais e determina se são suficientemente parecidos.
  */
-function isSingleTermMatch(input: string, target: string): boolean {
+function isSingleTermMatch(input: string, target: string, compound = false): boolean {
   if (!input || !target) return false;
   if (input === target) return true;
 
-  // Substring direta se o trecho tiver tamanho representativo (>= 4 caracteres; 3 gerava falsos positivos como "pra" em "praca")
-  if (input.length >= 4 && target.includes(input)) return true;
-  if (target.length >= 4 && input.includes(target)) return true;
+  if (input.length >= 4 && (input === target + 's' || target === input + 's')) return true;
 
   // Levenshtein direto
-  const maxDist = maxAllowedDistance(Math.max(input.length, target.length));
+  const allowedDistance = (length: number) =>
+    compound && length <= 8 ? Math.min(1, maxAllowedDistance(length)) : maxAllowedDistance(length);
+  const maxDist = allowedDistance(Math.max(input.length, target.length));
   const dist = levenshteinDistance(input, target);
   if (dist <= maxDist) return true;
 
@@ -122,7 +122,7 @@ function isSingleTermMatch(input: string, target: string): boolean {
   if (phonInput === phonTarget) return true;
 
   const phonDist = levenshteinDistance(phonInput, phonTarget);
-  const phonMaxDist = maxAllowedDistance(Math.max(phonInput.length, phonTarget.length));
+  const phonMaxDist = allowedDistance(Math.max(phonInput.length, phonTarget.length));
   if (phonDist <= phonMaxDist) return true;
 
   return false;
@@ -153,52 +153,13 @@ export function checkAnswerFuzzyMatch(
     // 1. Igualdade exata
     if (inputNorm === candNorm) return true;
 
-    // 2. Substring direta completa
-    if (
-      (inputNorm.length >= 4 && candNorm.includes(inputNorm)) ||
-      (candNorm.length >= 4 && inputNorm.includes(candNorm))
-    ) {
-      return true;
-    }
-
-    // 3. Comparação direta com distância de Levenshtein / Fonética
-    if (isSingleTermMatch(inputNorm, candNorm)) {
-      return true;
-    }
-
-    // 4. Comparação por tokens / palavras (para nomes próprios compostos como "Albert Einstein", "Steven Spielberg")
-    const inputWords = inputNorm.split(' ').filter((w) => w.length >= 3);
-    const candWords = candNorm.split(' ').filter((w) => w.length >= 3);
-
-    // Se o usuário digitou uma única palavra e ela casa com qualquer palavra significativa do alvo (ex: "einsteim" em "albert einstein")
-    if (inputWords.length === 1 && candWords.length > 1) {
-      for (const cw of candWords) {
-        if (isSingleTermMatch(inputWords[0], cw)) {
-          return true;
-        }
-      }
-    }
-
-    // Se o alvo tem 1 palavra e o usuário digitou várias (ex: digitou "albert einstein" e o alvo é só "einstein")
-    if (candWords.length === 1 && inputWords.length > 1) {
-      for (const iw of inputWords) {
-        if (isSingleTermMatch(iw, candWords[0])) {
-          return true;
-        }
-      }
-    }
-
-    // Se ambos têm múltiplas palavras, verificar se as palavras chave conferem
-    if (inputWords.length > 1 && candWords.length > 1) {
-      let matchedCount = 0;
-      for (const iw of inputWords) {
-        if (candWords.some((cw) => isSingleTermMatch(iw, cw))) {
-          matchedCount++;
-        }
-      }
-      if (matchedCount >= Math.min(inputWords.length, candWords.length)) {
-        return true;
-      }
+    const inputWords = inputNorm.split(' ');
+    const candWords = candNorm.split(' ');
+    if (inputWords.length === candWords.length) {
+      if (inputWords.every((word, index) => isSingleTermMatch(word, candWords[index], inputWords.length > 1))) return true;
+    } else if (inputWords.length === 1 && candidate === itemText) {
+      // Um sobrenome isolado pode ser suficiente. Um nome completo precisa conferir por inteiro.
+      if (candWords.at(-1)!.length >= 4 && isSingleTermMatch(inputNorm, candWords.at(-1)!)) return true;
     }
   }
 
