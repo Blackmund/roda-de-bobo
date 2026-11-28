@@ -107,3 +107,16 @@ export function computeRoundTeamPoints(room: GameRoom): Record<TeamId, number> {
 
   return roundPts;
 }
+
+/**
+ * Jogos de equipe que, com 2 jogadores na sala, viram dupla cooperativa: os dois somam os mesmos pontos
+ * para as duas equipes (ver computeRoundTeamPoints). Nesses casos o placar das equipes sempre empata,
+ * entao o empate nao pode abrir morte subita.
+ */
+const COOPERATIVE_2P_GAMES = new Set(['proibido', 'como-eu-pinto', 'mega-resenha', 'mimica', 'repetente']);
+
+export function isCooperativeMatch(room: GameRoom): boolean {
+  if (!room.activeGame || !COOPERATIVE_2P_GAMES.has(room.activeGame)) return false;
+  if (room.activeGame === 'proibido' && room.proibido?.is2PlayerMode) return true;
+  return room.players.length === 2;
+}

@@ -1,4 +1,4 @@
-import { computeRoundTeamPoints } from '../utils/roundPoints';
+import { computeRoundTeamPoints, isCooperativeMatch } from '../utils/roundPoints';
 import { GAME_NAMES } from './gameNames';
 import type { GameRoom } from '../types/game';
 import React from 'react';
@@ -102,6 +102,8 @@ export const buildNextRoundUpdater = ({
 
       const isTiedAtEnd =
         !duvidoEndsEarly &&
+        // dupla cooperativa (2 jogadores) soma igual para as duas equipes: o empate e regra, nao disputa
+        !isCooperativeMatch(prev) &&
         nextRoundNum > prev.maxRounds &&
         prev.roundNumber <= 12 &&
         (isIndividualGame
