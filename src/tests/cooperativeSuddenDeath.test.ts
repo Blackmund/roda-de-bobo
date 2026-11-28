@@ -36,6 +36,7 @@ const cooperativeCases: [string, Record<string, unknown>][] = [
   ['mimica', { activeGame: 'mimica', mimica: { mimeTeam: 'A', roundScore: 2 } }],
   ['mega-resenha', { activeGame: 'mega-resenha', megaResenha: { team: 'A', roundScore: 2 } }],
   ['proibido', { activeGame: 'proibido', proibido: { speakerTeam: 'A', roundScore: 2, is2PlayerMode: true } }],
+  ['como-eu-pinto', { activeGame: 'como-eu-pinto', comoEuPinto: { drawTeam: 'A', outcomes: ['correct'] } }],
   ['repetente', { activeGame: 'repetente', repetente: { result: { groups: [], pointsByTeam: { A: 1, B: 1, C: 0, D: 0 } } } }]
 ];
 
