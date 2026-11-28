@@ -99,6 +99,7 @@ import { DuvidoController } from './games/DuvidoController';
 import { LimiteController } from './games/LimiteController';
 import { MasterRemoteController } from './games/MasterRemoteController';
 import { PlayerMark } from '../rdb/PlayerMark';
+import { resolveControllerViewTarget } from './controllerRouting';
 
 interface ControllerViewProps {
   room: GameRoom;
@@ -442,13 +443,16 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
     );
   };
 
-  // --- MODO 2: CONTROLE CENTRAL / MESTRE DA SALA (1 Celular no Sofá controlando a TV inteira) ---
-  if (isMasterRemoteMode) {
-    return <MasterRemoteController room={room} setIsMasterRemoteMode={setIsMasterRemoteMode} renderMobileTurnSpotlightBanner={renderMobileTurnSpotlightBanner} renderMobileTimerBanner={renderMobileTimerBanner} onUpdateRoom={onUpdateRoom} setHoldingSecret={setHoldingSecret} holdingSecret={holdingSecret} />;
-  }
+  const viewTarget = resolveControllerViewTarget({
+    isPadMode,
+    hasPlayer: Boolean(player),
+    forceJoinScreen,
+    roomScreen: room.screen,
+    isMasterRemoteMode
+  });
 
   // Modo "1 Celular como Prancheta" (?pad=1): conecta direto na sala sem exigir cadastro de jogador.
-  if (isPadMode) {
+  if (viewTarget === 'pad') {
     if (room.activeGame === 'como-eu-pinto' && room.comoEuPinto) {
       const drawerPlayer =
         room.players.find((p) => p.id === room.comoEuPinto?.drawerPlayerId) || room.players[0];
@@ -497,7 +501,7 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
   }
 
   // If player not registered yet or chose to switch player/leave
-  if (!player || forceJoinScreen) {
+  if (viewTarget === 'join' || !player) {
     const searchParams =
       typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
     const roomParam = searchParams?.get('join') || searchParams?.get('room') || '';
@@ -530,7 +534,7 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
   }
 
   // --- LOBBY / SETUP / MODE SELECT SCREEN (ScreenMobileController with Buzz Ready & Master Remote) ---
-  if (room.screen === 'mode-select' || room.screen === 'lobby' || room.screen === 'game-setup' || room.screen === 'rules') {
+  if (viewTarget === 'lobby-controller') {
     const currentRole: PartyRole =
       isMasterRemoteMode || player.connectionType === 'master' || player.isMasterControl
         ? 'master'
@@ -572,6 +576,21 @@ export const ControllerView: React.FC<ControllerViewProps> = ({
         }}
         onUpdateRoom={onUpdateRoom}
         onStartMatchFromController={onStartMatchFromController}
+      />
+    );
+  }
+
+  // --- MODO 2: CONTROLE CENTRAL / MESTRE DA SALA (durante a partida ativa) ---
+  if (viewTarget === 'master-remote') {
+    return (
+      <MasterRemoteController
+        room={room}
+        setIsMasterRemoteMode={setIsMasterRemoteMode}
+        renderMobileTurnSpotlightBanner={renderMobileTurnSpotlightBanner}
+        renderMobileTimerBanner={renderMobileTimerBanner}
+        onUpdateRoom={onUpdateRoom}
+        setHoldingSecret={setHoldingSecret}
+        holdingSecret={holdingSecret}
       />
     );
   }
